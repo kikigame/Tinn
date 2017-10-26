@@ -1,0 +1,1065 @@
+Mazes
+-----
+
+One feature of Nethack is waze levels. I fancy doing a Labrynth (unicursal maze) level, because they look pretty and present a definite challenge for a single pathway with monsters.
+
+It is obvious that (he-he-he) the exit to the maze (down ramp) should be in the centre, and the entrance at the other end of the laberynth.
+
+Algorithic Musings
+------------------
+
+Just for fun, let's see how hard it would be to design an argorithm from scratch...
+
+A maze is a problem of placing 2 "colours" on a grid (wall, corridor). We'll nominate another colour for unplaced (perhaps stone).
+
+All levels are initially full of stone.
+We start by placing the exit dead centre.
+We then surround the exit with a 3x3 (or whatever size) room or corridor (or room), then surround that with wall.
+We then replace a wall tile with a corridor to make the "exit" we need to connect to.
+
+Okay, so then we have a 4x4 block filled, and possibly an up ramp whose location is given by the down ramp on the previous level. NB: We can always move the up ramp and adjust the previous level's down ramp if wanted.
+Making an algorithm to fill a 4x4 area with known entrance and exit seems easy, so perhaps we should divide the rest of the level into 4x4 blocks, placing entrance and exit on each block, then recurse down?
+Okay, so we should place larger block and recurse. Consider this map:
+
+######################
+#A      .B  .C       #
+#.......#####........#
+#D <    #   #E       #
+#       # > #        #
+#       #   #        #
+#.......### #........#
+#F      .G  .H       #
+#       .   .        #
+######################
+
+The dotted lines extend the existing walls; I placed the up ramp at random. Letters A-H simply indicate the areas given by the dotted lines. The entrance to the exit room happens to go to G (again, placed at random).
+Immediately I can see that going anticlockwise to reach the exit would take in all areas but F, so this is likely to be a good idea. We can place exits on walls GH, HE, CE, BC, AB and AD and fill in the rest of the walls, then do some other trick to bring in area F.
+
+We can either:
+* split G into two horizontal sections and go >G' -- G'F -- FG" -- G2H
+* split D into two vertical sections and go AD' -- D'F -- FD".
+
+Here, we can't actually split G because it's only 2 high, and the wall would require a third. Ideally, we want 5 tiles width to split things or we end up with boring corridors.
+
+So we must split D. In the general case, it looks like the generator could fail, or we could accept a branching maze if we say branches are rare (I like this; it will annoy purists).
+
+
+The downside of the above is that it always creates width-3 zones around the central room. But if we start big and get smaller, that problem should go away.
+
+
+Incremental algorithm:
+----------------------
+
+* Place the Up and Down ramps; these are the start and exit points to connect.
+* Place the room around the down ramp as above.
+* Divide the level into 9 sections
+
+######################
+#A      .B     .C    #
+#.......#####........#
+#D <    #J  #  .E    #
+#       # > #  .     #
+#.......#   #........#
+#F      ### #  .H    #
+#       .G     .     #
+#       .      .     #
+######################
+
+* We need to remove a section until we have a continuous path:
+  -  D and J are both adjacent to F (horizontally, vertically or diagonally), so we can just eliminate that section. We remove DF because DF is a longer boundry than FG
+  - Formally:
+    * Identify the section (s) containing the start
+    * Identify the section (e) containing the end
+    * Identify the set of sections that are horizontally, vertically or diagonally connected to (s).
+    * Identify the set of sections that are horizontally, vertically or diagonally connected to (e).
+    * For each section (x) in the intersection of both sets:
+      * Calculate (sx)= the length of join between (s) and (x)
+      * Calculate (ex)= the length of join between (e) and (x)
+      * If (sx) > (ex), merge x with s, else merge x with e
+* Sort the sections, such that (s) is first, (e) is last, and each section is adjoining the next in the list.
+* Fill in all adjoining walls between sections, not overriding any already placed squares.
+* For each section (y) bar the last, place one exit, at random along the boundry between (y) and the next, not overriding any already placed tile.
+* For each section (z), Re-apply the entire algorithm for the sub-level consisting of (z).
+
+
+I think this will work, but may need modification to deal with the placed exit chanber.
+
+
+
+Why it Doesn't Work
+-------------------
+The removal of the mutually-touching group makes the map more random, but doesn't fix the consistency problem. eg if the entrance was in A and exit in H, the removal of J would not lead to a map in which you could get from A to H visiting each section only once.
+
+Given any 3x3 grid, the entrance and exit can either be in the same section, or not.
+If they are in the same section, then all that is needed is to remove the central section, joining it at random to any other section, then splitting the segment containing the entrance and exit such that they are now in different sections. A solution can then be found trivially, either clockwise or anticlockwise.
+If they are not in the same section, then there are still a finite number of possibilities:
+* entrance in corner (ACF or H), exit in adjacent edge segment (B/D, B/E, D/G or E/G): join either the entrance or exit segment with the central segment as treat it as a large edge segment. Segments are listed clockwise or anticlockwise, whichever begins with the start and ends with the exit.
+* entrance in corner, exit in center (J): join the exit segment with either edge segment adjoining the entrance, and treat as a large edge segment. Segments are listed clockwise or anticlockwise, whichever begins with the start and ends with the exit.
+* entrance in corner, exit in non-adjacent edge segment: start the list with the entrance segment. Then collect segments along the edge opposite the exit segment's outer edge. Then collect the subsequent row/column in reverse order, then the first two rows/columns of the exit segment's outer edge. Merge the exit segment with the final segment. (eg for A and E, you would have ADFGJBGCE, where E engulfs H)
+* entrance in corner, exit in opposite corner: no need to merge anything, just collect the segments in order
+* entrance in corner, exit in adjacent corner: merge the edge segment between start and end with center segment. Then collect the segments in order.
+* entrance in edge section, exit in non-adjacent corner: Merge entrance section with corner opposite exit. Then snake.
+* entrance in edge section, exit in adjacent corner: Merge opposite corner with either adjoining edge segment. Then snake.
+* entrance in edge section, exit in opposite edge section: We need to merge both entrance and edge section with an adjoining corner, such that two opposite corners are merged. Then snake.
+* entrance in edge section, exit in non-opposite edge section: The corner between entrance and exit segment needs to be merged with either segment. The other segment needs to be merged with its other adjoining corner. Then snake.
+
+If none of the above apply, swap the entrance and exit (as a signle-path algorithm must work in reverse).
+
+
+
+Further Ideas
+-------------
+
+The above looks quite tricky. The algorithm to split into subdomains seems cumbersome, long (likely to be buggy in implementation) and inelegant.
+I have thought of two other approaches that could be used:
+
+1) Recursively split into two subdomains. Here, the intermediate exit can be placed as far from the entrance and exit as possible to maximize space use. The domains can be trivially arranged either horizontally or vertically (probably best alternating) such that it always appears between the entrance and exit.
+
+2) Spiral growth. Here, we start at the exit and draw increasing spirals around it, until we hit an obstacle (eg side wall or entrance. We may need to leave channels around the top/bottom edge to act as corridors to ensure that all areas are reachable. We'd need to look for unreached areas and figure out how to incorporate them. We may also end up flipping individual spirals to modify their exit to make the generatotion solvable.
+
+Option 1 seems like the better approach right now.
+
+
+
+Spirals
+-------
+I designed an algorithm to do option 1. It works if I set the break condition to be rooms at least 4x4 in size. Infilling the "rooms" will take a little more effort.
+It always seemed to leave the central section with the exit in the middle of a large near-square "room". I'm not sure why; it could be my starting parameters or it could always happen.
+So I decided to write two "easy" infill routines:
+
+- empty: supplies empty rooms. Useful for dungeon-generation, where a single series of small rooms might be wanted.
+- spiral: supplies spiral rooms, provided the entrance or exit is in the middle; otherwise, delegates to another supplied infill routine. This creates a pretty spiral around the exit. I start spiralling at the one on the wall, and just put a 3x3 empty grid around the exit; so far, it hasn't broken the single-path.
+
+When both exits are on the wall, can a symmetric double-spiral be used? If so, when will work?
+
+#########+#
+#       # #
+# ##### # #
+# #   # # #
+# # # # # #
++ # #   # #
+### ##### #
+###       #
+###########
+
+I note that, because we only put one door in each room-diving wall, there will never be two doors on the same wall.
+I note also that doors in corners seem common in the empty-room output; possibly because of the furthest-from-doors placement algorithm; however, rooms with both doors in corners are rare.
+Also, you'll never get two doors in the same corner, directly because of the furthest-from-doors placement algorithm.
+Here, I started a spiral and then placed doors at random. If there is a door in each opposite corner, this will work well, but we have to start infilling with impassible space once we hit a door not in a corner.
+
+Is there a better solution to infill the above room?
+
+
+#########+#     #########+#
+#       # #	#       # #
+# ##### # #	# ##### # #
+#   #   # #	#     # # #
+### # ### #	##### # # #
++ # # #   #	+  ## # # #
+# # # # ###	##  # # # #
+#   #    ##	###   #   #
+###########	###########
+
+The solution on the left is the best solution I can find, assuming that we want a 1-char wide corridor and minimum wall width. The left one was made by starting at the left door (I had to adjust the bottom-right corner a few times), while the one on the right started at the corner door.
+
+I observe that there is a general perfect solution if the doors are in opposite corners, given this room dimension (perfect in the sense of a perfect maze, ie one maximising use of space). Is it true if the doors are in adjacent corners? For which sizes of room does it hold true?
+
+
+Opposite corners:
+
+#########+#     #########+#
+#       # #	#       # #
+# ##### # #	# ##### # #
+# #   # # #	# #   # # #
+# # # # # #	# # # # # #
+# # #   # #	# # #   # #
+# # ##### #	# # ##### #
+# #       #	+ #       #
+#+#########	###########
+
+Double spirals are a perfect solution.
+
+Adjacent corners:
+
+#########+#     #########+#     #########+#     #########+#
++       # #	#       # #	#         #	#         #
+####### # #	# ##### # #	# #########	# #########
+###   # # #	# #   # # #	# ###     #	# #   #   #
+### # # # #	# # # # # #	# ### ### #	# # # # # #
+### #   # #	# # #   # #	#     ### #	# # # # # #
+### ##### #	# # ##### #	######### #	# # # # # #
+###       #	# #       +	######### +	#   #   # +
+###########	###########	###########	###########
+
+The first spiral needs a lot of infill. The second is garbage, as we've just made a dead end. So I tried to replace the spiral with one going the other way, but we lack the height to do it exactly (third). But there's a better solution involving casselation (fourth).
+
+
+Okay, can casseleation (sp) be used in the general case of doors in the corner, regardless of room size? The below are smaller:
+
+Adjacent wall	Opposite wall
+
+########+#     ########+#
+#        #     ####   # #
+# ########     #### # # #
+#        #     #### # # #
+######## #     #### # # #
+######## #     #### # # #
+######## +     #    #   #
+##########     #+########
+
+More perfect solutions may exist, but these 10x8 grids can't be solved exactly by casselation alone, whereas the 11x9 grids above can be, only if the door is in the opposite corner (same as the double spiral):
+
+#########+#    #########+#
++   #   # #    #   #   # #
+### # # # #    # # # # # #
+### # # # #    # # # # # #
+### # # # #    # # # # # #
+### # # # #    # # # # # #
+### # # # #    # # # # # #
+###   #   #    + #   #   #
+###########    ###########
+
+I think a perfect solution only happens for odd numbers for width & height; 1 trivially works as a corridor, while you need a wall + a corridor for further width. I wonder if all odd-dimensioned rectangles have a perfect solution or not?
+
+Should we only ever place wall breaks on odd numbered cells and doors on even? (or vice.versa depending on the numbering)
+
+
+
+
+
+Off-Center Spiral Exit
+----------------------
+I've just managed to grow a map with an off-center exit in a spiral filled room. The room looks like this:
+
+###########
+#         #
+# ####### #
+# #     # #
+#    ## # #
+#  > ## # #
+#       # #
+######### #
++         #
+###########
+
+Generally, spirals only work if the output is near the middle:
+	   	   ###########   ###########
+    ...		   #         #	 #         #
+    .>.		   # ####### #	 # ####### #
+    ...		   # #     # #	 # #     # #
+		   # #   # # #	 # #     # #
+		   # # > # # #	 # ###>  # #
+		   #       # #	 #       # #
+		   ######### #	 ######### #
+		   +         #	 +         #
+		   ###########	 ###########
+
+I think we should require to be within 1 char of the center before we allow a spiral.
+
+
+
+Abritary Filling algorithm
+--------------------------
+Okay, so we've back where we started: we have a ractangular area to fill, we know where the entrance and exit are (*usually* on the edge), and we want to put some paths and walls down. We must be unucursor, so no branches, and we prefer perfect solutions, ie having no double-wide walls or paths.
+
+Double-spirals or castelated sections look pretty but only work optimally when the exits are on opposite sides.
+One alternative is to put down the direct route and then look for improvements. For instance, take a random room:
+
+##+###   ##+###   ##+###   ##+###   ##+###
+#....#	 ## ###	  ## ###   #  ###   ##   #
+#....+	 ##   +	  ## # +   # ## +   #### +
+#....#	 ######	  ##   #   #    #   ######
+######	 ######	  ######   ######   ######
+
+The first is a room I just made up on the spot. I didn't put the doors in the corners because that seems easiest.
+The second places the direct path.
+I noticed that the bottom wall was double-thick, so I tried to move the path downwards; ending up with the third path.
+I then noticed the same about the left wall, and came up with the fourth.
+
+This isn't bad; in fact, I don't think you can do better without moving the doors, or adding bends to paths in adjacent rooms. I think this because to get into the top-right corner, you'd have to go up from the right door or right from the top door; either way forces the fifth map, which is worse.
+
+
+
+Algorithm for a Perfect Unicursor Labyrinth
+===========================================
+
+Musing on the above, I think I finally have a working algorithm.
+
+Notes:
+- we assume the grid begins at (0,0) in the top-left corner, for the purposes of odd and even numbers in this algorithm.
+- E and X are variables referring to cell locations only; their values may change in the algorithm, which does not move the contents of the cell.
+
+Limitations:
+- grid must be an odd number of cells high/wide. If not, we will have to add a border on one side.
+- entrance must be a given distance from the exit (non-trivial calculation, but say 10 cells should be ample)
+- if intrance and exit are not on odd cells, we can fix it by containing them with a 3x3 "Goal room" centred on an odd cell, but then they will be off-centre. Depending on how you view the entrance/exit, this may make the labrynth imperfect.
+
+Method:
+
+* Begin by placing a dividing wall half way between the entrance and exit, with the door at either corner (whichever position is at the furthest distance from the nearest of the two). We call this X.
+  - We now have two rooms where we need to connect an arbitrary point (entrance or exit, call in E) to a corner of the cell (X).
+  
+For each room:
+* If we don't want "Goal rooms" (required if E is not on an odd-numbered cell)
+* If we want "Goal rooms", place a 3x3 square of passable space over the exit. Move E to an adjoining square
+* Consider E:
+  * If E is in the opposite corner to X, then we can fill with a double-spiral (if square), or fall back to a casselation.
+  * Else if E is in an adjacent corner to X, then we split the room into two, placing the exit in the opposite side to the common wall between E and X.
+    * Both sub-rooms can be filled with a double-spiral (if square), or fall back to a casselation.
+  * If E is on a wall edge, create another wall separating E and X such that E is now in a corner.
+    * This creates two sub-rooms; recurse "for each room" for this room. (Exit condition - E and X are now in corners)
+  * Otherwise, E is in the middle.
+  * Calculate the largest square boundry box that will fit within the room centred on the Goal room's centre (or E if there is none).
+    - if this box exactly fills the room, fill it with a spiral or casselation joining the E with the exit.
+    - if this fills the room but for a rectangular gap on the X side, place a wall there and fill the space with a spiral or casselation, ending at the opposite side from X.
+      - recurse "for each room" for the room subtended by the remaining space (Exit condition - both exits in corners)
+    - otherwise:
+      - place a square around the E and extend the walls to the edges, to form 9 sub-rooms.
+      - Plase exits in opposite corners of each sub-room in the new walls
+      - recurse for each sub-room (Exit conditon - E is now centered in a square room; other rooms have exits in corners)
+        
+	  
+Optional modification:
+Adjoining rooms with connecting doors in the 3x3 grid may be merged together to form larger rectangular rooms, reducing the regularity of the map.
+- This means doors will no longer be in opposite corners; could be fixed by merging two pairs of rooms and repositioning the door.
+
+Infill of rooms can easily be done by other methods already developed, as well as the algorithm above, for other effects where an imperfect labyrinth is desired.
+
+
+Problems:
+The above algorithm doesn't quite work, as you can only divide a room into two by filling (all but one cell of) a row or column, which makes the grid an even number of spaces wide/high.
+There are several ways to save it:
+1) Use the padding. If we fix the even-sized maze problem by adding an extra cell to the border, and the diminsion is correct, remove the border parallel to the dividing wall. This makes it an odd size again. Alternatively, if we didn't remove a border, add one.
+2) Always divide into 3. This reduces the number of rows or columns by 2, so the oddness is preserved. This means you need to be cleverer with doors, as they still need to be in opposite corners.
+3) Use spirals. A single spiral fill doesn't care about odd or even sizes (unlike a double-spiral), so this only works for the entrance and exit rooms.
+
+Spiral illustration:
+########   #######   ########   ########
+#          #         #       	#       
+# ######   # #####   # ######	# ######
+# #    #   # #   #   # #    #	# #XX  #
+# # ## #   # # # #   # ## # #	#  XX# #
+# #  # #   # ### #   #    # #	###### #
+# #### #   #     #   ###### #	       #
+#      #   #######          #	########
+########             ########
+
+
+Division into 3:
+##############   ##############   ##############   ##############   
+#   #        #   #   #        #   #            #   #   #        #   
+#   #   #    #   #   # ###    #   #   ######## #   #   # < #    #   
+#   #   #    #   #   #   #    #   #   #        #   #   #   #    #   
+# < #   # >  #   # < # > #    #   # < # ###    #   #   #   #    #   
+#   #   #    #   #   #   #    #   #   #   #    #   #   #   #    #   
+#   #   #    #   #   #####    #   ####### #    #   #   # > #    #   
+#       #    #   #            #   # >     #    #   #       #    #   
+##############   ##############   ##############   ##############   
+A		 B		  C		   D
+
+A - if the entrance and exit are on end petitions, it's easy.
+B - if one is on the end and one in the middle, we can use a pathway or 3x3 grid.
+C - if both are on the same side, it gets trickier.
+D - if both are in the middle, there's no solution at this scale (here, we'd use a horizontal split).
+
+Always splitting into 3 seems like the best solution thus far.
+
+Algorithm then becomes:
+
+1) Ensure that the map is an odd-by-odd size; pad if needed.
+2) Place a 3x3 "goal room", if desired, around the entrace and exit.
+3) Either way, let A and B be the entrance or exit to the goal room/entrance/exit.
+4) Split the map into 3 sections, horizontally or vertically, such that the entrance and exit do not end in the same section.
+5) If the layout has the empty section between the entrance and exit:
+  5.1) Consider the room containing A.
+  5.1) Place a door, X, at the extreme end of the dividing wall, as far from A/B as possible.
+  5.2) Do subroutine R (below) on this room.
+  5.3) Let X be a door at the opposite side of the other dividing wall from 5.1.
+  5.4) Repeat subroutine R for the opposite room
+  5.5) Repeat subroutine R for the central room.
+6) If the layout has an entrance or exit in the central room
+  6.1) Create a 1-char passageway at the top and bottom of the central room
+  6.2) Close off one entrance to the passageway adjoining the room containing A/B (whichever isn't in the central room). See diagram below.
+  6.3) By the closed exit, place a door entering the central room (see diagram).
+  6.4) Do R for the room containing the exit.
+  6.4) Do R for the room containing the entrance.
+  6.5) We now have a problem with the empty room, as it has doors top&bottom (or left&right).
+    6.5.1) If the grid is even-sized, then we can place a wall in the middle with an exit against the boundry and call R on each sub-room.
+    6.5.2) If the grid is not even-sized, we place a wall in the middle with an exit against the inner wall and call 6.5.1 on each sub-room (exit condition - the grid will now be an odd size. NB: placing the door against the near wall means that the next subdivision can place a door on rooms in opposite corners).
+
+
+
+6.2/6.3 diagram:
+
+############### X illustrates which passageway entrance should be closed.
+#    X        # Y illustrates the door to the central section that should be opened if the adjoining X is closed off.
+#    #Y###    #
+#    #   #    #
+#>   # < #    #
+#    #   #    #
+#    #Y###    #
+#    X        #
+###############
+
+
+Subroutine R: (A/B is one exit, X is the exit on the boundry)
+
+1) Calculate the largest square boundry box that will fit within the room centred on the Goal room's centre (or A/B if there is none).
+2) Does it fit?
+  2.1) if this box exactly fills the room
+    2.1.1) fill it with a spiral or casselation joining the A/B with X.
+  2.2) if this fills the room but for a rectangular gap on the X side
+    2.2.1) place a wall there and fill the space with a spiral or casselation, ending at the opposite side from X.
+    2.2.2) recurse R for the room subtended by the remaining space (Exit condition - both exits in corners)
+  2.3) otherwise:
+    2.3.1) place a square around the E and extend the walls to the edges, to form 9 sub-rooms.
+    2.3.2) Plase exits in opposite corners of each sub-room in the new walls
+    2.3.3) recurse for each sub-room (Exit conditon - E is now centered in a square room; other rooms have exits in corners)
+
+
+I think it's still possible for this algorithm to break, if we end up with an entrance or exit in a room too small to create the spiral. I think we can deal with that by limiting the position of entrance and exit.
+
+One specific problem is if we get to 2.3 and the entrances/exits are 2 squares away from the door. There is then insufficient space to place a 3x3 grid, but we can maybe cope with this.
+
+2.3.2 is impossible. At least one door will end up in a corner opposite the original corner of the room. But I think we can fudge it by changing how we define the subrooms in 2.3.1:
+
+           M   O
+     ####################
+     >     .   +        # 
+     #     .   .        #  (diagram not to scale)
+     #  a  . b .   c    #
+     #     +   .        #
+    Q#.................+#R
+     #     +   .   d1   #
+     #  h  . < S+.......#T
+     #     . i .   d2   #
+    U#+................+#V
+     #     .   P        #
+     #  g  .      ef    #
+     #     +            #
+     ####################
+           N
+
+2.3 thus becomes:
+
+2.3) otherwise:
+
+     2.3.1) Figure out the largest odd-sided square that is both of no more than 1/3 the width between A/B and its nearest vertical boundry wall, and no more than 1/3 the height between A/B and its nearest horizontal boundry wall.
+     2.3.2) Place lines MN, QR and UV and OP on three sides of the square, as shown.
+     2.3.3) Place a dividing line ST half way between QR and UV, or offset by one square if the half-way point would create even-height rooms d1 and d2.
+     Note that OP does not extend to the far wall; the fourth square (counting clockwise) is divided into two by ST, and the two subsequent squares are merged.
+     2.3.4) Place doors at opposite corners of each square (marked + on the diagram).
+
+
+
+
+This still doesn't work!
+
+If you take an odd number and subtract 1, you get an even number. All even numbers are divisible by 2, but dividing them by 2 does not always make them odd.
+
+What we can do
+--------------
+
+The problem breaks down into the following:
+
+1) to make a rectangular perfect unicursor labyrinth, leading from one corner entrance to another
+2) to make a rectangular perfect unicursor labyrinth, leading from an arbitrary position to a corner
+3) to combine the solutions to the above problems into a arbitrary solution.
+
+If we have an odd number of tiles, we can solve for opposite corners, using a double spiral:
+
+  5       6        7        8            9           10             11           13              15
+### #   #### #  ##### #   ###### #   ####### #   ######## #   ######### #   ########### #   ############# #
+# # #   #  # #  #   # #   #    # #   #     # #   #      # #   #       # #   #         # #   #           # #
+# # #   # ## #  # # # #   # ## # #   # ### # #   # #### # #   # ##### # #   # ####### # #   # ######### # #
+# # #   # ## #  # # # #   # #### #   # # # # #   # #  # # #   # #   # # #   # #     # # #   # #       # # #
+# ###   # #  #  # # # #   # # ## #   # # # # #   # # ## # #   # # # # # #   # # ### # # #   # # ##### # # #
+        # ####  # #   #   # # ## #   # # # # #   # # ## # #   # # # # # #   # # # # # # #   # # #   # # # #
+4 - no solution # #####   # #    #   # # ### #   # # #  # #   # # # # # #   # # # # # # #   # # # # # # # #
+5 - no solution           # ######   # #     #   # # #### #   # # #   # #   # # # # # # #   # # # # # # # #
+6 - no solution                      # #######   # #      #   # # ##### #   # # # ### # #   # # # # # # # #
+7 - solvable                                     # ########   # #       #   # # #     # #   # # # #   # # #
+8 - no solution                                               # #########   # # ####### #   # # # ##### # #
+9 - no solution      # #                                                    # #         #   # # #       # #
+10 - no solution     # # 3 is trivially solvable                            # ###########   # # ######### #
+11 - solvable        # #                                                                    # #           #
+12 - no solution                                                                            # #############
+13 - no solution
+14 - no solution
+15 - solvable
+
+Usisg double spirals, solutions exist for square grids of size 3, 7, 11, 15, ...
+
+    N (N-1) (N-1)/2
+    3    2    1
+    4    3    1.5
+    5    4    2
+    6    5    2.5
+*   7    6    3
+    8    7    3.5
+    9    8    4
+   10    9    4.5
+*  11   10    5
+   12   11    5.5
+   13   12    6  
+   14   13    6.5
+*  15   14    7
+
+Hypothesis: a square grid with opposite corners is solvable using a double spiral if it is of size (2n+1), where n is an odd number.
+
+NB: The spirals may be rotated by swapping the horizontal and vertical axes.
+
+Note that the perfect solutions all provide at least two identical rows, meaning that these rows can be duplacited any number of times to extend the square into a rectangle, which may be of any dimension in one direction.
+
+Thus a perfect solution exists for a ractangular grid with opposite corners using a double spiral where the rectangle is of size (2n+1), where n is any odd number, on at least one dimension.
+
+
+  5       6        7        8            9           10             11           13              15
+### #   #### #  ##### #   ###### #   ####### #   ######## #   ######### #   ########### #   ############# #
+#   #   #    #  #     #   #      #   #       #   #        #   #         #   #           #   #             #
+# ###   # ####  # #####   # ######   # #######   # ########   # #########   # ###########   # #############
+#   #   #### #  #     #   #   ####   #       #   #        #   #         #   #           #   #             #
+# ###   #    #  ##### #   ###    #   # ##### #   # ########   ######### #   ########### #   ############# #
+        # ####  #     #   ###### #   #       #   ######## #   #         #   #           #   #             #
+4 - no solution # #####   #      #   ####### #   #        #   # #########   # ######### #   # #############
+5 - no solution           # ######   #       #   ######## #   #         #   #           #   #             #
+6 - no solution                      # #######   #        #   ######### #   # ###########   ############# #
+7 - solvable                                     # ########   #         #   #           #   #             #
+8 - no solution                                               # #########   ########### #   # #############
+9 - no solution      # #                                                    #           #   #             #
+10 - no solution     # # 3 is trivially solvable                            # ###########   ############# #
+11 - solvable        # #                                                                    #             #
+12 - no solution                                                                            # #############
+13 - no solution
+14 - no solution
+15 - solvable
+
+Hypothesis: a square grid with opposite corners is solvable using alternating protrusions if it is of size (2n+1), where n is an odd number.
+
+NB: Since the protrusions can be of any length, and either horizontal or vertical, we can generalise this to say that any rectangle with exits on opposite corners is solvable by this technique, provided that one dimension is of size (2n+1), where n is an odd number.
+
+For adjacent doors:
+
+  5       6        7        8            9           10             11           13              15
+# ###   # ####  # #####   # ######   # #######   # ########   # #########   # ###########   # #############
+#   #   #    #  #     #   #      #   #       #   #        #   #         #   #           #   #             #
+### #   #### #  ##### #   # ######   ####### #   # ########   ######### #   # ###########   # #############
+#   #   # ####  #     #   #   ####   #       #   #        #   #         #   #           #   #             #
+# ###   #    #  ##### #   ###    #   # #######   # ########   # #########   ########### #   ############# #
+        # ####  #     #   ###### #   #       #   ######## #   #         #   #           #   #             #
+4 - no solution # #####   #      #   ####### #   #        #   # #########   # ######### #   # #############
+5 - solvable              # ######   #       #   ######## #   #         #   #           #   #             #
+6 - no solution                      # #######   #        #   ######### #   # ###########   ############# #
+7 - no solution                                  # ########   #         #   #           #   #             #
+8 - no solution                                               # #########   ########### #   # #############
+9 - solvable         # #                                                    #           #   #             #
+10 - no solution     # # 3 is trivially solvable                            # ###########   ############# #
+11 - no solution     # #                                                                    #             #
+12 - no solution                                                                            # #############
+13 - solvable   
+14 - no solution
+15 - no solution
+
+
+So where the doors are on adjacent sides, the solution is solvable provided that the distance between the doors is (2n+1), where n is an even number, regardless of the other dimension.
+
+
+A solution cannot always be obtained merely by splitting a room, as this does not allow additional solutions to be placed. In the counts above, we are including a 1 character border around each edge, which must be accounted for when combining grids. Thus adding together two 5-sized grids produces a 9-sized grid, not a 10-sided grid:
+
+#####XXX X
+#   #  X X
+# # #X X X
+# #  X   X
+# ###XXXXX
+
+Considering grids of different size, do solutions exist?
+
+4x4 opposite
+
+# ## No - if you get into the corners, you leave a 2x2 square in the centre.
+#  #    - if you do not get into the corners, you leave a 2x2 fill at the corner.
+## #
+## #
+
+5x5 opposite
+
+# ###
+# # # No - the edges are wall, so you must hit the corner to avoid a 2x2 fill.
+# # #    - if you attempt to go into one corner on one side, you can't go to the same corner on the opposite side,
+# # #      so you must by symmetrical, and the path ends up blocked by the path on the opposite side.
+### #
+
+6x5 opposite
+# ####  # ####
+# #  #  #    # No. - whichever corner you go to, you're again blocked by the walls on the opposite side.
+# ## #  ######     
+#  # #  #    #
+#### #  #### #
+
+
+So it looks like we have to build the map up out of rectangular sections of:
+* grid sections where the doors are 2E+1 apart, where E is even, and the doors are in adjacent corners
+* grid sections of size 2O+1, where O is odd, and the doors are in opposite corners
+
+This means we must first find a division to the maze that acommodates the above restrictions, then we can fill in the rooms fairly trivially.
+
+Note that a straight corridor is simply a grid of size 3, where the doors are both opposite and adjacent (as, allowing for the outer wall, the two corners are coincident on the same square)
+
+
+The other part of the division is connecting a central exit to a door:
+
+###  ####  ####  ###  #####  ######
+#<   #< #  #<    #<#  #<#    #<#   
+###  ##    ####  #    #   #  #   ##
+     ####        ###  #####  ######
+3x3  4x4   4x3   3x4   5x4    6x4
+
+Here I have attempted to place the entrance top-left and the exit on the right wall.
+The 4x4 and 6x4 grid presents no solution, but the others are surprisingly easy.
+Notes: for a 4-wide grid, you are forced into the adjacent corner to prevent a 2x2 square on the left.
+In the solvable cases larger than 3 tall, the alternating protrusion method allows us to extend the height arbitrarily:
+
+###  #####  #######
+#<#  #<#    #<#   #
+# #  # # #  # # # #
+: :  : : :  : : : :
+: :  : : :  : : : :
+# #  # # #  # # # #
+#    #   #  #   #
+###  #####  #######
+3xN   5xN    7xN
+(N>=4)
+
+Where the entrance/exit is in a corner, we can use a rectangle where either dimension is an odd number (by rotational symmetry)
+If we want the door to be in an opposite corner, then this dimension must be 2E+1, where E is even.
+If we want the door to be in an adjacent corner, then this dimension must be 2O+1, where O is odd, and this must be the dimension between the doors.
+
+For the door in the middle of the space:
+
+### ####  #####   ######   #######   ########
+#<  #     #   #   #    #   #     #   #      # 8x8
+### # <#  # < #   # #< #   # ### #   # #### #
+3x3 ####  #       # ####   # #<  #   # #< # #
+    4x4   #####   #        # #####   # #    #
+           5x5    ######   #         # ######
+                   6x6     #######   #
+                            7x7      ########
+
+3xN remains a valid solution, as a door in the middle is the same as a door in the corner.
+{4,5,6}xN are not generally solvable.
+7xN is solvable as a perfect spiral. Notably, we can rotate this in any direction to place the door at any of the 8 different corner points (the corner squares themselves are always solid).
+
+
+####...###   #######
+#        #   #     #   Notable too, we can add more protrusions horizontally (as shown), 
+# ##...# #   # ### #     or rotate the grid in either direction, so only one dimension needs to be 7.
+# #<     #   # #<# #   However, this does move the maze entrance/exit away from the centre of the room.
+# ##...###   : : : :
+#	     : : : :
+####...###   # # # #
+	     #	 #  
+	     #######
+
+
+
+8x8 with door three squares in (not in the corner and in what would be the spiralling section):
+
+########
+#  #   #
+# >  # #
+###### #
+#      #
+# ######
+#       
+########
+
+
+Rooms with doors in middles of walls:
+
+
+## ##
+#  ## 5x5 Impossible; there will always be gaps by the way the door is laid out. We need at least 4 spaces to one side of a door to get in and out.
+#   #
+##  #
+## ##
+
+##### ##### 11x11 A solution exists here. It can be extended arbitrarily in a vertical direction as shown by the colons
+#     #   #
+# ##### # #
+# #     # #
+# # ##### #
+# # #   # #
+: : : : : :
+#   # #   #
+##### #####
+
+##### ###### 12x12 No solution by this strategy (which is to move into the corner, go down to the opposite side to fill the space, then infill the remainder).
+#   #      #
+# # ###### #
+# # #   #  #
+# # # #   ##
+# # # ######
+# # #      #
+# # ###### #
+# #     #  #
+# ##### # ##
+#     #    #
+##### ######
+
+##### ###### 12x12 No solution by this strategy (which is to move into the corner, go down to the opposite side to fill the space, then infill the remainder).
+#     #    # 
+# ##### ## # This solution worked better. I tried to use an alternative strategy to move to the opposite corner and infill, but I found I had to do the same
+# #   #  # # strategy in reverse to fill the space so left.
+# # # ## # #
+# # # #  # #
+# # # # ## #
+# # # #  # #
+# # #   ## #
+# # ###### #
+#   #      #
+##### ######
+
+###### ##### 12x12 I can't find a solution, but I had to move the top door one space to the right.
+#      #   # 
+# ###### # # 
+# #      # # Starting at the bottom, I moved right to the corner, then snaked back round to fill in the bottom corner. 
+#   ###### # This left me with a door in the corner. I tried to repeat this at the top, but was foiled by the door position.
+#####      # Having moved the door, I had a near-good solution. I then moved the corridors slightly to break up 2x2 blocks of #s.
+#     ###### This *almost* works, but for the 2x2 wall just below the centre.
+# ######   #
+# #      # #
+# # ###### #
+#   #      #
+##### ######
+
+
+
+
+Rough Strategy:
+
+1) break down the level into rectangular areas, following various restrictions:
+   1.A) The entrance and exit will be placed into rooms of any size. For ease, I'll allow a 2x2, 2x3 or 3x3 space around the door. Mazes often have larger "goals" for entrance and exit.
+   1.B) The exit of every room must be in a corner (or other pre-designated locations).
+   1.C) Each room has a size restriction, depending on the door location.
+2) Fill in each room separately, using the patterns associated with the restrictions above.
+
+
+Problems are: that step 1) may neither be solvable for all grid sizes, nor for all door locations; and that solving step 1 may require a brute-force search; there appears to be no elegant algorithm for it.
+
+
+Okay; I think the best thing is to choose a fixed-size grid and place the entrance and exit in a known place, work out the solution then try to generalise the strategy.
+
+
+
+
+
+##-####
+#   : 
+# :   :
+# -####
+#     #
+##-## #
+#     #
+# -####
+ I've been trying to find a pattern that can be extended both horizontally and vertically to fill any space. I think the above pattern works for any width and height 7+ (wide as shown) by 8+, provided that the 7+ side is of size 4n-1 where n is any integer. It doesn't work in the general case because the vertical "teeth" don't stretch horizontally.
+
+eg 11 by 10:   ###########  This shows that there are multiple solutions;
+	       #   #   #     however, it does nothing that can't already be
+	       # # # # # #   done by alternating "teeth".
+	       # # # # # # 
+	       # #   #   # 
+	       # ######### 
+	       #         # 
+	       ######### # 
+	       #         # 
+	       # ######### 
+
+
+Division of a rectangle into smaller rectangles with criteria
+-------------------------------------------------------------
+
+Problem, general case:
+---
+We want to divide a rectangle of N by M into a series of sub-rectangles.
+One of the rectangles will contain A, the "entrance" square; there will be restrictions (as yet unknown) on the placement of A.
+One of the rectangles will contain B, the "exit" square; there will be restrictions (as yet unknown) on the placement of B.
+For a solution to exist, either M or N must be of size 4N+1, where N is any integer.
+Each sub-rectangle must also have a width or height of size 4N+1, where N is any integer. This may apply to both width and height.
+Since each sub-rectangle will share a border with its neighbour, the total dimensional size of two adjacent squares will be 4N+4M+1, where N and M are integers, and the size of the individual subrectangles is (4N+1) and (4M+1) along the same dimension, allowing any size on the other dimension.
+Each sub-room will have either: a square designated as an exit and A; a square designated as an exit and B; or two squares each designated as an exit. No exit may appear on the outside edge. There are further (as yet unknown) restrictions on the location of the exits.
+
+Problem, special case:
+---
+We will place A at cartesian coordinates (1,1) and B at a square closest to cartesian coordinates (N/4,M/4).
+We will require that M is of size 4N+1, where N is an integer.
+We will require that each "exit" is in the corner of both adjoining rooms; thus, corners need not be coincident only where they contain a door.
+We will require that rooms containing exits have them in opposite corners.
+
+Analysis
+---
+We need to split the space into subrectangles of size 4N+1; however, because the boundary squares are to be shared, it is easier to consider a rectangle of size (K,L), where M=4K+1 and N is either 4L or 4L+1, whichever provides an integel value for L.
+
+Idea:
+---
+
+
+ 012...N
+0-------
+1|A.   |
+2|.....|
+.| .B. |
+.|.... |
+.|   . |
+N-------
+
+The above is one solution simplified from earlier analysis. Here, the rectangle is divided into 7 subrectangles.
+The entrance room (northwest as shown) has an exit on the S side of its E wall.
+The next room (N middle) has an additional exit on the E side of its S wall.
+The next room (SE) has an exit on the S side of its W wall.
+The next room (SW) has an exit on the W side of its N wall.
+The next room (W middle) has an exit on the N side of its E wall, forming the entrance to the exit room.
+This is a general solution for cases where J>=7 and K>7, so for maps of size 4J+1 or greater by 4K or greater, or 29+ by 28+, where the 29+ side is of size (4N+1), N being any integer.
+
+eg for size (N,M) = (29,28), we have (L,M)=(7,7):
+
+ 1234567
+1#######
+2#A^   #
+3#####>#
+4# ^B# #
+5#<### #
+6#   V #
+7#######
+
+which exands to:
+
+ 1111222233334444555566667777
+1#############################
+1#A  ,   ,   .   .   .   .   #
+1#   , , , # . . . . . . . . #
+1# ,,, , , # . . . . . . . . #
+2#   , , , # . . . . . . . . #  #############################  #############################
+2#,, , , , # . . . . . . . . #	#A  ,   ,   .   .   .   .   #  #A  ,   ,   .   .   .   .   #
+2#   , , , # . . . . . . . . #	#,, , , , # . . . . . . . . #  #,, , , , # . . . . . . . . #
+2# ,,, , , # . . . . . . . . #	#   , , , # . . . . . . . . #  #   , , , # . . . . . . . . #
+3#     ,   #   .   .   .   . #	# ,,, , , # . . . . . . . . #  # ,,, , , # . . . . . . . . #
+3########################### #	#     ,   #   .   .   .   . #  #     ,   #   .   .   .   . #
+3#   .   .   ,     #   .   . #	########################### #  ########################### #
+3# . . . . # , ,,, # . . . . #	#   .   .   ,     #   .   . #  #   .   .     ,   #   .   . #
+4# . . . . # ,   , # . . . . #	# . . . . # , ,,, # . . . . #  # . . . . # ,   , # . . . . #
+4# . . . . # , B , # . . . . #	# . . . . # ,   , # . . . . #  # . . . . # ,,,,, # . . . . #
+4# . . . . # ,,,,, # . . . . #	# . . . . # , B , # . . . . #  # . . . . #   ,B, # . . . . #
+4# . . . . # ,   , # . . . . #	# . . . . # ,,,,, # . . . . #  # . . . . # ,   , # . . . . #
+5# . . . . # , , , # . . . . #	# . . . . # .   . # . . . . #  # . . . . # ,,,,. # . . . . #
+5# . . . . # , , , # . . . . #	# .   .   #   .   # . . . . #  # .   .   #       # . . . . #
+5# .   .   #   ,   # . . . . #	# ################# . . . . #  # ################# . . . . #
+5# ################# . . . . #	# .   .   .   .   # . . . . #  # .   .   .   .   # . . . . #
+6# .   .   .   .   # . . . . #	# . . . . . . . . # . . . . #  # . . . . . . . . # . . . . #
+6# . . . . . . . . # . . . . #	# . . . . . . . . # . . . . #  # . . . . . . . . # . . . . #
+6# . . . . . . . . # . . . . #	#   .   .   .   .   .   .   #  #   .   .   .   .   .   .   #
+6# . . . . . . . . # . . . . #	#############################  #############################
+7# . . . . . . . . # . . . . #	
+7# . . . . . . . . # . . . . #
+7#   .   .   .   .   .   .   #
+7#############################
+
+NB: When placing the horizontal internal walls, the choice of which vertical (N-S) position to use was arbitrary, as the cells can expand vertically.
+However, the horizontal position of the vertical walls were required to be the third (counting east) value to contain the original rectangle.
+Note that by placing B in the dead centre, there exists no solution by which B can be arrived at; a reasonable value using a 3x2 goal room is shown in commas.
+To allow only a unicursor exit at B without a goal room, it must be surrounded by walls, but the next layer of walls would be in the corner of the #ed walls creating a 2x2 filled space.
+A suffers from a similar problem; the exit should be at the south side of the room for this room size. Here, a 3x2 goal room has been used instead.
+
+Note that we can improve the perfection of this level (and remove the goal room at A) by reducing its height (north-south dimension), as shown in the middle.
+To make a perfect solution, we also need to move the exit off-centre, to any odd-coorditane location.
+
+This technique did not work as the rules for entrance and exit rooms were not considered.
+I also note that we don't actually need any scaling in the vertical direction; entrance and exit sub-rectangles aside, we can solve this for 4J+1 by M directly:
+
+eg for size (N,M) = (29,7), we have (L,M)=(7,7):
+
+ 1234567 which exands to:   1111222233334444555566667777 
+1#######		   1#############################
+2#A^   #		   2#A                          #
+3#####>#		   3########################### #
+4# ^B# #		   4#             B   # . . . . #
+5#<### #		   5# ################# . . . . #
+6#   V #		   6#                   .   .   #
+7#######		   7#############################
+
+Note that A now works exactly, but B needs to move. The example becomes more interesting when we at least double M.
+
+eg for size (N,M) = (29,15), we have (L,M)=(7,7):
+
+ 1234567 which exands to:   1111222233334444555566667777      1111222233334444555566667777 
+1#######		   1#############################    1#############################
+2#A^   #		   1#A  .   .   .   .   .   .   #    1#A  .   .   .   .   .   .   #
+3#####>#		   2#     .   #   .   .   .   . #    2#     .   #   .   .   .   . #
+4# ^B# #		   2########################### #    2########################### #
+5#<### #		   3#   .   .         #   .   . #    3#   .   .         #   .   . #
+6#   V #		   3# . . . . #,,,,,. # . . . . #    3# . . . . #,,,,,, # . . . . #
+7#######		   4# . . . . #     , # . . . . #    4# . . . . #     , # . . . . #
+                           4# . . . . # , B , # . . . . #    4# . . . . # , B , # . . . . #
+                           5# . . . . # ,,,,, # . . . . #    5# . . . . # ,   , # . . . . #
+                           5# .   .   #       # . . . . #    5# . . . . # ,,,,, # . . . . #
+                           5# ################# . . . . #    5# .   .   #       # . . . . #
+                           6# .   .   .   .   # . . . . #    6# ################# . . . . #
+                           6# . . . . . . . . # . . . . #    6# .   .   .   .   # . . . . #
+                           7#   .   .   .   .   .   .   #    7#   .   .   .   .   .   .   #
+                           7#############################    7#############################
+There is still no good solution with this position of B, and A still needs a goal room. I moved the lower horizontal wall down one square to make the exit goal room work as a spiral.
+Additionally, I believe I may have misstated the problem. Look at the vertical wall to the left of B; that could easily be moved two spaces to the left (and the door at the opposite side) for an adjacent exit.
+The one on the right shows a 3x3 goal rood inside a squarre subroom, and in my opinion looks better for having the exit centered.
+
+
+General algorithm for A=(1,1), B centred, size=(M,N) where M = 4I+1, N>= 7, I>2:.
+In this algorithm, the dimension of "M" is referred to as horizontal, "N" is vertical. The algorithm has reflectional symmetry such that the meaning of these terms may be swapped.
+
+* Place a 7x7 square centred around B, with a door top-left It is important that the horizontal coordinate of the left and right edges satisfies 4*i+2, for i being an integer (where (0,0) is the top-left square)
+* At any point between the existing door (exclusive) and bottom of the left edge (inclusive), extend a horizontal wall away from the entrance, with a door on the left edge.
+* Extend the top edge left (towards (?,0)) in the dimension of M.
+* At any point between the top and bottom of the right edge (the side opposite A), extend a horizontal wall away from the entrance, with a door on the right edge.
+* Choose the left, centre or right of the bottom edge of the square, and draw a wall vertically downwards, placing a door at the bottom wall.
+* The rectangle has now beed dividid by "walls" into six sub-rectangles:
+  * One subrectangle contains A in the top-left corner. Fill most of the grid with alternating vertical teeth, and one column with horizontal. Leave a 2x2 space around A.
+  * One subrectangle contains B in the centre. Copy the above pattern to spiral around B. (This works with both a clockwise or anticlockwise spiral).
+  * The 4 remaining subrectangles contain exits in opposite corners. Vertical "teeth" fillers may be used, or other fillers in some cases.
+
+
+NB: Tinn uses levels of size 70x20 presently (actually 71x21 as that doesn't count the borders). Since 21 is a 4N+1 number, we can render that thus (applying reflections)
+
+#######################################################################
+#< #   #   #   #   #   #   #   #                                      #
+#  # # # # # # # # # # # # # # # #################################### #
+#    #   #   #   #   #   #   # #     #                                #
+############################## ##### # ################################   
+#                              #     #                                #
+# ############################## #################################### #
+#                              # #     #                              #
+############################## # # ### # ##############################
+#                              # #   # #                              #
+# ############################## # > # ############################## #
+#                              # #   # #                              #
+############################## # ##### # ##############################
+#                              #       #                              #
+# ################################################################### #
+#                                 #                                   #
+################################# # ###################################
+#                                 #                                   #
+# ################################################################### #
+#                                                                     #
+#######################################################################
+
+Or, choosing the same divisions but uing spiral fillers instead of alternating teeth where possible:
+
+#######################################################################
+#< #   #   #   #   #   #   #   #         #                            #
+#  # # # # # # # # # # # # # # # ####### # ########################## #
+#    #   #   #   #   #   #   # #       # # #                        # #
+############################## ####### # # # ###################### # #   
+#                              #       # # # #                    # # #
+# ############################## ####### # # # ################## # # #
+# #                            # #     # # # #                  # # # #
+# # ########################## # # ### # # # #################  # # # #
+# # #                        # # #   # # # #                    # # # #
+# # # ###################### # # # > # # # ###################### # # #
+# # # #                    # # # #   # # #                        # # #
+# # # # ################## # # # ##### # ########################## # #
+# # # #                  # # # #       #                            # #
+# # # ################## # # # ###################################### #
+# # #                    # # # #                                    # #
+# # ###################### # # # ################################## # #
+# #                        # # # #                                  # #
+# ########################## # # # ################################## #
+#                            #   #                                    #
+#######################################################################
+
+As a maze, the second map looks "harder", but both are roughly the same length. The first is more linear.
+
+
+Generalisation to other entrance and exit locations
+--------------------
+
+This method generalises to some other locations for start and exit.
+
+First, A may be in any corner, by simple reflectional or rotational symmetry.
+B may be moved up or down by any number of squares, provided it does not come within 6 squares of the boundry wall.
+Regardless of whether B moves vertically, it may also move horizontally in increments of 4 squares, provided it does not come within 6 squares of a boundry wall.
+If alternative fillings for the exit subrectangle are allowed, then the exit may move any number of squares in any direction, provided it does not come within 6 squares of a boundry wall:
+
+#######   #######   #######   #######   #######
+ >    #     >   #     #>  #      #> #     #  >#
+# :(  #   # :(  #   # #   #   ## #  #   # # ###
+#     #	  #     #   # #   #   #  #  #	# #   #
+#     #	  #     #   # ### #   # ### #	# ### #
+#     #	  #     #   #     #   #     #	#     #
+#######	  #######   #######   #######	#######
+imposs    imposs    3x3goal   3x2goal   perfect
+#######   #######   #######   #######   #######
+      #         #     #   #     #   #      #  #
+#>    #   # >   #   # #>  #   # # > #   ## # >#
+# :(  #	  #  :( #   # #   #   # #   #	#  #  #
+#     #	  #     #   # ### #   # ### #	# ### #
+#     #	  #     #   #     #   #     #	#     #
+#######	  #######   #######   #######	#######
+imposs    imposs    3x3goal   3x3goal   3x2goal
+#######   #######   #######   #######   #######
+      #         #     #   #      #  #     #   #
+##### #	  ##### #   # # # #   ## #  #	# # # #
+#>  # #   # > # #   # #># #   #  #> #   # # #>#
+#   # #	  #   # #   # ### #   # ### #	# # # #
+#     #	  #     #   #     #   #     #	#   # #
+#######	  #######   #######   #######	#######
+3x3goal   3x3goal   perfect   3x2goal   2overrun
+#######   #######   #######   #######   #######
+  #   #     #   #     #   #     #   #     #   #
+#   # #	  #   # #   #   # #   #   # #	# # # #
+##### #	  ##### #   ##### #   ##### #	# # # #
+#>  # #   # > # #   #  ># #   #   > #   # # #>#
+#     #	  #     #   #     #   #     #	#   # #
+#######	  #######   #######   #######	#######
+3x3goal   3x3goal   3x3goal   5x2goal   1overrun
+#######   #######   #######   #######   #######
+  #   #     #   #         #         #         #
+# # # #	  #   # #   ##### #   ##### #	##### #
+#   # #	  ##### #   #     #   #     #	#     #
+##### #	  #   # #   # #####   # #####	# #####
+#>    #   # >   #   #  >  #   #   > #   #    >#
+#######	  #######   #######   #######	#######
+perfect   3x2goal   2overrun  1overrun  perfect
+
+No solution exists where the exit is within 1 square of the entrance (horizontally or vertically); all other combinations allow the exit to be placed, some with a goal room of at most 4x3 or a corridor extending beyond the goal room.
+Because there are cells with no solution, we also need to consider the rotated solution grid.
+Should the exit happen to fall somewhere where the exit must lie in the corner of the centre room, we must consider the alternative solution:
+
+ 012...N    1234567 which exands to:   1111222233334444555566667777     1111222233334444555566667777  
+0-------   1#######		       1#############################	1#############################
+1|A. . |   2#A# ^ #		       2#A          #       .   .   #	2#A          #       .   .   #
+2|.... |   3#<#V# #		       3# ########### ##### . . . . #	3#.......... # ##### . . . . #
+.| .B. |   4# #B# #		       4#   .   .   # B   #   .   . #	4#           # B   #   .   . #
+.| ....|   5# ###>#		       5# . . . . . ############### #	5# ######################### #
+.| .   |   6# V   #		       6# .   .   .                 #	6#                           #
+N-------   7#######		       7#############################	7#############################
+
+This grid does not work so well, as the entrance room is an empty dead-end corridor. So it needs to be at least 3 high. Fortunately, we can reduce the height arbitrarily and will always have at least 2 extra squares, as shown on the right. Unfortunately, there is still a dead-end corridor left in the central room, so this is unfixable at this vertical size (as it was unrotated).
+
+eg for size (N,M) = (29,15), we have (L,M)=(7,7):
+
+ 1234567 which exands to:   1111222233334444555566667777     1111222233334444555566667777   
+1#######		   1#############################   1#############################  
+2#A# ^ #		   1#A        # .   .   .   .   #   1#A        # .   .   .   .   #  
+3#<#<# #		   2#         #   .   # . . . . #   2#........ #   .   # . . . . #  
+4# #B# #		   2# ######### ####### . . . . #   2#         # ####### . . . . #  
+5# ###>#		   3# .   .   #       # . . . . #   3# #########       # . . . . #  
+6# V   #		   3# . . . . #,,,,,. # . . . . #   3# .   .   #,,,,,. # . . . . #  
+7#######		   4# . . . . #     , # . . . . #   4# . . . . #     , # . . . . #  
+                           4# . . . . # , B , # . . . . #   4# . . . . # , B , # . . . . #  
+                           5# . . . . # ,,,,, # . . . . #   5# . . . . # ,,,,, # . . . . #  
+                           5# . . . . #       #   .   . #   5# . . . . #       #   .   . #  
+                           5# . . . . ################# #   5# . . . . ################# #  
+                           6# . . . . #   .   .   .   . #   6# . . . . #   .   .   .   . #  
+                           6# . . . . # . . . . . . . . #   6# . . . . # . . . . . . . . #  
+                           7#   .   .   .   .   .   .   #   7#   .   .   .   .   .   .   #  
+                           7#############################   7#############################  
+NB: I had to move the bottom section of the top room down one square to make space to fill the entrance room (right)
+
+The rotation examples provided do not indicate how the room would have to change to acommodate a goal in that position, only that it could.

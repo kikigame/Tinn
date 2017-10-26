@@ -1,0 +1,216 @@
+/* License and copyright go here*/
+
+// TINN
+
+#include "dungeon.hpp"
+#include "output.hpp"
+#include "xo.hpp"
+#include "religion.hpp"
+#include "time.hpp"
+#include "role.hpp"
+#include "damage.hpp"
+#include "itemTypes.hpp"
+#ifdef DEBUG
+#include "debug.hpp"
+#endif
+
+#include <sstream>
+
+// handle a user keystroke.
+void processInput(dungeon & d, const std::wstring &c, const std::shared_ptr<io> ios);
+std::wstring print(const xo &xo);
+
+void dumpReligion(); // temporary debug
+int play() {
+
+#ifdef DEBUG
+  if (true) { // avoid unreachable statement warnings
+    //    dumpReligion();
+    dumpStartStats();
+    return 0;
+  }
+#endif
+
+  auto io = ioFactory::create();
+
+  //  io->message(;
+  bool repeat = false;
+  do {
+    auto ch = io->keyPrompt
+      (
+       L"TINN: Ambling Around the Areas of Adventure\n" // Reference to Nethack's Exploring the Mazes of Menace, of course.
+       "\n"
+       " - a game by Robert Lee,\n"
+       "        who had better things to do, \n"
+       "                but was procrastinating.\n"
+       "\n"
+       "Shall we play a game? (Y/N) >" // wargames film, obvs.
+       );
+  if (ch.length() == 0 || ch[0] == 'N' || ch[0] == 'n') {
+    io->longMsg(L"They say the only winning move is not to play."); // Wargames again, but this time in Nethack fortune-style.
+    repeat = false;
+  } else if (ch.length() == 1 && ch[0] == 'H') { // let's not make it too obvious; you must type the egg in the right case...
+    io->message(L"How about global thermonuclear war?"); // Wargames *again*...
+    io->longMsg(L"Sometimes people do make mistak"); // Wargames *again*... [sic] the typo on "mistake" (as on the screen on the film)
+    xo xo;
+    std::wstring msg = L"Let's play Naughts and Crosses!";
+    while (xo) {
+	int x=0,y=0;
+	std::wstring c,d;
+	while (c.empty()) {
+	  while (c.empty())
+	    c = io->keyPrompt(msg + L"\nYour move [A][B][C] ?", print(xo));
+	  switch (c.c_str()[0]) {
+	  case L'a': case L'A': x=0; break;
+	  case L'b': case L'B': x=1; break;
+	  case L'c': case L'C': x=2; break;
+	  default: c = L"";
+	  }}
+	do { y=-1; d = io->keyPrompt(msg + L"\nYour move [1][2][3] ? " + c, print(xo));
+	} while (d.empty() || (y = (static_cast<int>(d.c_str()[0]-'0')-1)) < 0 || y >= 3 );
+	msg = xo.go(y,x); // that'll confuse 'em!
+    }
+    io->longMsg(msg + L"\n\n" + print(xo));
+    repeat = false;
+  } else if (ch.length() == 1 && (ch[0] == L'Y' || ch[0] == L'y')) {
+  
+    dungeon d(io);
+    while (d.alive()) {
+      // always draw as the last thing before input; this guarantees that it
+      // happens after any other timers.
+      d.draw(); 
+      auto ch = io->keyPrompt(L"Your move... (? for help; q to quit) ");
+      processInput(d, ch, io);
+    }
+  } else {
+    repeat=true;
+  }
+} while (repeat);
+
+  io->longMsg(L"You do not get your possessions identified."); // pun on Nethack end quote.
+  // TODO: print scores or whatever
+
+  return 0;
+}
+
+const wchar_t * help() {
+  return L"Help on game keys:\n"
+    "q) Quit the game\n"
+    "wasd) Cardinally move around the map, or attack a monster in that direction\n"
+    "<>) Climb up or down a ramp, pit, stair or ladder\n"
+    ",p) Collect (pick up) items\n"
+    "i) Take inventory of your items\n"
+    "e) Equip (wield/wear) weapons, clothing, jewellery or armour\n"
+    "l) Leave (drop) items\n"
+    "u) Use an individual item\n"
+    "\n"
+    "Have fun!";
+}
+
+void doTick(dungeon &d){
+  static bool lastTick;
+  bool fast = (d.pc()->intrinsics().speedy() == bonus(true));
+  bool slow = (d.pc()->intrinsics().speedy() == bonus(false));
+
+  if (fast)
+    lastTick = !lastTick;
+  if (!fast || lastTick)
+    time::tick(true);
+  if (slow)
+    time::tick(true);
+}
+
+void processInput(dungeon & d, const std::wstring &c, const std::shared_ptr<io> ios) {
+  if (c.length() == 0) return;
+
+  switch (c[0]) {
+  case L'?': case 'H': case 'h':
+    ios->longMsg(help());
+    return; // skip loop; help should take no time
+  case L'q':
+    d.quit();
+    return; // don't count quit as a move
+  case L'w': case L'W':
+    d.cur_level().north(*(d.pc()));
+    doTick(d);
+    break;
+  case L'a': case L'A':
+    d.cur_level().west(*(d.pc()));
+    doTick(d);
+    break;
+  case L's': case L'S':
+    d.cur_level().south(*(d.pc()));
+    doTick(d);
+    break;
+  case L'd': case L'D':
+    d.cur_level().east(*(d.pc()));
+    doTick(d);
+    break;
+  case L'<':
+    d.cur_level().up(*(d.pc()));
+    doTick(d);
+    break;
+  case L'>':
+    d.cur_level().down(*(d.pc()));
+    doTick(d);
+    break;
+  case L',': case L'p': case L'P':
+    d.cur_level().pickUp();
+    time::tick(true); // always 1 turn to take an item
+    break;
+  case L'i': case L'I':
+    d.pc()->takeInventory();
+    time::tick(false);
+    break;
+  case L'e': case L'E':
+    d.pc()->equip();
+    time::tick(false);
+    break;
+  case L'l': case L'L':
+    d.pc()->drop(d.cur_level());
+    time::tick(false);
+    break;
+  case L'u': case L'U':
+    d.pc()->use();
+    time::tick(true); // always 1 turn to use an item
+    break;
+  }
+}
+
+std::wstring print(const xo &xo) {
+  std::wstringstream ss;
+  ss << L"\n"
+     << L"  |A|B|C|" << L"\n"
+     << L"--+-+-+-|" << L"\n";
+
+  int y=0;
+  for (auto r : xo) {
+    ss << L' ' << ++y << L'|';
+    for (auto c : r)
+      ss << (c == tile::empty ? L'.' : c == tile::x ? L'X' : L'O')
+		<< L'|';
+    ss << L"\n";
+  }
+  return ss.str();
+}
+
+// shut down singleton repositories to keep valgrind happy
+void cleanup() {
+  // the repos are used by various builders; don't need them any more
+  deityRepo::close();
+  monsterTypeRepo::close();
+  roleRepo::close();
+  damageRepo::close();
+  itemTypeRepo::close();
+}
+
+int main () {
+
+  try {
+    play();
+    cleanup();
+  } catch(...) {
+    cleanup();
+  }
+
+}

@@ -1,0 +1,758 @@
+Tinn
+----
+
+Tinn is a game for which I had the idea in Cornwall. Tinn does not stand for Tinn is Not Nethack.
+
+Alternatively, Tinn stands for Tinn is Not Nethack.
+
+Nethack is a great game, full of lots of hidden complexity and low-to-moderate discoverability. It puports to be a Rogue-alike, but actually is a game about applying resources and managing probabilities to achieving a goal in incremental steps.
+
+Rogue is a game in which you enter a dungeon, fight monsters, acquire treasure, and attempt to survive. If you win then the more treasure you have, the better your score.
+
+Nethack is a game in which there is a distinct objective: to defeat the Wizard of Yendor; and to ascend to demi-godhood. It makes this difficult by having a large number of ways to die (or even escape), each of which can be avoided with sufficient preparation.
+
+Tinn is to be a game with:
+  * A rogue-like top-down character-based view, concentrating mainly on ASCII (but some unicode hints, colour, etc may add nuances)
+  * A very high level of discoverability. You should be able to figure out all the cool stuff and use it without having to piece together too many clues.
+  * Specific goals. You should be able to win the game by some mechanism, possibly variable by random chance or player choice (eg tied to character role).
+  * Nethack-inspired "use anything with anything" mechanisms.
+  * Growing complexity. Emergant algorithms can be used for increasing complexity, and modular object-oriented design should make scalable complexity possible.
+
+
+This document brings together some thoughts on the game, building up into some kind of a design, that may inspire the finished product.
+
+
+Stairs
+------
+Nethack uses stairs (sometimes ladders) to get between levels. A down stair on one level corresponds to an up stair on another, but may be in a different X/Y coordinate location. Stairs are always in rooms.
+
+* Stairs aren't very accessible. Let's use wheelchair-accessible ramps. In a game that doesn't use wheelchairs, I can finally find the hard-saught example of political correctness gone mad (a term which is oft used but rarely appropriately).
+* Up/down ramps should line up. They really should; it can't be that hard to do. We place the down ramp in each level and that determines the up ramp's location in the next. For some levels we may need to limit the positioning of the down ramp on the previous level.
+* Ramps may occur in corridors. Nethack always has them in rooms, which is silly.
+
+
+Character Creation
+------------------
+Here, nethack provides the user with a number of options, which can be overridden per-player in a preference file. It also fills in some details with random outcomes. Some options (eg male Valkarie) are disallowed for the starting character, but can sometimes be overcome during the game.
+
+  * There should be no random numbers. This just results in a large number of short games in which players play the odds to get an advantage from the best starting character.
+  * Race and Role are easy options. I suggest to make 2 of each initially and allow all combinations.
+
+Race
+----
+Most fantasy games start with human, elf and dwarf. Nethack also allows gnomes and orcs. Characters may be polymorphed into any monster race.
+I propose to start with:
+
+* Human (no special effects; easy), and
+* Troll. Eats rocks and gems instead of normal consumables; takes mental penalties for higher physical stats. Slow but powerful.
+
+Role
+----
+Nethack has several of these, each with its own benefits. This is used to generate the starting inventory. Roles are limited by gender and race, but all combinations have at least one role. Each role has its own side-quest, for a role-specific artifact (which may be wished for) and an item required to finish the game (the Bell of Opening - which may not be wished for).
+
+* Warrior. This is a basic role that covers several nethack options.
+* Shopkeeper. This is a silly role that isn't available in any Nethack variant I've seen, but should be. Maybe existing shopkeepers would put their prices up, but you would get more peaceful creatures willing to trade with you?
+* Necromancer (future idea). Here, the objective is to kill your nemisis, who first appears as a young kid. Every time you enter a level, he immediately teleports to the upstairs and makes the level no-teleport, so you have to kill him to get past. Each time he comes back stronger, going up through the ranks of undead (zombie, mummy, skeleton, vampire, lich, etc) until he is virtually undefeatable. At least 100 kills, each more difficult than the last.
+* Wizard (future idea). A wizard should be able to gain the spell-like powers usually only available in items, and perhaps level up their potency. Need to balance magical powers somehow, probably by running down a stat. As a nod to Pratchett, Wizards should replace the number 8 with "7+1" or similar wherever it appears in the output routine (posibly "combining-7-macron"?)
+
+Alternatively: in Nethack, there is a nemesis for each role, which is a defined, unique, named monster that appears at the end of the quest level for each role. Possibly the Necromancer idea could be used to more easily inject a Nemesis-style character for each player? Or the nemesis could be based on role type?
+
+
+Gender
+------
+Nethack allows players to specify gender at the start of the game as male or female (fixed for some character roles). Gender may be modified by polymorping the player character or by wearing an amulet of opposite gender.
+Gender has a number of effects within the game: foocubi will only mate with characters of opposing gender and will adorn female characters with rings of adornment but steal them from male characters; female characters may lay eggs (depending on species) to create pets; male characters may sometimes hatch monster eggs as tame. There are also some less common effects.
+
+* Gender as a boolean male/female is boring from a gameplay perspective and not good for the cause of intersex/genderfluidity awareness. So I propose to store gender as two independent percentage flags; this allows male, female, neutar, hermaphrodite, and genderfluid characters. Doesn't allow for third-gender per se, but is an easy improvement on the norm.
+* Foocubi etc. should have effect regardless of gender. If we are to have sex in the game, then there should be no reason to require straight sex.
+This can affect gameplay by having independent advantages and disadvantages to each gender, which occurs only if D% < stat; but does not address the difference between mental/physical sex/gender. I'm hoping the latter may be a subsequent improvement based on what presents itself.
+
+Male bonus: appearance bonus for something else trivial? Egg hatch bonus?
+Male penalty: negative outcome with incubii; (appearance%) negative outcome with succubii
+Female bonus: appearance bonus for wet shirt? Laying eggs?
+Female penalty: negative outcome with succubii; (appearance%) negative outcome with incubii
+
+Some monsters will also be gendered. I guess there are several options:
+* neuter - many monsters will have no gender effect in the game. Foocubii shouldn't leave these alone
+* male/female - foocubii and some other classical monsters this just makes sense
+* male & female - eg some octopii
+* male+female=100% - dependeent assignment
+* male=d%, female=d% - independent assignment
+
+The latter two options need more consideration; setting the maximum to 100% (dependent) makes some sense in terms of genderfluidity for some monsters, but I can't think of any examples off hand (a new monster could easily be invented). It would work as male=d%, female = 100% - male, as our percentile die routine rolls 0 to 100 inclusive with a mean of 50.
+Independent assignment gives us more range.
+
+
+Item types
+----------
+Nethack classifies items into distinct types. All types can be weilded as weapons or quivered for throwing, but there are special "weapon" types that are intended for combat, some of which have other uses (eg the Mattock counts as a weapon but can be applied as a digging tool). There are wearable slots, some of which stack (shirt is under armour which is under robe; left/right ring are under gauntlets; if one of these can't be removed then the lower slot can't be used), while others don't (helmet, glasses, amulet, boots). Spells can be learnt from spellbooks, while scrolls contain single-shot spells (the scroll of scare monster can also be used by standing on it). Potions can be quaffed for magical effect or dipped to perform alchamy. Coins are a separate item with a simple count (coins can't be blessed or cursed). Gems (including stones) are another category, as are tools. Non-coin items have three descriptions: identified and unidentified and user-assigned (overrides the unidentified description if the identity of the item is not known), and most items are initially unidentified (apart from starting items; some race benefits allow entire classes to be identified). Many objects have several uses, eg a magic lamp can be applied to light/extinguish it, or rubbed to release a djini. Any item may or may not be blessed, cursed or neither ("uncursed"). Some items, including wielded weapons and armour, have a numerical bonus. Some items appear only once in the game; there are known as artifacts and have a pre-assigned name; most other items may be individually named. Objects also have a material type, which can affect degredation (eg leather can be rotted, while cloth can be burnt).
+
+It seems clear that the properties for which an item can be used should be orthoganal to the type of an item.
+
+I propose the following item types:
+* Clothing - includes armour. NB: Under nethack, non-armour clothing can be enchanted to provide an armour bonus.
+* Jewellery - each item of jewellery should have a wearable slot. There should be lots of these; necklace, bracelet, anklet, 10xring, etc.
+* Valuables - coins and gems
+* Wielded - weapons held in the hand (including missile launchers)
+* Missiles - thrown things. Rocks and stones go here.
+* Bottles - replaces potions. This gives us more scope for other bottled items, such as ships, and empty bottles.
+* Readables(?) - should we have codexes, tablets, scrolls? I've never liked spellbooks, nor the one book per spell format. Spells can come later.
+* Styli - wands and writing implements (NB: Some controversy over the correct plural: styli/styluses)
+* Containers - objects that contain other inventories, possibly recursively.
+* Tools - things which exist to perform a miscelaneous function, such as lamps.
+
+
+Currency
+--------
+Nethack has standardised on the Zorkmid, which is a single gold coin. You have a number of coins, weighing a fixed amount each, which can be used for a few purposes: in shops, to buy things or obtain credit, in temples, to make donations for various gains.
+
+Coins of various denominations from fiction could be included. Shops would exchange metallic coins based on simple weight. We could render this with a count if we can be bothered to, but something tells me that Tinn won't have piles of hundreds of gold coins in it.
+
+Paper money would be useless, as shopkeepers are worried about forgeries. But maybe a pony (creature) could drop a pony (cockny slang for £25) or a monstrous monkey could drop a monkey (£500) instead of a corpse?
+
+
+Experience
+----------
+Nethack uses different systems of XP for monsters and players. All species are defined with levels, increasing levels having more HPs and sometimes other bonuses. A monster gains a low number (often 1) HP for each other monster it kills, and its level goes up to reflect the HP it has. A player has a seperate XP track and gains XP for each monster killed, by a complex calculation. A character's level goes up with (roughly) the logarithm of the XP (at different rates to even out the perceived difficulty of the character classes), until level 20, then linearly thereafter. Players can gain levels by other methods, such as eating wraith corpses and drinking potions of gain level; this makes farming for XP worthless after a certain point.
+
+For simplicity, Tinn will not use a separate system for monsters and players.
+
+There are 100 levels in the game, and we assume that there are 10-50 monsters in each level, so a player may kill 30 or 40 per level. This gives a rough average of 3500 monster deaths per completed game, and not more than 5000.
+We want the player to be able to plausibly grind and max out reasonable starting stats in a game. Assuming 5 stats starting with an average of 15 each, this leaves 425 points to be gained.
+If a player has a 10% chance of gaining one point of a random stat each time they kill a monster, then the expected gain would be 350-500, with an unlucky character getting 175-250 points and a lucky one getting 525-750.
+At 5%, the expected gain would be 175-250, while the unlucky player may only see 97-125 and the lucky player 273-375.
+NB: The probability of rolling 10 or less on our d% is ~3% because of the normal distribution; for a probability of 10% we want either 20 or less (~9.727%) or 21 or less (~10.611%).
+Plugging a roll of 20 or less into our rough numbers gives 340-486 (unlucky 170-243, lucky 521-972)
+
+I think the number of monsters in the game should make this approach viable. It also means that monster experience gains from monster-slaying-monster will be reasonably common, but it will be rare for them not to be offset by monster injuries.
+
+We can offset the benefit for "lucky" players by saying that a maxed-out stat can't be maxed-out any further, so a player with perfect defense from items will miss out on 1/5 of the bonuses from selection.
+
+This also means that players don't get more benefit from slaying monsters of higher level. Is that good or bad?
+
+
+Worn slots
+----------
+Nethack has a number of slots, some of which change name for race (eg "left ring finger" might be rendered as "left foreclaw" when polymorphed into a chickatrice), and others are available for certain races only. Humans get all slots. When polymorphed from a race that has a slot to a race that doesn't, the effect is either to destroy the worn item in that slot (eg armour) or to drop the item to the ground (eg rings), depending on the slot and monster type (eg polymorping into a non-coproprial whirly monster does not destroy armour). Some monsters have slots (eg rings) but cannot don or doff items in those slots except by polymorphing into a race that can.
+
+I propose a more complex system of slots, thus:
+
+ Headband--
+	   \
+            }-> Helmet/hat/headdress/shaffron
+	   /
+ Glasses---
+ Necklace/amulet/talisman/medallian
+ Left thumb/index/middle/ring/little finger (ring slot)---
+ Left bracelet--------------------------------------------\
+                                                          \\
+                                                            }-> Glove -> gauntlets
+                                                          //
+ Right bracelet-------------------------------------------/
+ Right thumb/index/middle/ring/little finger (ring slot)--
+ Left big/index/middle/ring/little toe (ring slot)-----
+ Left anklet---------------------------------------------\
+                                                         \\
+                                                           }-> Socks -> Boots
+                                                          //
+ Right big/index/middle/ring/little toe (ring slot)-----/
+ Right anklet---------------------------------------------
+ Underwear -> shorts/trousers/skirt/crupper---\    --> scabbord/belt
+        				       \  /
+        				       	}{
+        				       /  \
+ Shirt -> Doublet -> hauburk/hauburgeon-------/    \
+        					    \
+        					     }-> saddle -> jerkin/flanchard -> robe/cloak/peytral
+        					    /
+ Tail ring/bow--------------------------------------
+
+Terms:
+shaffron is the armour for a horses' head.
+flanchard attaches to the base of the saddle, closing the gap between crupper (horse rump armour) and peytral (horse chest armour)
+hauburk is the chain portion of plate armour. Jerkin is padded fabric worn over the armour.
+jerkin is a close-fitting garment worn over a doublet; doublets may be worn under chain armour.
+
+This acommodates the union of quadrupeds and bipeds, and should cover most monster types. Other slots may be trivially added if needed.
+Each monster type will need to name each slot.
+
+
+Monsters
+--------
+
+There are a few things needed for monsters:
+* Available worn slots and their names.
+* Food type (rock/gem, meat, veg, blood; bitset)
+* Weapon types used (bitset)
+* special attacks (bitset* of targeted effect for future use; eg a vampire might suck blood)
+* special defences (bitset* of targeted effect for future use; eg a cockatrice might petrify)
+* special ad-hocs (bitset* of intrinsics to take effect periodically).
+* Starting inventory (item + quantity:N + probability:P; for each item, D(N) will be generated if D% < P, generated items will be wielded/worn as appropriate)
+* Monster names. There should be several of these; different names for level progression gives us lots of monsters quickly.
+* Dungeon level factor:F & offset:O - you get these monsters of level L only on dungeon levels >= L * F + O
+* Max & Min quantity spawned
+* XP factor:F & offset:O - you get base XP of L * F + O for slaying this monster
+* Monster type (biped, quadruped, bipedal bird, blob, etc).
+* Monster classname (used for grouping)
+* Monster character (used for renderering)
+
+bitset* - along with flags, we'll also need a starting level at which this takes effect.
+
+Effects
+-------
+
+Effects may be targeted (on an individual), centered (on a square; implies targeted), or intrinsic (affects the caster).
+Each effect will have a functor providing a routine, an intrinsic for resistance (if any), and a flag to indicate if this is a magic effect or not (probaly a bitset for effect types).
+
+This very simply lets us do spells, object effects, etc.
+
+targeted effects may be used in one-off magic items, or wands with limited charges, while intrinsics apply to wearables and tool items.
+
+
+Quests
+------
+Nethack has one side-quest per role.
+
+I propose that Tinn should have a separete win condition for each role. This distinguishes us from Nethack easily, while following the same sensibility.
+
+Warrior: Retrieve a specific quest item (The Ascention Kit?) from the ultimate bad guy. (Warlock of Poterif? Warlock of Rogaz? As a pun on Wizard of Yendor and Warlock of Firetop Mountain?)
+Shopkeeper: Obtain a heavily-guarded item and sell it to the ultimate bad guy. (Harder; he will tend to fight you and is unlikely to trade unless something else is done).
+
+
+Side-Dungeons
+-------------
+Nethack has a number of side-branches, and some artifacts give the power to teleport between them. The mazes of menace is the collective name; the Mazes of Menace are the starting point, with branches for the astral & elemental planes, gnomish mines, sokoban, quest levels, gehennom. These are subdivided into a number of special levels, and each level can contain at most one branch exit. Some special levels have multiple entry points (generally portals rather than ladders) to divide the map into sections with undiggable walls (outer dungeon and tower); this allows the player to forsee some of the challenges ahead during later branches.
+
+We can support side-dungeons as a later feature. They just add complexity for now.
+
+
+Shops
+-----
+In nethack, Shops are randomly generated and have a certain number of items in them. Players can steal from shops by various methods, some of which summon the keystone kops, or gain credit by dropping gold. Shops have many rules, such as digging tools in the main inventory will prevent access except by teleportation. All shops have a shopkeeper with whom the player may trade for items in the shop. Shopkeepers will buy suitable items for gold (or credit if they have no gold left), for a fraction of their worth. Dropping an item in a shop will reveal its selling price, which can often go a long way towards identifying an item.
+
+I'm in two minds as to what to do with shops in Tinn. We can have a barter system, which allows for multiple currency types and selling all in one neat feature; just pick a bunch of things you want into your shopping basket then offer items for trade. No change given. But should we price things to the shopkeeper's advantage? If so, we can affect prices based on appearance and other things, and sell things for less than we buy them, so discouraging reliance on shops. On the other hand, there's something nice about a system where you sell things for the same amount as you buy them for.
+
+Thought experiment: Let's assume we can sell for the buying price, under a barter system. Let's also say I have a gold coin (worth 2 silver) and a silver coin (worth 2 copper) and I want to buy a banana. The shopkeeper has 2 copper coins and a banana, worth 1.5 copper coins. I ask to buy the banana and offer the silver coin. Success; now I have 1 gold, 1 banana; the shop has 2 copper, 1 silver. I decide I'm not hungry and sell the banana back to the shop. I ask for my silver coin back and offer the banana. No deal; the banana's only worth 1.5 copper. I have to by 1 copper instead, for the price of a banana. Now I have 1 gold, 1 copper, and the sly shopkeeper has 1 copper, 1 silver. Try as we like, the shopkeeper will still make a profit, and sales can't usually be undone exactly. Eventually, the shop will get so much value that I can't afford anything any more, and the inventory will never run empty (baring shoplifters).
+
+There is a choice between selling things for the asking price and a barter system. I'll go with the barter system.
+
+
+Luck
+----
+In nethack, PCs have a luck stat which evolves based on their conduct. Various operations give hints as to the current luck stat. Luck generally fades towards neutral, but luckstones prevent both good and bad luck from timing out. Luck subtly affects many dice rolls in the game, while bad luck makes various extra fatal accidents possible.
+
+We should not hide stats from the player. Good luck and bad luck may be independent variables if they are to have different effects.
+
+
+Traps
+-----
+Nethack has many traps, some of which (eg polymorph) only occur below certain levels. Some are not really traps: the magic teleporter is a special trap that takes you to a side quest, and the vibrating square takes you to the last level of Gehennom.
+
+Initially, we'll only implement the pit trap and pit. Other traps can come later. A pit trap is invisible until someone falls in it, when it becomes a pit.
+A pit takes 10 attempts to climb out of it. Objects on a pit square cannot normally be accessed without falling or climbing down into the pit. (Maybe a fishing rod?)
+Flying monsters cannot fall into a pit. I'm unsure if they should trigger a pit trap, but they shouldn't fall in.
+
+
+Fortunes & Rumours
+------------------
+Nethack has two lists of one-line hints about the game. One list is true, the other false or humorous. These messages may be sprawled around the game as graffiti, written on messages on fortune cookies (blessed are always true, cursed always false), or (true list only) spoken by the Oracle of Delphi as a "minor consultation". The Oracle also gives out major consultations, providing longer explanations of game elements (at a greater cost in gold).
+
+Because we want simple and discoverable, we won't bother with fortunes for now. We can easily shell out to a fortune program for amusing messages if we need to later on. Hints should be provided with each item, without requiring an in-game trip to the Oracle or munching through oriental snacks.
+
+
+Materials and Erosion
+---------------------
+One property of the object is material, which affects degredation (and also some other effects to identify the item, consuming items etc.)
+In nethack, an object can have several stages of erosion, or none for some materials (gold, platinum and mithril do not erode).
+Levels are proof/fixed (cannot degrade), burnt/rotted/corroded, very burnt/rotted/corroded and thoroughly burnt/rotten/corroded. Subsequent erosion may destroy the object or have no effect. An object may erode on more than one axis, but only the worst erosion counts for determining a modifier. A -1 modifier is applied to the weapon or armour value of each item, but not any other intrinsic effect.
+Materials are: plastic, copper (golem), gold, wood, iron, leather, paper, platinum, bone (skeleton), flesh (golem), gemstone (golem), glass, liquid, mineral, mithril, metal, silver, veggy, wax.
+Some materials have other effects, eg glass is fragile and may be broken on impact (except for artifacts), whereas worn iron inhibits spellcasting. Material therefore acts as a mixin.
+
+I propose that Tinn will implement a simpler system; all objects will have a material mixin drawn from a simple list of materials: clothy, fleshy, glassy, leathery, liquid, metallic, papery, stony, veggy, waxy, woody.
+Each monster will have a list of materials that it can eat, and each material will have accessors for retrieving modifiers, and a mutator for degrading (taking a damage type).
+
+
+Damage types
+------------
+Nethack has several types of damage: fire, water/rust and silver spring to mind. Some types of damage only affect certain creatures (eg silver for vampires); some may cause damage to armour or weapons during combat, some take effect when items are dropped or when the character is immersed (water trap or engulfing monster). Some containers provide damage immunity (eg an oilskin sack protects its contents from water damage, which would otherwise blank scrolls or spellbooks). Dragons have specific damage types, and some damage types can be used by the gods if they are especially angered by the player (usually at an altar).
+
+I propose damage types of: edged/tearing (cutting skin/armour), bashing/earth, hot/fire (burning skin/armour), cold, wet/water (rotting), sonic/air (damages hearing), disintegration/time, starvation, electric/lightning.
+Each damage type will have an opposing "mending" type to reverse the direction of damage: edged=>sewn, earth=>spa, hot=>cool, cold=>warm, wet=>reviving, sonic=>audiatory, disintegration=>reintegration, starvation=>eating, electric/lightning=>chakra-alignment.
+
+Starvation damage does not apply to material objects.
+
+
+Erotion types by damage (proof, degraded). Degraded terms will use adjectives "a little", "", "very", and "thoroughly" for degraded levels.
+
+Clothy/edged: sturdy, torn
+Clothy/bashing: n/a
+Clothy/hot: flameproof, singed
+Clothy/cold: n/a
+Clothy/wet: antiseptic, mouldy
+Clothy/sonic: n/a
+Clothy/disintegration: well-made, worn out
+Clothy/electric: n/a
+
+Fleshy/edged: n/a
+Fleshy/bashing: tender, tenderised
+Fleshy/hot: precooked, burnt
+Fleshy/cold: prefrozen, chilled
+Fleshy/wet: sterilized, mouldy
+Fleshy/sonic: n/a
+Fleshy/disintegration: sterilized, mouldy (same track as wet)
+Fleshy/electric: as hot (same track)
+
+Glassy/edged: fracture-resistant, crazed
+Glassy/bashing: fracture-resistant, crazed (same track as edged)
+Glassy/hot: flameproof, misshaped
+Glassy/cold: n/a
+Glassy/wet: n/a
+Glassy/sonic: fracture-resistant, crazed (same track as edged)
+Glassy/disintegration: fracture-resistant, crazed (same track as edged)
+Glassy/electric: n/a
+
+Leathery: as Clothy
+
+Liquid/edged: n/a
+Liquid/bashing: n/a
+Liquid/hot: anti-boiled, simmery
+Liquid/cold: anti-freezed, icy
+Liquid/wet: undilutable, diluted
+Liquid/sonic: n/a
+Liquid/disintegration: n/a
+Liquid/electric: n/a (but would be cool to have this double damage somehow)
+
+Metallic/edged: n/a
+Metallic/bashing: tempered, hammered
+Metallic/hot: n/a
+Metallic/cold: n/a
+Metallic/wet: rustproof, rusty
+Metallic/sonic: n/a
+Metallic/disintegration: well-made, worn out
+Metallic/electric: insulated, sparky
+
+Papery/edged: sturdy, torn
+Papery/bashing: n/a
+Papery/hot: flameproof, singed
+Papery/cold: n/a
+Papery/wet: antiseptic, mouldy
+Papery/sonic: n/a
+Papery/disintegration: well-made, worn out
+Papery/electric: n/a
+
+Stony/edged: n/a
+Stony/bashing: shatterproof, crazed
+Stony/hot: n/a
+Stony/cold: n/a
+Stony/wet: antiseptic, algae-covered
+Stony/sonic: n/a
+Stony/disintegration: shatterproof, crazed (same track as bashing)
+Stony/electric: n/a
+
+Veggy as Fleshy
+
+Waxy/edged: n/a
+Waxy/bashing: hard-wearing, misshapen
+Waxy/hot: flameproof, singed
+Waxy/cold: n/a
+Waxy/wet: n/a
+Waxy/sonic: hard-wearing, misshapen (same as bashing)
+Waxy/disintegration: hard-wearing, misshapen (same as bashing)
+waxy/electric: n/a
+
+Woody/edged: sturdy, splintered
+Woody/bashing: sturdy, splintered (same as edged)
+Woody/hot: flameproof, singed
+Woody/cold: n/a
+Woody/wet: antiseptic, squishy
+Woody/sonic: n/a (NB: sonic doesn't work on wood; Dr Who reference)
+Woody/disintegration: sturdy, splintered (same as edged)
+woody/electric: n/a
+
+
+Gods and Alignment
+------------------
+In Nethack, there are 3 gods, one per alignment: lawful, neutral, chaotic. Much is discussed about "lawful" in a game where stealing by pets is allowed and monster-slaying improves alignment.
+Each alignment also has one or more aligned alters within the game (and a high alter in the end game), and a unicorn (white for lawful, grey for neutral, black for chaotic). Sacrificing unicorns on non-co-aligned alters can convert the alter or yourself to another alignment depending on the alignment and colour.
+The other main effect of alignment is on artifact weapons; some artifacts will shock the wearer if wielded by someone of another alignment.
+
+I propose a more complex alignment system, as this will simply add discoverable complexity to the game. There shall be three axes, and a deity or supernatural power for each form:
+
+Element| Bonus:	 	 	   	      	   	Penalty:
+-------+---------------------------------------------------------------------------------
+Earth: | strength, consumption from veggie bonus	-2 to edged weapon attacks
+Air:   | speed, hearing monsters, +4 to sonic attacks   +1 to all damage taken
+Fire:  | double attacks		     	      		+2 to water damage taken
+Water: | swim, +1 to bashing attacks			slow
+Flora: | speed-climb, consumption from veggie bonus	+2 to bashing damage taken
+Time:  | speed, double attacks				+4 to disintegration damage taken
+
+
+Domination   | Bonus:  					Penalty:
+-------------+---------------------------------------------------------------------------
+Concentration| +2 to mental, +1 to defence	        slow, +1 to fire damage taken
+Aggression   | +2 to attack, +1 to damage		-2 to appearance, -1 to be hit
+
+TODO: What is mental?
+
+
+Beauty | Bonus:	     	     	   			Penalty:
+-------+---------------------------------------------------------------------------------
+Kind   | +2 to appearance				-2 to hit points
+Cruel  | +2 to base armour				-2 to appearance
+
+
+Units here are in increments of +5%.
+
+
+El Dom Bt | Deity Name  | House of     | Teaches
+-- --- -- --------------------------------------
+E  C   K   Lyrenna        the Hearth     strong foundations make a sturdy house; a sturdy house makes a good home.
+A  C   K   Aenna          Community      friendship and alligences make us stronger
+F  C   K   Rifasis        Warmth         of the safety and protection of the warding fire
+W  C   K   Iarae          the Well       to bathe in the cooling, healing waters is to nourishment for the soul
+P  C   K   Taqris         Trees          of bearing fruit for others when you yourself are weak.
+T  C   K   Imius          Contemplation  Patience
+-  C   K   Ajl            the Teacher    Steadfastness
+E  A   K   Edes           Planting       Crop Sewing	 
+A  A   K   Falco	  Hunting	 the early bird catches tho worm       % NB: "Falco" is a genus; "Falcon" is any member species; ref:saying
+F  A   K   Ydite          Sutures	 that which does not kill you makes you stronger
+W  A   K   Baccal         Water of Life  never start a barroom brawl, but always end one % ref:"Water of life" is the literal translation of many alcoholic spirits. ref:Babylon 5 (and probably elsewhere) for quote (was only "fighting")
+P  A   K   Subum	  Brambles       thorns deter predators, but leave currents for the truly needy
+T  A   K   Etix           Saviours       simple things can really help each other
+-  A   K   Ejl            the Student    do the right thing, whatever the cost.
+E  -   K   Alorr	  Escapology	 freedom to build
+A  -   K   Cyrena         Portents       Prophecy
+F  -   K   Fyana          Campfires      Mysteries of Parables
+W  -   K   Nuagi          the Pool       the flow of kindness
+P  -   K   Edes           Apothecaries	 Outward Beauty
+T  -   K   Jibum          Rest           Practice 
+-  -   K   Kithus	  Help		 do unto others as you would have them do unto you %ref:saying                          
+E  C   C   Myorr          Landslides     Burial of Pain
+A  C   C   Ibus           Gales          scatter the ashes of your losses and move on
+F  C   C   Begesti        Weaponsmiths	 forging of metal
+W  C   C   Usses          Drowning       big fish; Little fish %ref:PJ Harvey, down by the water (song)
+P  C   C   Qolios         Pitcher        entrapment and lures
+T  C   C   Dun            Mistakes       to laugh first, to laugh longest % ref:saying
+-  C   C   Batar          Torture        pleasure and pain
+E  A   C   Pandra         Rockfalls      watch your footing; nothing is safe
+A  A   C   Byton	  Harpy Eagle    victory to the strongest strike
+F  A   C   Y'k            Inferno        War                             
+W  A   C   Rustia	  Whirlpools     hidden strength
+P  A   C   Zadon          Venus Trap     the Food Chain
+T  A   C   Etix           Velocity       the best defence is a good offence % ref:saying
+-  A   C   Vugdohr	  Plunder	 Rapacity	 
+E  -   C   Laqadrix       Dungeons       slingshots and imagination
+A  -   C   Saeyr          Falling        altitude and attitude
+F  -   C   Kyrash         Immolation	 Revenge
+W  -   C   Vagjun         Drowning       Mysteries of the deep
+P  -   C   Aaos           Harvest        Reaping
+T  -   C   Ynos           Age            it's later than you think % ref:Enjoy yourself (1949 song, Sigman, Magidson)
+-  -   C   Brutus         Greed          et tu % ref:Shakespeare's "Et tu Brute" from /Julius Caesar/                          
+E  C   -   Ildir          Strata         firm foundations make a solid structure; a solid structure will stand forever.
+A  C   -   Kytix          Emu            Primal Screaming    % ref:Cuddles (from Orville & Cuddles)
+F  C   -   Kyreus         Crucible       Focus
+W  C   -   Byasis         Heavy Water	 bending prevents breaking; sometimes slower is stronger
+P  C   -   Amlene         Undergrowth    the strongest flowers grow in the darkest forests.
+T  C   -   Vibtrix        Enjoyment	 hedonism takes work, and lots of practise.
+-  C   -   Wistus         Thought        hold that thought % ref:saying
+E  A   -   Olene          Rock           primative methods can be just as effective
+A  A   -   Vedarr         Blowdarts      striking from afar
+F  A   -   Fliash         Fireballs      concentrated blasts of power     %ref: AFF has "Filash", god of Fire.
+W  A   -   Wobdar         Waterfalls     the best ride is often the one closest to being dashed on the rocks.
+P  A   -   Xeusis         Clematis       wealth comes from land
+T  A   -   Fivmer         the Moment     Opportunity
+-  A   -   Riotus         Beserkers      Mel\'ee
+E  -   -   Rockus         Firmament      Stability
+A  -   -   Brezus         Tornado        Sensation
+F  -   -   Pyreus         Flame          Passion
+W  -   -   Hydrus         the 7+1 Seas   Flow              % ref: "the 7 seas" is an idiom; 7+1 is Pratchett's Discword
+P  -   -   Florus         Growth         of the ecosystem
+T  -   -   Tempus         Eternity       there's a right time for everything
+-  -   -   (unaligned)	Some people do things their own way.
+
+Many thanks to www.fantasynamegenerators.com, without whom this list would be less full. Some were modified to fit. Some are mine. None have any special meaning except where refs are noted.
+All the "...us" single-element names are entirely mine.
+
+
+Altars and Sacrifice
+--------------------
+In nethack, each of the 3 alignments gets a god, and each god has altars during the game. There is also a high altar in the end game, which behaves like a more limited altar. Altars are a place you can go to sacrifice recent corpses to your god for luck, alignment and more material bonuses. You can also pray at an altar, which which will bless any water placed on it, removing a curse or creating holy water; the latter can then be used to bless other objects (meaning you generally need to visit an alter to bless objects but can then do so at a later date, provided your water doesn't end up cursed). Sometimes alters are generated or placed in temples, which are rooms containing a priest of the same alignment as the alter; you can also chat with priests to make a donation to the temple (this reduces the weight you are carrying in gold and provides bonuses, usually intrinsics such as armour class or ESP).
+
+In fleshing out the deities, I felt the need to give each one a house. I don't like the fact that sacrificing consumes objects; historically, sacrificial food was usually given to the poor.
+
+I propose that small shrines will be created in the dungeon, for all deities at random (not unaligned). All shrines will have an alter or idol; this can be cosmetic for now.
+A shrine will be a 3x3 room with no door:
+
+#####
+# _ #
+#   #
+#   #
+## ##
+
+Your interaction with the shrine should depend on the number of axes on which you are coaligned with it, and possibly in future some kind of alignment track:
+
+3 axes - this is a shrine to your deity. You may enter and receive full sanctuary (nothing attacks you while inside).
+2 axes - a close relative of your deity. You may enter, but receive no especial protection or danger from wandering monsters.
+1 axis - a loose relative of your deity. You may only enter by pushing your way through the doorway's "mysterious barrier", requiring a stat check (attack?). No especial protection or danger from wandering monsters.
+0 axes - this alter opposes your deity. You may not enter through the doorway. All creatures will attack you while you are inside, even those who wouldn't normally. *You* still can't attack, meaning this is a bad place to be.
+
+In no case may you attack inside a shrine; the game should not let you. Even Y'k needs a place to rest.
+
+I was toying with the idea of saying that "none" on an axis should not match anything (even another "none"), but that this leaves some players at a disadvantage; followers of a nonaligned path could never enter a shrine, while ****us paths would always have to force their way in, even to their own deity's. So for this case, "none" needs to match "none" when counting up the axes.
+
+Ideas for future: leaving offerings of gold or food on the alter should appease the deity of the alter and start to shift alignment counters. Taking offerings will annoy both the deity of the shrine and yours.
+I think you should have trinary alignment counters for each axis; adding up you deity's counters would say how much your deity likes you while the other countres may affect things at non-aligned alters.
+
+
+Statues and boulders
+--------------------
+Aside from rocks, Nethack has 3 main stone items: boulders, which can fill pits. You can hit a boulder with a digging tool to turn it into a pile of rubble. Only large monsters can carry boulders ("You can't get your hands around it"). Other monsters cannot move onte a square containing a boulder (except by falling from above, etc) if they have too much in their inventory, so boulders become cumbersome and can hide objects (boulders always jump to the top of object stacks on floors).
+It also has statues of monsters, which will very occasionally turn into that monster ("hiding"). You can create a statue by petrifying a monster, or destroy it with a digging tool like a boulder. Some statues contain spellbooks, for no adequately explained reason.
+It also has figurines, which are lighter than monsters, but can be applied to bring the monster to life (usually as non-aggressive); this provides the only mechanism by which you can wish for monsters (by wishing for their figurine).
+
+We have already decided to implement idols (statues of gods) so statues of monster types should be easy. If we can individually name objects, then we can crowdsource geeky figures to immortalise in stone, but for now how about Mozart instead? I considered holograms as statuesque things, but that seems limited (eg you couldn't have a Red Dwarf style hard light hologram character without causing confusion).
+
+Idol - statue of a deity (not nonaligned)
+Statue - statue of a monster
+Bust - statue of a named person (just name & a readable plaque / encyclopedia entry)
+
+I think we can probably make these out of different materials - stone, gold, gemstone spring to mind, and maybe plant for an idol of a plant-aligned deity?
+We could also have a street performer "monster" who appears to be a statue?
+Weeping Angel monsters could appear as statues that move around the level when the player isn't there, and only attack (disintegration/time) when they player is blinded.
+
+
+Potions and Bottles
+-------------------
+Nethack considers anything potable to be a potion, which can be quaffed with a glugging sound, detroying the potion. Most potions have some effect; water does not (unless blessed as holy water or cursed as unholy water). You can also dip things into a potion; dipping anything into a potion of polymorph will change the type of the item according to polymorph rules; otherwise, dipping a unicorn horn into some more harmful potions turn them into water or fruit juice; dipping a potion into another potion performs alchemy, which creates explosions or occasionally useful potions. The potion of oil is special as it can be applied, then acting as a candle until the oil runs out when you discard the empty bottle. Nethack also has a tinning kit, which creates tins of food from corpses; this applies to food, not drink.
+
+We will have a bottling kit to put objects into bottles. A bottle is a container with contents limited to one item, which may be a liquid but need not be. You may not hold a liquid except in a container. Any non-liquid object will be reduced to 2%, as 1:50 is a reasonable scale for a ship in a bottle. You can break the bottle to retrieve the object, but this destroys the bottle. Potions may be drunk, leaving an empty bottle. We'll not do alchemy just yet, but it could be fun to try with non-potable objects.
+
+If you get on the same square as a monster, perhaps you could use a bottling kit to put the monster into a bottle? This should work on genies/djinis at least.
+A blessed bottle will reduce the weight to 1% instead of 2 (1:100 scale) (and maybe take less time to bottle things and/or be able to bottle things without a kit?)
+A cursed bottle will increase the weight to 200%.
+Fun things: "there is a cursed galleon in a bottle here, but you can't lift any more." Maybe a "I Dream of Jeannie" reference (though I can't think how, and I prefer Djini to Genie or Jeannie).
+
+
+Food and starvation
+-------------------
+Food in nethack is the driver that forces players to keep moving through the game. Players may eat various items, depending on their race, but generally randomly-generated rations and monster corpses.
+If a player eats, they will eventually become satiated. If they continue to eat they will be asked if they want to stop, after which they may die from over-eating.
+If a player does not eat, they will eventually become hungry, then fainting (which is itself dangerous), then starve to death.
+Completely eating a corpse or magic item may provide intrinsics to the character (most races cannot eat rings, but rock moles can), but only after the corpse is finished. Some monster races leave poisonous corpses, which may cause confusion and HP damage when you first bite into them. Old corpses will cause food poisoning, which is soon leathal unless a potion of full healing, unicorn horn or prayer is used successfully.
+Eating a corpse of the same species as the player (current species if polymorphed) is counted as cannabalism, which causes a negative penalty to luck and alignment except for chaotic characters. A species may include multiple monster types (eg elf, wood elf and elvenking are all cannabalistic for an elven player).
+
+
+Instant death from food puts many new players off the game of Nethack. So I propose:
+
+* Your character will refuse to eat if they are already full.
+* Starvation will not cause fainting, but injury. This means you could get a belt of starvation full resistance, to not care about eating, replacing the ring of slow digestion.
+
+Instead of "a <foo> corpse", we will just say "a dead <foo>". This allows for dead bodies that are not edible corpses (no more "rock troll corpses"; they are not bodies but stones). The edible status can come from the material type of the body (fleshy, rocky, etc). Bodies might decay over time, but I don't see any reason to do that yet.
+
+I propose, for now, that eating a dead <foo> will produce a warning confirmation prompt and then provide a very small amount of nutrition; boons and curses can wait for another release.
+
+
+
+Intrinsics:
+-----------
+Most effects can be intrinsics; applying to wearable and tool items, or obtained by the character in some manner.
+
+Intrinsics:
+<damage type> basic resistance : -1 damage taken of this type
+<damage type> resistance : -2 damage taken of this type
+<damage type> extra resistance : half damage taken of this type (no damage below 4; rounded down)
+<damage type> full resistance : no damage taken of this type
+extra <damage type> : +1 damage dealt of this type
+bonus <damage type> : +2 damage dealt of this type
+speed : additional action each turn
+double attacks : when attacking, the attack is immediately repeated once, whether successful or not. In future, some method of specifying to fire only one missile may be added.
+swim : character can move into and around water squares.
+speed-climb: half the time to get out of pits (or into them, should the PC climb in)
+consumption from <food-type> bonus: double food points gained from food type.
+
+
+Dice and Modifiers
+------------------
+Nethack uses D&D-style modifiers, where +1 through +4 (or -1 through -4 when cursed) may be randomly generated, and further enchantments are possible using magic (which has an increasing risk of destroying the item above +5).
+This means that most rolls are made on a D20-style system with modifiers.
+
+Personally, I don't like that, as the spread of numbers is too linear. For most purposes, a bell curve works much better for simulating commen behaviour with occasional exceptional outcomes.
+
+So I considered using the 2D6 system used by (eg) Fighting Fantasy, but the range is too low (2-12 with a median of 7), which places limits on the game at high levels (this problem is avoided in FF by limiting magical items - boring for a nethack-alike!)
+
+Generally the formula for 2DN is a range of 2--N^2, with a bell-curve centred on the most-likely outcome of (N+1) occuring 1 in N times.
+
+To a first order approximation, Nethack has 50 levels. If we run everything on a D% system, then it makes sense to have exactly 100 levels. We could define our D% operator as rolling 2D51-2, which gives a range of 0--100 centred on 50. This is distinct from the D% described in D&D, which has a linear range of 1--100 inclusive, but so long as we bear in mind that rolls of 0 are possible, this should work effectively and provide the desired random scatter.
+
+
+Characteristics
+---------------
+Nethack also uses D&D-style characteristics, although the range tends to be much greater (up to 25 for each stat at high levels). Strength runs up to 18/** for most characteristics, where "**" is shorthand for "100". The section after the slash is the percentage to the next value (18/** means that 25 would be the strength, but the race can't have strength above 18; this is very similar to 25 for most purposes).
+There are penalties for having very low stats, and bonuses for very high stats, and most rolls are made on two stats added together.
+There are also various actions in the game which either "exercise" or "abuse" an attribute; periodically these can cause the attribute to go up or down over time, with a suitable status message.
+
+
+I propose we simplify; we don't need to use D&D's characteristics just because other games do. Instead, we can define what we actually use.
+
+Strength - how much can we carry, how hard can we hit, etc.
+Appearance - affects prices in shops. Will also affect foocubi. In future, we may have vain monsters that don't attack based on beauty.
+Fighting - ability to hit during combat
+Dodge - ability to avoid being hit during combat
+Damage - how much damage you have taken.
+Max damage - how much damage you can take before death.
+
+
+There shall be no subtle use/abuse after-effects; the results of trying something should be immediate so that the player can more quickly learn the game. I propose not to bother writing stat changing actions for now; I'm sure we'll have the equivalent of the potion of gain ability soon enough, and it can be easily added later via some kind of plugin/callback mechanism.
+
+
+Monster ideas
+-------------
+
+I'd like to stick to original and public-domain monsters, so lots of drawing from folklore and mythologies. Rough ideas go here:
+
+* Faeries should drop fairy cakes instead of dead fairies (Ref: Dark Bower, Samhuinn Festival 2016, Edinburgh).
+* Foocubi have a special monster attack, which is basically rape in mythology (they are, after all, evil). This attack should be carried out regardless of gender and on all monster types; gender only influences if the outcome is positive or negative.
+* "Mundane" animals: rats, foxes, hounds, wolves, wild dogs
+* Nethack has "team ant" (giant ants, fire ants, bees and giant beetles all appear with "a"). I think we should just implement fire ants, giant wasps (wasps are nastier than bees and don't require us to model honey) and bulls (which are a "herd" when grazing and a "drive" when moving).
+* Dragons: These have been clobbered by D&D, where Nethack inherits different colours (species) of dragon, each with their own attack. In Britain, the term "dragon" once meant an insult, although it originally meant "huge serpant". There are, of course, bearded dragons which are relatively big lizards (about the size of a human forearm when fully grown) and eat insects when young and mostly vegetable matter when adult. Historic words include "dragonet (14th c, young dragon) and drake (older form of the word dragon). The main forms of dragon in mythology are known as the European dragon (4 legs, 2 wings, scaly, reptillian, animal-level intelligence) and Chinese dragon (4 legs, no wings, serpantine); many other forms of dragon exist worldwide. We need a sub-project to rethink the dragon.
+* Birds and flying things. Everyone likes bats (creepy things that will suck the fruit right out of your veins), while birds of prey of various kinds could be added easily. Not only are flighted creaturus impervious to pits, but they could well pick up the player and fly off with them as a special attack - stranging them on a nest (trap) or carrying them out of the level entirely. Notable birds of prey: eagle (symbol of power, thought by the Romans to be a warding bird especially against storms), crow (& the larger raven; associated with harbingers and messengers), hawks (solar bird, see also falcon; messanger of Apollo, royalty to ancient Egypt, prophetic bird with healing powers in Polynesia), vultures (scavengers hence omens of death), owl (wise in British folklore)
+
+
+We should have a collective noun for each monster type, so if we have lots of a monster on one square we can report it as "a swarm of giant wasps" or similar. NB: "swarm" is colloquially used for any group of bees/wasps, but technically means the directed movement of a whole group of bees looking for a new hive. We should check definitions carefully. Think about translations before implementing collective nouns; maybe postpose till the next release? Wiki suggests that Old French had collective nouns but very few modern languages use them.
+
+Nethack has some monster types with elemental variants, eg Frost/Fire Giants, Elementals, etc. It may be an idea to have more of these to quickly increase the variety of available monsters - but each monster type still needs to be unique in some way. The obvious one would be elemental monsters that deal damage based on their element type and/or are immune to damage of that type.
+
+
+Special Level ideas
+--------------------
+
+There could be a bridge level, with a central section of the screen existing at two different levels depending on how you approached it. The lowel level would not draw the player, and you would meet a lot of trolls.
+
+
+Item ideas
+----------
+
+* duct/gaffa tape (in the real world: gaffa doesn't leave a mark; duct is heatproof): I thought maybe a rare item for getting two wear/wield-ables into one slot. But then I saw http://www.nicolaas.net/dudley/index.php?f=20040225. Lots of uses now I think about it. Possibly save this for a future version.
+
+* Pop/water. The basic elementable potables:
+Tearing: Potion of sorrow (TODO) (a pun of sorts on the two proununciations of "tear")
+Earth: Heavy water (weight +10kg regradless of gravity; +2 as bashing weapon; *2 to any nutritional/elemental effect) (used in nuclear reactors to slow down the radiation)
+Fire:  Fire water (as baulderdash, but double damage when consumed; does not boil) (colloqueal for strong, clear spirits)
+Water: Pop (*1.5 to any nutritional/elemental effects) - or just water (colloqueal for any flavoured sugar water)
+Air:   Fizzy pop (explosive projectile; causes hiccuping) (slang for carbonated flavoured sugar water)
+Time:  Dehydrated water (in real life, this is an oxymorinic joke).
+Flora: Natural spring water (+1 to jumping or climbing up) (in the real world it's just water with a natural filtration system)
+Lightning: Electro pop (assuming this is difficult to generate, this could bestow an advantage to manufacturing. All about the synthesizers...) (in the real world, this is a genre of music. Look; a pun!)
+
+
+* Nethack has loadstones, a pun on lodestone. Maybe we could do something with lodestones and wands of lightening [sic]? What would a lodestone do if you floated it on heavy water?
+
+Character Class ideas
+---------------------
+* Something akin to wizards; you would never see "8" of them but only "7+1"
+
+
+Trap ideas
+----------
+
+* Cloud http://www.nicolaas.net/dudley/index.php?f=20040818 - follows you around and rains on you.
+* Aerie, or other nests: a bird could pick up up and leave you here. It would take you some time to climb down, during which time you're vulnerable to missile attacks and attacks from flying creatures. If you can fly, you can move away; otherwise you must climb down first. Possibly this trap should be placed (revealed) by the bird?
+* Corridor trap. Moving onto a tile in a corridor will create a pit (or other trap) *behind* you (on the square you moved from) and *in front* of you (on the square you moved to). Takes 3 squares
+* Element squares: A large amount of the element falls on you, causing elemental damage. There would need to be an especial message/substance for "time" (ectoplasm?) Perhaps plants could speed-grow instead of falling.
+* Flingboard: stepping onto this square fires the player in a particular direction, up to D%/20 squares. Impact damage taken is based on the distance moved, and any squares still to move. Impacting a monster should cause impact damage (& count as a charging attack if we ever have those). This would be very dangerous next to a wall, so perhaps limit that combination to lower levels. This is a sort-of equivalence to the teleportation trap in Nethack. Hitting a trap should stop the fling and trigger the trap if the player could move onto the square.
+* Reverse square. Any direction key pressed by the user will be reversed OR the entire map is now rendered in reflection (using reverse iterators). Trap that becomes more dangerous on deeper levels and should frustrate the user somewhat.
+* Gambling square: performs a good or bad action at random. Activated by dropping objects onto the square; performs something equivalent to the value of the objects dropped. Perhaps limit to wearables? Actions: duplicate items dropped instead of consuming them; curse items; bestow enchantment of random type; cause damage of random type.
+* Live square: electrocution or plant damage, at random. ref: Pun on "live".
+* False ramp: an up or down ramp that disappears when you step on it. ref: Nethack has branching levels, so people will think that Tinn supports branches. If we add the feature in later, it'll confuse players too :)
+
+
+We should be able to create entire rooms/levels as a well-designed trap. What you need is a lure (some big, obvious treasure/magic items), a trigger (a switch that springs the trap once the player approaches) and a payload (something that will likely kill the player). This kind of trap must be easy to bypass; that way, we're giving the user a choice to risk everything now for something shiny that will help them win later if they survive. Payloads can be lots of monsters to throw in, lots of trap squares to open up, etc. We should aim for a 50/50 chance of survival but avoid instakills. For the midgame.
+
+
+Object map
+----------
+
+Identifiable (mixin)
+* name (unidentified)
+* name (identified)
+
+Container (mixin)
+* list of items (inventory/contents)
+
+Material Type : enum
+
+Material: identifiable
+* material type
+* erosion slots (depending on damage type)
+
+Item : identifiable, container (optional)
+* item type
+* material (mixin with erosion tracks etc)
+* base modifier (may be adjusted by mixins)
+* wielded effect (optional; imples wieldable if set)
+* thrown effect (optional; implies quivarable if set)
+* applied effect (optional)
+* weight (NB: may be affected by contents if a container)
+* base value/cost
+
+By default, all items will be identified, but may be forgotten by magical effects (possibly in a future version). This immediately provides a much shorter learning curve to Nethack, with no loss in complexity. The rush for the blessed scroll of identify is removed, and players can concentrate on other aspects of the game.
+Initially, applied effects will have no parameters; some kind of prompting may be needed for mixing items together.
+
+Monster type
+* Available worn slots and their names.
+* Food type (rock/gem, meat, veg, blood; bitset)
+* Weapon types used (bitset)
+* special attacks (bitset* of targeted effect for future use; eg a vampire might suck blood)
+* special defences (bitset* of targeted effect for future use; eg a cockatrice might petrify)
+* special ad-hocs (bitset* of intrinsics to take effect periodically).
+* Starting inventory (item + quantity:N + probability:P; for each item, D(N) will be generated if D% < P, generated items will be wielded/worn as appropriate)
+* Monster names. There should be several of these; different names for level progression gives us lots of monsters quickly.
+* Dungeon level factor:F & offset:O - you get these monsters of level L only on dungeon levels >= L * F + O
+* Max & Min quantity spawned
+* XP factor:F & offset:O - you get base XP of L * F + O for slaying this monster
+* Monster type (biped, quadruped, bipedal bird, blob, etc).
+* Monster classname (used for grouping)
+* Monster character (used for renderering)
+
+
+Monster : identifiable, container
+* name (optional and only used for named baddies etc.)
+* type
+* damage
+* strength
+* appearance
+* godly alignment
+* intrinsics (nb: intrinsics on worn items also count while the item is worn)
+* maleness (%)
+* femaleness (%)
+* wielded (optional; must be in inventory container)
+* wielded2 (optional; must be in inventory container)
+* wielded3 (optional; must be in inventory container & must be quadruped)
+* wielded4 (optional; must be in inventory container & must be quadruped)
+* quivered (optional; must be in inventory container)
+* worn (map of all slots to optional item)
+
+Might be nice to add a random name generator?
+
+
+Player : monster
+* food level
+* coordinates
+
+NB: Monsters can suffer starvation damage eg from a wand of starvation, but do not otherwise need to eat.
+
+
+Terrain type: Rock, ground, etc.
+
+Future versions will expand this with eg corridor, room, door, grass, dirt, etc.
+
+
+Dungeon:
+* list of levels
+* pointer to current level
+
+Level:
+* map of items to coordinates (preserving insertion order for object piling)
+* map of monsters to coordinates
+* map of terrain type to coordinates

@@ -1,0 +1,125 @@
+Rethinking the Dragon
+
+I don't like the influence of D&D on modern gaming mythology. Dragons are traditional mythological creatures and generations of people have grown up thinking about a system of colour-classification, jewel-obsession and high intelligence, which borrows from a number of different mythologies while adding in its own ideas. This is fine as it goes, but we shouldn't copy D&D for the sake of perceived tradition at the cost of old traditions.
+
+Initial brainstorming:
+
+
+Colloquially, we could talk about Western and Eastern dragons; the European dragon fitting into the Western mould while the Chinese dragon (similar to the Japanese dragon) could inspire the Eastern form. This leaves us with obvious gaps for North and South.
+
+Or perhaps we should have a single level in the game where two dragons battle each other, starting from the East and west sides of a great arena?
+
+Given the Wiccan idea that each compass direction has an associated element, perhaps we could expand that to elemental dragons, if we can find forms based on a North and South mythology? Or would that get too D&D?
+
+
+What do dragons have in common?
+
+* They are always lizard/serpant creatures (but may be scaly or feathered)
+* They are always strong. No human is stronger than a dragon.
+* They are never stupid - although the European dragon isn't smart enough to talk
+* They hatch from eggs. This means we need dragonets too (14th c term for baby dragon)
+* They are huge - a "D" is used to represent them in Nethack but European dragons are big and bulky whereas Chinese (& Celtic) dragons are long and thin (Chines dragon puppets are described as "life-sized" and require a team of people).
+* They don't fly. European dragons have wings but are rarely depicted as flying. Some Chinese dragons can ride on cloud and mist.
+* The eat meat. Some Chinese dragons are documented as liking freshly killed meat, while some European dragons eat people.
+* They are solitary. While chinese symbology uses 9 dragons for emporors and kings, the 9 dragons are described very seperately in literature.
+
+
+What are the differences?
+
+* Level of aggression. Mythology originating from the near east (including the European dragon) as well as the old Greek stories inspiring dragons have them as fierce beasts, terrifying villages, eating maidens and jealously guarding their hoards of treasure (although their are exceptions, such as the benevolent red dragon of Wales). In Eastern mythology they are reveared as forces of nature, intelligent and kind, even having taught humans to speak.
+* Shape. Big and fat with wings vs long and thin with no wings.
+* Magic. European dragons simply weren't magical, beyond spitting poison (Catalan dragon) or breathing fire. Asian dragons are very mystic.
+* Heads. Most have just one, but Russian dragons have heads in multiples of 3. They may grow back unless you cut off all heads, but only one head grows back (this is not a D&D hydra). One Chine dragons (Hong) has 2 heads. The greek hydra had 9, 20 or 1000, but I don't believe it was a dragon per se.
+* Colour. Persian dragons are born with the same colour as it's mother's eyes. (In Persion folklore, a snake that lives for 100 years with a length of 30 gazes [meters] is called an azdaha [dragon]).
+* Majesty. The Chinese dragon is the highest-ranking animal, and is associated with emperors and power. European dragons tend to achieve power by force, suggesting a more brutish nature.
+* Elemental association: Japanese dragons are water deities, and Persion dragons are eventually cast into the sea (to become sea-serpants); Vietnamese and Chinese dragons bring rain; other cultures have them living underground, suggesting a more Earthy outlook.
+* Claws. Chinese dragons have 2-5 claws on each foot (and were associated with increasing military rank depending on the number during the Ming & Quing dynasties). Japanese have 3, Mongolia has 4.
+* Chinese dragons are often associated with the number 9 (the number of Heaven), having 9x9 yang scales and 9x4 yin scales, appearing in 9 forms and having 9 sons.
+
+
+Interesting myths:
+
+Blood:
+* German dragons: The blood of a slain dragon can render invincible any skin or skin bathed in it.
+* Slavic dragons say that the earth itself rejects dragon's blood as it is so vile.
+* Beowulf: The dragon's blood is acidic and can eat through iron.
+* The Swiss Heinrich von Winkelreid died when dragon's blood dripped on him.
+
+* Here be Dragons marks areas on a map that have yet to be explored.
+* In Persia, eating the heard of a dragon brings courage and bravery. Their skins can heal "tho wound of love", and burying the head of a dragon will restore the condition of the land.
+
+
+Where do they live?
+
+* European dragons lie in rivers or have underground lairs (caves).
+* Chinese dragons may be depicted in tombs as a way to get to heavan.
+
+
+More brainstorming:
+
+There are many variants of dragons. We could enumerate the main ones and have a random dragon generator, drawing on properties of mythology but mixing and matching to get a Draconine menagerie (eg number of heads, number of claws, elemental alignment, body shape, etc)
+
+We could have two distinct types of dragon, both named "dragon" but looking/behaving very differently, possibly with different character representations.
+
+We could leave the main details as very vague, but claws bugs me here: you have to set the number of claws for polymorph purposes, so just omitting it from the description isn't useful. On the other hand, not knowing how many heads your opponent has adds a new dimension to decapitation attacks.
+
+We don't currently support more than one head slot, although we have enough extensibility to cover it, particularly with a fixed limit of 5 heads. I don't want to introduce a hydra as a dragon varient when there are multiheaded dragons in mythology, so if we do stick to 1 head for now, we should extend dragons later rather than creating a hydra monster. It feels like a separate animal in Greek classics.
+
+How many heads? Let's say 1-5. round(D%/20) would tend to give 2-3 heads most ofter; max(1, D%-95) would give 1 head almost all of the time, whereas max(1, round(D%/10)-5) would give 1 most often, then 2, 3, 4, 5 more often with decreasing probability (decaying on a bell curve assuming D%=2D51-2).
+
+How many claws? If it's between 3 and 5 inclusive then we can do a probability calculation, but it might be better to assign this based on the starting power of the dragon. Dragonets would have 3, most dragons would have 4 and the most powerful would have 5.
+
+
+
+Random dragon generator for Tinn:
+
+Element: D% roll
+76-80 earth - this makes sense for European etc dragons underground
+00-24 air - this makes sense for some Chinese dragons riding clouds etc
+25-75 water - this makes sense for all dragons
+90+   fire - this makes sense for Western fire-breathing dragons
+ N/A  plant - I can't think of a justification for this in mythology
+ N/A  time - I can't think of a justification for this in mythology
+(This means most dragons would be water-based, with very few fire-breathers. Eastern and Western are equally represented)
+
+Ordinal: Based on Element
+
+Earth, Fire -> Western dragon (bulky with wings)
+Air -> Eastern dragon (serpantine with no wings)
+Water -> 50/50 random.
+
+
+Dominion: Based on Ordinal
+Eastern dragons will be concentration; Western will be aggression.
+
+
+Outlook: D% roll
+
+  Ordinal  D%   Outlook
+   east   0-74  Kind
+   east   75    None
+   east   76-99 Cruel
+   wast   0-24  Kind
+   wast   25    None
+   wast   26-99 Cruel
+
+Magic properties: (TODO - none are necessary or supported so we'll think about this later)
+
+  Spitting poison: 
+  Breathing fire: 
+  Acid blood: 
+
+Claws: Depending on starting monster level.
+
+  0-24: 3 claws (dragonets)
+  25-99: 4 claws
+  100: 5 claws
+
+Saying: Based on Ordinal
+Eastern dragons will impart wisdom (perhaps "teaches you Cantonese?"); Western will just roar.
+
+
+Heads: Based on D% and number of claws (We'll probably implement this later)
+  number of heads = min(claws, max(1, round(D%/10)-5))
+
+- this means that 1 head will be most common, 2 and 3 will show sometimes, 4 is rare and only for full-grown dragons; 5 heads can only appear very rarely and only on the largest of dragons.

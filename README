@@ -1,0 +1,55 @@
+Tinn
+----
+
+Tinn is a game for which I had the idea in Cornwall. Tinn does not stand for Tinn is Not Nethack.
+
+Alternatively, Tinn stands for Tinn is Not Nethack.
+
+
+Compatibility
+-------------
+
+You need a terminal measuring at least 80x24 that understands some simple Unicode and ANSI escape sequences, and provides terminal information. This works on most systems, but Windows users may find more luck with Cygwin than the MS-DOS emulator. I haven't tried with FreeDOS yet.
+
+Your terminal must use a Unicode font.
+
+If you have system compatibility issues or status reports then please let me know as I'm a curious sort.
+
+
+Compilation
+-----------
+
+If you want to compile Tinn yourself, you will need: (I use these):
+
+* A C++-11-stardard compliant C++ compiler (GNU C++ 4.8.4 will do)
+* A curses.h file to provide user input; must support wide characters (meaning version 5.4 or later; note that there are rumours of a version 11; this is an onofficial fork that does not support Unicode). I use ncursesw-5.
+* The src directory in this distribution.
+* A terminal supporting some basic Unicode characters (this means a Unicode-aware terminal with a Unicode-aware monospace font).
+
+Just compile all the C++ files into the executable, linking with the curses library.
+
+A very plain Makefine is provided, so if you have the whole distribution and your C++ compile is named "c++", you can just run "make".
+
+If you have an older Linux compiler/libraries, some of the console functions won't link. You may need to modify output_curses.hpp to start with the following line:
+
+#define _XOPEN_SOURCE_EXTENDED
+
+
+Most repository packages install ncursesw with the "--disable-overwrite" option (set during *compiling* of the ncursesw library configuration). If your version of ncursesw was installed without this option, you will need to modify output_curses.hpp and change the following line (near the top of the file) from:
+
+#include <curses/ncursesw.h>
+
+to:
+
+#include <curses.h>
+
+NB: This will not allow you to compile Tinn with the vanilla SYSV curses or plain ncurses library; the wide-character ncursesw library is still required.
+
+
+
+Starting the program
+--------------------
+
+The first screen should display the title, author, a quirky question followed by your input cursor, and a few characters to test the capabilities of your terminal. If these don't look right, stop and fix your terminal. You can press "N" then "Enter" to end the program.
+
+If your terminal gets messed up, then the "reset" command will fix it under UNIX and Linux systems.
