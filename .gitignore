@@ -27,6 +27,7 @@
 *.lib
 
 # Executables
+tinn
 *.exe
 *.out
 *.app
