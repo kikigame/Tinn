@@ -8,8 +8,8 @@
 
 // we're a game, not a crypto, so seeding with the time should be okay.
 //static std::default_random_engine generator;
-static std::default_random_engine generator(1473628262);
-//static std::default_random_engine generator(time(NULL));
+//static std::default_random_engine generator(1473628262);
+static std::default_random_engine generator(time(NULL));
 static std::uniform_int_distribution<int> distributionRoom(3,5);
 static auto numRooms = std::bind ( distributionRoom, generator );
 static std::uniform_int_distribution<int> distributionWidth(5,10);
