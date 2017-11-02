@@ -27,6 +27,17 @@ class levelImpl;
 class role;
 class slot;
 class damage;
+
+// attack() can remove a monster from the game, so we copy
+// the data to a struct to return it:
+struct attackResult {
+  attackResult(const characteristic &damage,
+	       const wchar_t * const text) :
+    injury_(damage), text_(text) {};
+  characteristic injury_;
+  const wchar_t *const text_;
+};
+
 // I'm not using pImpl here, because pain.
 // Sutter (in Effective C++) reminds me that nothing virtual should go in the pImpl, as the pImpl can't be
 // effectively used as a base or derrived class.
@@ -93,7 +104,7 @@ public:
   const deity& align() const;
 
   // fighting...
-  const wchar_t* const attack(monster &target);
+  const attackResult attack(monster &target);
 
   // falling...
   virtual const wchar_t* const fall(unsigned char reductionPc);

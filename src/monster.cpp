@@ -191,16 +191,16 @@ const monsterType& monster::type() const { return type_; }
 
 const deity &monster::align() const { return *align_; }
 
-const wchar_t* const monster::attack(monster &target) {
+const attackResult monster::attack(monster &target) {
   // We hit (unless dodged) the target if D% < fighting, or always on a roll of 0.
   auto dHit = dPc();
   unsigned char f = fighting().cur();
   
-  if (dHit > f) return L"miss";
+  if (dHit > f) return attackResult(injury(), L"miss");
 
   // Now to see if the opponent dodged it...
   unsigned char d = target.dodge().cur();
-  if (dHit < d) return L"evaded";
+  if (dHit < d) return attackResult(injury(), L"evaded");
 
   auto weap = equipment_.find(slotBy(slotType::primary_weapon));
   if (weap == equipment_.end()) weap = equipment_.find(slotBy(slotType::secondary_weapon));
@@ -211,11 +211,11 @@ const wchar_t* const monster::attack(monster &target) {
 
   // Now to see how much damage we did...
   int damage = target.wound(strength_.cur(), dt);
-  if (damage == 0) return L"ineffectual";
+  if (damage == 0) return attackResult(injury(), L"ineffectual");
   auto max = target.injury().max();
-  if (static_cast<unsigned char>(damage) == max) return L"fatal";
-  if (static_cast<unsigned char>(damage) >= max/2) return L"good hit";
-  return L"hit";
+  if (static_cast<unsigned char>(damage) == max) return attackResult(injury(), L"fatal");
+  if (static_cast<unsigned char>(damage) >= max/2) return attackResult(injury(), L"good hit");
+  return attackResult(injury(), L"hit");
 }
 
 // wounding in combat: between 0 and the damage_ stat, averaging 50%, then rounded down:
@@ -579,7 +579,7 @@ void monsterAttacks(monster &mon, const std::shared_ptr<io> ios) {
 	    << (en->isPlayer() ? L"you" : en->name())
 	    << pos
 	    << L": "
-	    << result;
+	    << result.text_;
 
 	auto m = msg.str();
 

@@ -216,14 +216,16 @@ public:
   // target can, so needs to be a shared_ptr here.
   void attack(monster &aggressor, monster &target) {
     //    std::cerr << aggressor.name() << " is attacking " << target.name() << std::endl;
-    std::wstring rtn(aggressor.attack(target));
+    const auto tName = target.name();
+    const auto result = aggressor.attack(target);
+    std::wstring rtn(result.text_);
     bool longMsg = false;
     if (static_cast<unsigned char>(aggressor.injury().cur()) == aggressor.injury().max()) {
       rtn = rtn + L"\n" + aggressor.name() + L" dies.";
       longMsg = true;
     }
-    if (static_cast<unsigned char>(target.injury().cur()) == target.injury().max()) {
-      rtn = rtn + L"\n" + target.name() + L" dies.";
+    if (static_cast<unsigned char>(result.injury_.cur()) == result.injury_.max()) {
+      rtn = rtn + L"\n" + tName + L" dies.";
       longMsg = true;
     }
     //    std::cerr << rtn << " ( monster health is " << target.injury() << ")" << std::endl;

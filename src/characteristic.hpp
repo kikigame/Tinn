@@ -11,6 +11,8 @@ private:
   // the current max level for this monster/PC (0-100)
   unsigned char max_;
 public:
+  // copy constructor:
+  characteristic(const characteristic &other) = default;
   // create a degraded characteristic:
   characteristic(unsigned char current, unsigned char max);
   // most start at max:
@@ -20,6 +22,7 @@ public:
   // ordinary use: just use the current_ value, limiting it by 0..max_:
   unsigned char max() const;
   unsigned char cur() const;
+  characteristic & operator = (const characteristic &other) = default;
   characteristic & operator = (unsigned char);
   characteristic & operator = (unsigned int);
   characteristic operator + (unsigned char) const;
