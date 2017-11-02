@@ -33,22 +33,22 @@ private:
     std::wstring rtn;
     int x=0,y=0;
     for (auto t : x_o) {
-    if (b[0][0] == tile::empty && b[1][1] == t && b[2][2] == t) return ogo(0,0);
-    if (b[1][1] == tile::empty && b[0][0] == t && b[2][2] == t) return ogo(1,1);
-    if (b[2][2] == tile::empty && b[0][0] == t && b[1][1] == t) return ogo(2,2);
-    if (b[2][0] == tile::empty && b[1][1] == t && b[0][2] == t) return ogo(2,0);
-    if (b[1][1] == tile::empty && b[0][0] == t && b[0][2] == t) return ogo(1,1);
-    if (b[0][2] == tile::empty && b[0][0] == t && b[1][1] == t) return ogo(0,2);
+    if (b[0][0] == tile::empty && b[1][1] == t && b[2][2] == t)return ogo(0,0);
+    if (b[1][1] == tile::empty && b[0][0] == t && b[2][2] == t)return ogo(1,1);
+    if (b[2][2] == tile::empty && b[0][0] == t && b[1][1] == t)return ogo(2,2);
+    if (b[2][0] == tile::empty && b[1][1] == t && b[0][2] == t)return ogo(2,0);
+    if (b[1][1] == tile::empty && b[0][0] == t && b[0][2] == t)return ogo(1,1);
+    if (b[0][2] == tile::empty && b[2][0] == t && b[1][1] == t)return ogo(0,2);
     for (int i=0; i < 3; ++i) {
-      if (b[i][0] == tile::empty && b[i][1] == t && b[i][2] == t) return ogo(i,0);
-      if (b[i][1] == tile::empty && b[i][0] == t && b[i][2] == t) return ogo(i,1);
-      if (b[i][2] == tile::empty && b[i][0] == t && b[i][1] == t) return ogo(i,2);
-      if (b[0][i] == tile::empty && b[1][i] == t && b[2][i] == t) return ogo(0,i);
-      if (b[1][i] == tile::empty && b[0][i] == t && b[2][i] == t) return ogo(1,i);
-      if (b[2][i] == tile::empty && b[0][i] == t && b[1][i] == t) return ogo(2,i);
-      if (b[i][0] == tile::empty) x=i,y=0;
-      if (b[i][1] == tile::empty) x=i,y=1;
-      if (b[i][2] == tile::empty) x=i,y=2;
+    if (b[i][0] == tile::empty && b[i][1] == t && b[i][2] == t)return ogo(i,0);
+    if (b[i][1] == tile::empty && b[i][0] == t && b[i][2] == t)return ogo(i,1);
+    if (b[i][2] == tile::empty && b[i][0] == t && b[i][1] == t)return ogo(i,2);
+    if (b[0][i] == tile::empty && b[1][i] == t && b[2][i] == t)return ogo(0,i);
+    if (b[1][i] == tile::empty && b[0][i] == t && b[2][i] == t)return ogo(1,i);
+    if (b[2][i] == tile::empty && b[0][i] == t && b[1][i] == t)return ogo(2,i);
+    if (b[i][0] == tile::empty) x=i,y=0;
+    if (b[i][1] == tile::empty) x=i,y=1;
+    if (b[i][2] == tile::empty) x=i,y=2;
     }
     }
     if (b[1][1] == tile::empty) return ogo(1,1);

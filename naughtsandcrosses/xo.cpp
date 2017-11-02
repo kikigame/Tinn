@@ -25,7 +25,7 @@ int main() {
   
   std::cin >> y;
 
-  std::cout << xo.go(y,x); // that'll confuse 'em!
+  std::wcout << xo.go(y,x); // that'll confuse 'em!
 
   print(xo);
   }
