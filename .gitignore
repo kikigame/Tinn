@@ -31,3 +31,6 @@ tinn
 *.exe
 *.out
 *.app
+xo
+naughtsandcrosses/*
+
