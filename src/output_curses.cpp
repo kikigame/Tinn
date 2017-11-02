@@ -17,6 +17,11 @@ extern "C" {
 #include <ncursesw/curses.h> // lookit! A dependency!
 }
 
+// portable way to mark a variable as deliberately unused.
+template<typename T>
+void unused(T const &) {}
+
+
 // RAII to enable the ncurses interface
 struct ncursIface {
   ncursIface() {
@@ -271,6 +276,7 @@ private:
     if (!lastMsg.empty()) {
       mvaddwstr(0,0, std::wstring(L" ", 80).c_str()); // 80 bytes of ascii...
       mvaddwstr(0,0, lastMsg.c_str());
+      blankToEol();
       if (!msg.empty())
 	addwstr(L" -- MORE --"); // ascii...
       refresh();
@@ -278,6 +284,13 @@ private:
 	getwch();
     }
     lastMsg = msg;
+  }
+  void blankToEol() const {
+    int xMax,yMax;
+    getmaxyx(stdscr, yMax, xMax); // macro; updates by reference
+    unused(yMax); // can't get xMax without yMax
+    for (int i=0; i < xMax; ++i)
+      delch();
   }
   /*
    * used by genderPrompt - show the current percentage
