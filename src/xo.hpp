@@ -38,7 +38,7 @@ private:
     if (b[2][2] == tile::empty && b[0][0] == t && b[1][1] == t) return ogo(2,2);
     if (b[2][0] == tile::empty && b[1][1] == t && b[0][2] == t) return ogo(2,0);
     if (b[1][1] == tile::empty && b[0][0] == t && b[0][2] == t) return ogo(1,1);
-    if (b[0][2] == tile::empty && b[0][0] == t && b[1][1] == t) return ogo(0,2);
+    if (b[0][2] == tile::empty && b[2][0] == t && b[1][1] == t) return ogo(0,2);
     for (int i=0; i < 3; ++i) {
       if (b[i][0] == tile::empty && b[i][1] == t && b[i][2] == t) return ogo(i,0);
       if (b[i][1] == tile::empty && b[i][0] == t && b[i][2] == t) return ogo(i,1);
