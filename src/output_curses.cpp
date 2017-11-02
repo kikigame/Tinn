@@ -174,8 +174,11 @@ public:
     move(++y,0);
     auto i = l.drawBegin(), e = l.drawEnd();
     while (true) {
-      wchar_t r = (*i).second.render();
+      auto &renderable = (*i).second;
+      wchar_t r = renderable.render();
+      if (renderable.highlight()) attron(A_STANDOUT);
       addnwstr(&r, 1);
+      if (renderable.highlight()) attroff(A_STANDOUT);
       ++i;
       if (i == e) break;
       if ((*i).first.first <= 0) move(++y,0);

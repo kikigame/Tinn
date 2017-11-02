@@ -26,6 +26,7 @@ public:
   virtual const wchar_t render() const ;
   virtual const wchar_t * const name() const ;
   virtual const wchar_t * const description() const ;
+  virtual bool highlight() const { return true; };
 
   // is this monster computer-controlled?
   virtual bool isPlayer() const { return true; }
