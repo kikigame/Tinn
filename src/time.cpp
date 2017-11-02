@@ -44,9 +44,12 @@ unsigned long long time::moveCount() {
 
 void time::tick(bool isMove) {
   ++ (instance_->moveCount_);
-  if (isMove)
-    for (auto f : instance_->playerMoveCallbacks_) { (*f)(); }
-  for (auto f : instance_->tickCallbacks_) { (*f)(); }
+  if (isMove) {
+    auto copy = instance_->playerMoveCallbacks_;
+    for (auto f : copy) { (*f)(); }
+  }
+  auto copy = instance_->tickCallbacks_;
+  for (auto f : copy) { (*f)(); }
 }
 void time::onPlayerMove(time::callback &onMove) {
   instance_->playerMoveCallbacks_.push_back(&onMove);
