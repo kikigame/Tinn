@@ -83,6 +83,7 @@ playerBuilder chargen(io &ios) {
 	 });
     auto &repo = deityRepo::instance();
     deity & path = repo.getExact(element, domination, outlook);
+    ios.clear();
 
     if (path.nonaligned()) {
       ios.longMsg(name + L", ye have neither deity nor spirituality.\n"
