@@ -50,6 +50,7 @@ int play() {
     io->longMsg(L"They say the only winning move is not to play."); // Wargames again, but this time in Nethack fortune-style.
     repeat = false;
   } else if (ch.length() == 1 && ch[0] == 'H') { // let's not make it too obvious; you must type the egg in the right case...
+    io->clear();
     io->message(L"How about global thermonuclear war?"); // Wargames *again*...
     io->longMsg(L"Sometimes people do make mistak"); // Wargames *again*... [sic] the typo on "mistake" (as on the screen on the film)
     xo xo;

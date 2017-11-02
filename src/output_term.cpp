@@ -50,6 +50,11 @@ public:
     std::wcout << std::endl;
   }
 
+  // called when moving from one screen to another.
+  virtual void clear() const {
+    std::wcout << term::clear() << std::flush;
+  }
+
   // print a 1-line message to the user:
   virtual void message(const std::wstring &msg) const {
     std::wcout << term::move_abs(0,0)

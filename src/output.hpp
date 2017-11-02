@@ -21,6 +21,9 @@ class io {
 public:
   virtual ~io();
 
+  // called when moving from one screen to another.
+  virtual void clear() const = 0;
+
   // print a 1-line message to the user:
   virtual void message(const std::wstring &msg) const = 0;
   virtual void message(const wchar_t *msg) const {if (msg != NULL) message(std::wstring(msg));}

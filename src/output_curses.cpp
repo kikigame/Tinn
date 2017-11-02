@@ -69,8 +69,15 @@ public:
     attroff(WA_DIM | WA_UNDERLINE);    
   }
   virtual ~ncurse() {
-    clear();
+    ::clear();
     longMsg(std::wstring(L"See you next time.")); // sort-of pun on "Be seeing you" Nethack end; itself a quote from the Prisoner TV series
+  }
+
+  // called when moving from one screen to another.
+  virtual void clear() const {
+    flushLastMsg(L"");
+    ::clear();
+    refresh();
   }
 
   // print a 1-line message to the user:
@@ -105,7 +112,7 @@ public:
     
     /*
     savetty();
-    clear();
+    ::clear();
     */
     if (lastMsg.empty()) lastMsg = msg;
     else lastMsg = lastMsg + L"\n" + msg;
@@ -192,7 +199,7 @@ public:
     //    refresh();
   }
   virtual void draw(const dungeon & d) const {
-    clear();
+    ::clear();
     draw(d.cur_level());
     draw(*(d.pc()));
     // don't flushLastMsg here; that'll be taken care of by the key prompt.
@@ -203,7 +210,7 @@ public:
   genderPrompt(const wchar_t * msg, const wchar_t * help,
 	       const wchar_t * female0help, const wchar_t * female100help,
 	       const wchar_t * male0help, const wchar_t * male100help) const {
-    clear();
+    ::clear();
     bool femaleCur = true;
     unsigned char male=0, female=0;
     const std::wstring blank(80, ' ');
@@ -285,7 +292,7 @@ private:
    * Aim to show help text in a consistent place; leave cursor after msg
    */
   void helpPrompt(const std::wstring msg, const std::wstring help) const {
-    clear();
+    ::clear();
     mvaddwstr(3,0,help.c_str());
     mvaddwstr(0,0,msg.c_str());
     refresh();
