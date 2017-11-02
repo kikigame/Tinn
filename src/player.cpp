@@ -137,7 +137,7 @@ void player::equip() {
 	  if (monster::equip(i, s))
 	    return;
 	  else if (weap)
-	    io_->message(std::wstring(L"This ") + i->name() + L" won't be your " + sl->name(monster::type().category()));
+	    io_->message(std::wstring(L"This ") + i->name() + L" won't be your " + sl->name(monster::type().category()) + L" weapon");
 	  else io_->message(std::wstring(L"This ") + i->name() + L" won't fit your " + sl->name(monster::type().category()));
 	}
       }
