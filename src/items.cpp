@@ -7,6 +7,7 @@
 #include "random.hpp"
 #include "monster.hpp"
 #include "shop.hpp"
+#include "output.hpp"
 #include <set>
 #include <bitset>
 #include <algorithm>
@@ -356,15 +357,19 @@ public:
   // when a bottle is destroyed, its contents are revealed:
   virtual void destroy(itemHolder & holder) {
     basicItem::destroy(holder);
-    if (content_->material() == materialType::liquid) {
+    if (!content_) {
+      ios().message(std::wstring(name()) + L" smashes, and the emptiness gets out"); // Hmmm; spawn a vacuum monster?
+    } else if (content_->material() == materialType::liquid) {
       content_->destroy(holder);
     } else {
       holder.addItem(content_);
     }
   }
-  virtual bool use() {
-    // if we are in a player's inventory, get a confirm prompt
-    // TODO: remove the item from its container
+  virtual bool use(itemHolder &holder) {
+    // TODO: if we are in a player's inventory, get a confirm prompt 
+    if (content_) {
+      destroy(holder);
+    }
     return true;
   }
   // interface itemHolder
