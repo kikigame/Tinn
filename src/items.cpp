@@ -32,11 +32,14 @@ private:
   int enchantment_;
 protected:
   mutable std::wstring buffer_; // for transient returns.
+  itemHolder *holder_; // where this item is
 public:
-  basicItem(const itemType& type, const io &ios) :
+  basicItem(const itemType& type, const io &ios, itemHolder &holder) :
+    item(),
     type_(type),
     io_(ios),
-    enchantment_(0) {
+    enchantment_(0),
+    holder_(&holder) {
     const damageRepo &dr = damageRepo::instance();
     for (auto dt : allDamageTypes)
       if (dr[dt].canDamage(type_.material()))
@@ -120,6 +123,16 @@ public:
     }
 
     return buffer_.c_str();
+  }
+
+  virtual void move(itemHolder &holder) {
+    auto c = holder_->contents();
+    for (auto i = c.begin(); i != c.end(); ++i)
+      if (&(**i) == this) {
+	c.erase(i);
+	break;
+      }
+    holder_ = &holder;
   }
 
   // what is the object made of?
@@ -237,8 +250,8 @@ public:
 
   // TODO: destroy items
   // destroy an item in inventory
-  virtual void destroy(itemHolder & holder) {
-    auto c = holder.contents();
+  virtual void destroy() {
+    auto c = holder_->contents();
     for (auto i = c.begin(); i != c.end(); ++i)
       if (&(**i) == this) {
 	c.erase(i);
@@ -248,12 +261,12 @@ public:
   }
 
   // try to use the object
-  virtual bool use(itemHolder &) {
+  virtual bool use () {
     return false; // no effect by default
   }
 
   // try to use the object with another (eg put object into container; put candles on candlestick)
-  virtual bool use(itemHolder &, std::shared_ptr<item> other) {
+  virtual bool use(std::shared_ptr<item> other) {
     return false; // no effect by default
   }
 
@@ -281,8 +294,8 @@ private:
   std::set<slotType> supportedSlots_;
 public:
   template <typename... S>
-  basicEquip(const itemType& type, const io &ios, S... slots) :
-    basicItem(type, ios),
+  basicEquip(const itemType& type, const io &ios, itemHolder &holder, S... slots) :
+    basicItem(type, ios, holder),
     supportedSlots_({slots...}) {
   }
   virtual ~basicEquip() {}
@@ -301,8 +314,8 @@ class basicWeapon : public basicEquip {
 private:
   damageType damageType_;
 public:
-  basicWeapon(const itemType & type, const io &ios, const damageType damage) :
-    basicEquip(type, ios, slotType::primary_weapon, slotType::secondary_weapon),
+  basicWeapon(const itemType & type, const io &ios, itemHolder &holder, const damageType damage) :
+    basicEquip(type, ios, holder, slotType::primary_weapon, slotType::secondary_weapon),
     damageType_(damage) {}
   virtual ~basicWeapon() {}
   damageType weaponDamage() const {
@@ -313,8 +326,8 @@ public:
 class basicThrown : public basicWeapon {
   // TODO: Throwability. For now, we just wield them menacingly...
 public:
-  basicThrown(const itemType & type, const io &ios, const damageType damage) :
-    basicWeapon(type, ios, damage) {}
+  basicThrown(const itemType & type, const io &ios, itemHolder &holder, const damageType damage) :
+    basicWeapon(type, ios, holder, damage) {}
   virtual ~basicThrown() {};
 };
 
@@ -322,8 +335,8 @@ class bottle : public basicItem, itemHolder {
 private:
   std::shared_ptr<item> content_;
 public:
-  bottle(const itemType& type, const io &ios) :
-    basicItem(type, ios) {}
+  bottle(const itemType& type, const io &ios, itemHolder &holder) :
+    basicItem(type, ios, holder) {}
   virtual ~bottle() {}
   virtual const wchar_t * const name() const {
     basicItem::name(); // sets buffer();
@@ -355,20 +368,20 @@ public:
     return rtn;
   }
   // when a bottle is destroyed, its contents are revealed:
-  virtual void destroy(itemHolder & holder) {
-    basicItem::destroy(holder);
+  virtual void destroy() {
+    basicItem::destroy();
     if (!content_) {
       ios().message(std::wstring(name()) + L" smashes, and the emptiness gets out"); // Hmmm; spawn a vacuum monster?
     } else if (content_->material() == materialType::liquid) {
-      content_->destroy(holder);
+      content_->destroy();
     } else {
-      holder.addItem(content_);
+      holder_->addItem(content_);
     }
   }
-  virtual bool use(itemHolder &holder) {
+  virtual bool use() {
     // TODO: if we are in a player's inventory, get a confirm prompt 
     if (content_) {
-      destroy(holder);
+      destroy();
     }
     return true;
   }
@@ -393,8 +406,8 @@ class basicContainer : public basicItem, itemHolder {
 private:
   std::vector<std::shared_ptr<item>> contents_;
 public:
-  basicContainer(const itemType& type, const io &ios) :
-    basicItem(type, ios) {}
+  basicContainer(const itemType& type, const io &ios, itemHolder &holder) :
+    basicItem(type, ios, holder) {}
   virtual ~basicContainer() {}
   virtual double weight() const {
     double rtn = basicItem::weight();
@@ -454,19 +467,19 @@ protected:
 
 class readableItem : public basicItem {
 public:
-  readableItem(const itemType& type, const io &ios) :
-    basicItem(type, ios) {}
+  readableItem(const itemType& type, const io &ios, itemHolder & holder) :
+    basicItem(type, ios, holder) {}
   virtual ~readableItem() {}
    // TODO: Text, spells etc.
 };
 
 class shopCard : public basicItem {
 public:
-  shopCard(const itemType& type, const io &ios) :
-    basicItem(type, ios) {}  
+  shopCard(const itemType& type, const io &ios, itemHolder &holder) :
+    basicItem(type, ios, holder) {}  
   virtual ~shopCard(){}
-  virtual bool use(itemHolder & holder) {
-    goShopping(ios(), holder);
+  virtual bool use() {
+    goShopping(ios(), *holder_);
     return true;
   }
 };
@@ -475,33 +488,33 @@ public:
 // create an item of the given type. io may be used later by that item, eg for prompts when using.
 // TODO: Randomness for flavour: enchantment, flags, etc.
 // TODO: Wands will need starting enchantment.
-std::shared_ptr<item> createItem(const itemTypeKey & t, const io & ios) {
+std::shared_ptr<item> createItem(const itemTypeKey & t, const io & ios, itemHolder &holder) {
   auto &r = itemTypeRepo::instance();
   switch(t) {
   case itemTypeKey::apple:
-    return std::shared_ptr<item>(new basicItem(r[t], ios));
+    return std::shared_ptr<item>(new basicItem(r[t], ios, holder));
   case itemTypeKey::mace:
-    return std::shared_ptr<item>(new basicWeapon(r[t], ios, damageType::bashing));
+    return std::shared_ptr<item>(new basicWeapon(r[t], ios, holder, damageType::bashing));
   case itemTypeKey::rock:
-    return std::shared_ptr<item>(new basicThrown(r[t], ios, damageType::bashing));
+    return std::shared_ptr<item>(new basicThrown(r[t], ios, holder, damageType::bashing));
   case itemTypeKey::helmet:
-    return std::shared_ptr<item>(new basicEquip(r[t], ios, slotType::hat));
+    return std::shared_ptr<item>(new basicEquip(r[t], ios, holder, slotType::hat));
   case itemTypeKey::stick:
-    return std::shared_ptr<item>(new basicItem(r[t], ios)); // TODO: wands & charges
+    return std::shared_ptr<item>(new basicItem(r[t], ios, holder)); // TODO: wands & charges
   case itemTypeKey::bottle:
-    return std::shared_ptr<item>(new bottle(r[t], ios));
+    return std::shared_ptr<item>(new bottle(r[t], ios, holder));
   case itemTypeKey::codex:
-    return std::shared_ptr<item>(new readableItem(r[t], ios));
+    return std::shared_ptr<item>(new readableItem(r[t], ios, holder));
   case itemTypeKey::poke:
-    return std::shared_ptr<item>(new basicContainer(r[t], ios));
+    return std::shared_ptr<item>(new basicContainer(r[t], ios, holder));
   case itemTypeKey::water:
-    return std::shared_ptr<item>(new basicItem(r[t], ios)); // TODO: undropability
+    return std::shared_ptr<item>(new basicItem(r[t], ios, holder)); // TODO: undropability
   case itemTypeKey::wooden_ring:
-    return std::shared_ptr<item>(new basicEquip(r[t], ios, slotType::ring_left_thumb, slotType::ring_left_index, slotType::ring_left_middle, slotType::ring_left_ring, slotType::ring_left_little, slotType::ring_right_thumb, slotType::ring_right_index, slotType::ring_right_middle, slotType::ring_right_ring, slotType::ring_right_little, slotType::toe_left_thumb, slotType::toe_left_index, slotType::toe_left_middle, slotType::toe_left_fourth, slotType::toe_left_little, slotType::toe_right_thumb, slotType::toe_right_index, slotType::toe_right_middle, slotType::toe_right_fourth, slotType::toe_right_little));
+    return std::shared_ptr<item>(new basicEquip(r[t], ios, holder, slotType::ring_left_thumb, slotType::ring_left_index, slotType::ring_left_middle, slotType::ring_left_ring, slotType::ring_left_little, slotType::ring_right_thumb, slotType::ring_right_index, slotType::ring_right_middle, slotType::ring_right_ring, slotType::ring_right_little, slotType::toe_left_thumb, slotType::toe_left_index, slotType::toe_left_middle, slotType::toe_left_fourth, slotType::toe_left_little, slotType::toe_right_thumb, slotType::toe_right_index, slotType::toe_right_middle, slotType::toe_right_fourth, slotType::toe_right_little));
   case itemTypeKey::kalganid:
-    return std::shared_ptr<item>(new basicItem(r[t], ios)); // TODO: should we be able to equip coins on our eyes?
+    return std::shared_ptr<item>(new basicItem(r[t], ios, holder)); // TODO: should we be able to equip coins on our eyes?
   case itemTypeKey::shop_card:
-    return std::shared_ptr<item>(new shopCard(r[t], ios));
+    return std::shared_ptr<item>(new shopCard(r[t], ios, holder));
   default:
     throw t; // unknown type
   }
@@ -509,12 +522,12 @@ std::shared_ptr<item> createItem(const itemTypeKey & t, const io & ios) {
 
 // create a random item suitable for the given level depth
 // TODO: depth limitations
-std::shared_ptr<item> createRndItem(const int depth, const io & ios) {
+std::shared_ptr<item> createRndItem(const int depth, const io & ios, itemHolder &holder) {
   auto &r = itemTypeRepo::instance();
   while (true) {
     auto type = rndPick(r.begin(), r.end());
     if (type->first == itemTypeKey::water) continue;
-    return createItem(type->first, ios);
+    return createItem(type->first, ios, holder);
   }
 }
 

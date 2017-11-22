@@ -80,7 +80,7 @@ player::player(playerBuilder &b) :
   // I feel a player should start with a deterministic inventory, perhaps based
   // on their class and race.
   // But for now, we'll just let them go shopping:
-  addItem(createItem(itemTypeKey::shop_card, *io_));
+  addItem(createItem(itemTypeKey::shop_card, *io_, *this));
 }
 
 player::~player() {}
@@ -161,7 +161,7 @@ void player::use() {
   std::function<void(std::shared_ptr<item>, std::wstring)> f = 
     [this](std::shared_ptr<item> i, std::wstring name){
     if (io_->ynPrompt(std::wstring(L"Use ") + name + L"?"))
-      if (!i->use(*this))
+      if (!i->use())
 	io_->message(L"That doesn't seem to work.");
   };
   forEachItem(f);

@@ -600,7 +600,7 @@ void levelGen::addItems(const std::pair<coord,coord> &coords) {
   std::uniform_int_distribution<int> dy(coords.first.second+1, coords.second.second - 2);
   for (int i=0; i < itemCount; ++i) {
     const coord c(dx(generator), dy(generator));
-    auto item = createRndItem(level_->depth(), *(level_->io_));
+    auto item = createRndItem(level_->depth(), *(level_->io_), *(level_->holder(c)));
     level_->addItem(item, c);
   }
 }

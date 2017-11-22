@@ -31,6 +31,9 @@ public:
   // built up of all visible properties.
   virtual const wchar_t * const description() const = 0;
 
+  // where shall it be?
+  virtual void move(itemHolder &holder) = 0;
+
   // what is the object made of?
   virtual materialType material() const = 0;
   // hom much does it weigh?
@@ -67,13 +70,13 @@ public:
   virtual void enchant(int enchantment) = 0; // may be negative
 
   // destroy an item
-  virtual void destroy(itemHolder & holder) = 0;
+  virtual void destroy() = 0;
 
   // try to use the object
-  virtual bool use(itemHolder & holder) = 0;
+  virtual bool use() = 0;
 
   // try to use the object with another (eg put object into container; put candles on candlestick)
-  virtual bool use(itemHolder & holder, std::shared_ptr<item> other) = 0;
+  virtual bool use(std::shared_ptr<item> other) = 0;
 
   // try to equip an item. Precondition: item must be available for monster to equip.
   // returns true if successful, false otherwise (ie no suitable slots)
@@ -96,9 +99,9 @@ protected:
 };
 
 // create an item of the given type. io may be used later by that item, eg for prompts when using.
-std::shared_ptr<item> createItem(const itemTypeKey & it, const io & ios);
+std::shared_ptr<item> createItem(const itemTypeKey & it, const io & ios, itemHolder &holder);
 
 // create a random item suitable for the given level depth
-std::shared_ptr<item> createRndItem(const int depth, const io & ios);
+std::shared_ptr<item> createRndItem(const int depth, const io & ios, itemHolder &holder);
 
 #endif // ndef ITEMS_HPP__
