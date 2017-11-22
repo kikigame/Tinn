@@ -210,9 +210,9 @@ const attackResult monster::attack(monster &target) {
   auto dt = damageRepo::instance()[type];
 
   // Now to see how much damage we did...
+  auto max = target.injury().max();
   int damage = target.wound(strength_.cur(), dt);
   if (damage == 0) return attackResult(injury(), L"ineffectual");
-  auto max = target.injury().max();
   if (static_cast<unsigned char>(damage) == max) return attackResult(injury(), L"fatal");
   if (static_cast<unsigned char>(damage) >= max/2) return attackResult(injury(), L"good hit");
   return attackResult(injury(), L"hit");
