@@ -8,6 +8,11 @@
 #include <utility> // for pair
 #include <ostream> // for ostream
 
+/*
+ * first  = x coordinate (right from left on screen)
+ * secord = y coordinate (down from top of screen)
+ * (assuming default coordinate space with no transmutations)
+ */
 class coord : public std::pair<int,int> {
 public:
   coord() {
