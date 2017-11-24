@@ -15,6 +15,7 @@ class dungeon;
 class level;
 class player;
 class renderable;
+class renderByCoord;
 
 // abstract input/output class
 class io {
@@ -68,7 +69,7 @@ public:
 
   // draw the dungeon:
   virtual void draw(const dungeon & d) const = 0;
-  virtual void draw(const level & d) const = 0;
+  virtual void draw(const renderByCoord & d) const = 0;
   virtual void draw(const player & d) const = 0;
 
 };
@@ -78,11 +79,14 @@ namespace ioFactory {
   std::shared_ptr<io> create();
 };
 
+class drawIter;
 
 // interface for things which supply a renderable object by coordinates
 class renderByCoord {
 public:
   virtual const renderable & renderableAt(const coord &) const = 0;
+  virtual drawIter drawBegin() const = 0;
+  virtual drawIter drawEnd() const = 0;
 };
 
 // input iterator for supplying renderables

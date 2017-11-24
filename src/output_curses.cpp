@@ -13,6 +13,7 @@
 #include <sstream> // wstringstream
 #include <limits> // numeric_limits for ignore
 #include <algorithm> // find_if_not for trim
+#include <functional>
 extern "C" {
 #include <ncursesw/curses.h> // lookit! A dependency!
 }
@@ -174,23 +175,16 @@ public:
 
 
   // draw the dungeon:
-  virtual void draw(const level & l) const {
-    int y=1;
-    move(++y,0);
-    auto i = l.drawBegin(), e = l.drawEnd();
-    while (true) {
-      auto &renderable = (*i).second;
+  virtual void draw(const renderByCoord & l) const {
+    draw(l, [] (const renderable &renderable, int, int) {
       wchar_t r = renderable.render();
       if (renderable.highlight()) attron(A_STANDOUT);
       addnwstr(&r, 1);
       if (renderable.highlight()) attroff(A_STANDOUT);
-      ++i;
-      if (i == e) break;
-      if ((*i).first.first <= 0) move(++y,0);
-    }
-    move(++y,0);
-    //    refresh();
+      });
   }
+public:
+
   virtual void draw(const player & p) const {
     std::wstringstream fmt;
     fmt
@@ -349,6 +343,30 @@ private:
    */
   wchar_t getwch() const {
     return getch();
+  }
+
+  // read and return a wide key, non-blocking
+  wchar_t key() const {
+    rawTerm noCook; // this function will not block input.
+    return getwch();
+  }
+
+  /*
+   * Implementation of draw; moves cursor to the start of each cell, then call renderer.
+   * Renderer: must advance the cursor by 1 cell.
+   */
+  void draw(const renderByCoord & l, std::function<void (const renderable&, int x, int y)> renderer) const {
+    int y=0,x=0;
+    move(y+2,0);
+    auto i = l.drawBegin(), e = l.drawEnd();
+    while (true) {
+      auto &renderable = (*i).second;
+      renderer(renderable, x,y);
+      ++i, ++x;
+      if (i == e) break;
+      if ((*i).first.first <= 0) {move(++y,0); x=0;}
+    }
+    move(++y,0);
   }
 };
 

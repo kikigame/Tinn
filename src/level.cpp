@@ -753,6 +753,11 @@ void itemHolderLevel::erase(std::vector<std::shared_ptr<item>>::iterator pos) {
   level_.removeItem(coord_, *pos);
 }
 
+// hack to pretend we implement a readonly version of the interface:
+level::operator const renderByCoord&() const {
+  return *pImpl_;
+}
+
 // these need to be defined (not just declared) in order to take a reference to them, as in (eg)
 // std::max(x, level::MAX_WIDTH); - oddities of the dark corners of C++ I guess.
 // see http://stackoverflow.com/questions/5391973/undefined-reference-to-static-const-int

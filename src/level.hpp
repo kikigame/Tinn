@@ -24,6 +24,7 @@ class dungeon;
 class drawIter;
 
 class io;
+class renderByCoord;
 
 class level {
 private:
@@ -102,6 +103,8 @@ public:
 
   // prevent copying
   level operator =(level &other) = delete;
+
+  operator const renderByCoord&() const;
 };
 
 # endif // ndef  LEVEL_HPP__
