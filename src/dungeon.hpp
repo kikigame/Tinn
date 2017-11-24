@@ -43,6 +43,9 @@ public:
   void upLevel();
   void downLevel();
 
+  // what is a renderable?
+  void interrogate() const;
+
   // user quits:
   void quit();
 

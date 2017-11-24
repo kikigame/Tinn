@@ -98,6 +98,7 @@ const wchar_t * help() {
   return L"Help on game keys:\n"
     "q) Quit the game\n"
     "wasd) Cardinally move around the map, or attack a monster in that direction\n"
+    "/) Interrogate the map\n"
     "<>) Climb up or down a ramp, pit, stair or ladder\n"
     ",p) Collect (pick up) items\n"
     "i) Take inventory of your items\n"
@@ -146,6 +147,9 @@ void processInput(dungeon & d, const std::wstring &c, const std::shared_ptr<io> 
   case L'd': case L'D':
     d.cur_level().east(*(d.pc()));
     doTick(d);
+    break;
+  case L'/':
+    d.interrogate();
     break;
   case L'<':
     d.cur_level().up(*(d.pc()));

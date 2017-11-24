@@ -72,6 +72,8 @@ public:
   virtual void draw(const renderByCoord & d) const = 0;
   virtual void draw(const player & d) const = 0;
 
+  // interrogate the dungeon (or whatever is showing):
+  virtual void interrogate(const renderByCoord &, const coord &c) const = 0;
 };
 
 namespace ioFactory {

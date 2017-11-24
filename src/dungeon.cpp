@@ -71,3 +71,8 @@ void dungeon::playerDeath() {
 bool dungeon::alive() const {
   return alive_;
 };
+
+void dungeon::interrogate() const {
+  auto &l = *level_[cur_level_];
+  io_->interrogate(l, l.pcPos());
+}

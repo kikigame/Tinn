@@ -138,16 +138,17 @@ public:
   virtual std::wstring keyPrompt() const {
     flushLastMsg(L"");
     rawTerm noCook; // this function will not block input.
-    wchar_t i[2] { static_cast<wchar_t>(getwch()), L'\0' }; // actually grab one key and shove it in a string
+    wchar_t i[2] { key(), L'\0' }; // actually grab one key and shove it in a string
     return std::wstring(i);
   }
 
   virtual std::wstring keyPrompt(const std::wstring &msg, const std::wstring &help) const {
     helpPrompt(msg, help);
     rawTerm noCook; // this function will not block input.
-    wchar_t i[2] { static_cast<wchar_t>(getwch()), L'\0' }; // actually grab one key and shove it in a string
+    wchar_t i[2] { key(), L'\0' }; // actually grab one key and shove it in a string
     return std::wstring(i);
   }
+
 
   virtual bool ynPrompt(std::wstring msg) const {
     message(msg + L" (Y/N) >");
@@ -306,6 +307,59 @@ private:
     mvaddwstr(3,0,help.c_str());
     mvaddwstr(0,0,msg.c_str());
     refresh();
+  }
+
+  /*
+   * Interrogate things on the screen
+   * l = level to draw/interrogate
+   * c = coordinate to stat cursor at
+   */
+  void interrogate(const renderByCoord &l, const coord &start) const {
+    coord c = start;
+    do {
+      ::clear();
+      const renderable* toShow = 0;
+      draw(l, [&c, &toShow] (const renderable &renderable, int x, int y) {
+	wchar_t r = renderable.render();
+	bool cursor = (x == c.first && y == c.second);
+	if (cursor) {
+	  attron(A_STANDOUT);
+	  addnwstr(&r, 1);
+	  attroff(A_STANDOUT);
+	  toShow = &renderable;
+	} else {
+	  addnwstr(&r, 1);
+	}});
+      if (toShow != 0) {
+	mvaddwstr(0,0,L"[wasdq] ");
+	if (toShow->highlight()) attron(A_STANDOUT);
+	addwstr(toShow->name());
+	if (toShow->highlight()) attroff(A_STANDOUT);
+	//	flushLastMsg(toShow->name(), toShow->highlight());
+	//message(toShow->description());
+	mvaddwstr(1,0, std::wstring(L" ", 80).c_str()); // 80 bytes of ascii...
+	mvaddwstr(1,0, toShow->description());
+      } else {
+	mvaddwstr(0,0, L"Nothing here...");
+      }
+      switch (key()) {
+      case 'A': case 'a':
+	if (c.first > 0) c.first--;
+	break;
+      case 'W': case 'w':
+	if (c.second > 0) c.second--;
+	break;
+      case 'D': case 'd':
+	if (c.first < level::MAX_WIDTH - 1) c.first++;
+	break;
+      case 'S': case 's':
+	if (c.second < level::MAX_HEIGHT - 1) c.second++;
+	break;
+      case 'Q': case 'q':
+	// exit the "look" function
+	return;
+      }
+    } while (true);
   }
 
   /*
