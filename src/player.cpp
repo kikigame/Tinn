@@ -90,7 +90,7 @@ const wchar_t player::render() const {
 }
 
 const wchar_t* const player::name() const {
-  return L"At";
+  return name_.c_str();
 }
 
 const wchar_t* const player::description() const {
