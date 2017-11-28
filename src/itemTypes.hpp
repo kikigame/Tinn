@@ -68,6 +68,7 @@ enum class itemTypeKey {
   // Readables ('¶'; nethack uses '?' for scrolls and '+' for spellbooks (and doors))
   ////
     codex,
+    hitch_guide, // access to the in-game encyclopedia of itself
 
   ////
   // Containers ('=' as bounding something; nethack uses '(' as for all tools; cf weapons are ')')

@@ -210,6 +210,7 @@ void cleanup() {
 }
 
 int main () {
+  renderable::all(); // ensure that the static variables are initialised before use...
 
   try {
     play();

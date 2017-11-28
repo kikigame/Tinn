@@ -145,6 +145,15 @@ L"Unlike folios, which are mere sheets of vellum folded into verso and recto\n"
 "The codex is a great method to convey complex knowledge in a lasting form.\n",
 L"Book."
 			     ));
+    emplace(itemTypeKey::hitch_guide,
+	    // based on 0.9g/cm3 for good quality paper; a paper copy of a big codex on Amazon
+	    // measures 39x13x46cm, giving a mass of ~21kg
+	    new itemTypeImpl(205, materialType::metallic, true, L'¶', L"Hitch-Hiker's Guide",  //ref:Hitchhiker's Guide to the Galaxy
+L"\"Kindle\" is the collective noun for kittens. I don't know why I told you\n" //ref: Amazon's electronic book is called a "Kindle".
+"that, because this is an electronic book. Various flashy lights appear on it,\n"
+"and friendly life advice is displayed prominantly on the cover.\n",
+L"Book."
+			     ));
     emplace(itemTypeKey::poke,
 	    new itemTypeImpl(0.5, materialType::clothy, false, L'=', L"poke",
 L"A large canvas bag, a little smaller than a sack. Useful for carrying items\n"

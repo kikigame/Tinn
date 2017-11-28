@@ -7,6 +7,7 @@
 #include "random.hpp"
 #include "monster.hpp"
 #include "shop.hpp"
+#include "encyclopedia.hpp"
 #include "output.hpp"
 #include <set>
 #include <bitset>
@@ -473,13 +474,30 @@ public:
    // TODO: Text, spells etc.
 };
 
+class hitchGuide : public readableItem {
+public:
+  hitchGuide(const itemType& type, const io &ios, itemHolder & holder) :
+    readableItem(type, ios, holder) {}
+  virtual ~hitchGuide() {}
+  virtual bool use() {
+    if (isCursed()) return false; // seems a bit harsh, but I don't have a better idea yet
+    ::invokeGuide(ios(), isBlessed());
+    return true;
+  }
+  virtual bool use(std::shared_ptr<item> other) {
+    if (isCursed()) return false; // seems a bit harsh, but I don't have a better idea yet
+    ::invokeGuide(ios(), isBlessed(), other);
+    return true;
+  }
+};
+
 class shopCard : public basicItem {
 public:
   shopCard(const itemType& type, const io &ios, itemHolder &holder) :
     basicItem(type, ios, holder) {}  
   virtual ~shopCard(){}
   virtual bool use() {
-    goShopping(ios(), *holder_);
+    ::goShopping(ios(), *holder_);
     return true;
   }
 };
@@ -505,6 +523,8 @@ std::shared_ptr<item> createItem(const itemTypeKey & t, const io & ios, itemHold
     return std::shared_ptr<item>(new bottle(r[t], ios, holder));
   case itemTypeKey::codex:
     return std::shared_ptr<item>(new readableItem(r[t], ios, holder));
+  case itemTypeKey::hitch_guide:
+    return std::shared_ptr<item>(new hitchGuide(r[t], ios, holder));
   case itemTypeKey::poke:
     return std::shared_ptr<item>(new basicContainer(r[t], ios, holder));
   case itemTypeKey::water:

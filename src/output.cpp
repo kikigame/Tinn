@@ -123,4 +123,5 @@ void junk(const io &ios) { // this method is not used.
   ios.choice<monsterTypeKey>(L"", L"", {});
   ios.choice<roleType>(L"", L"", {});
   ios.choice<int>(L"", L"", {}); // used in shop
+  ios.choice<wchar_t>(L"", L"", {}); // used in encyclopedia
 }
