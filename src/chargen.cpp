@@ -99,7 +99,7 @@ playerBuilder chargen(io &ios) {
   { // gender
 
     auto gender = ios.genderPrompt
-      (/*msg*/L"Please choose a gender for your character?",
+      (/*msg*/L"CHARACTER GENERATION[5/7]> Your character's gender ?",
        /*help*/L"Gender is a complex issue with limited affect in this game.\n"
        "Mixed genders get bonuses and penalties proportionately.\n"
        "Some in-game effects may affect your character's gender later on.\n"
@@ -118,70 +118,6 @@ playerBuilder chargen(io &ios) {
 
     b.male(gender.first);
     b.female(gender.second);
-    /*
-    std::wstring gender = ios.linePrompt
-      ("CHARACTER GENERATION[5/7]> Your character's gender ?",
-       "   Sorry; this screen still needs work\n"
-       "   **** Keys other than M and F and 0-9 will be ignored ****\n\n"
-       "   Gender is a complex issue with limited affect in this game.\n"
-       "   Your character can be, for example (in alphabetical order):\n"
-       "   F[Enter] - Female\n"
-       "   50M50F[Enter] - Hemaphoridite\n" // SP
-       "   100F50M[Enter] - Female with additional male characteristics.\n"
-       "   M[Enter] - Male\n"
-       "   [Enter] - Neuter\n"
-       "\n\nFor gameplay reasons, your character's gender remains fixed.\n" // meaning true genderfluidity isn't supported; user can't change their gender during the game. Doesn't mean no amulets of opposite gender.
-       "\nMixed genders get bonuses and penalties proportionately.\n"
-       "\nAn example affect of gender is the interaction with demons:"
-       "\nFemales fare badly with succubii, but may have some luck with incubii"
-       "\nMales fare badly with incubii, but may have some luck with succubii"
-       );
-    if (gender.length() == 0) {
-      b.male(0); b.female(0);
-    } else if (gender.length() == 1) switch (gender[0]) {
-      case 'F': case 'f':
-	b.female(100); b.male(0); break;
-      case 'M': case 'm':
-	b.male(100); b.female(0); break;
-      default:
-	b.male(0); b.female(0);      
-      } else {
-      // just lex the string...
-      std::vector<std::wstring> toks = {""};
-      bool isAlpha(gender[0] == 'M' || gender[0] == 'm' || gender[0] == 'F' || gender[0] == 'f');
-      for (char c : gender) {
-	switch (c) {
-	case '0':case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8':case '9':
-	  if (!isAlpha) *(toks.rbegin()) += c;
-	  else toks.emplace_back(std::wstring(1, c)); // string of "1 copy of c"
-	  isAlpha = false;
-	  continue;
-	case 'M':case 'm':case 'F':case 'f':
-	  if (isAlpha) *(toks.rbegin()) += c;
-	  else toks.emplace_back(std::wstring(1,c)); // string of "1 copy of c"
-	  isAlpha = true;
-	  continue;
-	}
-	// ignore anything else.
-	// Hmmm... if user types "female" then we get 100%F 100%M
-      }
-      // now parse:
-      int val=100;
-      bool male = false, female = false;
-      for (std::wstring & t : toks) {
-	if (t.empty()) continue;
-	if (t[0] == 'M' || t[0] == 'm') {
-	  b.male(val); val =100; male = true;
-	} else if (t[0] == 'F' || t[0] == 'f') {
-	  b.female(val); val =100; female = true;
-	} else {
-	  val = std::stoi(t);
-	}
-      }
-      // make sure we call each propertyonce:
-      if (!male) b.male(0);
-      if (!female) b.female(0);*/
-    //    }
   } // chargen
 
   { // race
@@ -191,7 +127,7 @@ playerBuilder chargen(io &ios) {
       {
 	  { monsterTypeKey::troll, L"Troll: rock-eating stony beings, big and ugly" },
 	    // most generic option is always last
-	  { monsterTypeKey::human, L"Human: curious earlhly bipeds" }
+	  { monsterTypeKey::human, L"Human: curious earthly bipeds" }
       },
        L"Your species defines most of your physical attributes, and may affect\n"
        "   how others you meet will interact with you.\n");
