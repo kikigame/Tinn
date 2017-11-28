@@ -155,7 +155,7 @@ L"One side of this pillow remains unsewn."
     emplace(itemTypeKey::water,
 	    new itemTypeImpl(2.31585538520766, materialType::liquid, false, L'~', L"water",  // half a pint
 L"Above the ignition point, hydrogen explodes in the precence of oxygen; four\n"
-"four times the mass of oxygen is consumed to the mass of hydrogen, and the\n"
+"times the mass of oxygen is consumed to the mass of hydrogen, and the\n"
 "resuting liquid has some fascinating properties.\n"
 "Water is the only known liquid to expand as it freezes; it forms long spikes\n"
 "in its crystals (the root of snowflakes). It is tasteless, odourless and\n"
