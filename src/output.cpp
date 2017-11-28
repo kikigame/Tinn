@@ -2,6 +2,8 @@
 
 // general output routine contract
 
+#include <cwctype> // locale-specific functions
+
 #include "output.hpp"
 
 #include "dungeon.hpp"
@@ -24,7 +26,7 @@ T io::choice(const std::wstring &prompt, const std::wstring &help,
     std::wstring msg = prompt + L"; please press [1] to [" + std::to_wstring(numChoices) +  L"]:";
     std::wstring list;
     i=1;
-    for (auto p : choices)
+    for (auto &p : choices)
       list += L"  " + std::to_wstring(i++) + L" - " + p.second + L"\n";
     auto ch = keyPrompt(msg, help + L"\n" + list + L"\n" + extraHelp);
     try {
@@ -39,6 +41,74 @@ T io::choice(const std::wstring &prompt, const std::wstring &help,
   for (i=1; i < res; ++i) ++rtn;
   return rtn->first;
 }
+
+// this is a full specialisation of io::choice() which allows selecting based on keystrokes
+template<>
+wchar_t io::choice<wchar_t>(const std::wstring &prompt, const std::wstring &help, 
+	     const std::vector<std::pair<wchar_t, const wchar_t*>> choices,
+	     const std::wstring &extraHelp) const {
+  // we want to use the values in the choices.*.first, provided they are keys on the keyboard.
+  // we want to be case-insensitive.
+  std::map<wchar_t, wchar_t> keys; // map of typable keystroke to return value
+  std::map<wchar_t, wchar_t> keystroke; // map of return value to displayed keystroke
+  std::vector<wchar_t> replacementKeys; // buffer for non-typable chars
+  // 1) build up keys and keystroke for all keys on the keyboard:
+  for (auto &p: choices) {
+    auto key=p.first;
+    if (key >= L'a' && key <= L'z') { // allow as-is and upcased on keyboard
+      wchar_t uc = std::towupper(key);
+      keys[uc] = key;
+      keys[key] = key;
+      keystroke[key]=uc;
+    } else if (key >= L'A' && key <= L'Z') { // allow as-is and downcased on keyboard
+      wchar_t lc = std::towlower(key);
+      keys[lc]=key;
+      keys[key]= key;
+      keystroke[key]=key;
+    } else if (key >= L'1' && key <= L'9') { // numbers: allow as-is
+      keys[key]= key;
+      keystroke[key]= key;
+    } else if (key == L'0' || key == L'!' || key == L'\"' || key == L'$' || 
+	       key == L'%' || key == L'^' || key == L'&' || key == L'*' || 
+	       key == L'(' || key == L')' || key == L'[' || key == L']' || 
+	       key == L'{' || key == L'}' || key == L'/' || key == L'\\' || 
+	       key == L'?' || key == L'=' || key == L'-' || key == L'+' || 
+	       key == L'_' || key == L'#' || key == L'~' || key == L';' || 
+	       key == L':' || key == L'.' || key == L'<' || key == L'>' || 
+	       key == L',' || key == L' ' || key == L'\'' ) { // other as-is keys
+      keys[key]= key;
+      keystroke[key]= key;
+    } else {
+      replacementKeys.push_back(key); // we don't know this yet.
+    }
+  }
+  // now we know every key we do have, we can fill in the gaps:
+  wchar_t i=L'1';
+  for (auto k: replacementKeys) {
+    while (i >= L'1' && i <= L'8' && keys.count(i)) i++;
+    if (keys.count(i)) i = L'A';
+    while (i >= L'A' && i <= L'Y' && keys.count(i)) i++;
+    // shouldn't happen as I write this because there's always a compile-time limit on the selection.
+    // but going forward I may need to have a bigger string to iterate through:
+    if (keys.count(i)) throw L"Not enough known keys for this menu!";
+    keys[i]=k;
+    keystroke[k]=i;
+    wchar_t lc = std::towlower(i); // returns lc if not a letter
+    if (!keys.count(lc)) keys[lc]=k; // also allow letters in lowercase (non-letters will already be in the map)
+  }
+
+  std::wstring ch;
+  while(true) {
+    std::wstring msg = prompt + L"; please select:" + ch;
+    std::wstring list;
+    for (auto &p : choices)
+      list += L"  [" + std::wstring(1,keystroke[p.first]) + L"] - " + p.second + L"\n";
+    ch = keyPrompt(msg, help + L"\n" + list + L"\n" + extraHelp);
+    for (auto &c : keys)
+      if (ch.length() > 0 && c.first == ch[0]) return c.second;
+  }
+}
+
 
 // workaround for linker wibbles
 #include "religion.hpp"
