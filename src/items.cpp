@@ -23,7 +23,7 @@ class shared_item : public std::enable_shared_from_this<item> {
 extern std::vector<damageType> allDamageTypes;
 
 // class for items with no especial behaviour:
-class basicItem : public item {
+class basicItem : public item, virtual public shared_item {
 private:
   enum { blessed, cursed, unidentified, sexy, NUM_FLAGS } flags;
   const itemType& type_;
@@ -132,14 +132,22 @@ public:
     return buffer_.c_str();
   }
 
-  virtual void move(itemHolder &holder) {
+  virtual void move(itemHolder &holderTo) {
+    // do nothing if we're already moved (or in the process of moving!)
+    if (holder_ == &holderTo) return;
+    // take a shared pointer, so we don't expire when removing from old container
+    auto pThis = shared_from_this();
+    // remove from the old container first
     auto c = holder_->contents();
     for (auto i = c.begin(); i != c.end(); ++i)
       if (&(**i) == this) {
 	c.erase(i);
 	break;
       }
-    holder_ = &holder;
+    // note our new container; now safe to call ourselves recursively
+    holder_ = &holderTo;
+    // now add to the new container; may call move() recursively as it can't set holder_
+    holderTo.addItem(pThis);
   }
 
   // what is the object made of?
@@ -476,16 +484,22 @@ public:
   }
   // put into or take out of bag:
   virtual bool use(std::shared_ptr<item> other) {
-    auto p = std::find(contents_.begin(), contents_.end(), other);
-    if (p == contents_.end())
-      contents_.push_back(other);
-    else
-      contents_.erase(p); // TODO: Place into our parent holder
+    auto end = contents_.end();
+    auto p = std::find(contents_.begin(), end, other);
+    if (p == end) // not in this container, so put in
+      other->move(*this);
+    else // in this container, so take out
+      other->move(*holder_);
     return true;
   }
   // put into bag; interface itemHolder
   virtual bool addItem(std::shared_ptr<item> other) {
-    return use(other);
+    auto end = contents_.end();
+    auto p = std::find(contents_.begin(), end, other);
+    if (p != end) return false;
+    other->move(*this);
+    contents_.push_back(other);
+    return true;
   }
 
 protected:

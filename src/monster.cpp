@@ -706,7 +706,7 @@ std::vector<std::pair<unsigned int, monsterType*>> spawnMonsters(int depth, int 
 
 void monster::forEachItem(const std::function<void(std::shared_ptr<item>, std::wstring)> f) {
   iterable<std::shared_ptr<item>, std::vector<std::shared_ptr<item>>, 
-	   true> it(contents()); // true -> take a copy (in case items are removed)
+	   true> it(contents()); // true -> take a copy of pointers (in case items are removed)
   for (auto i : it) {
     std::wstring msg = i->name();
     auto slot = slotOf(i);

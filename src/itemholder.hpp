@@ -40,7 +40,8 @@ public:
 };
 
 /*
- * Pure virtual class representing somewhere an item can be
+ * Mostly-virtual class representing somewhere an item can be
+ * (forEachItem() isn't pure, but useful).
  */
 class itemHolder {
 public:
