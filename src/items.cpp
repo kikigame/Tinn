@@ -150,6 +150,10 @@ public:
     holderTo.addItem(pThis);
   }
 
+  virtual itemHolder& holder() const {
+    return *holder_;
+  }
+
   // what is the object made of?
   virtual materialType material() const {
     return type_.material();

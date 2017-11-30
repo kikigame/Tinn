@@ -179,6 +179,7 @@ void player::drop(level &lvl) {
 void player::use() {
   std::function<void(std::shared_ptr<item>, std::wstring)> f = 
     [this](std::shared_ptr<item> i, std::wstring name){
+    if (&(i->holder()) != this) return; // item has moved out of this container by a previously used item
     if (io_->ynPrompt(std::wstring(L"Use ") + name + L"?"))
       if (!i->use())
 	io_->message(L"That doesn't seem to work.");

@@ -33,6 +33,7 @@ public:
 
   // where shall it be?
   virtual void move(itemHolder &holder) = 0;
+  virtual const itemHolder& holder() const = 0;
 
   // what is the object made of?
   virtual materialType material() const = 0;
