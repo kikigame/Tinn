@@ -14,6 +14,12 @@
 #include <algorithm>
 
 
+// when using Multiple Inheritance with shared_from_this, you need to use a common virtual base-class
+// for shared_from_this, so that any derived class can create shared pointers in one group.
+class shared_item : public std::enable_shared_from_this<item> {
+};
+
+
 extern std::vector<damageType> allDamageTypes;
 
 // class for items with no especial behaviour:
@@ -289,7 +295,7 @@ public:
 /*
  * Objects that can be equipped - worn, wielded, etc.
  */
-class basicEquip : public basicItem, public std::enable_shared_from_this<basicEquip> {
+class basicEquip : public basicItem, public virtual shared_item{
 private:
   // slots in which this may be equipped, in preference order
   std::set<slotType> supportedSlots_;
