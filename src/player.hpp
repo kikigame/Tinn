@@ -39,8 +39,13 @@ public:
   // overridden to inform the user:
   virtual const wchar_t* const fall(unsigned char reductionPc);
 
-  protected:
+protected:
   virtual void death();
+private:
+  // used internally to recurse inventory:
+  void containerInventory(std::wstringstream &inv,
+			  const std::wstring indent,
+			  const std::shared_ptr<item> &i) const; 
 };
 
 class playerBuilder : public monsterBuilder {

@@ -97,6 +97,31 @@ const wchar_t* const player::description() const {
   return L"A bold and dangerous hero, quosting for adventure";
 }
 
+// inventory an item, with recursive inventory of containers.
+// this will break if we have a loop, but we don't currently allow loops.
+// we may need to rethink this with some bags of holding :)
+void player::containerInventory(std::wstringstream &inv,
+				const std::wstring indent,
+				const std::shared_ptr<item> &i) const {
+  inv << indent << i->render() << L" " << i->name();
+  auto sl = monster::slotOf(i);
+  // "mace: wielded (left hand)" or "wooden ring: right ring finger"
+  if (sl != nullptr)
+    inv << L": " << sl->name(monster::type().category());
+  inv << L"\n";
+  auto container = std::dynamic_pointer_cast<itemHolder>(i);
+  if (container) {
+    auto it = container->contents();
+    if (it.begin() == it.end()) {
+      inv << indent << L" ∙ your " << i->name() << " is unoccupied" << L"\n";
+    } else {
+      inv << indent << L" ∙ containing:" << L"\n";
+      for (auto c : it)
+	containerInventory(inv, indent + L"  ", c);
+    }
+  }
+}
+
 void player::takeInventory() {
   auto it = contents();
   if (it.begin() == it.end()) {
@@ -106,15 +131,9 @@ void player::takeInventory() {
 		 "Hint: You may want to get some things");
   } else {
     std::wstringstream inv;
-    for (auto i : it) {
-      inv << i->render() << L" " << i->name();
-      auto sl = monster::slotOf(i);
-      // "mace: wielded (left hand)" or "wooden ring: right ring finger"
-      if (sl != nullptr)
-	inv << L": " << sl->name(monster::type().category());
-      inv << L"\n";
-    }
-    io_->longMsg(inv.str()); // TODO: description hints; what is equipped
+    for (auto i : it)
+      containerInventory(inv, L"", i);
+    io_->longMsg(inv.str()); // TODO: description hints
   }
 }
 
