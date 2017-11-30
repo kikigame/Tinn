@@ -272,11 +272,6 @@ public:
     return false; // no effect by default
   }
 
-  // try to use the object with another (eg put object into container; put candles on candlestick)
-  virtual bool use(std::shared_ptr<item> other) {
-    return false; // no effect by default
-  }
-
   virtual std::set<slotType>slots() {
     std::set<slotType> empty;
     return empty;
@@ -291,6 +286,37 @@ public:
   }
 
 };
+
+/*
+ * Mixin for items that can be used with other items
+ */
+class useWithMixin : public virtual shared_item {
+private:
+  const io &io_;
+public:
+  useWithMixin(const io &io) : 
+    io_(io) {};
+  virtual bool use(const std::wstring &withName,
+		   const std::wstring &action,
+		   const std::wstring &preposition,
+		   itemHolder &itemHolder) {
+    std::function<void(std::shared_ptr<item>, std::wstring)> f = 
+      [this,&withName,&action,&preposition](std::shared_ptr<item> i, std::wstring name){
+      if (i == shared_from_this()) return; // can't use an item with itself
+      if (io_.ynPrompt(action + name + L" "+ preposition +L" your " + withName + L"?"))
+	if (!use(i))
+	  io_.message(L"That doesn't seem to work.");
+    };
+    itemHolder.forEachItem(f);
+    return true;
+  }
+
+  // try to use the object with another (eg put object into container; put candles on candlestick)
+  virtual bool use(std::shared_ptr<item> other) {
+    return false; // no effect by default
+  }
+};
+
 
 /*
  * Objects that can be equipped - worn, wielded, etc.
@@ -408,13 +434,15 @@ public:
   }
 };
 
+
 // base class for multi-item containers
-class basicContainer : public basicItem, itemHolder {
+class basicContainer : public basicItem, public itemHolder, public useWithMixin {
 private:
   std::vector<std::shared_ptr<item>> contents_;
 public:
   basicContainer(const itemType& type, const io &ios, itemHolder &holder) :
-    basicItem(type, ios, holder) {}
+    basicItem(type, ios, holder),
+    useWithMixin(ios) {}
   virtual ~basicContainer() {}
   virtual double weight() const {
     double rtn = basicItem::weight();
@@ -440,6 +468,12 @@ public:
   }
   // TODO: when we destroy a container, what happens to its contents?
 
+  virtual bool use() {
+    const std::wstring name(basicItem::name());
+    bool success = true;
+    success &=useWithMixin::use(name, L"Put ", L"into", *holder_); // calls use(item) as needed
+    return success && useWithMixin::use(name, L"Take ", L"from", *this); // calls use(item) as needed
+  }
   // put into or take out of bag:
   virtual bool use(std::shared_ptr<item> other) {
     auto p = std::find(contents_.begin(), contents_.end(), other);
@@ -490,11 +524,12 @@ public:
     ::invokeGuide(ios(), isBlessed());
     return true;
   }
+  /*
   virtual bool use(std::shared_ptr<item> other) {
     if (isCursed()) return false; // seems a bit harsh, but I don't have a better idea yet
     ::invokeGuide(ios(), isBlessed(), other);
     return true;
-  }
+    }*/
 };
 
 class shopCard : public basicItem {
