@@ -47,6 +47,8 @@ public:
   virtual ~itemHolder() = default;
   virtual bool addItem(std::shared_ptr<item> item) = 0;
   virtual iterable<std::shared_ptr<item>, std::vector<std::shared_ptr<item> > > contents() = 0;
+  // for each item in inventory; param takes the item and its rendered name
+  virtual void forEachItem(std::function<void(std::shared_ptr<item>, std::wstring name)>);
 };
 
 #endif // ndef ITEMS_HPP__

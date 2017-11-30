@@ -173,21 +173,6 @@ const wchar_t* const player::fall(unsigned char reductionPc) {
   return rtn;
 };
 
-void player::forEachItem(const std::function<void(std::shared_ptr<item>, std::wstring)> f) {
-  iterable<std::shared_ptr<item>, std::vector<std::shared_ptr<item>>, 
-	   true> it(contents()); // true -> take a copy (in case items are removed)
-  for (auto i : it) {
-    std::wstring msg = i->name();
-    auto slot = slotOf(i);
-    if (slotOf(i) != nullptr) {
-      msg += L": ";
-      msg += slot->name(monster::type().category());
-      msg += L" ";
-    }
-    f(i, msg);
-  }
-}
-
 void player::death() {
   curLevel().dung().playerDeath();
   monster::death();

@@ -41,9 +41,6 @@ public:
 
   protected:
   virtual void death();
-private:
-  // for each item in inventory; param takes the item and its rendered name
-  void forEachItem(std::function<void(std::shared_ptr<item>, std::wstring)>);
 };
 
 class playerBuilder : public monsterBuilder {

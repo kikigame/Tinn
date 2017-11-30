@@ -152,6 +152,9 @@ public:
   // retrieve a saying
   virtual const wchar_t * say() const;
 
+  // overridden to include slot names in the prompt.
+  virtual void forEachItem(std::function<void(std::shared_ptr<item>, std::wstring)>);
+
 protected:
 
   // given a damage figue of damage of a given type,

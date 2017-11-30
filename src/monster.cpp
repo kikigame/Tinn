@@ -703,3 +703,18 @@ std::vector<std::pair<unsigned int, monsterType*>> spawnMonsters(int depth, int 
   auto to = monsterTypeRepo::instance().end();
   return rndGen<monsterType*, std::vector<monsterType*>::iterator>(from, to, depth, rooms);
 }
+
+void monster::forEachItem(const std::function<void(std::shared_ptr<item>, std::wstring)> f) {
+  iterable<std::shared_ptr<item>, std::vector<std::shared_ptr<item>>, 
+	   true> it(contents()); // true -> take a copy (in case items are removed)
+  for (auto i : it) {
+    std::wstring msg = i->name();
+    auto slot = slotOf(i);
+    if (slotOf(i) != nullptr) {
+      msg += L": ";
+      msg += slot->name(monster::type().category());
+      msg += L" ";
+    }
+    f(i, msg);
+  }
+}

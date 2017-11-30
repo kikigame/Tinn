@@ -557,4 +557,8 @@ std::shared_ptr<item> createRndItem(const int depth, const io & ios, itemHolder 
   }
 }
 
-//std::unique_ptr<itemTypeRepo> itemTypeRepo::instance_;
+void itemHolder::forEachItem(const std::function<void(std::shared_ptr<item>, std::wstring name)> f) {
+  iterable<std::shared_ptr<item>, std::vector<std::shared_ptr<item>>, 
+	   true> it(contents()); // true -> take a copy (in case items are removed)
+  for (auto i : it) f(i, i->name());
+}
