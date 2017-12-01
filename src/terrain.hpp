@@ -2,6 +2,9 @@
 
 // terrain bits
 
+#ifndef TERRAIN_HPP__
+#define TERRAIN_HPP__
+
 #include "renderable.hpp"
 #include <memory> // shared_ptr
 
@@ -54,3 +57,5 @@ public:
 };
 
 static terrainFactory tFactory;
+
+#endif //ndef TERRAIN_HPP__
