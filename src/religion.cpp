@@ -85,6 +85,9 @@ public:
   const wchar_t * const description() const { 
     return description_.c_str();
   }
+  const wchar_t * const house() const {
+    return house_;
+  }
 };
   
 // consumer of the newly allocated pointer.
@@ -101,6 +104,7 @@ Outlook deity::outlook() const { return pImpl_->outlook(); }
 const wchar_t deity::render() const { return pImpl_->render(); }
 const wchar_t * const deity::name() const { return pImpl_->name(); }
 const wchar_t * const deity::description() const { return pImpl_->description(); }
+const wchar_t * const deity::house() const { return pImpl_->house(); }
 
 
 // concevably used if the vector expands
