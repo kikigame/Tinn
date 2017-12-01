@@ -52,6 +52,10 @@ public:
   // returns true if current = max
   bool isFull() const;
 
+  // returns damage as a percentage
+  unsigned char pc() const { 
+    return static_cast<unsigned char>((100 * static_cast<int>(current_)) / max_); }
+
   // the maximum maximum value of any stat.
   static const unsigned char MAX_MAX = 100;
 };
