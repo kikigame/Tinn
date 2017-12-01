@@ -12,6 +12,7 @@
 #include <memory> // for shared_ptr
 
 #include "coord.hpp"
+#include "zone.hpp"
 
 class itemHolder;
 class item;
@@ -51,6 +52,11 @@ public:
    * Return the postiion of an item
    */
   coord posOf(const item & i) const;
+  /*
+   * Which special features (if any) exist at the given location?
+   */
+  template <typename T>
+  filteredIterable<std::shared_ptr<zoneArea<T> >,std::vector<std::shared_ptr<zoneArea<T> > > > zonesAt(const coord &);
   /*
    * Syntax sugar for posOf(player)
    */

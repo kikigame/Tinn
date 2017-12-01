@@ -164,6 +164,10 @@ public:
   ::std::map<coord, ::std::shared_ptr<terrain>> terrain_;
   // tell the user when stuff happens:
   std::shared_ptr<io> io_;
+  // what special zones are in this level?
+  std::vector<std::shared_ptr<zoneArea<item> > > itemZones_;
+  std::vector<std::shared_ptr<zoneArea<monster> > > monsterZones_;
+  std::vector<std::shared_ptr<zoneArea<player> > > playerZones_;
 
 
   // constructor fills the level with something suitable
@@ -344,6 +348,24 @@ public:
   int depth() const {
     return depth_;
   }
+
+  typedef filteredIterable<std::shared_ptr<zoneArea<item> >, std::vector<std::shared_ptr<zoneArea<item> > > >
+  itemZoneIter;
+  typedef filteredIterable<std::shared_ptr<zoneArea<monster> >, std::vector<std::shared_ptr<zoneArea<monster> > > >
+  monsterZoneIter;
+  typedef filteredIterable<std::shared_ptr<zoneArea<player> >, std::vector<std::shared_ptr<zoneArea<player> > > >
+  playerZoneIter;
+  // you can't specialize member methods, so we'll just overload here, and use a traits class to switch between:
+  itemZoneIter
+  zonesAt(const coord &c) { return itemZoneIter(itemZones_, [&c] (std::shared_ptr<zoneArea<item> > z) {
+	return z->contains(c);});};
+  monsterZoneIter
+  zonesAt(const coord &c, bool) { return monsterZoneIter(monsterZones_, [&c] (std::shared_ptr<zoneArea<monster> > z) {
+	return z->contains(c);});};
+  playerZoneIter
+  zonesAt(const coord &c, char) { return playerZoneIter(playerZones_, [&c] (std::shared_ptr<zoneArea<player> > z) {
+	return z->contains(c);});};
+
   // find a piece of terrain and move to it (NB: This won't work with Nethack-style branch levels)
   void moveTo(const terrainType terrain) {
     for (auto i = monsters_.begin(); i != monsters_.end(); ++i) {
@@ -757,6 +779,31 @@ void itemHolderLevel::erase(std::vector<std::shared_ptr<item>>::iterator pos) {
 level::operator const renderByCoord&() const {
   return *pImpl_;
 }
+
+
+// this is a bit convoluted, but keeps a simple interface to zonesAt() while allowing a
+// different implementation per type, operating off a different field:
+template <typename T>
+struct zoneTraits {};
+template<>
+struct zoneTraits<item>{ 
+  levelImpl::itemZoneIter zonesAt(levelImpl &p, const coord &c) { return p.zonesAt(c); } 
+};
+template<>
+struct zoneTraits<monster>{ 
+  levelImpl::monsterZoneIter zonesAt(levelImpl &p, const coord &c) { return p.zonesAt(c, true); } 
+};
+template<>
+struct zoneTraits<player>{ 
+  levelImpl::playerZoneIter zonesAt(levelImpl &p, const coord &c) { return p.zonesAt(c, '\0'); } 
+};
+
+template <typename T>
+filteredIterable<std::shared_ptr<zoneArea<T> >,std::vector<std::shared_ptr<zoneArea<T> > > > 
+level::zonesAt(const coord & c) {
+  return zoneTraits<T>::zonesAt(*pImpl_, c);
+}
+
 
 // these need to be defined (not just declared) in order to take a reference to them, as in (eg)
 // std::max(x, level::MAX_WIDTH); - oddities of the dark corners of C++ I guess.
