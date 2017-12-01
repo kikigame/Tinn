@@ -11,6 +11,7 @@
 class monster;
 
 enum class terrainType {
+  ALTAR, // placed in shrines
   ROCK, // undiggable terrain.
   GROUND, // general movable areas. Currently, this means a room and is elegable to be replaced by a stairwell.
   UP, // up-going stairwell

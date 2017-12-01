@@ -2,6 +2,9 @@
 
 // Spirituality of Tinn.
 
+#ifndef RELIGION_HPP__
+#define RELIGION_HPP__
+
 #include "renderable.hpp"
 #include <memory>
 #include <vector>
@@ -93,3 +96,5 @@ public:
 
   static void close();
 };
+
+#endif //ndef RELIGION_HPP__

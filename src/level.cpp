@@ -8,6 +8,7 @@
 #include "output.hpp"
 #include "random.hpp"
 #include "labyrinth.hpp"
+#include "shrine.hpp"
 
 #include <algorithm> // max/min
 #include <random>
@@ -18,6 +19,24 @@
 // define a level in the dungeon
 
 class levelImpl;
+
+
+
+// instantiate abstract methods. Note that these are still declarations,
+// no must come before their use.
+template<>
+bool zoneArea<monster>::onExit(std::shared_ptr<monster>, itemHolder&) { return true; }
+template<>
+bool zoneArea<monster>::onEnter(std::shared_ptr<monster>, itemHolder&) { return true; }
+template<>
+bool zoneArea<monster>::onMoveWithin(std::shared_ptr<monster>) { return true; }
+template<>
+bool zoneArea<item>::onMoveWithin(std::shared_ptr<item>) {return true; }
+template<>
+bool zoneArea<item>::onEnter(std::shared_ptr<item>, itemHolder&) { return true; }
+template<>
+bool zoneArea<item>::onExit(std::shared_ptr<item>, itemHolder&) { return true; }
+
 
 
 // helper class to generate a random layout of a level
@@ -36,6 +55,9 @@ protected:
   // add an individual room. Returns first=top-left, second=bottom-right
   std::pair<coord,coord> addRoom();
 
+  // add a shrine. Returns first=top-left, second=bottom-right
+  std::pair<coord, coord> addShrine();
+
   // possibly entrap a room:
   void addTraps(const std::pair<coord,coord> &coords);
 
@@ -49,7 +71,8 @@ protected:
   void addMonster(const std::shared_ptr<monster> mon, const coord &c, const std::pair<coord,coord> &);
 
   // adds a corridor starting at from and ending at to. Very basic for now.
-  void addCorridor(const coord from, const coord to);
+  // returns first square adjacent to "from"
+  coord addCorridor(const coord from, const coord to);
 
   // average two coords and return their midpoint.
   coord mid(const std::pair<coord,coord> &p) const {
@@ -61,6 +84,11 @@ protected:
   void place(const iter & begin,
  	     const iter & end,
 	     terrainType terrainType);
+
+  void place(const coord &c, terrainType terrainType);
+
+private:
+  void changeTerrain(coord pos, terrainType from, terrainType to);
 
 public:
   // call the build() function to add rooms, monsters etc.
@@ -123,6 +151,14 @@ public:
       place(pos.rbegin(), pos.rend(), terrainType::DOWN);
 
     addMonsters(pos);
+
+    // place a shrine sometimes
+    if (dPc() <= 10) {
+      auto shrinePos = addShrine();
+      auto shrineDir = addCorridor(mid(shrinePos), mid(pos[0]));
+      coord alterPos = shrineDir.next(mid(shrinePos));
+      place(alterPos, terrainType::ALTAR);
+    }
   }
 };
 
@@ -167,7 +203,6 @@ public:
   // what special zones are in this level?
   std::vector<std::shared_ptr<zoneArea<item> > > itemZones_;
   std::vector<std::shared_ptr<zoneArea<monster> > > monsterZones_;
-  std::vector<std::shared_ptr<zoneArea<player> > > playerZones_;
 
 
   // constructor fills the level with something suitable
@@ -353,17 +388,12 @@ public:
   itemZoneIter;
   typedef filteredIterable<std::shared_ptr<zoneArea<monster> >, std::vector<std::shared_ptr<zoneArea<monster> > > >
   monsterZoneIter;
-  typedef filteredIterable<std::shared_ptr<zoneArea<player> >, std::vector<std::shared_ptr<zoneArea<player> > > >
-  playerZoneIter;
   // you can't specialize member methods, so we'll just overload here, and use a traits class to switch between:
   itemZoneIter
   zonesAt(const coord &c) { return itemZoneIter(itemZones_, [&c] (std::shared_ptr<zoneArea<item> > z) {
 	return z->contains(c);});};
   monsterZoneIter
   zonesAt(const coord &c, bool) { return monsterZoneIter(monsterZones_, [&c] (std::shared_ptr<zoneArea<monster> > z) {
-	return z->contains(c);});};
-  playerZoneIter
-  zonesAt(const coord &c, char) { return playerZoneIter(playerZones_, [&c] (std::shared_ptr<zoneArea<player> > z) {
 	return z->contains(c);});};
 
   // find a piece of terrain and move to it (NB: This won't work with Nethack-style branch levels)
@@ -375,12 +405,20 @@ public:
       }
     }
   }
-  // teleport a monster. NB: This will move the monster regardless of any traps, items or other things in the way.
+  // teleport a monster. NB: This will move the monster regardless of any traps, items or other things in the way
+  // UNLESS zone effects do not allow it
   void moveTo(monster &m, const coord &dest) {
     std::shared_ptr<monster> pM;
     for (auto i = monsters_.begin(); i != monsters_.end(); ++i) {
       if (*(i->second) == m) {
 	pM = i->second;
+	zoneActions<monster> zones(zonesAt(i->first, true), zonesAt(dest, true));
+	for (auto z : zones.same())
+	  if (!z->onMoveWithin(pM)) return;
+	for (auto z : zones.leaving())
+	  if (!z->onExit(pM, *holder(dest))) return;
+	for (auto z : zones.entering())
+	  if (!z->onEnter(pM, *holder(i->first))) return;
 	monsters_.erase(i);
 	break;
       }
@@ -559,6 +597,54 @@ std::pair<coord,coord> levelGen::addRoom() {
   return loc;
 }
 
+std::pair<coord,coord> levelGen::addShrine() {
+  int width = 5, height = 5;
+
+  auto rock = tFactory.get(terrainType::ROCK);
+
+  // look for a contiguous 5x5 place on the map that is only rock.
+  bool found;
+  int xPos, yPos;
+  do {
+    // for now, just place the room. Don't care if they overlap.
+    // X pos is between 1 (to allow for border on left) and MAX_WIDTH - width - 2
+    std::uniform_int_distribution<int> xPosD(1,level::MAX_WIDTH - width - 2);
+    // Y pos is between 1 (to allow for border on top) and MAX_HEIGHT - height - 2
+    std::uniform_int_distribution<int> yPosD(1,level::MAX_HEIGHT - height - 2);
+    xPos = xPosD(generator), yPos = yPosD(generator);
+
+    found = true;
+    for (int y=0; y < height; ++y)
+      for (int x=0; x < width; ++x) {
+	coord c(x + xPos,y + yPos);
+	if (level_->terrain_.at(c) != rock) {
+	  found = false;
+	  break;
+	}
+      }
+
+  } while (!found);
+
+  auto ground = tFactory.get(terrainType::GROUND);
+  for (int y=1; y < height-1; ++y) {
+    for (int x=1; x < width-1; ++x) {
+      coord c(x + xPos,y + yPos);
+      level_->terrain_.at(c) = ground;
+    }
+  }
+
+  coord topLeft(xPos,yPos);
+  coord btmRight(xPos+width, yPos+height);
+
+  auto loc = std::pair<coord,coord>(topLeft,btmRight);
+
+  auto shr = std::make_shared<shrine>(topLeft, btmRight, *(level_->io_));
+  level_->itemZones_.push_back(shr);
+  level_->monsterZones_.push_back(shr);  
+
+  return loc;
+}
+
 void levelGen::addMonsters(std::vector<std::pair<coord,coord>> coords /*by value*/) {
   std::vector<std::pair<unsigned int, monsterType*>> types =
     spawnMonsters(level_->depth(), coords.size());
@@ -627,28 +713,37 @@ void levelGen::addItems(const std::pair<coord,coord> &coords) {
   }
 }
 
+void levelGen::changeTerrain(coord c, terrainType from, terrainType to) {
+  if (level_->terrain_[c] == tFactory.get(from))
+    level_->terrain_[c] = tFactory.get(to);
+}
 
-void levelGen::addCorridor(const coord from, const coord to) {
+coord levelGen::addCorridor(const coord from, const coord to) {
+  coord rtn;
   int delta;
   switch(corridorDir()) {
   case 0: // vertical first
     if (to.second < from.second) delta = -1; else delta = +1;
-    for (int y=from.second; y != to.second; y+= delta)
-      level_->terrain_[coord(from.first, y)]= tFactory.get(terrainType::GROUND);
+    for (int y=from.second; y != to.second; y+= delta) {
+      changeTerrain(coord(from.first, y), terrainType::ROCK, terrainType::GROUND);
+      rtn = coord(from.first,from.second+delta);
+    }
     if (to.first < from.first) delta = -1; else delta = +1;
     for (int x=from.first; x != to.first; x+= delta)
-      level_->terrain_[coord(x, to.second)]= tFactory.get(terrainType::GROUND);  
+      changeTerrain(coord(x, to.second), terrainType::ROCK, terrainType::GROUND);
     break;
   case 1: // horizontal first
     if (to.first < from.first) delta = -1; else delta = +1;
-    for (int x=from.first; x != to.first; x+= delta)
-      level_->terrain_[coord(x, from.second)]= tFactory.get(terrainType::GROUND);  
+    for (int x=from.first; x != to.first; x+= delta) {
+      changeTerrain(coord(x, from.second), terrainType::ROCK, terrainType::GROUND);
+      rtn = coord(from.first+delta,from.second);
+    }
     if (to.second < from.second) delta = -1; else delta = +1;
     for (int y=from.second; y != to.second; y+= delta)
-      level_->terrain_[coord(to.first, y)]= tFactory.get(terrainType::GROUND);
+      changeTerrain(coord(to.first, y), terrainType::ROCK, terrainType::GROUND);
     break;
   }
-  
+  return rtn;
 }
 
 template<class iter>
@@ -664,7 +759,11 @@ void levelGen::place(const iter & begin,
   // fallback (in case all rooms are in the same place): place the down by the up:
   coord c = mid(*begin);
   c.first++;
-  level_->terrain_[c]= tFactory.get(type);
+  place(c,type);
+}
+
+void levelGen::place(const coord &c, terrainType type) {
+  level_->terrain_[c]= tFactory.get(type);  
 }
 
 
@@ -756,6 +855,8 @@ bool itemHolderLevel::addItem(std::shared_ptr<item> item) {
   // Can't add liquid items to a level
   if (item->material() == materialType::liquid)
     return false;
+  for (auto z : level_.zonesAt(coord_))
+    if (!z->onEnter(item, *this)) return false;
   level_.addItem(item, coord_);
   return true;
 }
@@ -771,6 +872,8 @@ std::vector<std::shared_ptr<item>>::iterator itemHolderLevel::end() {
   return copy_.end();
 }
 void itemHolderLevel::erase(std::vector<std::shared_ptr<item>>::iterator pos) {
+  for (auto z : level_.zonesAt(coord_))
+    if (!z->onExit(*pos, *this)) return;
   copy_.erase(pos);
   level_.removeItem(coord_, *pos);
 }
@@ -793,10 +896,6 @@ template<>
 struct zoneTraits<monster>{ 
   levelImpl::monsterZoneIter zonesAt(levelImpl &p, const coord &c) { return p.zonesAt(c, true); } 
 };
-template<>
-struct zoneTraits<player>{ 
-  levelImpl::playerZoneIter zonesAt(levelImpl &p, const coord &c) { return p.zonesAt(c, '\0'); } 
-};
 
 template <typename T>
 filteredIterable<std::shared_ptr<zoneArea<T> >,std::vector<std::shared_ptr<zoneArea<T> > > > 
@@ -810,3 +909,4 @@ level::zonesAt(const coord & c) {
 // see http://stackoverflow.com/questions/5391973/undefined-reference-to-static-const-int
 const int level::MAX_WIDTH;
 const int level::MAX_HEIGHT;
+
