@@ -26,6 +26,19 @@ public:
     first = rhs.first, second = rhs.second;
   }
   //  coord & operator=(const coord & rhs) = default;
+  /*
+   * If the movement from (this) to (then) is a chess-piece move,
+   * Apply the same move to (then) and return the
+   * next in sequence. eg if this = (2,3)
+   * and then = (5,7)
+   * would return (8,11) (each move being +3,+4)
+   */
+  coord next(const coord &then) {
+    coord rtn;
+    rtn.first = then.first + then.first - first;
+    rtn.second = then.second + then.second - second;
+    return rtn;
+  }
 };
 
 std::ostream & operator << (std::ostream & out, const coord & c);
