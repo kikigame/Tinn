@@ -126,6 +126,10 @@ unsigned char deity::coalignment(const deity & path) const {
   return counter;
 }
 
+bool deity::operator ==(const deity &other) const {
+  return this == &other;
+}
+
 
 class deityRepoImpl {
 private:

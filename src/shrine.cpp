@@ -50,7 +50,7 @@ bool shrine::onEnter(std::shared_ptr<monster> monster, itemHolder &pev) {
   auto coalign = align_.coalignment(monster->align());
   auto p = std::dynamic_pointer_cast<player>(monster);
   if (coalign == 0) {
-    if (p) io_.message(L"You are prevented from passing by a mysterious barrier");
+    if (p) io_.message(L"You are prevented from entering the " + name() + L" by a mysterious barrier");
     return false; // opposed. You can't normally enter by your own power.
   }
   if (coalign == 1) {
@@ -58,12 +58,14 @@ bool shrine::onEnter(std::shared_ptr<monster> monster, itemHolder &pev) {
     bool success = roll < monster->strength().cur();
     if (p) {
       // monster is a player
-      io_.message(success ? L"You force your way through a magical barrier" : 
-		  L"You are prevented from passing by a mysterious barrier");
+      io_.message(success ?
+		  std::wstring(L"You force your way through a mysterious barrier\nWelcome to the ") + name() : 
+		  std::wstring(L"You are prevented from entering the " + name() + L" by a mysterious barrier"));
     }
     return success;
   }
   if (p) io_.message(L"You enter the " + name());
+  if (align_ == monster->align()) io_.message(L"You feel very safe here.");
   return true;
 }
 

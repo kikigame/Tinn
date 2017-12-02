@@ -71,6 +71,10 @@ private:
    * are we nonaligned?
    */
   bool nonaligned() const;
+  /*
+   * are these the same deity? (identity comparison)
+   */
+  bool operator ==(const deity &other) const;
 };
 
 class deityRepoImpl;
