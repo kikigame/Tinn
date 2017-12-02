@@ -44,9 +44,9 @@ terrainType terrain::type() const {
 
 bool terrain::movable(const monster &m) const {
   switch (type_) {
+  case terrainType::ALTAR:
   case terrainType::ROCK:
     return false;
-  case terrainType::ALTAR:
   case terrainType::GROUND:
   case terrainType::UP:
   case terrainType::DOWN:
