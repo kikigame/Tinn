@@ -80,7 +80,7 @@ player::player(playerBuilder &b) :
   // I feel a player should start with a deterministic inventory, perhaps based
   // on their class and race.
   // But for now, we'll just let them go shopping:
-  addItem(createItem(itemTypeKey::shop_card, *io_, *this));
+  addItem(createItem(itemTypeKey::shop_card, *io_));
 }
 
 player::~player() {}

@@ -99,10 +99,10 @@ public:
   void addItem(const std::shared_ptr<item> item, const coord c);
 
   // return a mutable holder for an item on the level
-  std::unique_ptr<itemHolder> holder(const std::shared_ptr<item> item);
+  std::unique_ptr<itemHolder>& holder(const std::shared_ptr<item> item);
 
   // return a mutable holder for items in the given square
-  std::unique_ptr<itemHolder> holder(const coord c);
+  std::unique_ptr<itemHolder>& holder(const coord c);
 
   // get a reference to the dungeon
   dungeon & dung();

@@ -197,13 +197,15 @@ public:
   // map of coordinate to all monsters at that location
   ::std::multimap<coord, ::std::shared_ptr<monster> > monsters_;
   // terrain type by coordinate
-  ::std::map<coord, ::std::shared_ptr<terrain>> terrain_;
+  ::std::map<coord, ::std::shared_ptr<terrain> > terrain_;
   // tell the user when stuff happens:
   std::shared_ptr<io> io_;
   // what special zones are in this level?
   std::vector<std::shared_ptr<zoneArea<item> > > itemZones_;
   std::vector<std::shared_ptr<zoneArea<monster> > > monsterZones_;
 
+  // hold the itemHolderLevels
+  std::map<coord, ::std::unique_ptr<itemHolder> > holders_;
 
   // constructor fills the level with something suitable
   levelImpl(dungeon &dungeon, int depth, std::shared_ptr<io> ios, level& pub, bool downRamp) :
@@ -526,7 +528,7 @@ public:
 
   void pickUp() {
     auto pos = pcPos();
-    auto v = itemsAt(pos); // take a copy
+    auto v = itemsAt(pos); // take a copy of the shared_ptrs
     if (v.empty()) {
       io_->message(L"You can see nothing to collect here.");
     }
@@ -544,8 +546,11 @@ public:
 
   dungeon & dung() { return dungeon_; }
 
-  std::unique_ptr<itemHolder> holder(const coord c) {
-    return std::unique_ptr<itemHolderLevel>(new itemHolderLevel(*this, c));
+  std::unique_ptr<itemHolder> &holder(const coord c) {
+    auto rtn = holders_.find(c);
+    if (rtn == holders_.end()) 
+      holders_.emplace(c, std::unique_ptr<itemHolder>(new itemHolderLevel(*this, c)));
+    return holders_[c];
   }
 
   // used by itemHolderLevel:
@@ -708,7 +713,7 @@ void levelGen::addItems(const std::pair<coord,coord> &coords) {
   std::uniform_int_distribution<int> dy(coords.first.second+1, coords.second.second - 2);
   for (int i=0; i < itemCount; ++i) {
     const coord c(dx(generator), dy(generator));
-    auto item = createRndItem(level_->depth(), *(level_->io_), *(level_->holder(c)));
+    auto item = createRndItem(level_->depth(), *(level_->io_));
     level_->addItem(item, c);
   }
 }
@@ -841,10 +846,10 @@ std::pair<std::multimap<coord, std::shared_ptr<monster> >::iterator,
 void level::addItem(const std::shared_ptr<item> item, const coord c) {
   return pImpl_->addItem(item, c);
 }
-std::unique_ptr<itemHolder> level::holder(const std::shared_ptr<item> item) {
+std::unique_ptr<itemHolder> &level::holder(const std::shared_ptr<item> item) {
   return holder(posOf(*item)); // no need to bother pImpl for a simple wrapper
 }
-std::unique_ptr<itemHolder> level::holder(const coord c) {
+std::unique_ptr<itemHolder> &level::holder(const coord c) {
   return pImpl_->holder(c);
 }
 dungeon & level::dung() {

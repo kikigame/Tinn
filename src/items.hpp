@@ -100,9 +100,9 @@ protected:
 };
 
 // create an item of the given type. io may be used later by that item, eg for prompts when using.
-std::shared_ptr<item> createItem(const itemTypeKey & it, const io & ios, itemHolder &holder);
+std::shared_ptr<item> createItem(const itemTypeKey & it, const io & ios);
 
 // create a random item suitable for the given level depth
-std::shared_ptr<item> createRndItem(const int depth, const io & ios, itemHolder &holder);
+std::shared_ptr<item> createRndItem(const int depth, const io & ios);
 
 #endif // ndef ITEMS_HPP__

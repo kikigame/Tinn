@@ -410,8 +410,12 @@ level & monster::curLevel() {
 }
 
 bool monster::addItem(std::shared_ptr<item> item) {
-  inventory_.emplace_back(item);
-  return true;
+  if (std::find(inventory_.begin(), inventory_.end(), item) == inventory_.end()) {
+    inventory_.emplace_back(item);
+    item->move(*this);
+    return true;
+  }
+  return false;
 }
 iterable<std::shared_ptr<item>, std::vector<std::shared_ptr<item> > >  monster::contents() {
   return iterable<std::shared_ptr<item>, std::vector<std::shared_ptr<item> > >(inventory_);
