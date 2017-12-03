@@ -156,19 +156,8 @@ const wchar_t monster::render() const { // delegate to type by default
 }
 
 const wchar_t * const monster::name() const {
-  auto numNames = type_.names().size();
-  if (numNames == 1) return type_.names().at(0); // optimisation
   auto damage = damage_.max();
-  if (damage < type_.iMaxDamage()) return type_.names().at(0); // safety
-  // we will take damage.max() as our designated stat.
-  // A type-0 monster has type_.iMaxDamage() HP.
-  // A type-N monster has up to 100 max HP.
-  // We want to divide the levels into N ranges between type_.iMaxDamage() and 100.
-  auto threshold = (100 - type_.iMaxDamage()) / (numNames + 1);
-  // eg if there are 3 names and iMaxDamage() = 40, that gives t=15
-  // so we "grow up" at 55, 70, 85, meaning 15 points at each name.
-  auto idx = (damage - type_.iMaxDamage()) / threshold;
-  return type_.names().at(idx);
+  return type_.name(damage);
 }
 
 const wchar_t * const monster::description() const {

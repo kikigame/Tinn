@@ -35,6 +35,7 @@ enum class itemTypeKey {
   // Food types ('%' as per Nethack)
   ////
   apple, // weight exactly 1 Neuton in normal gravity
+  corpse, // "a dead <foo>"
 
   ////
   // Weapon types ('!', unlike nethack, because they're inherantly dangerous)

@@ -57,6 +57,10 @@ public:
   virtual const wchar_t render() const {
     return type_.render();
   }
+  // return the simple name for this item type; overridden in corpse.
+  virtual const wchar_t * const simpleName() const {
+    return type_.name();
+  }
   // built up of itemType and adjectives etc.
   virtual const wchar_t * const name() const {
     buffer_ = L"";
@@ -64,7 +68,7 @@ public:
     if (enchantment_ > 0) buffer_ += L'+' + std::to_wstring(enchantment_) + L' ';
     for (auto a : adjectives())
       buffer_ += a + L" ";
-    buffer_ += type_.name();
+    buffer_ += simpleName();
     return buffer_.c_str();
   }
   // built up of all visible properties.
@@ -564,6 +568,46 @@ public:
 };
 
 
+class corpse : public basicItem {
+private:
+  // what was this in life?
+  const monsterType &type_;
+  // how advanced was this in life?
+  const unsigned char maxDamage_;
+public:
+  corpse(const io &ios, const monsterType &of, const unsigned char maxDamage) :
+    basicItem(itemTypeRepo::instance()[itemTypeKey::corpse], ios),
+    type_(of),
+    maxDamage_(maxDamage) {
+    // TODO: should any monster types be proof against damage? Already (eg) wet?
+    // TODO: incubus & succubus should be sexy. After all, they are confident...
+    // if (monsterType == monsterType::incubus || monsterType == monsterType::succubus) sexUp(true);
+  }
+  virtual ~corpse() {};
+  virtual materialType material() const {
+    // trolls are stony, bats are leathery, plats are veggy, etc.
+    // TODO: delegate to monsterType? More code but better encapsulated
+    if (type_.type() == monsterTypeKey::troll) return materialType::stony;
+    return materialType::fleshy;
+  }
+  //virtual double weight() {
+  //return 610; // weight of average human in N Earth gravity (610lb). TODO: per type somehow
+  //}
+  // if wielded, what damage does this weapon do?
+  //virtual damageType weaponDamage() const = 0; // TODO: sharp monsters? electric?
+  // list of all adjectives applicable to type
+  virtual iterable<std::wstring, std::vector<std::wstring>,true > adjectives() const {
+    auto baseAdjectives = basicItem::adjectives();
+    std::vector<std::wstring> adjectives;
+    adjectives.push_back(L"dead");
+    adjectives.insert(adjectives.end(), baseAdjectives.begin(), baseAdjectives.end());
+    return iterable<std::wstring, std::vector<std::wstring>, true>(adjectives);
+  }
+  virtual const wchar_t * const simpleName() const {
+    return type_.name(maxDamage_); // overridden to change type_ from itemType to monsterType.
+  }
+};
+
 // create an item of the given type. io may be used later by that item, eg for prompts when using.
 // TODO: Randomness for flavour: enchantment, flags, etc.
 // TODO: Wands will need starting enchantment.
@@ -572,6 +616,7 @@ std::shared_ptr<item> createItem(const itemTypeKey & t, const io & ios) {
   switch(t) {
   case itemTypeKey::apple:
     return std::shared_ptr<item>(new basicItem(r[t], ios));
+    //case itemTypeKey::corpse: // not handled here; we do this when a c
   case itemTypeKey::mace:
     return std::shared_ptr<item>(new basicWeapon(r[t], ios, damageType::bashing));
   case itemTypeKey::rock:
@@ -608,6 +653,7 @@ std::shared_ptr<item> createRndItem(const int depth, const io & ios) {
   while (true) {
     auto type = rndPick(r.begin(), r.end());
     if (type->first == itemTypeKey::water) continue;
+    if (type->first == itemTypeKey::corpse) continue;
     return createItem(type->first, ios);
   }
 }

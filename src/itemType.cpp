@@ -93,6 +93,11 @@ L"The Apple is rumoured to provide knowledge, music, well-built hardware, and\n"
 L"This is a greenish redish seed-bearing structure of a flowering plant. It is\n"
 "notable only for its exact weight of 1N."
 			   ));
+    emplace(itemTypeKey::corpse, // 610N is arerage weight for a human; actual mass will vary
+	    new itemTypeImpl(610, materialType::fleshy, false, L'%', L"corpse",
+L"After vital functions have ceased, creatures become a little less active\n"
+"and are ready to enter the food chain.\n",
+L"A lifelike reproduction, albeit smellier."));
     emplace(itemTypeKey::mace,
 	    new itemTypeImpl(11, materialType::metallic, false, L'!', L"mace",
 L"This bashing weapon sits neatly between a club and a flail. Surprisingly\n"

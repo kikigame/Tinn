@@ -144,6 +144,7 @@ public:
 
   const wchar_t renderChar() const;
   const std::vector<const wchar_t *> & names() const;
+  const wchar_t * name(unsigned char maxDamage) const; // look up based on how advanced this creature is
   const std::vector<deity *> & alignment() const;
   const movementType & movement() const;
 

@@ -127,6 +127,22 @@ const std::vector<const wchar_t *>::const_iterator monsterType::sayingsEnd() con
 bool monsterType::operator == (const monsterType & rhs) const {
   return key_ == rhs.key_;
 }
+const wchar_t * monsterType::name(const unsigned char maxDamage) const {
+  auto numNames = monsterNames_.size();
+  if (numNames == 1) return monsterNames_.at(0); // optimisation
+  if (maxDamage < iMaxDamage()) return monsterNames_.at(0); // safety
+  // we will take damage.max() as our designated stat.
+  // A type-0 monster has iMaxDamage() HP.
+  // A type-N monster has up to 100 max HP.
+  // We want to divide the levels into N ranges between iMaxDamage() and 100.
+  auto threshold = (100 - iMaxDamage()) / (numNames + 1);
+  // eg if there are 3 names and iMaxDamage() = 40, that gives t=15
+  // so we "grow up" at 55, 70, 85, meaning 15 points at each name.
+  auto idx = (maxDamage - iMaxDamage()) / threshold;
+  return monsterNames_.at(idx);
+}
+
+
 
 class monsterTypeRepoImpl {
 private:
@@ -208,7 +224,7 @@ public:
 	    .fighting(60)
 	    .dodge(5)
 	    .maxDamage(50)
-	    .saying(L"Troll smash!")
+	    .saying(L"Troll smash!") // ref:Hulk smash (Marvel comics)
 	    .saying(L"Mmmm rocks...")
 	    .gen(genderAssignType::mfn) //TODO
 	    .material(materialType::stony)
