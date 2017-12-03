@@ -488,7 +488,6 @@ public:
     // TODO: monster items and inventory- collect the new stuff?
   }
   void removeMonster(const monster &m) {
-    //io_->longMsg(std::wstring("I am removing ") + name);
     for (auto i = monsters_.begin(); i != monsters_.end(); ++i) {
       if (*(i->second) == m) {
 	monsters_.erase(i);
@@ -496,6 +495,20 @@ public:
       }
     }
   }
+  void removeDeadMonster(monster &m) {
+    // monster's inventory is dropped
+    const coord c = posOf(m);
+    auto &h = holder(c);
+    for (auto i : m.contents()) {
+      i->move(*h);
+    }
+    // corpse is added
+    std::shared_ptr<item> corpse = createCorpse(*io_, m.type(), m.injury().max());
+    addItem(corpse, c);
+    // monster is removed
+    removeMonster(m);
+  }
+
 
   void addMonster(const std::shared_ptr<monster> mon, const coord c) {
     auto mn = monsters_.equal_range(c);
@@ -833,8 +846,8 @@ void level:: move(monster &m, const std::pair<char,char> dir, const bool avoidTr
 void level::addMonster(std::shared_ptr<monster> monster, coord targetPos) {
   pImpl_->addMonster(monster, targetPos);
 }
-void level::removeDeadMonster(const monster &m) {
-  pImpl_->removeMonster(m);
+void level::removeDeadMonster(monster &m) {
+  pImpl_->removeDeadMonster(m);
 }
 void level::pickUp() {
   pImpl_->pickUp();

@@ -79,7 +79,7 @@ public:
   void move(monster &monster, const std::pair<char,char> dir, const bool avoidTraps);
   void moveTo(monster &monster, const coord targetPos);
   void addMonster(std::shared_ptr<monster> monster, const coord targetPos);
-  void removeDeadMonster(const monster & m); // called by monster so can't get the shared_ptr.
+  void removeDeadMonster(monster & m); // called by monster so can't get the shared_ptr.
 
   /*
    * Player picks up items from the current level square

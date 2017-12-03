@@ -15,6 +15,7 @@
 #include <set>
 
 class monster;
+class monsterType;
 class level;
 class coord;
 class io;
@@ -101,6 +102,9 @@ protected:
 
 // create an item of the given type. io may be used later by that item, eg for prompts when using.
 std::shared_ptr<item> createItem(const itemTypeKey & it, const io & ios);
+
+// corpses need especial handling:
+std::shared_ptr<item> createCorpse(const io &ios, const monsterType &mt, const unsigned char maxDamage);
 
 // create a random item suitable for the given level depth
 std::shared_ptr<item> createRndItem(const int depth, const io & ios);

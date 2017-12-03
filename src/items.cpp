@@ -646,6 +646,10 @@ std::shared_ptr<item> createItem(const itemTypeKey & t, const io & ios) {
   }
 }
 
+std::shared_ptr<item> createCorpse(const io &ios, const monsterType &mt, const unsigned char maxDamage) {
+  return std::shared_ptr<item>(new corpse(ios, mt, maxDamage));
+}
+
 // create a random item suitable for the given level depth
 // TODO: depth limitations
 std::shared_ptr<item> createRndItem(const int depth, const io & ios) {
