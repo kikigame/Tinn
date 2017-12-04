@@ -51,7 +51,7 @@ my $CXXFLAGS = "-Wall -g -std=c++11";
 
 print "# This is an auto-generated file. Please make changes in build.pl\n\n";
 print join(" ", "tinn", ":", "Makefile", @ofiles, "\n");
-print join(" ", "\tc++ -g  ", @ofiles, " $CXXFLAGS -lncursesw -o tinn\n\n");
+print join(" ", "\tc++ ", @ofiles, " $CXXFLAGS -lncursesw -o tinn\n\n");
 
 print "Makefile: build.pl\n";
 print "\t./build.pl > Makefile\n\n";
@@ -65,7 +65,7 @@ for my $cfile (@cfiles) {
 
     print join(" ", "$ofile",":", $cfile, @deps, "\n");
 #    print "\tc++ -O2 $cfile -c $CXXFLAGS -o $ofile\n\n"
-    print "\tc++ -g $cfile -c $CXXFLAGS -o $ofile -finput-charset=utf8 -fexec-charset=utf8\n\n"
-#    print "\tc++ -g $cfile -c $CXXFLAGS -o $ofile -DDEBUG=1\n\n"
+    print "\tc++ $cfile -c $CXXFLAGS -o $ofile -finput-charset=utf8 -fexec-charset=utf8\n\n"
+#    print "\tc++ $cfile -c $CXXFLAGS -o $ofile -DDEBUG=1\n\n"
 }
 
