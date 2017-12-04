@@ -454,9 +454,7 @@ public:
 
 
 // base class for multi-item containers
-class basicContainer : public basicItem, public itemHolder, public useWithMixin {
-private:
-  std::vector<std::shared_ptr<item>> contents_;
+class basicContainer : public basicItem, public itemOwner, public useWithMixin {
 public:
   basicContainer(const itemType& type, const io &ios) :
     basicItem(type, ios),
@@ -464,14 +462,10 @@ public:
   virtual ~basicContainer() {}
   virtual double weight() const {
     double rtn = basicItem::weight();
-    for (auto i : contents_)
+    for (auto i : ccontents())
       rtn += i->weight();
     if (isBlessed()) rtn *= 0.9;
     if (isCursed()) rtn *= 2;
-    return rtn;
-  }
-  virtual iterable<std::shared_ptr<item>, std::vector<std::shared_ptr<item> > > contents() {
-    iterable<std::shared_ptr<item>, std::vector<std::shared_ptr<item> > > rtn(contents_);
     return rtn;
   }
   virtual bool strike(const damageType &type) {
@@ -479,7 +473,7 @@ public:
     int target = 50;
     if (isBlessed()) target /=10;
     if (isCursed()) target *=12;
-    for (auto c : contents_) // pass damage to contents
+    for (auto c : contents()) // pass damage to contents
       if (dPc() < target)
 	rtn |= c->strike(type);
     return rtn;
@@ -494,8 +488,9 @@ public:
   }
   // put into or take out of bag:
   virtual bool use(std::shared_ptr<item> other) {
-    auto end = contents_.end();
-    auto p = std::find(contents_.begin(), end, other);
+    auto contents = ccontents();
+    auto end = contents.end();
+    auto p = std::find(contents.begin(), end, other);
     if (p == end) // not in this container, so put in
       other->move(*this);
     else // in this container, so take out
@@ -504,11 +499,12 @@ public:
   }
   // put into bag; interface itemHolder
   virtual bool addItem(std::shared_ptr<item> other) {
-    auto end = contents_.end();
-    auto p = std::find(contents_.begin(), end, other);
+    auto contents = ccontents();
+    auto end = contents.end();
+    auto p = std::find(contents.begin(), end, other);
     if (p != end) return false;
     other->move(*this);
-    contents_.push_back(other);
+    itemOwner::addItem(other);
     return true;
   }
 
@@ -519,7 +515,7 @@ protected:
     int target = 50;
     if (isBlessed()) target *=12;
     if (isCursed()) target /=10;
-    for (auto c : contents_) // pass damage to contents
+    for (auto c : contents()) // pass damage to contents
       if (dPc() < target)
 	rtn |= c->repair(type);
     return rtn;
@@ -660,10 +656,4 @@ std::shared_ptr<item> createRndItem(const int depth, const io & ios) {
     if (type->first == itemTypeKey::corpse) continue;
     return createItem(type->first, ios);
   }
-}
-
-void itemHolder::forEachItem(const std::function<void(std::shared_ptr<item>, std::wstring name)> f) {
-  iterable<std::shared_ptr<item>, std::vector<std::shared_ptr<item>>, 
-	   true> it(contents()); // true -> take a copy (in case items are removed)
-  for (auto i : it) f(i, i->name());
 }

@@ -169,23 +169,19 @@ public:
 // manages the items in a given cell by adapting levelImpl to the itemHolder interface
 // at specified coords
 class itemHolderLevel : 
-  public itemHolder,
-  public iterable<std::shared_ptr<item>, std::vector<std::shared_ptr<item> > > {
+  public itemOwner {
 private:
   levelImpl& level_;
   const coord coord_;
   std::vector<std::shared_ptr<item>> copy_;
 public:
   itemHolderLevel(levelImpl & level, const coord & c) :
-    iterable<std::shared_ptr<item>, std::vector<std::shared_ptr<item> > >(copy_),
     level_(level), coord_(c) {}
   virtual ~itemHolderLevel() {}
-  bool addItem(std::shared_ptr<item> item);
-  iterable<std::shared_ptr<item>, std::vector<std::shared_ptr<item> > > contents();
   virtual std::vector<std::shared_ptr<item>>::iterator begin();
   virtual std::vector<std::shared_ptr<item>>::iterator end();
   virtual void erase(std::vector<std::shared_ptr<item>>::iterator pos);
-
+  virtual bool addItem(std::shared_ptr<item> item);
 };
 
 
@@ -883,9 +879,6 @@ bool itemHolderLevel::addItem(std::shared_ptr<item> item) {
     if (!z->onEnter(item, *this)) return false;
   level_.addItem(item, coord_);
   return true;
-}
-iterable<std::shared_ptr<item>, std::vector<std::shared_ptr<item> > > itemHolderLevel::contents() {
-  return *this;
 }
 std::vector<std::shared_ptr<item>>::iterator itemHolderLevel::begin() {
   copy_ = level_.itemsAt(coord_);

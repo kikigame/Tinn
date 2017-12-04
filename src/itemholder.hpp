@@ -25,4 +25,18 @@ public:
   virtual void forEachItem(std::function<void(std::shared_ptr<item>, std::wstring name)>);
 };
 
+/*
+ * implementation of itemHolder that owns (for C++ lifecycle purposes) a list of items
+ */
+class itemOwner : public itemHolder {
+private:
+  std::vector<std::shared_ptr<item> > items_;
+public:
+  virtual ~itemOwner();
+  virtual bool addItem(std::shared_ptr<item> item);
+  virtual iterable<std::shared_ptr<item>, std::vector<std::shared_ptr<item> > > contents();
+  virtual iterable<std::shared_ptr<item>, std::vector<std::shared_ptr<item> >, true > ccontents() const;
+};
+
+
 #endif // ndef ITEM_HOLDER_HPP__
