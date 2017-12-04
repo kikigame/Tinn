@@ -11,6 +11,7 @@
 #include <set>
 #include <algorithm>
 
+class monster;
 
 // abstract class for a zone providing specific behaviour
 // T may be "monster", "player" or "item"
@@ -29,6 +30,9 @@ public:
   // called whenever leaving the zone
   // NB: For an item, this can also be by being taken
   virtual bool onExit(std::shared_ptr<T>, itemHolder &prev); // implemented for monsters
+  // Called whenever a monster in the zone attacks another monster or item
+  // (currently, zones affect whether you can attack, not whether you can be attacked)
+  virtual bool onAttack(monster&, T&); // implemented for monsters
   // called whenever moving between two squares in the zone
   virtual bool onMoveWithin(std::shared_ptr<T>); // implemented for monsters
   // called whenever the location is a coord within the zone and a tick passes

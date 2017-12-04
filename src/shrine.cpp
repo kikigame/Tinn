@@ -94,3 +94,26 @@ bool shrine::onExit(std::shared_ptr<item> item, itemHolder &prev) {
     io_.message(std::wstring(L"You accept the charity of ") + align_.name());
   return true;
 }
+
+// players may never attack in shrines.
+// monsters will never attack a fully coaligned monster in a shrine
+bool shrine::onAttack(monster &aggressor, monster &target) {
+  auto p = dynamic_cast<player*>(&aggressor);
+  if (p) {
+    if (align_.domination() == Domination::aggression)
+      io_.message(std::wstring(L"Even ") + align_.name() + L" needs a place to rest.");
+    else
+      io_.message(std::wstring(align_.name()) + L" hath decreed this sanctuary as a place of rest."); 
+    return false;
+  }
+  auto coalign = align_.coalignment(target.align());
+  auto pl = dynamic_cast<player*>(&target);
+    if (coalign == 3) {
+      if (pl)
+	io_.message(std::wstring(aggressor.name()) + L" seems unwilling to attack you in the house of " + align_.house());
+      else
+	io_.message(std::wstring(aggressor.name()) + L" seems unwilling to attack "+ target.name() +L" in the house of " + align_.house());	  
+      return false;
+    }
+  return true;
+}

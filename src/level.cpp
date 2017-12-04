@@ -31,11 +31,15 @@ bool zoneArea<monster>::onEnter(std::shared_ptr<monster>, itemHolder&) { return 
 template<>
 bool zoneArea<monster>::onMoveWithin(std::shared_ptr<monster>) { return true; }
 template<>
+bool zoneArea<monster>::onAttack(monster&, monster&) { return true; }
+template<>
 bool zoneArea<item>::onMoveWithin(std::shared_ptr<item>) {return true; }
 template<>
 bool zoneArea<item>::onEnter(std::shared_ptr<item>, itemHolder&) { return true; }
 template<>
 bool zoneArea<item>::onExit(std::shared_ptr<item>, itemHolder&) { return true; }
+template<>
+bool zoneArea<item>::onAttack(monster&, item&) { return true; }
 
 
 
@@ -257,6 +261,8 @@ public:
   // target can, so needs to be a shared_ptr here.
   void attack(monster &aggressor, monster &target) {
     //    std::cerr << aggressor.name() << " is attacking " << target.name() << std::endl;
+    for (auto z : zonesAt(posOf(aggressor), true))
+      if (!z->onAttack(aggressor, target)) return;
     const auto tName = target.name();
     const auto result = aggressor.attack(target);
     std::wstring rtn(result.text_);

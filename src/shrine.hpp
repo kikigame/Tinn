@@ -52,6 +52,9 @@ public:
 // handles taking food from the zone
   virtual bool onExit(std::shared_ptr<item>, itemHolder &prev);
 
+  // player can't attack in any sanctuary
+  // monsters won't attack player in their sanctuary
+  virtual bool onAttack(monster &, monster &);
 };
 
 
