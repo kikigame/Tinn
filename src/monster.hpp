@@ -62,8 +62,7 @@ private:
   // slots may be empty; an individual monster may have equipped items that are in
   // slots unavailable to its monster type (eg if polymorphed; you won't lose your
   // cursed tail bow).
-  std::map<const slot*, std::shared_ptr<item> > equipment_;
-  std::vector<std::shared_ptr<item> > inventory_;
+  std::map<const slot*, optionalRef<item> > equipment_;
   monsterIntrinsics intrinsics_;
 public:
   /*
@@ -114,18 +113,18 @@ public:
 
   // try and wield/wear etc. the given item in the specified slot. Returns true if successful, false
   // if the slot was full or n/a for this monster type. Precodition: slot must be available for type.
-  bool equip(std::shared_ptr<item> item, const slotType slot);
+  bool equip(item &item, const slotType slot);
   // try to unequip an item. Returns true on success, false if not equipped or cursed
-  bool unequip(std::shared_ptr<item> item);
+  bool unequip(item &item);
   // returns true if this monster has this equipment slot and it is empty
   // returns false if this monster does not have this slot, or it is occupied.
   bool slotAvail(const slot * slot) const;
   // returns the slot if equipped, nullptr otherwise:
-  const slot * slotOf(std::shared_ptr<item> item) const;
+  const slot * slotOf(const item &item) const;
   // drop an item. Returns true on success, false on failure (eg cursed)
-  bool drop(std::shared_ptr<item> item) { return drop(item, level_->posOf(*this)); }
+  bool drop(item &item) { return drop(item, level_->posOf(*this)); }
   // drop an item. Returns true on success, false on failure (eg cursed)
-  bool drop(std::shared_ptr<item> item, const coord &c);
+  bool drop(item &item, const coord &c);
 
   // evaluated as D% <= (stat). NON-DETERMINISTIC!
   bool isMale() const;
@@ -135,12 +134,6 @@ public:
   materialType material() const;
 
   const monsterType& type() const;
-
-  // interface itemHolder - access inventory_
-  virtual bool addItem(std::shared_ptr<item> item);
-
-  // interface itemHolder - access inventory_
-  virtual iterable<std::shared_ptr<item>, std::vector<std::shared_ptr<item> > > contents();
 
   // called when the monster moves within a level
   // NB: At this stage, traps have already been revealed. Trap effects generally applied here.
@@ -153,7 +146,12 @@ public:
   virtual const wchar_t * say() const;
 
   // overridden to include slot names in the prompt.
-  virtual void forEachItem(std::function<void(std::shared_ptr<item>, std::wstring)>);
+  virtual void forEachItem(std::function<void(const item&, std::wstring)>) const;
+  virtual void forEachItem(std::function<void(item&, std::wstring)>);
+
+  // TODO: overridden to disable dropping of cursed items
+  // - or is this too low-level? allow stealing etc?
+  // virtual bool removeItemForMove(item &item);
 
 protected:
 

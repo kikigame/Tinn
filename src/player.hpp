@@ -45,7 +45,7 @@ private:
   // used internally to recurse inventory:
   void containerInventory(std::wstringstream &inv,
 			  const std::wstring indent,
-			  const std::shared_ptr<item> &i) const; 
+			  const item &i) const; 
 };
 
 class playerBuilder : public monsterBuilder {

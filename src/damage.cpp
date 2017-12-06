@@ -5,8 +5,8 @@
 #include "damage.hpp"
 
 damage::damage(const damageType type, const wchar_t* const name, const wchar_t* const mendName,
-	       const std::map<const materialType,const wchar_t* const>  proof,
-	       const std::map<const materialType,const wchar_t* const>  damaged) :
+	       const std::map<const materialType,const wchar_t* const> &proof,
+	       const std::map<const materialType,const wchar_t* const> &damaged) :
   type_(type), name_(name), mendName_(mendName), proof_(proof), damaged_(damaged) {}
 
   // can we damage the given material?

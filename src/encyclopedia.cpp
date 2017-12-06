@@ -42,8 +42,8 @@ public:
    * Use the electronic encyclopedia of this game
    * item is an (optionally null/empty) shared_ptr of the item to look up.
    */
-  void invoke(std::shared_ptr<item> item) { 
-    if (item) category_ = item->render();
+  void invoke(optionalRef<item> item) { 
+    if (item) category_ = item.value().render();
     while (true)
       switch (category_) {
       case L'\0':
@@ -54,7 +54,7 @@ public:
 	return;
       default:
 	if (item) { // if called with an item, just show it.
-	  show(item.get());
+	  show(item.value());
 	  item.reset(); // don't loop over showing it!
 	} else {
 	  search();
@@ -91,7 +91,7 @@ private:
       needleLc += std::towlower(needle[i]);
     for (auto e : renderables_) {
       if ((freeSearch || category_ == e->render()) && match(e->name(), needleLc)) {
-	show(e);
+	show(*e);
 	return;
       }
     }
@@ -99,12 +99,12 @@ private:
   }
 
   // show an encyclopedium
-  void show(const renderable *e) const {
+  void show(const renderable &e) const {
     std::wstring msg;
-    if (e->highlight()) msg += L"★"; // ref:Netiquette tradition of using asterisks for bold; well established by the mid '80s. Probably a 60's/70's BBS tradition?
-    msg += e->name();
-    if (e->highlight()) msg += L"★";
-    io_.longMsg(msg + L"\n" + e->description());
+    if (e.highlight()) msg += L"★"; // ref:Netiquette tradition of using asterisks for bold; well established by the mid '80s. Probably a 60's/70's BBS tradition?
+    msg += e.name();
+    if (e.highlight()) msg += L"★";
+    io_.longMsg(msg + L"\n" + e.description());
   }
   
   // return the available keys for pickCategory()
@@ -140,6 +140,6 @@ private:
 
 
 
-void invokeGuide(const io &io, const bool allowFreeSearch, const std::shared_ptr<item> other) {
+void invokeGuide(const io &io, const bool allowFreeSearch, const optionalRef<item> other) {
   encyclopedia(io, allowFreeSearch).invoke(other);
 }

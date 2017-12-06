@@ -157,7 +157,7 @@ public:
     addMonsters(pos);
 
     // place a shrine sometimes
-    if (dPc() <= 10) {
+    {//if (dPc() <= 10) {
       auto shrinePos = addShrine();
       auto shrineDir = addCorridor(mid(shrinePos), mid(pos[0]));
       coord alterPos = shrineDir.next(mid(shrinePos));
@@ -169,19 +169,16 @@ public:
 // manages the items in a given cell by adapting levelImpl to the itemHolder interface
 // at specified coords
 class itemHolderLevel : 
-  public itemOwner {
+  public itemHolder {
 private:
   levelImpl& level_;
   const coord coord_;
-  std::vector<std::shared_ptr<item>> copy_;
 public:
   itemHolderLevel(levelImpl & level, const coord & c) :
     level_(level), coord_(c) {}
+  virtual bool addItem(item &item); // overridden to handle movement callbacks
+  virtual bool removeItem(item &item); // overridden to handle movement callbacks
   virtual ~itemHolderLevel() {}
-  virtual std::vector<std::shared_ptr<item>>::iterator begin();
-  virtual std::vector<std::shared_ptr<item>>::iterator end();
-  virtual void erase(std::vector<std::shared_ptr<item>>::iterator pos);
-  virtual bool addItem(std::shared_ptr<item> item);
 };
 
 
@@ -192,8 +189,8 @@ public:
   dungeon& dungeon_;
   // how many levels deep are we?
   const int depth_;
-  // map of coordinate to stack of items at that location
-  ::std::multimap<coord, ::std::shared_ptr<item> > items_;
+  // map of coordinate to stack of items at that location - TODO: do we need this with holders_?
+  ::std::multimap<coord, ::std::weak_ptr<item> > items_;
   // map of coordinate to all monsters at that location
   ::std::multimap<coord, ::std::shared_ptr<monster> > monsters_;
   // terrain type by coordinate
@@ -236,7 +233,15 @@ public:
     if (mn.first != mn.second) return *(mn.first->second);
     // show items if any:
     auto it = items_.equal_range(pos);
-    if (it.first != it.second) return *(it.first->second);
+    if (it.first != it.second) {
+      auto rtn = it.first->second.lock();
+      if (rtn) {
+	return *(rtn);	
+      }
+      else {
+	rtn = rtn;
+      }
+    }
     // show terrain if nothing else:
     return *(terrain_.at(pos));
   }
@@ -362,7 +367,7 @@ public:
   }
   coord posOf(const item &it) const {
     for (auto i = items_.begin(); i != items_.end(); ++i) {
-      if (&(*(i->second)) == &it) {
+      if (&(*(i->second.lock())) == &it) {
 	return i->first;
       }
     }
@@ -420,9 +425,9 @@ public:
 	for (auto z : zones.same())
 	  if (!z->onMoveWithin(pM)) return;
 	for (auto z : zones.leaving())
-	  if (!z->onExit(pM, *holder(dest))) return;
+	  if (!z->onExit(pM, holder(dest))) return;
 	for (auto z : zones.entering())
-	  if (!z->onEnter(pM, *holder(i->first))) return;
+	  if (!z->onEnter(pM, holder(i->first))) return;
 	monsters_.erase(i);
 	break;
       }
@@ -448,7 +453,7 @@ public:
 	msg.emplace_back(std::wstring(L"live ") + i->second->name());
     auto items = items_.equal_range(pcLoc);
     for (auto i = items.first; i != items.second; ++i)
-      msg.emplace_back(i->second->name());
+      msg.emplace_back(i->second.lock()->name());
     
     std::wstring message;
     switch (msg.size()) {
@@ -501,12 +506,12 @@ public:
     // monster's inventory is dropped
     const coord c = posOf(m);
     auto &h = holder(c);
-    for (auto i : m.contents()) {
-      i->move(*h);
-    }
+    m.forEachItem([&h](item &i, std::wstring) {
+	h.addItem(i);
+      });
     // corpse is added
-    std::shared_ptr<item> corpse = createCorpse(*io_, m.type(), m.injury().max());
-    addItem(corpse, c);
+    auto &corpse = createCorpse(*io_, m.type(), m.injury().max());
+    holder(c).addItem(corpse);
     // monster is removed
     removeMonster(m);
   }
@@ -537,21 +542,22 @@ public:
     }
   }
 
-  void addItem(const std::shared_ptr<item> item, const coord c) {
-    items_.emplace(c, item); // items may always occupy the same square
+  // called by itemHolderLevel; don't use directly
+  void addItem(item &item, const coord c) {
+    items_.emplace(c, item.shared_from_this()); // items may always occupy the same square
   }
 
   void pickUp() {
     auto pos = pcPos();
-    auto v = itemsAt(pos); // take a copy of the shared_ptrs
-    if (v.empty()) {
+    auto h = holder(pos);
+    if (h.empty()) {
       io_->message(L"You can see nothing to collect here.");
     }
-    for (auto it : v)
-      if (io_->ynPrompt(std::wstring(L"Do you want to collect: ") + it->name() + L"?")) {
+    h.forEachItem([this,pos](item &it, std::wstring name) {
+      if (io_->ynPrompt(L"Do you want to collect: " + name + L"?")) {
 	dungeon_.pc()->addItem(it);
 	removeItem(pos, it);
-      }
+      }});
   }
 
   std::pair<std::multimap<coord, std::shared_ptr<monster> >::iterator,
@@ -561,25 +567,25 @@ public:
 
   dungeon & dung() { return dungeon_; }
 
-  std::unique_ptr<itemHolder> &holder(const coord c) {
+  itemHolder &holder(const coord c) {
     auto rtn = holders_.find(c);
     if (rtn == holders_.end()) 
       holders_.emplace(c, std::unique_ptr<itemHolder>(new itemHolderLevel(*this, c)));
-    return holders_[c];
+    return *(holders_[c]);
   }
 
   // used by itemHolderLevel:
   std::vector<std::shared_ptr<item>> itemsAt(const coord & pos) const {
     std::vector<std::shared_ptr<item>> rtn;
     auto it = items_.equal_range(pos);
-    for (auto i = it.first; i != it.second; ++i) rtn.push_back(i->second);
+    for (auto i = it.first; i != it.second; ++i) rtn.push_back(i->second.lock());
     return rtn;
   }
   // used by itemHolderLevel:
-  void removeItem(const coord & pos, const std::shared_ptr<item> & item) {
+  void removeItem(const coord & pos, item &item) {
     auto it = items_.equal_range(pos);
     for (auto i = it.first; i != it.second; ++i)
-      if (i->first == pos && i->second == item) {
+      if (i->first == pos && i->second.lock().get() == &item) {
 	items_.erase(i);
 	return;
       }
@@ -728,8 +734,8 @@ void levelGen::addItems(const std::pair<coord,coord> &coords) {
   std::uniform_int_distribution<int> dy(coords.first.second+1, coords.second.second - 2);
   for (int i=0; i < itemCount; ++i) {
     const coord c(dx(generator), dy(generator));
-    auto item = createRndItem(level_->depth(), *(level_->io_));
-    level_->addItem(item, c);
+    item &item = createRndItem(level_->depth(), *(level_->io_));
+    level_->holder(c).addItem(item);
   }
 }
 
@@ -858,41 +864,32 @@ std::pair<std::multimap<coord, std::shared_ptr<monster> >::iterator,
 	  std::multimap<coord, std::shared_ptr<monster> >::iterator> level::monstersAt(const coord &pos) {
   return pImpl_->monstersAt(pos);
 }
-void level::addItem(const std::shared_ptr<item> item, const coord c) {
-  return pImpl_->addItem(item, c);
+itemHolder &level::holder(const item& item) {
+  return holder(posOf(item)); // no need to bother pImpl for a simple wrapper
 }
-std::unique_ptr<itemHolder> &level::holder(const std::shared_ptr<item> item) {
-  return holder(posOf(*item)); // no need to bother pImpl for a simple wrapper
-}
-std::unique_ptr<itemHolder> &level::holder(const coord c) {
+itemHolder &level::holder(const coord c) {
   return pImpl_->holder(c);
 }
 dungeon & level::dung() {
   return pImpl_->dung();
 }
 
-bool itemHolderLevel::addItem(std::shared_ptr<item> item) {
+bool itemHolderLevel::addItem(item &item) {
   // Can't add liquid items to a level
-  if (item->material() == materialType::liquid)
+  if (item.material() == materialType::liquid)
     return false;
   for (auto z : level_.zonesAt(coord_))
-    if (!z->onEnter(item, *this)) return false;
+    if (!z->onEnter(item.shared_from_this(), *this)) return false;
+  itemHolder::addItem(item);
   level_.addItem(item, coord_);
   return true;
 }
-std::vector<std::shared_ptr<item>>::iterator itemHolderLevel::begin() {
-  copy_ = level_.itemsAt(coord_);
-  return copy_.begin();
-}
-std::vector<std::shared_ptr<item>>::iterator itemHolderLevel::end() {
-  copy_ = level_.itemsAt(coord_);
-  return copy_.end();
-}
-void itemHolderLevel::erase(std::vector<std::shared_ptr<item>>::iterator pos) {
+bool itemHolderLevel::removeItem(item &item) {
+  auto pos = level_.posOf(item);
   for (auto z : level_.zonesAt(coord_))
-    if (!z->onExit(*pos, *this)) return;
-  copy_.erase(pos);
-  level_.removeItem(coord_, *pos);
+    if (!z->onExit(item.shared_from_this(), *this)) return false;
+  level_.removeItem(coord_, item);
+  return true;
 }
 
 // hack to pretend we implement a readonly version of the interface:

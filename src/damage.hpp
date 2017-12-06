@@ -46,8 +46,8 @@ private:
   // may be prefixed by "a little ", "very ", "thoroughly " as applicable
   const std::map<const materialType,const wchar_t* const>  damaged_;
   damage(const damageType type, const wchar_t* const name, const wchar_t* const mendName,
-	 const std::map<const materialType,const wchar_t* const> proof,
-	 const std::map<const materialType,const wchar_t* const> damaged);
+	 const std::map<const materialType,const wchar_t* const> &proof,
+	 const std::map<const materialType,const wchar_t* const> &damaged);
 public:
   // can we damage the given material?
   bool canDamage(const materialType type) const;

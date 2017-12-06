@@ -20,10 +20,18 @@ class level;
 class coord;
 class io;
 
+class item;
+
+// when using Multiple Inheritance with shared_from_this, you need to use a common virtual base-class
+// for shared_from_this, so that any derived class can create shared pointers in one group.
+class shared_item : public std::enable_shared_from_this<item> {
+};
+
 /*
  * Pure-virtual base class to define an in-game object
  */
-class item : public renderable {
+class item : public renderable, public virtual shared_item {
+  friend class itemHolderMap;
 public:
   // delegate to itemType by default
   virtual const wchar_t render() const = 0;
@@ -32,9 +40,8 @@ public:
   // built up of all visible properties.
   virtual const wchar_t * const description() const = 0;
 
-  // where shall it be?
-  virtual void move(itemHolder &holder) = 0;
-  virtual const itemHolder& holder() const = 0;
+  // where is it?
+  virtual itemHolder& holder() const = 0;
 
   // what is the object made of?
   virtual materialType material() const = 0;
@@ -45,7 +52,7 @@ public:
   // how much damage has this item taken?
   virtual int damageOfType(const damageType &type) const = 0; 
   // list of all adjectives applicable to type
-  virtual iterable<std::wstring, std::vector<std::wstring>,true > adjectives() const = 0;
+  virtual std::vector<std::wstring> adjectives() const = 0;
   // damage the item in some way (return false only if no effect)
   virtual bool strike(const damageType &type) = 0;
   // repair previous damage (return false only if no effect, eg undamaged)
@@ -101,12 +108,12 @@ protected:
 };
 
 // create an item of the given type. io may be used later by that item, eg for prompts when using.
-std::shared_ptr<item> createItem(const itemTypeKey & it, const io & ios);
+item & createItem(const itemTypeKey & it, const io & ios);
 
 // corpses need especial handling:
-std::shared_ptr<item> createCorpse(const io &ios, const monsterType &mt, const unsigned char maxDamage);
+item & createCorpse(const io &ios, const monsterType &mt, const unsigned char maxDamage);
 
 // create a random item suitable for the given level depth
-std::shared_ptr<item> createRndItem(const int depth, const io & ios);
+item & createRndItem(const int depth, const io & ios);
 
 #endif // ndef ITEMS_HPP__

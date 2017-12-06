@@ -143,7 +143,7 @@ monster::monster(monsterBuilder & b) :
   align_(b.align_) {
   // create all slots as empty initially
   for (auto slot : slotsFor(type_.category()))
-    equipment_.emplace(slot, std::auto_ptr<item>(NULL));
+    equipment_.emplace(slot, optionalRef<item>());
 }
 
 void monster::eachTick(const std::function<void()> &callback) { 
@@ -193,9 +193,9 @@ const attackResult monster::attack(monster &target) {
 
   auto weap = equipment_.find(slotBy(slotType::primary_weapon));
   if (weap == equipment_.end()) weap = equipment_.find(slotBy(slotType::secondary_weapon));
-  damageType type;
-  if (weap != equipment_.end() && weap->second) type = weap->second->weaponDamage();
-  else type = damageType::bashing;
+  optionalRef<item> weapon;
+  if (weap != equipment_.end()) weapon = weap->second;
+  damageType type = (weapon) ? weapon.value().weaponDamage() : damageType::bashing;
   auto dt = damageRepo::instance()[type];
 
   // Now to see how much damage we did...
@@ -223,8 +223,8 @@ long monster::modDamage(/*by value*/long pc, const damage & type) const {
   // TODO: extrinsics
   pc -= delta * 5; // NB: Can go positive, such is the goodness of magic
   for (auto i : equipment_) {
-    auto item = i.second;
-    if (item) pc = item->modDamage(pc, type);
+    auto &item = i.second;
+    if (item) pc = item.value().modDamage(pc, type);
   }
   return pc;
 }
@@ -237,15 +237,15 @@ void monster::death() {
 
 
 // calculate the current strength bonus from equipment
-int calcStrBonus(const std::map<const slot*, std::shared_ptr<item> > eq) {
+int calcStrBonus(const std::map<const slot*, optionalRef<item> > eq) {
   int rtn = 0;
   auto e = eq.end();
   for (auto s : weaponSlots()) {
     auto i = eq.find(s);
-    if (i != e && i->second != nullptr) {
+    if (i != e && i->second) {
       auto it = i->second;
       // +1 so that even an unenchanted weapon does some damage:
-      rtn += it->enchantment() + 1;
+      rtn += it.value().enchantment() + 1;
     }
   }
   return rtn;
@@ -253,14 +253,14 @@ int calcStrBonus(const std::map<const slot*, std::shared_ptr<item> > eq) {
 
 // TODO: shields. These occupy weapon slots, and allow for deflection rather than armour.
 // calculate the current strength bonus from equipment
-int calcDodBonus(const std::map<const slot*, std::shared_ptr<item> > eq) {
+int calcDodBonus(const std::map<const slot*, optionalRef<item> > eq) {
   int rtn = 0;
   auto wp = weaponSlots();
   auto wpe = wp.end();
   for (auto i : eq)
     if (i.second && wp.find(i.first) == wpe) {
       // considering occupied non-weapon slots
-      auto &item = *(i.second);
+      auto &item = i.second.value();
       double defence;
       // base armour = (weight) * (material armour multiplicand):
       switch (item.material()) {
@@ -281,14 +281,14 @@ int calcDodBonus(const std::map<const slot*, std::shared_ptr<item> > eq) {
   return rtn;
 }
 
-class coverSearch : public graphSearch<const slot*, std::shared_ptr<item> > {
+class coverSearch : public graphSearch<const slot*, optionalRef<item> > {
   virtual std::vector<const slot*> deeper(const slot* const & sl) {
     return sl->covered();
   }
 };
 
 // calculate the current appearance bonus from equipment
-int calcAppBonus(const std::map<const slot*, std::shared_ptr<item> > eq) {
+int calcAppBonus(const std::map<const slot*, optionalRef<item> > eq) {
   int rtn = 0;
   auto wp = weaponSlots();
   auto wpe = wp.end();
@@ -301,10 +301,10 @@ int calcAppBonus(const std::map<const slot*, std::shared_ptr<item> > eq) {
       
       if (i.second // is it occupied?
 	  && !cs.isCovered(eq, i.first)) {// is it covered?
-	auto &item = *(i.second);
-	rtn += item.enchantment();
-	if (item.isSexy()) ++rtn;
-	if (item.isSexy() && item.isBlessed()) ++rtn;
+	auto &item = i.second;
+	rtn += item.value().enchantment();
+	if (item.value().isSexy()) ++rtn;
+	if (item.value().isSexy() && item.value().isBlessed()) ++rtn;
 	// TODO: tshirts should get extra bonuses for being torn or wet (double if blessed).
 	// the tshirt bonus is easy to get, but not that useful as it will generally be covered.
       }
@@ -312,11 +312,11 @@ int calcAppBonus(const std::map<const slot*, std::shared_ptr<item> > eq) {
   return rtn;
 }
 
-bool monster::equip(std::shared_ptr<item> item, const slotType slot) {
+bool monster::equip(item &item, const slotType slot) {
   auto s = slotBy(slot);
   auto i = equipment_.find(s);
-  if (i == equipment_.end()) return false;
-  if (i->second.get() != nullptr) return false;
+  if (i == equipment_.end()) return false; // monster doesn't have this slot
+  if (i->second) return false; // already occupied
   // we can equip the item. Calculate any previous bonuses
   const int strBonus = calcStrBonus(equipment_);
   const int appBonus = calcAppBonus(equipment_);
@@ -331,11 +331,11 @@ bool monster::equip(std::shared_ptr<item> item, const slotType slot) {
   return true;
 }
 
-bool monster::unequip(std::shared_ptr<item> item) {
-  if (item->isCursed()) return false;
+bool monster::unequip(item &item) {
+  if (item.isCursed()) return false;
   auto eend = equipment_.end();
   for (auto e = equipment_.begin(); e != eend; ++e)
-    if (e->second == item) {
+    if (e->second && &(e->second.value()) == &item) {
       // we can equip the item. Calculate any previous bonuses
       const int strBonus = calcStrBonus(equipment_);
       const int appBonus = calcAppBonus(equipment_);
@@ -354,28 +354,23 @@ bool monster::unequip(std::shared_ptr<item> item) {
 bool monster::slotAvail(const slot *s) const {
   return equipment_.find(s) != equipment_.end();
 }
-const slot * monster::slotOf(std::shared_ptr<item> item) const {
+const slot * monster::slotOf(const item &item) const {
   for (auto i : equipment_) {
-    if (i.second != nullptr && i.second.get() == item.get())
+    if (i.second && &(i.second.value()) == &item)
       return i.first;
   }
   return nullptr;
 }
 
-typedef std::shared_ptr<item> pItem;
-
-bool monster::drop(pItem ite, const coord &c) {
-  if (ite->isCursed()) return false;
+bool monster::drop(item &ite, const coord &c) {
+  if (ite.isCursed()) return false;
   // unequip before dropping:
   const slot * sl = slotOf(ite);
   if (sl != nullptr && !unequip(ite)) return false;
-  auto i = std::find_if(inventory_.begin(), inventory_.end(), 
-			[ite](const pItem &it) {return it.get() == ite.get();});
-  if (i == inventory_.end()) return false; // can't drop what we don't have
+  auto i = firstItem([&ite](item &it) { return &it == &ite; });
+  if (!i) return false; // can't drop what we don't have
   // drop
-  inventory_.erase(i);
-  level_->addItem(ite, c);
-  return true;
+  return level_->holder(c).addItem(ite);
 }
 
 
@@ -398,17 +393,6 @@ level & monster::curLevel() {
   return *level_;
 }
 
-bool monster::addItem(std::shared_ptr<item> item) {
-  if (std::find(inventory_.begin(), inventory_.end(), item) == inventory_.end()) {
-    inventory_.emplace_back(item);
-    item->move(*this);
-    return true;
-  }
-  return false;
-}
-iterable<std::shared_ptr<item>, std::vector<std::shared_ptr<item> > >  monster::contents() {
-  return iterable<std::shared_ptr<item>, std::vector<std::shared_ptr<item> > >(inventory_);
-}
 
 void monster::onMove(const coord &pos, const terrain &terrain) {
   if (terrain.type() == terrainType::PIT) {
@@ -697,11 +681,8 @@ std::vector<std::pair<unsigned int, monsterType*>> spawnMonsters(int depth, int 
   return rndGen<monsterType*, std::vector<monsterType*>::iterator>(from, to, depth, rooms);
 }
 
-void monster::forEachItem(const std::function<void(std::shared_ptr<item>, std::wstring)> f) {
-  iterable<std::shared_ptr<item>, std::vector<std::shared_ptr<item>>, 
-	   true> it(contents()); // true -> take a copy of pointers (in case items are removed)
-  for (auto i : it) {
-    std::wstring msg = i->name();
+void monster::forEachItem(const std::function<void(item&, std::wstring)> f) {
+  itemHolder::forEachItem([this, f](item& i, std::wstring msg) {
     auto slot = slotOf(i);
     if (slotOf(i) != nullptr) {
       msg += L": ";
@@ -709,5 +690,18 @@ void monster::forEachItem(const std::function<void(std::shared_ptr<item>, std::w
       msg += L" ";
     }
     f(i, msg);
-  }
+    });
 }
+
+void monster::forEachItem(const std::function<void(const item&, std::wstring)> f) const {
+  itemHolder::forEachItem([this, f](const item& i, std::wstring msg) {
+    auto slot = slotOf(i);
+    if (slotOf(i) != nullptr) {
+      msg += L": ";
+      msg += slot->name(monster::type().category());
+      msg += L" ";
+    }
+    f(i, msg);
+    });
+}
+

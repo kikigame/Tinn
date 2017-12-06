@@ -91,9 +91,8 @@ public:
 };
   
 // consumer of the newly allocated pointer.
-deity::deity(deityImpl* impl) {
-  pImpl_ = std::unique_ptr<deityImpl>(impl);
-}
+deity::deity(deityImpl* impl) :
+  pImpl_ (std::unique_ptr<deityImpl>(impl)) {}
 
 deity::~deity(){}
 

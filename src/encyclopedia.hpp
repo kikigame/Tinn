@@ -5,8 +5,9 @@
 #ifndef ENCYCLOPEDIA_HPP
 #define ENCYCLOPEDIA_HPP
 
-#include "output.hpp"
+#include "optionalRef.hpp"
 
+class io;
 class item;
 
 // activate the Hitch-Hiker's Guide
@@ -14,6 +15,6 @@ class item;
 // allowFreeSearch - true to allow free-search over everything; false to require a category.
 // other - optional renderable to look up
 void invokeGuide(const io &, const bool allowFreeSearch,
-		 const std::shared_ptr<item> other = std::shared_ptr<item>(0));
+		 const optionalRef<item> other = optionalRef<item>());
 
 #endif // ndef ENCYCLOPEDIA_HPP

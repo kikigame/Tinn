@@ -93,16 +93,11 @@ public:
   std::pair<std::multimap<coord, std::shared_ptr<monster> >::iterator,
 	    std::multimap<coord, std::shared_ptr<monster> >::iterator> monstersAt(const coord &pos);
 
-  /*
-   * Add an item to the level
-   */
-  void addItem(const std::shared_ptr<item> item, const coord c);
-
   // return a mutable holder for an item on the level
-  std::unique_ptr<itemHolder>& holder(const std::shared_ptr<item> item);
+  itemHolder& holder(const item &item);
 
   // return a mutable holder for items in the given square
-  std::unique_ptr<itemHolder>& holder(const coord c);
+  itemHolder& holder(const coord c);
 
   // get a reference to the dungeon
   dungeon & dung();

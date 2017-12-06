@@ -209,6 +209,13 @@ L"ID-1 standard cards are accepted by many shops as a form of payment,\n"
 "This one in particular is an older form called a \"charge\" card.\n",
 L"This looks like someone's ID, but there's no photo, just a line of numbers."
 			     ));
+    emplace(itemTypeKey::bottling_kit,
+	    // TODO: weight. I can't find a shipping weight online yet
+	    // charges are bottle caps
+	    new itemTypeImpl(10, materialType::metallic, true, L'(', L"bottling kit",
+L"Bottles not included",
+L"These look like parts of some larger purpose."
+			     ));
 }
 void itemTypeRepo::emplace(itemTypeKey k, itemTypeImpl* impl) {
   byType_.emplace(k, std::unique_ptr<itemType>());

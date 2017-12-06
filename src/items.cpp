@@ -14,16 +14,12 @@
 #include <algorithm>
 
 
-// when using Multiple Inheritance with shared_from_this, you need to use a common virtual base-class
-// for shared_from_this, so that any derived class can create shared pointers in one group.
-class shared_item : public std::enable_shared_from_this<item> {
-};
 
 
 extern std::vector<damageType> allDamageTypes;
 
 // class for items with no especial behaviour:
-class basicItem : public item, virtual public shared_item {
+class basicItem : public item {
 private:
   enum { blessed, cursed, unidentified, sexy, NUM_FLAGS } flags;
   const itemType& type_;
@@ -39,20 +35,21 @@ private:
   int enchantment_;
 protected:
   mutable std::wstring buffer_; // for transient returns.
-  itemHolder *holder_; // where this item is
 public:
   basicItem(const itemType& type, const io &ios) :
     item(),
     type_(type),
     io_(ios),
-    enchantment_(0),
-    holder_(0) {
+    enchantment_(0) {
     const damageRepo &dr = damageRepo::instance();
     for (auto dt : allDamageTypes)
       if (dr[dt].canDamage(type_.material()))
 	damageTrack_.emplace(dt, 0);
   }
-  virtual ~basicItem() {};
+  basicItem(const basicItem &other) = delete;
+  virtual ~basicItem() {
+    enchantment_ = enchantment_;
+  };
   // delegate to itemType by default
   virtual const wchar_t render() const {
     return type_.render();
@@ -136,7 +133,7 @@ public:
     return buffer_.c_str();
   }
 
-  virtual void move(itemHolder &holderTo) {
+  /*  virtual void move(itemHolder &holderTo) {
     // do nothing if we're already moved (or in the process of moving!)
     if (holder_ == &holderTo) return;
     // take a shared pointer, so we don't expire when removing from old container
@@ -154,10 +151,14 @@ public:
     holder_ = &holderTo;
     // now add to the new container; may call move() recursively as it can't set holder_
     holderTo.addItem(pThis);
-  }
+    }*/
 
   virtual itemHolder& holder() const {
-    return *holder_;
+    auto &map = itemHolderMap::instance();
+    // sanity check to avoid null reference:
+    if (map.beforeFirstAdd(*this))
+      throw std::wstring(name()) + L" not yet in any holder";
+    return map.forItem(*this);
   }
 
   // what is the object made of?
@@ -178,10 +179,10 @@ public:
     return i->second;
   }
   // list of all adjectives applicable to type
-  virtual iterable<std::wstring, std::vector<std::wstring>,true > adjectives() const {
+  virtual std::vector<std::wstring> adjectives() const {
     std::vector<std::wstring> rtn;
     if (isUnidentified())
-      return iterable<std::wstring, std::vector<std::wstring>, true>(rtn);
+      return rtn;
     if (isBlessed()) rtn.push_back(L"blessed");
     if (isCursed()) rtn.push_back(L"cursed");
     auto &dr = damageRepo::instance();
@@ -200,7 +201,7 @@ public:
       if (d == 3) rtn.push_back(std::wstring(L"very ") + adj);
       if (d >= 4) rtn.push_back(std::wstring(L"thoroughly ") + adj);
     }
-    return iterable<std::wstring, std::vector<std::wstring>, true>(rtn);
+    return rtn;
   }
 
   // damage the item in some way (return false only if no effect)
@@ -276,13 +277,10 @@ public:
   // TODO: destroy items
   // destroy an item in inventory
   virtual void destroy() {
-    auto c = holder_->contents();
-    for (auto i = c.begin(); i != c.end(); ++i)
-      if (&(**i) == this) {
-	c.erase(i);
-	return;
-      }
-    throw L"Item not in supplied container"; // should not fall through if procondition met
+    if (holder().contains(*this) )
+      holder().destroyItem(*this);
+    else
+      throw L"Item not in supplied container"; // should not fall through if procondition met
   }
 
   // try to use the object
@@ -318,9 +316,9 @@ public:
 		   const std::wstring &action,
 		   const std::wstring &preposition,
 		   itemHolder &itemHolder) {
-    std::function<void(std::shared_ptr<item>, std::wstring)> f = 
-      [this,&withName,&action,&preposition](std::shared_ptr<item> i, std::wstring name){
-      if (i == shared_from_this()) return; // can't use an item with itself
+    std::function<void(item&, std::wstring)> f = 
+      [this,&withName,&action,&preposition](item &i, std::wstring name){
+      if (dynamic_cast<useWithMixin*>(&i) == this) return; // can't use an item with itself
       if (io_.ynPrompt(action + name + L" "+ preposition +L" your " + withName + L"?"))
 	if (!use(i))
 	  io_.message(L"That doesn't seem to work.");
@@ -330,7 +328,7 @@ public:
   }
 
   // try to use the object with another (eg put object into container; put candles on candlestick)
-  virtual bool use(std::shared_ptr<item> other) {
+  virtual bool use(item &other) {
     return false; // no effect by default
   }
 };
@@ -339,7 +337,7 @@ public:
 /*
  * Objects that can be equipped - worn, wielded, etc.
  */
-class basicEquip : public basicItem, public virtual shared_item{
+class basicEquip : public basicItem {
 private:
   // slots in which this may be equipped, in preference order
   std::set<slotType> supportedSlots_;
@@ -352,7 +350,7 @@ public:
   virtual ~basicEquip() {}
   virtual bool equip(std::shared_ptr<monster> owner) {
     for (slotType s : supportedSlots_)
-      if (owner->equip(shared_from_this(), s))
+      if (owner->equip(*this, s))
 	return true;
     return false;
   }
@@ -382,17 +380,36 @@ public:
   virtual ~basicThrown() {};
 };
 
-class bottle : public basicItem, itemHolder {
+class bottlingKit;
+
+
+class bottle : public basicItem, private itemHolder {
+  friend class bottlingKit;
 private:
-  std::shared_ptr<item> content_;
+  optionalRef<item> content() {
+    optionalRef<item> rtn;
+    forEachItem([&rtn](item &i, std::wstring) {
+	rtn = optionalRef<item>(i);
+      });
+    return rtn;
+  }
+  optionalRef<const item> content() const {
+    optionalRef<const item> rtn;
+    forEachItem([&rtn](const item &i, std::wstring) {
+	rtn = optionalRef<const item>(i);
+      });
+    return rtn;
+  }
 public:
   bottle(const itemType& type, const io &ios) :
     basicItem(type, ios) {}
+  bottle(const bottle &) = delete;
   virtual ~bottle() {}
   virtual const wchar_t * const name() const {
+    optionalRef<const item> c = content();
     basicItem::name(); // sets buffer();
-    if (content_) {
-      auto cName = content_->name();
+    if (c) {
+      auto cName = c.value().name();
       if (cName == std::wstring(L"ship")) {
 	buffer_ = cName + std::wstring(L" in a ") + buffer_;
       } else {
@@ -420,41 +437,45 @@ public:
   }
   // when a bottle is destroyed, its contents are revealed:
   virtual void destroy() {
-    basicItem::destroy();
-    if (!content_) {
+    optionalRef<item> c = content();
+    if (!c) {
       ios().message(std::wstring(name()) + L" smashes, and the emptiness gets out"); // Hmmm; spawn a vacuum monster?
-    } else if (content_->material() == materialType::liquid) {
-      content_->destroy();
+    } else if (c.value().material() == materialType::liquid) {
+      ios().message(std::wstring(name()) + L" smashes; there's fluid everywhere");
+      itemHolder::destroyItem(c.value());
     } else {
-      holder_->addItem(content_);
+      auto cname = c.value().name();
+      // TODO: if it's a ship, and if we're at a dock, we should launch it itstead
+      if (holder().addItem(c.value())) {
+	ios().message(std::wstring(name()) + L" smashes; you now have a " + cname);
+      } else {
+	itemHolder::destroyItem(c.value());
+	ios().message(std::wstring(name()) + L" smashes; you lose the " + cname);
+      }
     }
+    if (content()) throw L"Destroying bottle without losing its contents!";
+    basicItem::destroy();
   }
   virtual bool use() {
     // TODO: if we are in a player's inventory, get a confirm prompt 
-    if (content_) {
-      destroy();
+    if (content()) {
+      auto *pc = dynamic_cast<monster*>(&holder());
+      if (pc == 0 || !pc->isPlayer() || ios().ynPrompt(L"Smash the " + std::wstring(name()) + L"?"))
+	destroy();
     }
     return true;
   }
-  // interface itemHolder
-  // should this be empty? bottles protect/freeze their contents utterly except through damaging the bottle.
-  virtual iterable<std::shared_ptr<item>, std::vector<std::shared_ptr<item> > > contents() {
-    std::vector<std::shared_ptr<item>> contents;
-    if (content_) contents.push_back(content_);
-    return iterable<std::shared_ptr<item>, std::vector<std::shared_ptr<item> > > (contents);
-  }
   // Note that, unlike basicContainer, this isn't use-with-item; the player can't
   // simply create their own bottles:
-  virtual bool addItem(std::shared_ptr<item> item) {
-    if (content_) return false; // already occupied
-    content_= item;
-    return true;
+  virtual bool addItem(item &i) {
+    if (content()) return false; // already occupied
+    return itemHolder::addItem(i);
   }
 };
 
 
 // base class for multi-item containers
-class basicContainer : public basicItem, public itemOwner, public useWithMixin {
+class basicContainer : public basicItem, public itemHolder, public useWithMixin {
 public:
   basicContainer(const itemType& type, const io &ios) :
     basicItem(type, ios),
@@ -462,8 +483,9 @@ public:
   virtual ~basicContainer() {}
   virtual double weight() const {
     double rtn = basicItem::weight();
-    for (auto i : ccontents())
-      rtn += i->weight();
+    forEachItem([&rtn](const item &item, std::wstring) {
+	rtn += item.weight();
+      });
     if (isBlessed()) rtn *= 0.9;
     if (isCursed()) rtn *= 2;
     return rtn;
@@ -473,9 +495,11 @@ public:
     int target = 50;
     if (isBlessed()) target /=10;
     if (isCursed()) target *=12;
-    for (auto c : contents()) // pass damage to contents
-      if (dPc() < target)
-	rtn |= c->strike(type);
+    forEachItem([&rtn, target, type](item &c, std::wstring) {
+	// pass damage to contents
+	if (dPc() < target)
+	  rtn |= c.strike(type);
+      });
     return rtn;
   }
   // TODO: when we destroy a container, what happens to its contents?
@@ -483,28 +507,21 @@ public:
   virtual bool use() {
     const std::wstring name(basicItem::name());
     bool success = true;
-    success &=useWithMixin::use(name, L"Put ", L"into", *holder_); // calls use(item) as needed
+    success &=useWithMixin::use(name, L"Put ", L"into", holder()); // calls use(item) as needed
     return success && useWithMixin::use(name, L"Take ", L"from", *this); // calls use(item) as needed
   }
   // put into or take out of bag:
-  virtual bool use(std::shared_ptr<item> other) {
-    auto contents = ccontents();
-    auto end = contents.end();
-    auto p = std::find(contents.begin(), end, other);
-    if (p == end) // not in this container, so put in
-      other->move(*this);
-    else // in this container, so take out
-      other->move(*holder_);
+  virtual bool use(item &other) {
+    if (contains(other)) // not in this container, so put in
+      itemHolder::addItem(other);
+    else // in this container, so take out (add to *our* holder)
+      holder().addItem(other);
     return true;
   }
   // put into bag; interface itemHolder
-  virtual bool addItem(std::shared_ptr<item> other) {
-    auto contents = ccontents();
-    auto end = contents.end();
-    auto p = std::find(contents.begin(), end, other);
-    if (p != end) return false;
-    other->move(*this);
-    itemOwner::addItem(other);
+  virtual bool addItem(item & other) {
+    if (contains(other)) return false;
+    itemHolder::addItem(other);
     return true;
   }
 
@@ -515,9 +532,11 @@ protected:
     int target = 50;
     if (isBlessed()) target *=12;
     if (isCursed()) target /=10;
-    for (auto c : contents()) // pass damage to contents
-      if (dPc() < target)
-	rtn |= c->repair(type);
+    forEachItem([&rtn, target, type](item &c, std::wstring) {
+	// pass damage to contents
+	if (dPc() < target)
+	  rtn |= c.repair(type);
+      });
     return rtn;
   }
   
@@ -558,8 +577,41 @@ public:
     basicItem(type, ios) {}  
   virtual ~shopCard(){}
   virtual bool use() {
-    ::goShopping(ios(), *holder_);
+    ::goShopping(ios(), holder());
     return true;
+  }
+};
+
+// bottling kits can be wielded as a bashing weapon (ref:tinopener in nethack)
+// TODO: this will bottle liquid monsters when killed, instead of losing their liquid
+// you can use it with at item only when wielded, as bottling takes time (TODO)
+class bottlingKit : public basicWeapon {
+public:
+  bottlingKit(const itemType & type, const io &ios) :
+    basicWeapon(type, ios, damageType::bashing) {}
+  virtual ~bottlingKit() {}
+  virtual bool use() {
+    auto &pc = dynamic_cast<monster&>(holder());
+    optionalRef<item> bot = pc.firstItem([](item &i) {
+	return dynamic_cast<bottle*>(&i) != 0;
+      });
+    if (!bot) {
+      ios().message(L"You'll need a bottle in your inventory to do that.");
+      return false;
+    }
+    ios().message(std::wstring(L"You try the ") + bot.value().name());
+    bottle &b = dynamic_cast<bottle&>(bot.value());
+    auto found = pc.firstItem([&b, this](item &i) {
+	if (&i == this) return false; // can't bottle a bottling kit with itself
+	if (&i == &b) return false; // can't bottle a bottle into itself
+	if (ios().ynPrompt(std::wstring(L"Bottle ") + i.name() + L"?")) {
+	  if (b.addItem(i))
+	    return true;
+	  else ios().message(L"It didn't fit."); // just in case
+	}
+	return false;
+      });
+    return found;
   }
 };
 
@@ -592,68 +644,93 @@ public:
   // if wielded, what damage does this weapon do?
   //virtual damageType weaponDamage() const = 0; // TODO: sharp monsters? electric?
   // list of all adjectives applicable to type
-  virtual iterable<std::wstring, std::vector<std::wstring>,true > adjectives() const {
+  virtual std::vector<std::wstring> adjectives() const {
     auto baseAdjectives = basicItem::adjectives();
     std::vector<std::wstring> adjectives;
     adjectives.push_back(L"dead");
     adjectives.insert(adjectives.end(), baseAdjectives.begin(), baseAdjectives.end());
-    return iterable<std::wstring, std::vector<std::wstring>, true>(adjectives);
+    return adjectives;
   }
   virtual const wchar_t * const simpleName() const {
     return type_.name(maxDamage_); // overridden to change type_ from itemType to monsterType.
+  }
+  virtual bool use() {
+    ios().message(L"Please don't; it's not that kind of game.");
+    return false;
   }
 };
 
 // create an item of the given type. io may be used later by that item, eg for prompts when using.
 // TODO: Randomness for flavour: enchantment, flags, etc.
 // TODO: Wands will need starting enchantment.
-std::shared_ptr<item> createItem(const itemTypeKey & t, const io & ios) {
+item& createItem(const itemTypeKey & t, const io & ios) {
   auto &r = itemTypeRepo::instance();
+  item *rtn;
   switch(t) {
   case itemTypeKey::apple:
-    return std::shared_ptr<item>(new basicItem(r[t], ios));
-    //case itemTypeKey::corpse: // not handled here; we do this when a c
+    rtn = new basicItem(r[t], ios);
+    break;
+    //case itemTypeKey::corpse: // not handled here; we do this when a monster dies
   case itemTypeKey::mace:
-    return std::shared_ptr<item>(new basicWeapon(r[t], ios, damageType::bashing));
+    rtn = new basicWeapon(r[t], ios, damageType::bashing);
+    break;
   case itemTypeKey::rock:
-    return std::shared_ptr<item>(new basicThrown(r[t], ios, damageType::bashing));
+    rtn = new basicThrown(r[t], ios, damageType::bashing);
+    break;
   case itemTypeKey::helmet:
-    return std::shared_ptr<item>(new basicEquip(r[t], ios, slotType::hat));
+    rtn = new basicEquip(r[t], ios, slotType::hat);
+    break;
   case itemTypeKey::stick:
-    return std::shared_ptr<item>(new basicItem(r[t], ios)); // TODO: wands & charges
+    rtn = new basicItem(r[t], ios); // TODO: wands & charges
+    break;
   case itemTypeKey::bottle:
-    return std::shared_ptr<item>(new bottle(r[t], ios));
+    rtn = new bottle(r[t], ios);
+    break;
   case itemTypeKey::codex:
-    return std::shared_ptr<item>(new readableItem(r[t], ios));
+    rtn = new readableItem(r[t], ios);
+    break;
   case itemTypeKey::hitch_guide:
-    return std::shared_ptr<item>(new hitchGuide(r[t], ios));
+    rtn = new hitchGuide(r[t], ios);
+    break;
   case itemTypeKey::poke:
-    return std::shared_ptr<item>(new basicContainer(r[t], ios));
+    rtn = new basicContainer(r[t], ios);
+    break;
   case itemTypeKey::water:
-    return std::shared_ptr<item>(new basicItem(r[t], ios)); // TODO: undropability
+    rtn = new basicItem(r[t], ios); // TODO: undropability
+    break;
   case itemTypeKey::wooden_ring:
-    return std::shared_ptr<item>(new basicEquip(r[t], ios, slotType::ring_left_thumb, slotType::ring_left_index, slotType::ring_left_middle, slotType::ring_left_ring, slotType::ring_left_little, slotType::ring_right_thumb, slotType::ring_right_index, slotType::ring_right_middle, slotType::ring_right_ring, slotType::ring_right_little, slotType::toe_left_thumb, slotType::toe_left_index, slotType::toe_left_middle, slotType::toe_left_fourth, slotType::toe_left_little, slotType::toe_right_thumb, slotType::toe_right_index, slotType::toe_right_middle, slotType::toe_right_fourth, slotType::toe_right_little));
+    rtn = new basicEquip(r[t], ios, slotType::ring_left_thumb, slotType::ring_left_index, slotType::ring_left_middle, slotType::ring_left_ring, slotType::ring_left_little, slotType::ring_right_thumb, slotType::ring_right_index, slotType::ring_right_middle, slotType::ring_right_ring, slotType::ring_right_little, slotType::toe_left_thumb, slotType::toe_left_index, slotType::toe_left_middle, slotType::toe_left_fourth, slotType::toe_left_little, slotType::toe_right_thumb, slotType::toe_right_index, slotType::toe_right_middle, slotType::toe_right_fourth, slotType::toe_right_little);
+    break;
   case itemTypeKey::kalganid:
-    return std::shared_ptr<item>(new basicItem(r[t], ios)); // TODO: should we be able to equip coins on our eyes?
+    rtn = new basicItem(r[t], ios); // TODO: should we be able to equip coins on our eyes?
+    break;
   case itemTypeKey::shop_card:
-    return std::shared_ptr<item>(new shopCard(r[t], ios));
+    rtn = new shopCard(r[t], ios);
+    break;
+  case itemTypeKey::bottling_kit:
+    rtn = new bottlingKit(r[t], ios);
+    break;
   default:
     throw t; // unknown type
   }
+  itemHolderMap::instance().enroll(*rtn); // takes ownership
+  return *rtn; // now safe to take reference
 }
 
-std::shared_ptr<item> createCorpse(const io &ios, const monsterType &mt, const unsigned char maxDamage) {
-  return std::shared_ptr<item>(new corpse(ios, mt, maxDamage));
+item &createCorpse(const io &ios, const monsterType &mt, const unsigned char maxDamage) {
+  auto rtn = new corpse(ios, mt, maxDamage);
+  itemHolderMap::instance().enroll(*rtn); // takes ownership
+  return *rtn;
 }
 
 // create a random item suitable for the given level depth
 // TODO: depth limitations
-std::shared_ptr<item> createRndItem(const int depth, const io & ios) {
+item &createRndItem(const int depth, const io & ios) {
   auto &r = itemTypeRepo::instance();
   while (true) {
     auto type = rndPick(r.begin(), r.end());
     if (type->first == itemTypeKey::water) continue;
     if (type->first == itemTypeKey::corpse) continue;
-    return createItem(type->first, ios);
+    return createItem(type->first, ios); // already enrolled
   }
 }

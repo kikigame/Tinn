@@ -56,7 +56,7 @@ public:
   // T is the type
   template <typename T>
   T choice(const std::wstring &prompt, const std::wstring &help, 
-	   const std::vector<std::pair<T, const wchar_t*>> choices,
+	   const std::vector<std::pair<T, const wchar_t*>> &choices,
 	   const std::wstring &extraHelp = L"") const;
 
   // prompt for gender, returning male % and female %.

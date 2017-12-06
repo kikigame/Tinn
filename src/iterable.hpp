@@ -10,14 +10,21 @@
 
 class item;
 
+template<class C, bool ref=false> 
+struct isRef { public: typedef C type; };
+
+template<class C>
+struct isRef<C, true> { public: typedef const C &type; };
+
 /*
  * Useful interface for iterability.
- * Unspecialised form returns by reference to allow modifications.
+ * Can returns by reference to allow modifications, or by value
  */
-template <typename T, typename C, bool constant = false>
+template <typename T, typename C, bool constant = false, bool copy = false>
 class iterable {
-  friend class iterable<T,C,true>;
-  C& container_;
+  friend class iterable<T,C,true, true>;
+  friend class iterable<T,C,false, true>;
+  typename isRef<C,constant>::type container_;
 public:
   iterable(C &container) : container_(container) {};
   virtual ~iterable() {};
@@ -27,13 +34,14 @@ public:
 };
 
 /*
- * Specialisation: Stores a copy of temp results so we can use it in return values.
+ * Specialisation: Supply const values
  */
-template <typename T, typename C>
-class iterable<T,C,true> {
-  const C container_;
+template <typename T, typename C, bool constant>
+class iterable<T,C,constant,true> {
+  typename isRef<C,constant>::type container_;
 public:
-  iterable(const iterable<T,C,false> &other) : container_(other.container_) {}
+  iterable(const iterable<T,C,true, false> &other) : container_(other.container_) {}
+  iterable(const iterable<T,C,false, false> &other) : container_(other.container_) {}
   iterable(const C &container) : container_(container) {};
   virtual ~iterable() {}
   typename C::const_iterator begin() { return container_.begin(); }

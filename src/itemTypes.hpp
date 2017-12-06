@@ -96,6 +96,7 @@ enum class itemTypeKey {
   // Tools ('(' as Nethack until we can think of something better
   ////
     shop_card, // activate to go shopping.
+    bottling_kit, // for putting things into bottles
 };
 
 

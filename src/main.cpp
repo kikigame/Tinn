@@ -10,10 +10,8 @@
 #include "role.hpp"
 #include "damage.hpp"
 #include "itemTypes.hpp"
-#ifdef DEBUG
-#include "debug.hpp"
-#endif
 
+#include <iostream>
 #include <sstream>
 
 // handle a user keystroke.
@@ -209,14 +207,57 @@ void cleanup() {
   itemTypeRepo::close();
 }
 
+int handleActiveError() {
+  try {
+    throw;
+  } catch (std::exception e) {
+    std::cerr << e.what() << std::endl
+	      << "https://github.com/kikigame/Tinn/issues" << std::endl;
+    return -1;     
+  } catch (std::wstring str) {
+    std::wcerr << str << std::endl
+	       << L"https://github.com/kikigame/Tinn/issues" << std::endl;
+    return -1;
+  } catch (wchar_t* str) {
+    std::wcerr << str << std::endl
+	       << L"https://github.com/kikigame/Tinn/issues" << std::endl;
+    return -1;
+  } catch (char* str) {
+    std::cerr << str << std::endl
+	      << "https://github.com/kikigame/Tinn/issues" << std::endl;
+    return -1;
+  } catch (itemTypeKey key) {
+    std::cerr << "Unknown item type key" << static_cast<int>(key) << std::endl
+	      << "https://github.com/kikigame/Tinn/issues" << std::endl;
+    return -1;
+  } catch (slotType key) {
+    std::cerr << "Unknown item slot type key" << static_cast<int>(key) << std::endl
+	      << "https://github.com/kikigame/Tinn/issues" << std::endl;
+    return -1;
+  } catch (terrainType key) {
+    std::cerr << "Unknown terrain type key" << static_cast<int>(key) << std::endl
+	      << "https://github.com/kikigame/Tinn/issues" << std::endl;
+    return -1;
+  } catch (coord c) {
+    std::cerr << "Bad coords:" << c << std::endl
+	      << "https://github.com/kikigame/Tinn/issues" << std::endl;
+    return -1;
+  } catch (...) {
+    std::wcerr << "This doth not bode well..." << std::endl
+	       << "https://github.com/kikigame/Tinn/issues" << std::endl;
+    throw; // encourage a core-dump in this case
+  }    
+}
+
 int main () {
   renderable::all(); // ensure that the static variables are initialised before use...
 
   try {
     play();
     cleanup();
-  } catch(...) {
+  } catch (...) {
     cleanup();
+    return handleActiveError();
   }
 
 }

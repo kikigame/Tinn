@@ -81,6 +81,8 @@ player::player(playerBuilder &b) :
   // on their class and race.
   // But for now, we'll just let them go shopping:
   addItem(createItem(itemTypeKey::shop_card, *io_));
+  addItem(createItem(itemTypeKey::bottle, *io_));
+  addItem(createItem(itemTypeKey::bottling_kit, *io_));
 }
 
 player::~player() {}
@@ -102,86 +104,86 @@ const wchar_t* const player::description() const {
 // we may need to rethink this with some bags of holding :)
 void player::containerInventory(std::wstringstream &inv,
 				const std::wstring indent,
-				const std::shared_ptr<item> &i) const {
-  inv << indent << i->render() << L" " << i->name();
+				const item &i) const {
+  inv << indent << i.render() << L" " << i.name();
   auto sl = monster::slotOf(i);
   // "mace: wielded (left hand)" or "wooden ring: right ring finger"
   if (sl != nullptr)
     inv << L": " << sl->name(monster::type().category());
   inv << L"\n";
-  auto container = std::dynamic_pointer_cast<itemHolder>(i);
+  auto container = dynamic_cast<const itemHolder*>(&i);
   if (container) {
-    auto it = container->contents();
-    if (it.begin() == it.end()) {
-      inv << indent << L" ∙ your " << i->name() << " is unoccupied" << L"\n";
+    if (container->empty()) {
+      inv << indent << L" ∙ your " << i.name() << " is unoccupied" << L"\n";
     } else {
       inv << indent << L" ∙ containing:" << L"\n";
-      for (auto c : it)
-	containerInventory(inv, indent + L"  ", c);
+      container->forEachItem([this, &inv, indent](const item &c, std::wstring) {
+	  containerInventory(inv, indent + L"  ", c);
+	});
     }
   }
 }
 
 void player::takeInventory() {
-  auto it = contents();
-  if (it.begin() == it.end()) {
+  if (empty()) {
     io_->message(L"You have no weapons.\n"
 		 "You are naked.\n"
 		 "You have no possessions on your person.\n\n"
 		 "Hint: You may want to get some things");
   } else {
     std::wstringstream inv;
-    for (auto i : it)
-      containerInventory(inv, L"", i);
+    forEachItem([this, &inv](const item &i, std::wstring) {
+	containerInventory(inv, L"", i);
+      });
     io_->longMsg(inv.str()); // TODO: description hints
   }
 }
 
 void player::equip() {
   auto ws = weaponSlots();
-  auto it = contents();
-  for (auto i : it) {
-    if (slotOf(i) != nullptr) continue; // don't multi-wield/equip things yet
-    std::set<slotType> iSlots = i->slots();
-    for (auto s : iSlots) {
-      auto sl = slotBy(s);
-      if (slotAvail(sl)) {
-	std::wstring msg = L"Do you ";
-	bool weap = ws.count(sl) != 0;
-	if (weap) msg += L"wield ";
-	else msg += L"wear ";
-	msg += i->name();
-	msg += L"?";
-	if (io_->ynPrompt(msg)) {
-	  if (monster::equip(i, s))
-	    return;
-	  else if (weap)
-	    io_->message(std::wstring(L"This ") + i->name() + L" won't be your " + sl->name(monster::type().category()) + L" weapon");
-	  else io_->message(std::wstring(L"This ") + i->name() + L" won't fit your " + sl->name(monster::type().category()));
+  auto result = firstItem([this, &ws](item &i) {
+      if (slotOf(i) != nullptr) return false; // don't multi-wield/equip things yet
+      std::set<slotType> iSlots = i.slots();
+      for (auto s : iSlots) {
+	auto sl = slotBy(s);
+	if (slotAvail(sl)) {
+	  std::wstring msg = L"Do you ";
+	  bool weap = ws.count(sl) != 0;
+	  if (weap) msg += L"wield ";
+	  else msg += L"wear ";
+	  msg += i.name();
+	  msg += L"?";
+	  if (io_->ynPrompt(msg)) {
+	    if (monster::equip(i, s))
+	      return true;
+	    else if (weap)
+	      io_->message(std::wstring(L"This ") + i.name() + L" won't be your " + sl->name(monster::type().category()) + L" weapon");
+	    else io_->message(std::wstring(L"This ") + i.name() + L" won't fit your " + sl->name(monster::type().category()));
+	  }
 	}
       }
-    }
-  }
-  io_->message(L"Nothing to equip");
+      return false;
+    });
+  if (!result)
+    io_->message(L"Nothing to equip");
 }
 
 void player::drop(level &lvl) {
   auto c = lvl.pcPos();
-  std::function<void(std::shared_ptr<item>, std::wstring)> f = 
-    [this, &lvl, &c](std::shared_ptr<item> i, std::wstring name){
+  std::function<void(item&, std::wstring)> f = 
+    [this, &lvl, &c](item& i, std::wstring name){
     if (io_->ynPrompt(std::wstring(L"Drop ") + name + L"?"))
       if (!monster::drop(i, c))
-	io_->message(std::wstring(L"You cannot drop the ") + i->name());
+	io_->message(std::wstring(L"You cannot drop the ") + i.name());
   };
   forEachItem(f);
 }
 
 void player::use() {
-  std::function<void(std::shared_ptr<item>, std::wstring)> f = 
-    [this](std::shared_ptr<item> i, std::wstring name){
-    if (&(i->holder()) != this) return; // item has moved out of this container by a previously used item
+  std::function<void(item&, std::wstring)> f = [this](item &i, std::wstring name){
+    if (&(i.holder()) != this) return; // item has moved out of this container by a previously used item
     if (io_->ynPrompt(std::wstring(L"Use ") + name + L"?"))
-      if (!i->use())
+      if (!i.use())
 	io_->message(L"That doesn't seem to work.");
   };
   forEachItem(f);

@@ -17,7 +17,7 @@ io::~io(){}
 // may have to rethink this, but currently only support terminal-type I/O, so this can go here safely.
 template <typename T>
 T io::choice(const std::wstring &prompt, const std::wstring &help, 
-	     const std::vector<std::pair<T, const wchar_t*>> choices,
+	     const std::vector<std::pair<T, const wchar_t*>> &choices,
 	     const std::wstring &extraHelp) const {
   unsigned int res, i;
   const int numChoices = choices.size();
@@ -45,7 +45,7 @@ T io::choice(const std::wstring &prompt, const std::wstring &help,
 // this is a full specialisation of io::choice() which allows selecting based on keystrokes
 template<>
 wchar_t io::choice<wchar_t>(const std::wstring &prompt, const std::wstring &help, 
-	     const std::vector<std::pair<wchar_t, const wchar_t*>> choices,
+	     const std::vector<std::pair<wchar_t, const wchar_t*>> &choices,
 	     const std::wstring &extraHelp) const {
   // we want to use the values in the choices.*.first, provided they are keys on the keyboard.
   // we want to be case-insensitive.

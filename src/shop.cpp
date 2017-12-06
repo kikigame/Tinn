@@ -180,72 +180,74 @@ private:
   }
 
   // pick an item to be used below.
-  std::shared_ptr<item> pickItem(const std::wstring & prompt,
+  item& pickItem(const std::wstring & prompt,
 				 const std::wstring & help,
 				 const std::wstring & extraHelp) const {
     // TODO: filter out foo-proof and/or foo-undamaged items as appropriate
     std::vector<std::pair<int, const wchar_t*>> choices;
-    auto con = inventory_.contents();
+    std::vector<item *> res;
     int i=0;
-    for (auto it : con)
-      choices.emplace_back(i++, it->name());
+    inventory_.forEachItem([&choices, &i, &res](item &it, std::wstring name) {
+	choices.emplace_back(i++, it.name()); // TODO: nice to use formatted name here?
+	res.emplace_back(&it);
+      });
     int it = io_.choice(prompt, help, choices, extraHelp);
-    return *(con.begin() + it);
+    return **(res.begin() + it);
   }
 
   void enchant() {
-    auto item = pickItem(L"What would you like to enchant?",
+    auto &item = pickItem(L"What would you like to enchant?",
 			 L"Choose the item whose enchantment you want to enhance",
 			 L"Enchantment adds charges to wands, resistance to armour and\n"
 			"damage to weapons. You may choose one item.");
-    bool blessed = item->isBlessed();
-    bool cursed = item->isCursed();
+    bool blessed = item.isBlessed();
+    bool cursed = item.isCursed();
     
     int de = 0;
     if (blessed && cursed) de = 2; // cursed items get half enchantment (ie 50:50 for nbc)
     else if (blessed) de = 4; // blessed items get *4 enchantment
     else if (!cursed || dPc() < 50) de = 1;
-    item->enchant(de);
+    item.enchant(de);
 
     if (de > 0)
-      io_.message(std::wstring(L"Magical enenergy flows into your ") + item->name());
+      io_.message(std::wstring(L"Magical enenergy flows into your ") + item.name());
     else // let's see if the user's paying attention...
-      io_.message(std::wstring(L"Magical enenergy flows through your ") + item->name());      
+      io_.message(std::wstring(L"Magical enenergy flows through your ") + item.name());      
   }
 
   void proof() {
     auto prompt = std::wstring(L"What would you like to protect against ") + damage_.name();
     prompt += L"?";
-    auto item = pickItem(prompt, std::wstring(L"Choose the item on which to bestow resistance"),
+    auto &item = pickItem(prompt, std::wstring(L"Choose the item on which to bestow resistance"),
 			 L"This will completely protect your item against " + 
 			 std::wstring(damage_.name()) +
 			 L"attacks, traps and effects. When you wear an item with this protection,"
 			 "it will also protect any items worn under it.");
     
-    if (item->proof(damage_.type()))
+    if (item.proof(damage_.type()))
       io_.message((std::wstring(L"The ") + damage_.mendName()) + 
-		 L" of your " + std::wstring(item->name()) +
+		 L" of your " + std::wstring(item.name()) +
 		 L" seems just as complete as it can be.");
     else
       io_.message((std::wstring(L"The ") + damage_.mendName()) + 
-		 L" of your " + std::wstring(item->name()) +
+		 L" of your " + std::wstring(item.name()) +
 		 L" could use a little more work");
   }
 
   void mend() {
     auto prompt = std::wstring(L"What would you like to protect against ") + damage_.name();
     prompt += L"?";
-    auto item = pickItem(prompt, L"Choose the item on which to repair",
+    auto &item = pickItem(prompt, L"Choose the item on which to repair",
 			 L"This will repair your item against " + std::wstring(damage_.name()) +
 			 L"damage already taken.");
     
-    if (item->repair(damage_.type()))
+    if (item.repair(damage_.type()))
       io_.message((std::wstring(L"The ") + damage_.mendName()) + 
-		 L" of your " + std::wstring(item->name()) +
+		 L" of your " + std::wstring(item.name()) +
 		 L" improves.");
     else
       io_.message((std::wstring(L"The ") + damage_.mendName()) + 
-		 L" of your " + std::wstring(item->name()) +
+		 L" of your " + std::wstring(item.name()) +
 		 L" seems unchanged");
   }
 
