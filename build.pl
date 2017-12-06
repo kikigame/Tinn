@@ -56,6 +56,9 @@ print join(" ", "\tc++ ", @ofiles, " $CXXFLAGS -lncursesw -o tinn\n\n");
 print "Makefile: build.pl\n";
 print "\t./build.pl > Makefile\n\n";
 
+print "lint:\n";
+print "\tcppcheck --enable=performance --enable=warning --enable=portability src\n\n";
+
 print "clean:\n";
 print join(" ", "\trm -f  ", @ofiles, "\n\n");
 
