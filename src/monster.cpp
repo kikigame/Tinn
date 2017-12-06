@@ -631,9 +631,10 @@ private:
 
     b.align(deityRepo::instance().getExact(element, dominion, outlook));
 
-    // TODO: number of claws depends on the level
+    // number of claws depends on the level
     // In Chinese mythology, more claws mean more power.
-    const int claws = 5;
+    const int depth = b.iLevel()->depth(); // 0 - 100 inclusive
+    const int claws = std::max(1, depth / 20); // (0-39)=1, 40-59=2, 60-79=3,80-99=4, 100=5
     
     // TODO: number of heads. The hydra had multiple heads, but was not a dragon.
     // There are multiple references to dragons with 2, 3, 9 or multiples of 9 heads.
