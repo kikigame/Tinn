@@ -383,14 +383,15 @@ level & monster::curLevel() {
 }
 
 
-void monster::onMove(const coord &pos, const terrain &terrain) {
+std::wstring monster::onMove(const coord &pos, const terrain &terrain) {
   if (terrain.type() == terrainType::PIT) {
-    bool flying(false); // TODO: flying monsters
+    bool flying(abilities().fly());
     const wchar_t * const message =
       flying ? L"You are now over a pit." :
       fall(dPc() / 10);
-    // TODO: show message
+    return message;
   }
+  return L"";
 }
 
 const wchar_t * const monster::fall(unsigned char reductionPc) {
@@ -616,10 +617,11 @@ public:
   zombie(monsterBuilder &b) :
     monster(b) {}
   virtual ~zombie() {}
-  virtual void onMove(const coord &pos, const terrain &terrain) {
-    monster::onMove(pos, terrain);
+  std::wstring onMove(const coord &pos, const terrain &terrain) {
+    auto rtn = monster::onMove(pos, terrain);
     if (terrain.type() == terrainType::PIT)
       death();
+    return rtn;
   }
 };
 
@@ -651,6 +653,9 @@ public:
   dragon(monsterBuilder &b) : 
     monster(roll(b)),
     western_(align().domination() == Domination::aggression) {
+    intrinsics().fly(true);
+    intrinsics().speedy(true);
+    intrinsics().dblAttack(true);
   }
   virtual ~dragon() {}
   // overridden to return a type-dependant saying:
@@ -718,6 +723,7 @@ std::shared_ptr<monster> ofType(const monsterType &type, level & level, const st
   case monsterTypeKey::dragon:
     ptr = std::make_shared<dragon>(b);
     break;
+  case monsterTypeKey::bird:
   default:
     ptr = std::make_shared<trivialMonster>(b);
   }

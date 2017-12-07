@@ -53,12 +53,12 @@ enum class genderAssignType {
 };
 
 enum class monsterTypeKey {
+  bird,
   dragon,
   hound,
   human, 
   troll, 
-  zombie, 
-  generalMonster // TODO: This is mostly for debugging
+  zombie,
 };
 
 class monster;

@@ -141,7 +141,7 @@ public:
 
   // called when the monster moves within a level
   // NB: At this stage, traps have already been revealed. Trap effects generally applied here.
-  virtual void onMove(const coord &pos, const terrain &terrain);
+  virtual std::wstring onMove(const coord &pos, const terrain &terrain);
 
   // called when the monster moves level
   virtual void onLevel(level * lvl);

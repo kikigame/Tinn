@@ -2,6 +2,7 @@
 
 #include <map>
 #include "terrain.hpp"
+#include "monster.hpp"
 
 // terrain bits
 
@@ -67,11 +68,9 @@ bool terrain::entraps(const monster &m, bool includeHidden) const {
   case terrainType::DOWN:
     return false;
   case terrainType::PIT:
-    // TODO: flying monsters
-    return true;
+    return !(m.abilities().fly());
   case terrainType::PIT_HIDDEN:
-    // TODO: flying monsters
-    return includeHidden;
+    return includeHidden && !(m.abilities().fly());
   default:
     throw type_; // missing type from enum
   }

@@ -434,7 +434,7 @@ public:
     }
     addMonster(pM, dest);
     // reveal any pits:
-    if (terrain_[dest]->type() == terrainType::PIT_HIDDEN) {
+    if (!m.abilities().fly() && terrain_[dest]->type() == terrainType::PIT_HIDDEN) {
       if (m.isPlayer()) // TODO: Pit traps should not be revealed by flying monsters, or should they?
 	io_->message(L"It's a (pit) trap!"); // ref: Admiral Ackbar, Star Wars film Episode VI: Return of the Jedi.
       terrain_[dest] = tFactory.get(terrainType::PIT);

@@ -153,6 +153,7 @@ public:
   monsterTypeRepoImpl() {
     deityRepo &dr = deityRepo::instance();
 
+    // unique features: change equipment slots based on size.
     emplace(monsterTypeBuilder (monsterTypeKey::dragon)
 	    .category(monsterCategory::dragon) // TODO: Western dragons should also have wings. All should have claws. Not sure if "flank" is right.
 	    .name(L"dragonet") // ref: 14th century term for a baby dragon
@@ -176,6 +177,7 @@ public:
 	    .saying(L"Behold the Powerful Dragon") // should not actually say this; depends on the monster's specifics
 	    .encyclopedium(L"The dragon is a powerful creature shrouded in mystery.")); // TODO: Better this
 
+    // unique features: change saying based on size.
     emplace(monsterTypeBuilder (monsterTypeKey::hound)
 	    .category(monsterCategory::quadruped)
 	    //.name(L"puppy") // I don't mind puppies, but I don't want puppy combat on level 1 thanks
@@ -209,6 +211,7 @@ public:
 	    .encyclopedium(L"Canines are furry, with four legs and a tail. They are easily excited, always\n"
 "hungry and pack hunters. They enjoy bones and some are known to bark or howl."));
 
+    // unique feature: uniquely, no unique features
     emplace(monsterTypeBuilder (monsterTypeKey::human)
 	    .category(monsterCategory::biped)
 	    .name(L"inexperienced human")
@@ -237,6 +240,7 @@ public:
 " of smell. They lack in intelligece, cunning, learning, strength, power and\n"
 "speed - but are very adept at using tools and being unpredictable."));
 
+    // unique feature: eats rocks; stony corpses
     emplace(monsterTypeBuilder (monsterTypeKey::troll)
 	    .category(monsterCategory::biped)
 	    .name(L"pebble troll")
@@ -269,6 +273,7 @@ public:
 "princesses. They wander little and are fierecely territorial, but have been\n"
 "known to attack human shrines. They are known to hate sunlight."));
 
+    // unique feature: beeline approach ignoring all traps. Instant death on pin traps
     emplace(monsterTypeBuilder (monsterTypeKey::zombie)
 	    .category(monsterCategory::biped)
 	    .name(L"rotting zombie")
@@ -304,7 +309,40 @@ public:
       "be made of such slaves.\n"
       // ref: Zombie Island (the old 1980s console game, possibly CP/M DOS. Possibly called something like "Escape from Zombie Island" or just "Zombie". You were on an island with zombies that always moved towards you, and had to lure them into pits to defeat them. You died if you jumped into a pit or contacted a zombie.)
       "Having no sense of self-preservation, their hypnotic state makes them\n"
-      "effective brute-force warriors, although they can be lured into traps."));
+      "effective brute-force warriors, although they can be lured into traps."
+			   ));
+
+    // unique features: flying
+    emplace(monsterTypeBuilder(monsterTypeKey::bird)
+	    .category(monsterCategory::bird)
+	    .name(L"Falcon")
+	    .name(L"Eagle")
+	    .name(L"Big Bird") // TODO: Better bird names
+	    .className(L"bird of prey")
+	    .levelFactor(4)
+	    .levelOffset(3)
+	    .minSpawn(1)
+	    .maxSpawn(1)
+	    .xpFactor(30)
+	    .xpOffset(20)
+	    .renderChar(L'b')
+	    .strength(20)
+	    .appearance(5)
+	    .fighting(10)
+	    .dodge(5)
+	    .maxDamage(70)
+	    .saying(L"Squawk!")
+	    .gen(genderAssignType::mf)
+	    .material(materialType::fleshy)
+	    .align(dr.getExact(Element::air, Domination::concentration, Outlook::kind))
+	    .align(dr.getExact(Element::air, Domination::concentration, Outlook::none))
+	    .align(dr.getExact(Element::air, Domination::concentration, Outlook::cruel))
+	    .movement({speed::turn2, goTo::wander, goBy::avoid, 0})
+	    // ref: https://skeptoid.com/episodes/4262
+	    .encyclopedium(
+     L"Most flying creatures will leave you alone unless disturbed, but\n"
+      "beware that they also effortlessly evade most traps."
+			   ));
 
     //ref: http://www.chesterfieldparanormalresearch.com/incubus---sucubbus-demon.html; wikipedia; http://mythicalcreatureslist.com/mythical-creature/Succubus; others
     auto todo = L"The word succubus comes from the Latin /succubāre/ (to lie\n"

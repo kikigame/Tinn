@@ -36,6 +36,8 @@ public:
   void drop(level &lvl);
   void use();
 
+  virtual std::wstring onMove(const coord &pos, const terrain &terrain);
+
   // overridden to inform the user:
   virtual const wchar_t* const fall(unsigned char reductionPc);
 
