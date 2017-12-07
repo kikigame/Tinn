@@ -24,8 +24,6 @@ public:
   const wchar_t * const vagueDescription() const;
   const double baseWeight() const;
   const materialType material() const;
-  // are enchantment charges used up when using the item magically?
-  const bool burnsCharges() const;
 };
 
 

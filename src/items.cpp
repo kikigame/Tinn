@@ -19,6 +19,39 @@
 
 extern std::vector<damageType> allDamageTypes;
 
+// mixin class for things which burn charges; see basicItem below.
+class burnChargeMixin : virtual public shared_item {
+protected:
+  bool hasCharge() const {
+    return shared_from_this()->enchantment() > 0;
+  }
+  void useCharge() {
+    shared_from_this()->enchant(-1);
+  }
+public:
+  virtual std::wstring describeCharges() const {
+    const int enchantment = shared_from_this()->enchantment();
+    const int enchantmentPc = 5 * enchantment;
+    std::wstring buffer;
+    if (enchantmentPc < 0) {
+      buffer += L"There is a negative enchantment. You cannot use the magic\n"
+	"in this item again until you have recharged it. There is a penalty\n"
+	"of ";
+      buffer += enchantmentPc;
+      buffer += L"% when using this item as weapon or armour.\n";
+    } else if (enchantmentPc == 0) {
+      buffer += L"This needs recharging.\n";
+    } else {
+      buffer += L"There is an enchantment. You can use the magic in this item\n";
+      buffer += enchantment + L" times before it will need recharging.\n"
+	"There is a bonus of ";
+      buffer += enchantmentPc;
+      buffer += L"% when using this item as weapon or armour.\n";
+    }
+    return buffer;
+  }
+};
+
 // class for items with no especial behaviour:
 class basicItem : public item {
 private:
@@ -49,7 +82,6 @@ public:
   }
   basicItem(const basicItem &other) = delete;
   virtual ~basicItem() {
-    enchantment_ = enchantment_;
   };
   // delegate to itemType by default
   virtual const wchar_t render() const {
@@ -101,34 +133,21 @@ public:
       buffer_ += L"This would be more effective if blessed.";
 
     const int enchantmentPc = 5 * enchantment();
-    if (!type_.burnsCharges()) {
-    if (enchantmentPc < 0) {
-      buffer_ += L"There is a negative enchantment. There is a penalty of ";
-      buffer_ += enchantmentPc;
-      buffer_ += L"% when\nusing this item as weapon or armour.\n";
-    } else if (enchantmentPc == 0) {
-      buffer_ += L"There is no magical enchantment on this item.\n";
+    auto *burnCharge = dynamic_cast<const burnChargeMixin*>(this);
+    if (!burnCharge) {
+      if (enchantmentPc < 0) {
+	buffer_ += L"There is a negative enchantment. There is a penalty of ";
+	buffer_ += enchantmentPc;
+	buffer_ += L"% when\nusing this item as weapon or armour.\n";
+      } else if (enchantmentPc == 0) {
+	buffer_ += L"There is no magical enchantment on this item.\n";
+      } else {
+	buffer_ += L"There is an enchantment. There is a bonus of ";
+	buffer_ += enchantmentPc;
+	buffer_ += L"% when\nUsing this item as weapon or armour.\n";
+      }
     } else {
-      buffer_ += L"There is an enchantment. There is a bonus of ";
-      buffer_ += enchantmentPc;
-      buffer_ += L"% when\nUsing this item as weapon or armour.\n";
-    }
-    } else {
-    if (enchantmentPc < 0) {
-      buffer_ += L"There is a negative enchantment. You cannot use the magic\n"
-	"in this item again until you have recharged it. There is a penalty\n"
-	"of ";
-      buffer_ += enchantmentPc;
-      buffer_ += L"% when using this item as weapon or armour.\n";
-    } else if (enchantmentPc == 0) {
-      buffer_ += L"This needs recharging.\n";
-    } else {
-      buffer_ += L"There is an enchantment. You can use the magic in this item\n";
-      buffer_ += enchantment() + L" times before it will need recharging.\n"
-	"There is a bonus of ";
-      buffer_ += enchantmentPc;
-      buffer_ += L"% when using this item as weapon or armour.\n";
-    }
+      buffer_ += burnCharge->describeCharges();
     }
 
     return buffer_.c_str();
@@ -303,6 +322,7 @@ public:
   }
 
 };
+
 
 /*
  * Mixin for items that can be used with other items
@@ -613,15 +633,23 @@ public:
   }
 };
 
+
 // bottling kits can be wielded as a bashing weapon (ref:tinopener in nethack)
 // TODO: this will bottle liquid monsters when killed, instead of losing their liquid
 // you can use it with at item only when wielded, as bottling takes time (TODO)
-class bottlingKit : public basicWeapon {
+// TODO: starting charges; check number of charges
+class bottlingKit : public basicWeapon, public burnChargeMixin {
 public:
   bottlingKit(const itemType & type, const io &ios) :
-    basicWeapon(type, ios, damageType::bashing) {}
+    basicWeapon(type, ios, damageType::bashing) {
+    enchant(dPc());
+  }
   virtual ~bottlingKit() {}
   virtual bool use() {
+    if (!hasCharge()) {
+      ios().message(L"You are out of bottle caps.");
+      return false;
+    }
     auto &pc = dynamic_cast<monster&>(holder());
     optionalRef<item> bot = pc.firstItem([](item &i) {
 	return dynamic_cast<bottle*>(&i) != 0;
@@ -642,7 +670,13 @@ public:
 	}
 	return false;
       });
+    if (found) useCharge();
     return found;
+  }
+  virtual std::wstring describeCharges() const {
+    auto rtn = std::wstring(L"This kit includes ");
+    rtn+= enchantment();
+    return rtn + L"bottle caps. Use them wisely.";
   }
 };
 
