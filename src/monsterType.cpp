@@ -43,7 +43,7 @@ private:
 public:
   const monsterTypeKey key_;
   monsterTypeBuilder(monsterTypeKey key) : 
-    movementType_ ({ speed::turn2, goTo::player, goBy::beeline, 0 }), // smart not done yet
+    movementType_ ({ speed::turn2, goTo::player, goBy::smart, 0 }),
     key_(key) {}					   
   monsterTypeBuilder& category(monsterCategory category) { category_ = category; return *this; }
   monsterTypeBuilder& name(const wchar_t * name) { monsterNames_.push_back(name); return *this; }

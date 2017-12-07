@@ -58,6 +58,25 @@ bool terrain::movable(const monster &m) const {
   }
 }
 
+bool terrain::entraps(const monster &m, bool includeHidden) const {
+  switch (type_) {
+  case terrainType::ALTAR:
+  case terrainType::ROCK:
+  case terrainType::GROUND:
+  case terrainType::UP:
+  case terrainType::DOWN:
+    return false;
+  case terrainType::PIT:
+    // TODO: flying monsters
+    return true;
+  case terrainType::PIT_HIDDEN:
+    // TODO: flying monsters
+    return includeHidden;
+  default:
+    throw type_; // missing type from enum
+  }
+}
+
 
 class terrainFactoryImpl {
 private:

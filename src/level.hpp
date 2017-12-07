@@ -102,6 +102,9 @@ public:
   // get a reference to the dungeon
   dungeon & dung();
 
+  // determine if a given position is passible or not to the given monster
+  bool movable(const coord &pos, const monster &m, bool avoidTraps, bool avoidHiddenTraps) const;
+
   // prevent copying
   level operator =(level &other) = delete;
 

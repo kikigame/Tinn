@@ -39,6 +39,37 @@ public:
     rtn.second = then.second + then.second - second;
     return rtn;
   }
+  /*
+   * Return the coord 1-space closer to "toward"
+   * in each dimension. eg if this = (2,3) and toward = (5,7)
+   * would return (3,4).
+   * any dimension where this and toward are the same are unchanged,
+   * eg if this = (2,3) and toward = (2,7)
+   * would return (2,4).
+   */
+  coord towards(const coord &toward) {
+    coord rtn;
+    rtn.first = 
+      toward.first > first ? first+1 :
+      toward.first == first ? first : first - 1;
+    rtn.second = 
+      toward.second > second ? second+1 :
+      toward.second == second ? second : second - 1;
+    return rtn;
+  }
+  // abitrarily sort on x then y
+  bool operator <(const coord &other) {
+    return first < other.first ? true :
+      (first == other.first && second < other.second);
+  }
+  // abitrarily sort on x then y
+  bool operator >(const coord &other) {
+    return first > other.first ? true :
+      (first == other.first && second > other.second);
+  }
+  bool operator ==(const coord &other) {
+    return first == other.first && second == other.second;
+  }
 };
 
 std::ostream & operator << (std::ostream & out, const coord & c);

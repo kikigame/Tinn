@@ -218,11 +218,11 @@ int handleActiveError() {
     std::wcerr << str << std::endl
 	       << L"https://github.com/kikigame/Tinn/issues" << std::endl;
     return -1;
-  } catch (wchar_t* str) {
+  } catch (const wchar_t* str) {
     std::wcerr << str << std::endl
 	       << L"https://github.com/kikigame/Tinn/issues" << std::endl;
     return -1;
-  } catch (char* str) {
+  } catch (const char* str) {
     std::cerr << str << std::endl
 	      << "https://github.com/kikigame/Tinn/issues" << std::endl;
     return -1;

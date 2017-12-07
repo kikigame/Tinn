@@ -477,6 +477,15 @@ public:
     if (pos.second >= level::MAX_HEIGHT) pos.second = level::MAX_HEIGHT;
   }
 
+  
+  bool movable(const coord &pos, const monster &m, bool avoidTraps, bool avoidHiddenTraps) {
+    auto t = terrain_[pos];
+    if (!t->movable(m)) return false;
+    if (avoidTraps && t->entraps(m, false)) return false;
+    if (avoidHiddenTraps && t->entraps(m, true)) return false;
+    return true;
+  }
+
   // move a monster by direction, with optional safety
   void move(monster &m, const std::pair<char,char> dir, const bool avoidTraps) {
     coord pos = coord(posOf(m));
@@ -850,6 +859,9 @@ void level::moveTo(monster &monster, coord targetPos) {
 }
 void level:: move(monster &m, const std::pair<char,char> dir, const bool avoidTraps) {
   pImpl_->move(m, dir, avoidTraps);
+}
+bool level::movable(const coord &pos, const monster &m, bool avoidTraps, bool avoidHiddenTraps) const {
+  return pImpl_->movable(pos, m, avoidTraps, avoidHiddenTraps);
 }
 void level::addMonster(std::shared_ptr<monster> monster, coord targetPos) {
   pImpl_->addMonster(monster, targetPos);

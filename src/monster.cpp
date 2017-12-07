@@ -14,6 +14,7 @@
 #include "items.hpp"
 #include "graphsearch.hpp"
 #include "damage.hpp"
+#include "pathfinder.hpp"
 #include <algorithm> // find_if
 
 #include <sstream>
@@ -114,20 +115,6 @@ void monsterBuilder::calcFinalStats() {
   default: break;
   }
 }
-
-/*
-monster::monster(level * level, const monsterType &type) : 
-  level_(level),
-  strength_(characteristic(20)),
-  appearance_(characteristic(20)),
-  fighting_(characteristic(20)),
-  dodge_(characteristic(20)),
-  damage_(characteristic(0, 20)),
-  male_(characteristic(0)),
-  female_(characteristic(0)),
-  type_(type),
-  align_(&deityRepo::instance().nonaligned()) {}
-*/
 
 monster::monster(monsterBuilder & b) :
   level_(b.iLevel()),
@@ -424,6 +411,31 @@ monster::~monster() {}
 bool monster::operator == (const monster &rhs) { return this == &rhs; }
 
 
+template<bool avoidTraps, bool avoidHiddenTraps>
+class nextLevelMoves {
+private:
+  const monster &mon_;
+  const level &level_;
+public:
+  nextLevelMoves(monster &mon) :
+    mon_(mon), level_(mon.curLevel()) {};
+  std::set<coord> operator()(const coord &c) const {
+    std::set<coord> rtn;
+    for (int x=c.first-1; x<=c.first+1; ++x)
+      for (int y=c.second-1; y<=c.second+1; ++y) {
+	coord pos(x,y);
+	if (pos == c) continue; // same square
+	if (pos.first < 0 || pos.second < 0 ||
+	    pos.first >= level::MAX_WIDTH || pos.second >= level::MAX_HEIGHT)
+	  continue; // off the map; here be monsters...
+	if (level_.movable(pos, mon_, avoidTraps, avoidHiddenTraps)) 
+	  rtn.emplace(pos);
+      }	
+    return rtn;
+  }
+};
+
+
 void moveMonster(monster &mon) {
   level & level = mon.curLevel();
   const movementType &type = mon.type().movement();
@@ -479,6 +491,14 @@ void moveMonster(monster &mon) {
       throw type.goTo_;
     }
 
+    // special case: work out best direction before applying jitter; ignore dir worked out above
+    if (type.goBy_ == goBy::smart) {
+      auto nlm = nextLevelMoves<true, true>(mon);
+      std::function<std::set<coord >(const coord &)> nextMoves = nlm;
+      dir = pathfinder<2>(nextMoves).find(level.posOf(mon), targetPos);
+    }
+
+
     // apply jitter:
     if (type.jitterPc > 0) {
       auto jit = dPc();
@@ -516,7 +536,8 @@ void moveMonster(monster &mon) {
       level.move(mon, dir, false);
       break;
     case goBy::smart:
-      throw L"Not yet implemented: path finding";
+      level.move(mon, dir, true);
+      break;
     case goBy::teleport:
       level.moveTo(mon, targetPos);
       break;

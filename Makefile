@@ -15,7 +15,7 @@ clean:
 src/adjectives.o : src/adjectives.cpp 
 	c++ src/adjectives.cpp -c -Wall -g -std=c++11 -o src/adjectives.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/appraise.o : src/appraise.cpp src/characteristic.hpp src/coord.hpp src/monsterType.hpp src/zone.hpp src/damage.hpp src/optionalRef.hpp src/items.hpp src/materialType.hpp src/slots.hpp src/monster.hpp src/iterable.hpp src/itemholder.hpp src/renderable.hpp src/monsterIntrinsics.hpp src/itemTypes.hpp src/appraise.hpp src/time.hpp src/level.hpp src/movement.hpp src/bonus.hpp 
+src/appraise.o : src/appraise.cpp src/zone.hpp src/materialType.hpp src/time.hpp src/level.hpp src/itemholder.hpp src/itemTypes.hpp src/monster.hpp src/characteristic.hpp src/items.hpp src/iterable.hpp src/coord.hpp src/optionalRef.hpp src/monsterType.hpp src/renderable.hpp src/damage.hpp src/slots.hpp src/monsterIntrinsics.hpp src/movement.hpp src/appraise.hpp src/bonus.hpp 
 	c++ src/appraise.cpp -c -Wall -g -std=c++11 -o src/appraise.o -finput-charset=utf8 -fexec-charset=utf8
 
 src/bonus.o : src/bonus.cpp src/bonus.hpp 
@@ -24,7 +24,7 @@ src/bonus.o : src/bonus.cpp src/bonus.hpp
 src/characteristic.o : src/characteristic.cpp src/characteristic.hpp 
 	c++ src/characteristic.cpp -c -Wall -g -std=c++11 -o src/characteristic.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/chargen.o : src/chargen.cpp src/time.hpp src/monsterIntrinsics.hpp src/renderable.hpp src/output.hpp src/movement.hpp src/bonus.hpp src/role.hpp src/level.hpp src/religion.hpp src/zone.hpp src/monsterType.hpp src/materialType.hpp src/optionalRef.hpp src/characteristic.hpp src/player.hpp src/coord.hpp src/dungeon.hpp src/iterable.hpp src/itemholder.hpp src/slots.hpp src/chargen.hpp src/monster.hpp 
+src/chargen.o : src/chargen.cpp src/player.hpp src/monsterIntrinsics.hpp src/slots.hpp src/movement.hpp src/renderable.hpp src/bonus.hpp src/religion.hpp src/iterable.hpp src/characteristic.hpp src/coord.hpp src/optionalRef.hpp src/monsterType.hpp src/level.hpp src/itemholder.hpp src/output.hpp src/chargen.hpp src/monster.hpp src/dungeon.hpp src/role.hpp src/zone.hpp src/time.hpp src/materialType.hpp 
 	c++ src/chargen.cpp -c -Wall -g -std=c++11 -o src/chargen.o -finput-charset=utf8 -fexec-charset=utf8
 
 src/coord.o : src/coord.cpp src/coord.hpp 
@@ -33,64 +33,64 @@ src/coord.o : src/coord.cpp src/coord.hpp
 src/damage.o : src/damage.cpp src/materialType.hpp src/damage.hpp 
 	c++ src/damage.cpp -c -Wall -g -std=c++11 -o src/damage.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/dungeon.o : src/dungeon.cpp src/time.hpp src/monsterIntrinsics.hpp src/renderable.hpp src/output.hpp src/movement.hpp src/bonus.hpp src/level.hpp src/zone.hpp src/monsterType.hpp src/terrain.hpp src/materialType.hpp src/optionalRef.hpp src/characteristic.hpp src/player.hpp src/coord.hpp src/itemholder.hpp src/dungeon.hpp src/iterable.hpp src/chargen.hpp src/slots.hpp src/monster.hpp 
+src/dungeon.o : src/dungeon.cpp src/zone.hpp src/dungeon.hpp src/materialType.hpp src/time.hpp src/level.hpp src/itemholder.hpp src/monster.hpp src/chargen.hpp src/output.hpp src/characteristic.hpp src/terrain.hpp src/iterable.hpp src/coord.hpp src/monsterType.hpp src/optionalRef.hpp src/renderable.hpp src/monsterIntrinsics.hpp src/slots.hpp src/player.hpp src/movement.hpp src/bonus.hpp 
 	c++ src/dungeon.cpp -c -Wall -g -std=c++11 -o src/dungeon.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/encyclopedia.o : src/encyclopedia.cpp src/time.hpp src/itemTypes.hpp src/renderable.hpp src/monsterIntrinsics.hpp src/bonus.hpp src/output.hpp src/movement.hpp src/level.hpp src/religion.hpp src/materialType.hpp src/optionalRef.hpp src/items.hpp src/damage.hpp src/zone.hpp src/monsterType.hpp src/coord.hpp src/encyclopedia.hpp src/characteristic.hpp src/iterable.hpp src/itemholder.hpp src/monster.hpp src/slots.hpp 
+src/encyclopedia.o : src/encyclopedia.cpp src/itemholder.hpp src/level.hpp src/itemTypes.hpp src/monster.hpp src/output.hpp src/zone.hpp src/materialType.hpp src/time.hpp src/damage.hpp src/renderable.hpp src/movement.hpp src/slots.hpp src/monsterIntrinsics.hpp src/religion.hpp src/bonus.hpp src/characteristic.hpp src/iterable.hpp src/encyclopedia.hpp src/items.hpp src/optionalRef.hpp src/monsterType.hpp src/coord.hpp 
 	c++ src/encyclopedia.cpp -c -Wall -g -std=c++11 -o src/encyclopedia.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/itemholder.o : src/itemholder.cpp src/monster.hpp src/slots.hpp src/iterable.hpp src/itemholder.hpp src/encyclopedia.hpp src/shop.hpp src/coord.hpp src/characteristic.hpp src/items.hpp src/optionalRef.hpp src/random.hpp src/materialType.hpp src/monsterType.hpp src/damage.hpp src/zone.hpp src/level.hpp src/bonus.hpp src/movement.hpp src/output.hpp src/monsterIntrinsics.hpp src/renderable.hpp src/itemTypes.hpp src/time.hpp 
+src/itemholder.o : src/itemholder.cpp src/shop.hpp src/itemholder.hpp src/level.hpp src/itemTypes.hpp src/monster.hpp src/output.hpp src/zone.hpp src/materialType.hpp src/time.hpp src/damage.hpp src/renderable.hpp src/movement.hpp src/monsterIntrinsics.hpp src/slots.hpp src/bonus.hpp src/characteristic.hpp src/iterable.hpp src/encyclopedia.hpp src/items.hpp src/monsterType.hpp src/optionalRef.hpp src/coord.hpp src/random.hpp 
 	c++ src/itemholder.cpp -c -Wall -g -std=c++11 -o src/itemholder.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/items.o : src/items.cpp src/level.hpp src/movement.hpp src/output.hpp src/bonus.hpp src/renderable.hpp src/monsterIntrinsics.hpp src/itemTypes.hpp src/time.hpp src/slots.hpp src/monster.hpp src/iterable.hpp src/itemholder.hpp src/characteristic.hpp src/encyclopedia.hpp src/shop.hpp src/coord.hpp src/monsterType.hpp src/damage.hpp src/zone.hpp src/items.hpp src/optionalRef.hpp src/random.hpp src/materialType.hpp 
+src/items.o : src/items.cpp src/movement.hpp src/monsterIntrinsics.hpp src/slots.hpp src/damage.hpp src/renderable.hpp src/bonus.hpp src/iterable.hpp src/encyclopedia.hpp src/items.hpp src/characteristic.hpp src/random.hpp src/monsterType.hpp src/optionalRef.hpp src/coord.hpp src/shop.hpp src/itemholder.hpp src/level.hpp src/output.hpp src/monster.hpp src/itemTypes.hpp src/zone.hpp src/time.hpp src/materialType.hpp 
 	c++ src/items.cpp -c -Wall -g -std=c++11 -o src/items.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/itemType.o : src/itemType.cpp src/itemTypes.hpp src/renderable.hpp src/materialType.hpp src/random.hpp src/damage.hpp 
+src/itemType.o : src/itemType.cpp src/random.hpp src/damage.hpp src/renderable.hpp src/materialType.hpp src/itemTypes.hpp 
 	c++ src/itemType.cpp -c -Wall -g -std=c++11 -o src/itemType.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/level.o : src/level.cpp src/shrine.hpp src/iterable.hpp src/itemholder.hpp src/dungeon.hpp src/labyrinth.hpp src/monster.hpp src/slots.hpp src/random.hpp src/materialType.hpp src/items.hpp src/optionalRef.hpp src/damage.hpp src/zone.hpp src/terrain.hpp src/monsterType.hpp src/coord.hpp src/player.hpp src/characteristic.hpp src/bonus.hpp src/output.hpp src/movement.hpp src/level.hpp src/time.hpp src/itemTypes.hpp src/monsterIntrinsics.hpp src/renderable.hpp 
+src/level.o : src/level.cpp src/materialType.hpp src/time.hpp src/zone.hpp src/shrine.hpp src/dungeon.hpp src/monster.hpp src/itemTypes.hpp src/output.hpp src/itemholder.hpp src/level.hpp src/optionalRef.hpp src/monsterType.hpp src/coord.hpp src/random.hpp src/terrain.hpp src/characteristic.hpp src/iterable.hpp src/items.hpp src/bonus.hpp src/damage.hpp src/renderable.hpp src/movement.hpp src/labyrinth.hpp src/monsterIntrinsics.hpp src/player.hpp src/slots.hpp 
 	c++ src/level.cpp -c -Wall -g -std=c++11 -o src/level.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/main.o : src/main.cpp src/time.hpp src/renderable.hpp src/monsterIntrinsics.hpp src/itemTypes.hpp src/movement.hpp src/output.hpp src/bonus.hpp src/role.hpp src/religion.hpp src/level.hpp src/xo.hpp src/monsterType.hpp src/zone.hpp src/damage.hpp src/optionalRef.hpp src/materialType.hpp src/characteristic.hpp src/player.hpp src/coord.hpp src/iterable.hpp src/dungeon.hpp src/itemholder.hpp src/slots.hpp src/monster.hpp 
+src/main.o : src/main.cpp src/bonus.hpp src/xo.hpp src/religion.hpp src/player.hpp src/slots.hpp src/monsterIntrinsics.hpp src/movement.hpp src/renderable.hpp src/damage.hpp src/coord.hpp src/monsterType.hpp src/optionalRef.hpp src/iterable.hpp src/characteristic.hpp src/output.hpp src/itemTypes.hpp src/monster.hpp src/level.hpp src/itemholder.hpp src/time.hpp src/materialType.hpp src/dungeon.hpp src/role.hpp src/zone.hpp 
 	c++ src/main.cpp -c -Wall -g -std=c++11 -o src/main.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/monster.o : src/monster.cpp src/monsterType.hpp src/terrain.hpp src/zone.hpp src/damage.hpp src/optionalRef.hpp src/items.hpp src/materialType.hpp src/random.hpp src/characteristic.hpp src/graphsearch.hpp src/coord.hpp src/iterable.hpp src/itemholder.hpp src/slots.hpp src/monster.hpp src/time.hpp src/monsterIntrinsics.hpp src/renderable.hpp src/itemTypes.hpp src/movement.hpp src/output.hpp src/bonus.hpp src/religion.hpp src/level.hpp 
+src/monster.o : src/monster.cpp src/random.hpp src/monsterType.hpp src/optionalRef.hpp src/coord.hpp src/iterable.hpp src/items.hpp src/terrain.hpp src/characteristic.hpp src/bonus.hpp src/religion.hpp src/movement.hpp src/slots.hpp src/monsterIntrinsics.hpp src/graphsearch.hpp src/damage.hpp src/renderable.hpp src/time.hpp src/materialType.hpp src/zone.hpp src/pathfinder.hpp src/output.hpp src/monster.hpp src/itemTypes.hpp src/itemholder.hpp src/level.hpp 
 	c++ src/monster.cpp -c -Wall -g -std=c++11 -o src/monster.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/monsterIntrinsics.o : src/monsterIntrinsics.cpp src/movement.hpp src/bonus.hpp src/monsterIntrinsics.hpp src/renderable.hpp src/damage.hpp src/terrain.hpp src/materialType.hpp 
+src/monsterIntrinsics.o : src/monsterIntrinsics.cpp src/materialType.hpp src/terrain.hpp src/bonus.hpp src/damage.hpp src/renderable.hpp src/movement.hpp src/monsterIntrinsics.hpp 
 	c++ src/monsterIntrinsics.cpp -c -Wall -g -std=c++11 -o src/monsterIntrinsics.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/monsterType.o : src/monsterType.cpp src/itemholder.hpp src/iterable.hpp src/slots.hpp src/monster.hpp src/zone.hpp src/monsterType.hpp src/random.hpp src/materialType.hpp src/optionalRef.hpp src/characteristic.hpp src/coord.hpp src/movement.hpp src/role.hpp src/bonus.hpp src/level.hpp src/religion.hpp src/time.hpp src/renderable.hpp src/monsterIntrinsics.hpp 
+src/monsterType.o : src/monsterType.cpp src/role.hpp src/zone.hpp src/time.hpp src/materialType.hpp src/itemholder.hpp src/level.hpp src/monster.hpp src/iterable.hpp src/characteristic.hpp src/random.hpp src/optionalRef.hpp src/monsterType.hpp src/coord.hpp src/movement.hpp src/monsterIntrinsics.hpp src/slots.hpp src/renderable.hpp src/bonus.hpp src/religion.hpp 
 	c++ src/monsterType.cpp -c -Wall -g -std=c++11 -o src/monsterType.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/output.o : src/output.cpp src/religion.hpp src/level.hpp src/movement.hpp src/output.hpp src/bonus.hpp src/role.hpp src/monsterIntrinsics.hpp src/renderable.hpp src/time.hpp src/slots.hpp src/monster.hpp src/iterable.hpp src/itemholder.hpp src/dungeon.hpp src/characteristic.hpp src/coord.hpp src/player.hpp src/monsterType.hpp src/zone.hpp src/optionalRef.hpp src/materialType.hpp 
+src/output.o : src/output.cpp src/monster.hpp src/output.hpp src/itemholder.hpp src/level.hpp src/materialType.hpp src/time.hpp src/zone.hpp src/role.hpp src/dungeon.hpp src/religion.hpp src/bonus.hpp src/renderable.hpp src/movement.hpp src/monsterIntrinsics.hpp src/slots.hpp src/player.hpp src/monsterType.hpp src/optionalRef.hpp src/coord.hpp src/characteristic.hpp src/iterable.hpp 
 	c++ src/output.cpp -c -Wall -g -std=c++11 -o src/output.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/output_curses.o : src/output_curses.cpp src/itemholder.hpp src/iterable.hpp src/dungeon.hpp src/slots.hpp src/monster.hpp src/monsterType.hpp src/zone.hpp src/optionalRef.hpp src/materialType.hpp src/characteristic.hpp src/coord.hpp src/player.hpp src/movement.hpp src/output.hpp src/bonus.hpp src/level.hpp src/time.hpp src/monsterIntrinsics.hpp src/renderable.hpp 
+src/output_curses.o : src/output_curses.cpp src/dungeon.hpp src/zone.hpp src/time.hpp src/materialType.hpp src/itemholder.hpp src/level.hpp src/output.hpp src/monster.hpp src/iterable.hpp src/characteristic.hpp src/monsterType.hpp src/optionalRef.hpp src/coord.hpp src/movement.hpp src/slots.hpp src/player.hpp src/monsterIntrinsics.hpp src/renderable.hpp src/bonus.hpp 
 	c++ src/output_curses.cpp -c -Wall -g -std=c++11 -o src/output_curses.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/output_term.o : src/output_term.cpp src/dungeon.hpp src/iterable.hpp src/itemholder.hpp src/slots.hpp src/monster.hpp src/monsterType.hpp src/zone.hpp src/optionalRef.hpp src/materialType.hpp src/characteristic.hpp src/coord.hpp src/player.hpp src/movement.hpp src/output.hpp src/bonus.hpp src/level.hpp src/time.hpp src/renderable.hpp src/monsterIntrinsics.hpp 
+src/output_term.o : src/output_term.cpp src/bonus.hpp src/monsterIntrinsics.hpp src/slots.hpp src/player.hpp src/movement.hpp src/renderable.hpp src/coord.hpp src/optionalRef.hpp src/monsterType.hpp src/iterable.hpp src/characteristic.hpp src/output.hpp src/monster.hpp src/level.hpp src/itemholder.hpp src/time.hpp src/materialType.hpp src/dungeon.hpp src/zone.hpp 
 	c++ src/output_term.cpp -c -Wall -g -std=c++11 -o src/output_term.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/player.o : src/player.cpp src/output.hpp src/movement.hpp src/bonus.hpp src/level.hpp src/religion.hpp src/time.hpp src/itemTypes.hpp src/renderable.hpp src/monsterIntrinsics.hpp src/itemholder.hpp src/iterable.hpp src/dungeon.hpp src/slots.hpp src/monster.hpp src/damage.hpp src/zone.hpp src/monsterType.hpp src/materialType.hpp src/items.hpp src/optionalRef.hpp src/characteristic.hpp src/player.hpp src/coord.hpp 
+src/player.o : src/player.cpp src/zone.hpp src/dungeon.hpp src/materialType.hpp src/time.hpp src/level.hpp src/itemholder.hpp src/itemTypes.hpp src/monster.hpp src/output.hpp src/characteristic.hpp src/items.hpp src/iterable.hpp src/coord.hpp src/monsterType.hpp src/optionalRef.hpp src/renderable.hpp src/damage.hpp src/monsterIntrinsics.hpp src/slots.hpp src/player.hpp src/movement.hpp src/religion.hpp src/bonus.hpp 
 	c++ src/player.cpp -c -Wall -g -std=c++11 -o src/player.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/religion.o : src/religion.cpp src/religion.hpp src/renderable.hpp 
+src/religion.o : src/religion.cpp src/renderable.hpp src/religion.hpp 
 	c++ src/religion.cpp -c -Wall -g -std=c++11 -o src/religion.o -finput-charset=utf8 -fexec-charset=utf8
 
 src/role.o : src/role.cpp src/role.hpp 
 	c++ src/role.cpp -c -Wall -g -std=c++11 -o src/role.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/shop.o : src/shop.cpp src/movement.hpp src/output.hpp src/bonus.hpp src/religion.hpp src/level.hpp src/appraise.hpp src/time.hpp src/renderable.hpp src/monsterIntrinsics.hpp src/itemTypes.hpp src/itemholder.hpp src/iterable.hpp src/slots.hpp src/monster.hpp src/monsterType.hpp src/zone.hpp src/damage.hpp src/items.hpp src/optionalRef.hpp src/random.hpp src/materialType.hpp src/characteristic.hpp src/coord.hpp src/shop.hpp 
+src/shop.o : src/shop.cpp src/time.hpp src/materialType.hpp src/zone.hpp src/output.hpp src/itemTypes.hpp src/monster.hpp src/itemholder.hpp src/shop.hpp src/level.hpp src/random.hpp src/monsterType.hpp src/optionalRef.hpp src/coord.hpp src/iterable.hpp src/items.hpp src/characteristic.hpp src/bonus.hpp src/appraise.hpp src/religion.hpp src/movement.hpp src/monsterIntrinsics.hpp src/slots.hpp src/damage.hpp src/renderable.hpp 
 	c++ src/shop.cpp -c -Wall -g -std=c++11 -o src/shop.o -finput-charset=utf8 -fexec-charset=utf8
 
 src/shopkeeper.o : src/shopkeeper.cpp 
 	c++ src/shopkeeper.cpp -c -Wall -g -std=c++11 -o src/shopkeeper.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/shrine.o : src/shrine.cpp src/coord.hpp src/player.hpp src/characteristic.hpp src/materialType.hpp src/random.hpp src/optionalRef.hpp src/items.hpp src/damage.hpp src/zone.hpp src/monsterType.hpp src/monster.hpp src/slots.hpp src/shrine.hpp src/iterable.hpp src/itemholder.hpp src/itemTypes.hpp src/monsterIntrinsics.hpp src/renderable.hpp src/time.hpp src/level.hpp src/religion.hpp src/bonus.hpp src/output.hpp src/movement.hpp 
+src/shrine.o : src/shrine.cpp src/damage.hpp src/renderable.hpp src/movement.hpp src/monsterIntrinsics.hpp src/player.hpp src/slots.hpp src/religion.hpp src/bonus.hpp src/characteristic.hpp src/iterable.hpp src/items.hpp src/optionalRef.hpp src/monsterType.hpp src/coord.hpp src/random.hpp src/itemholder.hpp src/level.hpp src/monster.hpp src/itemTypes.hpp src/output.hpp src/zone.hpp src/shrine.hpp src/materialType.hpp src/time.hpp 
 	c++ src/shrine.cpp -c -Wall -g -std=c++11 -o src/shrine.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/slots.o : src/slots.cpp src/movement.hpp src/slots.hpp src/monsterType.hpp src/materialType.hpp 
+src/slots.o : src/slots.cpp src/materialType.hpp src/movement.hpp src/slots.hpp src/monsterType.hpp 
 	c++ src/slots.cpp -c -Wall -g -std=c++11 -o src/slots.o -finput-charset=utf8 -fexec-charset=utf8
 
 src/terrain.o : src/terrain.cpp src/terrain.hpp src/renderable.hpp 

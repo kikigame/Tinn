@@ -45,6 +45,9 @@ public:
   // can the given monster move onto a square of this terrain type?
   bool movable(const std::shared_ptr<monster> m) const { return movable(*(m.get())); }
   bool movable(const monster &m) const;
+
+  // does the monster not want to move onte a square of this terrain type?
+  bool entraps(const monster &m, bool includeHidden) const;
 };
 
 class terrainFactoryImpl;
