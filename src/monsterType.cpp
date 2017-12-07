@@ -155,10 +155,10 @@ public:
 
     emplace(monsterTypeBuilder (monsterTypeKey::dragon)
 	    .category(monsterCategory::dragon) // TODO: Western dragons should also have wings. All should have claws. Not sure if "flank" is right.
-	    .name(L"Dragonet") // ref: 14th century term for a baby dragon
-	    .name(L"Dragon")
-	    .name(L"Dragon")
-	    .name(L"Dragon")
+	    .name(L"dragonet") // ref: 14th century term for a baby dragon
+	    .name(L"dragon")
+	    .name(L"dragon")
+	    .name(L"dragon")
 	    .className(L"Dragon") // TODO: Some dragons are serpants, others are lizards.
 	    .levelFactor(10)
 	    .levelOffset(10)
