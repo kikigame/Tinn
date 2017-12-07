@@ -127,7 +127,9 @@ monster::monster(monsterBuilder & b) :
   female_(b.female_),
   eachTick_(),
   type_(*b.type_),
-  align_(b.align_) {
+  align_(b.align_),
+  equipment_(),
+  intrinsics_() {
   // create all slots as empty initially
   for (auto slot : slotsFor(type_.category()))
     equipment_.emplace(slot, optionalRef<item>());
