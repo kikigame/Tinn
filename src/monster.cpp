@@ -616,6 +616,27 @@ public:
   }
 };
 
+// a hound changes its saying depending on its level.
+// that's probably not a very good superpower really.
+class hound : public monster {
+public:
+  hound(monsterBuilder &b) : 
+    monster(b) {} //
+  virtual ~hound() {}
+  virtual const wchar_t *say() const {
+    const std::wstring nm = name();
+    if (nm.compare(L"puppy") == 0)
+      return L"Yip";
+    else if (nm.compare(L"puppy") == 0)
+      return L"wuff wuff"; // ref:default bell in Unix "Screen" in Nethack mode
+    else if (nm.compare(L"Big Bad Wolf") == 0)
+      return L"Who's afraid?"; //ref:Red Riding Hood (folktale)
+    else
+      return monster::say();
+  }
+};
+
+
 class dragon : public monster {
 private:
   const bool western_;
@@ -681,6 +702,9 @@ std::shared_ptr<monster> ofType(const monsterType &type, level & level, const st
   // invoke move() every move, even when the player is helpless:
   std::shared_ptr<monster> ptr;
   switch (type.type()) {
+  case monsterTypeKey::hound:
+    ptr = std::make_shared<hound>(b);
+    break;
   case monsterTypeKey::zombie:
     ptr = std::make_shared<zombie>(b);
     break;

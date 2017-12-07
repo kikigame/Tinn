@@ -176,6 +176,39 @@ public:
 	    .saying(L"Behold the Powerful Dragon") // should not actually say this; depends on the monster's specifics
 	    .encyclopedium(L"The dragon is a powerful creature shrouded in mystery.")); // TODO: Better this
 
+    emplace(monsterTypeBuilder (monsterTypeKey::hound)
+	    .category(monsterCategory::quadruped)
+	    //.name(L"puppy") // I don't mind puppies, but I don't want puppy combat on level 1 thanks
+	    .name(L"dog")
+	    .name(L"coyote") // NB: Nethack announces coyotes with silly latin names, a reference to the Road Runner cartoons
+	    .name(L"hound") // bit of an odd track, as "hound" means tamed hunting dog
+	    .name(L"wolfhound") // hound for hunting wolves
+	    .name(L"wild dog")
+	    .name(L"painted dog") // aka african hunting dog or african hunting wolf
+	    .name(L"wolf")
+	    .name(L"Big Bad Wolf") // ref:fairytales
+	    .className(L"Canid") // genus canus
+	    .levelFactor(1)
+	    .levelOffset(0)
+	    .minSpawn(1)
+	    .maxSpawn(12) // todo: unsure how big dog packs can be
+	    .xpFactor(1)
+	    .xpOffset(10)
+	    .renderChar(L'd') // as per Nethack
+	    .strength(10)
+	    .appearance(20)
+	    .fighting(40)
+	    .dodge(20) // they're frisky, but we don't want a puppy to kill a starting player
+	    .maxDamage(10) // not easy to kill even as a baby, although tougher creatures exist
+	    .gen(genderAssignType::mf)
+	    .align(dr.getExact(Element::earth, Domination::aggression, Outlook::kind))
+	    .align(dr.getExact(Element::earth, Domination::aggression, Outlook::cruel))
+	    .align(dr.getExact(Element::earth, Domination::aggression, Outlook::none))
+	    .saying(L"(howl)") // todo: woof for puppies & dogs
+	    .movement({speed::turn2, goTo::player, goBy::smart, 50})
+	    .encyclopedium(L"Canines are furry, with four legs and a tail. They are easily excited, always\n"
+"hungry and pack hunters. They enjoy bones and some are known to bark or howl."));
+
     emplace(monsterTypeBuilder (monsterTypeKey::human)
 	    .category(monsterCategory::biped)
 	    .name(L"inexperienced human")

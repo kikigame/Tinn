@@ -54,6 +54,7 @@ enum class genderAssignType {
 
 enum class monsterTypeKey {
   dragon,
+  hound,
   human, 
   troll, 
   zombie, 
