@@ -653,7 +653,7 @@ public:
   dragon(monsterBuilder &b) : 
     monster(roll(b)),
     western_(align().domination() == Domination::aggression) {
-    intrinsics().fly(true);
+    // DRAGONS DON'T FLY! It's mythologically inaccurate...
     intrinsics().speedy(true);
     intrinsics().dblAttack(true);
   }
