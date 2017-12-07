@@ -110,6 +110,10 @@ protected:
 // create an item of the given type. io may be used later by that item, eg for prompts when using.
 item & createItem(const itemTypeKey & it, const io & ios);
 
+class deity;
+// create a holy book with specific alignment
+item & createHolyBook(const io &ios, const deity &align);
+
 // corpses need especial handling:
 item & createCorpse(const io &ios, const monsterType &mt, const unsigned char maxDamage);
 

@@ -159,6 +159,16 @@ L"\"Kindle\" is the collective noun for kittens. I don't know why I told you\n" 
 "and friendly life advice is displayed prominantly on the cover.\n",
 L"Book."
 			     ));
+    emplace(itemTypeKey::holy_book, // cheating and just copying the codex stats
+	    // based on 0.9g/cm3 for good quality paper; a paper copy of a big codex on Amazon
+	    // measures 39x13x46cm, giving a mass of ~21kg
+	    new itemTypeImpl(205, materialType::papery, true, L'¶', L"Holy text",  // http://www.antithetical.org/restlesswind/plinth/bookbind2.html
+L"Unlike folios, which are mere sheets of vellum folded into verso and recto\n"
+" pages, the codex is bound on raised cords, breaking a scroll of text into\n"
+"multiple sectionts, allowing instant access to any part of the work.\n"
+"The codex is a great method to convey complex knowledge in a lasting form.\n",
+L"Book."
+			     ));
     emplace(itemTypeKey::poke,
 	    new itemTypeImpl(0.5, materialType::clothy, false, L'=', L"poke",
 L"A large canvas bag, a little smaller than a sack. Useful for carrying items\n"

@@ -673,9 +673,11 @@ std::pair<coord,coord> levelGen::addShrine() {
 
   auto loc = std::pair<coord,coord>(topLeft,btmRight);
 
-  auto shr = std::make_shared<shrine>(topLeft, btmRight, *(level_->io_));
+  auto &io = *(level_->io_);
+    auto shr = std::make_shared<shrine>(topLeft, btmRight, io);
   level_->itemZones_.push_back(shr);
-  level_->monsterZones_.push_back(shr);  
+  level_->monsterZones_.push_back(shr);
+  level_->holder(coord(xPos+2,yPos+2)).addItem(createHolyBook(io, shr->align()));
 
   return loc;
 }

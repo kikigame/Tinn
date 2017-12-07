@@ -7,7 +7,8 @@
 #include "random.hpp"
 #include "monster.hpp"
 #include "shop.hpp"
-#include "encyclopedia.hpp"
+#include "encyclopedia.hpp" // for hitch-hiker's guide
+#include "religion.hpp" // for holy books
 #include "output.hpp"
 #include <set>
 #include <bitset>
@@ -571,6 +572,36 @@ public:
     }*/
 };
 
+class holyBook : public readableItem {
+private:
+  const deity &align_;
+public:
+  holyBook(const io &ios) :
+    readableItem(itemTypeRepo::instance()[itemTypeKey::holy_book], ios),
+    align_(*rndPick(deityRepo::instance().begin(), deityRepo::instance().end())) {}
+  holyBook(const io &ios, const deity &align) :
+    readableItem(itemTypeRepo::instance()[itemTypeKey::holy_book], ios),
+    align_(align) {}
+  virtual ~holyBook() {}
+  virtual const wchar_t * const name() const {
+    if (align_.nonaligned())
+      // ref: Russell's Teapot, a phylosophical analogy used to place the buden of proof on the preacher.
+      return L"Book of the Teapot";
+    static std::wstring rtn;
+    rtn = L"holy book of " + std::wstring(align_.name());
+    return rtn.c_str();
+  }
+  virtual bool use() {
+    if (isCursed()) {
+      ios().message(L"The pages are stuck together.");
+      return false;
+    }
+    ios().message(L"You turn the pages of the " + std::wstring(name()));
+    ios().longMsg(align_.description());
+    return true;
+  }
+};
+
 class shopCard : public basicItem {
 public:
   shopCard(const itemType& type, const io &ios) :
@@ -692,6 +723,9 @@ item& createItem(const itemTypeKey & t, const io & ios) {
   case itemTypeKey::hitch_guide:
     rtn = new hitchGuide(r[t], ios);
     break;
+  case itemTypeKey::holy_book:
+    rtn = new holyBook(ios);
+    break;
   case itemTypeKey::poke:
     rtn = new basicContainer(r[t], ios);
     break;
@@ -715,6 +749,12 @@ item& createItem(const itemTypeKey & t, const io & ios) {
   }
   itemHolderMap::instance().enroll(*rtn); // takes ownership
   return *rtn; // now safe to take reference
+}
+
+item & createHolyBook(const io &ios, const deity &align) {
+  auto rtn = new holyBook(ios, align);
+  itemHolderMap::instance().enroll(*rtn); // takes ownership
+  return *rtn;
 }
 
 item &createCorpse(const io &ios, const monsterType &mt, const unsigned char maxDamage) {

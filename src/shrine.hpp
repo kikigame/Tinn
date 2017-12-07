@@ -55,6 +55,8 @@ public:
   // player can't attack in any sanctuary
   // monsters won't attack player in their sanctuary
   virtual bool onAttack(monster &, monster &);
+
+  const deity &align() const {return align_; }
 };
 
 

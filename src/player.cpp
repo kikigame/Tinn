@@ -81,8 +81,6 @@ player::player(playerBuilder &b) :
   // on their class and race.
   // But for now, we'll just let them go shopping:
   addItem(createItem(itemTypeKey::shop_card, *io_));
-  addItem(createItem(itemTypeKey::bottle, *io_));
-  addItem(createItem(itemTypeKey::bottling_kit, *io_));
 }
 
 player::~player() {}
