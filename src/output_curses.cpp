@@ -92,7 +92,9 @@ public:
     else {
       // we rely on the fact that the dungeon is redrawn each time, and that calls flushLashMsg.
       auto numLines = std::count(lastMsg.begin(), lastMsg.end(), L'\n');
-      if (numLines > 22) // assuming an 80x24 terminal
+      int xMax,yMax;
+      getmaxyx(stdscr, yMax, xMax); // macro; updates by reference
+      if (numLines > yMax - 2) 
 	flushLastMsg(msg);
       else lastMsg += L"\n" + msg;
     }
