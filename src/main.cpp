@@ -18,16 +18,7 @@
 void processInput(dungeon & d, const std::wstring &c, const std::shared_ptr<io> ios);
 std::wstring print(const xo &xo);
 
-void dumpReligion(); // temporary debug
 int play() {
-
-#ifdef DEBUG
-  if (true) { // avoid unreachable statement warnings
-    //    dumpReligion();
-    dumpStartStats();
-    return 0;
-  }
-#endif
 
   auto io = ioFactory::create();
 
