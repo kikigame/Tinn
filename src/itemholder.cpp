@@ -107,6 +107,11 @@ bool itemHolder::removeItemForMove(item &it) {
 bool itemHolder::destroyItem(item &item) {
   bool rtn = contains(item);
   itemHolderMap::instance().destroy(item);
+  for (auto iter = contents_.begin(); iter != contents_.end(); ++iter)
+    if (iter->lock().get() == &item) {
+      contents_.erase(iter);
+      break;
+    }
   return rtn;
 }
 
