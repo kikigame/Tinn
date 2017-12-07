@@ -96,6 +96,10 @@ public:
   // NB: This is only the intrinsic properties; a monster may also gain these powers from extrinsics (equipped items)
   monsterIntrinsics & intrinsics();
 
+  // monster abilities. Based on intrinsics, but modified by items to add, remove or change things.
+  monsterAbilities & abilities();
+  const monsterAbilities & abilities() const;
+
   // retrieve the current level; needed by moveMonster() function as monsters can switch levels.
   level & curLevel(); 
 

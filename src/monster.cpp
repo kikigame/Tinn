@@ -408,6 +408,13 @@ const wchar_t * monster::say() const {
   return *rndPick(type().sayingsBegin(), type().sayingsEnd());
 }
 
+monsterAbilities& monster::abilities() {
+  return intrinsics_; // TODO: extrinsics
+}
+const monsterAbilities& monster::abilities() const {
+  return intrinsics_; // TODO: extrinsics
+}
+
 monster::~monster() {}
 
 bool monster::operator == (const monster &rhs) { return this == &rhs; }

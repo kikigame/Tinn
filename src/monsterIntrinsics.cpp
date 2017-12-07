@@ -14,6 +14,7 @@ enum class bonusType {
     speedy, // TODO: for players
     hearing, // TODO
     seeing, // TODO
+    flying,
     swimming, // TODO (need water too)
     climbing // TODO (need pits)
     };
@@ -138,6 +139,13 @@ void monsterIntrinsics::swim(const bool sight) {
 }
 const bool monsterIntrinsics:: swim() const {
   return pImpl_->bonuses[bonusType::swimming] == bonus(true);
+}
+// can you fly?
+void monsterIntrinsics::fly(const bool fly) {
+  pImpl_->bonuses[bonusType::flying] = bonus(fly);
+}
+const bool monsterIntrinsics:: fly() const {
+  return pImpl_->bonuses[bonusType::flying] == bonus(true);
 }
 // how fast can we get out of a pit?
 void monsterIntrinsics::climb(const bonus & sight) {
