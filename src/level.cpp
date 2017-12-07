@@ -157,7 +157,7 @@ public:
     addMonsters(pos);
 
     // place a shrine sometimes
-    {//if (dPc() <= 10) {
+    if (dPc() <= 10) {
       auto shrinePos = addShrine();
       auto shrineDir = addCorridor(mid(shrinePos), mid(pos[0]));
       coord alterPos = shrineDir.next(mid(shrinePos));
