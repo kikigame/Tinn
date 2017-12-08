@@ -21,14 +21,14 @@ Compilation
 
 If you want to compile Tinn yourself, you will need: (I use these):
 
-* A C++-11-stardard compliant C++ compiler (GNU C++ 4.8.4 will do)
-* A curses.h file to provide user input; must support wide characters (meaning version 5.4 or later; note that there are rumours of a version 11; this is an onofficial fork that does not support Unicode). I use ncursesw-5.
+* A C++-11-standard compliant C++ compiler (GNU C++ 4.8.4 will do)
+* A curses.h file to provide user input; must support wide characters (meaning version 5.4 or later; note that there are rumours of a version 11; this is an unofficial fork that does not support Unicode). I use ncursesw-5.
 * The src directory in this distribution.
 * A terminal supporting some basic Unicode characters (this means a Unicode-aware terminal with a Unicode-aware monospace font).
 
 Just compile all the C++ files into the executable, linking with the curses library.
 
-A very plain Makefine is provided, so if you have the whole distribution and your C++ compile is named "c++", you can just run "make".
+A very plain Makefile is provided, so if you have the whole distribution and your C++ compile is named "c++", you can just run "make".
 
 If you have an older Linux compiler/libraries, some of the console functions won't link. You may need to modify output_curses.hpp to start with the following line:
 
