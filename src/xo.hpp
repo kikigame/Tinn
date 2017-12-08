@@ -49,9 +49,19 @@ private:
       if (b[i][0] == tile::empty) x=i,y=0;
       if (b[i][1] == tile::empty) x=i,y=1;
       if (b[i][2] == tile::empty) x=i,y=2;
-    }
-    }
+    }}
     if (b[1][1] == tile::empty) return ogo(1,1);
+    for (int xx=0; xx < 3; ++xx) for (int yy=0; yy < 3; ++yy)
+	if (b[xx][yy] == tile::empty) {
+	  int m,n;
+	  for (int i=0; i <3; ++i) {
+	    if (b[xx][i] == tile::x) m++;
+	    else if (b[xx][i] == tile::o) m+=2;
+	    if (b[i][yy] == tile::x) n++;
+	    else if (b[i][yy] == tile::x) n+=2;
+	  }
+	  if (m == 1 && n == 1) return ogo(xx,yy);
+	}
     return ogo(x,y);
   }
   std::wstring ogo(const int x, const int y) {
