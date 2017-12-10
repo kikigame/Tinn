@@ -105,6 +105,7 @@ bool itemHolder::removeItemForMove(item &it) {
 }
 
 bool itemHolder::destroyItem(item &item) {
+  auto i = item.shared_from_this(); // keep alive
   bool rtn = contains(item);
   itemHolderMap::instance().destroy(item);
   for (auto iter = contents_.begin(); iter != contents_.end(); ++iter)
