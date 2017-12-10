@@ -79,7 +79,14 @@ enum class itemTypeKey {
   ////
   // Liquids ('~', the tail of a long worm in Nethack; don't know when we'd render this)
   ////
-    water,
+    water, // plain water
+    tears, // (water + tear damage) // potion of sorrow (TODO)
+    heavy_water, // (water + bashing/earth damage)
+    fire_water, // (water + fire)
+    fizzy_pop, // (water + air)
+    dehydrated_water, // (water + time)
+    spring_water, // (water + flora damage)
+    electro_pop, // (water + lightning damage) - TODO: synthesis
 
   ////
   // Jewellery ('*' ; nethack uses * for gems, " for amulets/webs and = for rings

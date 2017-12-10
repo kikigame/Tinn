@@ -181,6 +181,83 @@ L"Above the ignition point, hydrogen explodes in the precence of oxygen; four\n"
 "best kept in a bottle.",
 L"Looks kind-of wet. It doesn't *smell* like gin..."
 			     ));
+    emplace(itemTypeKey::tears, // (water + tear damage) // potion of sorrow (TODO)
+	    // http://www.answers.com/Q/What_is_the_density_of_saliva puts the density of saliva at 0.002.
+	    // I haven't yet found the density of tears, and haven't been happy/sad enough to measury my own.
+	    // So I'm just going to multiply half a pint of water by 0.002 and hope that's realistic.
+	    new itemTypeImpl(2.32048709597807532, materialType::liquid, L'~', L"tears",  // half a pint
+L"Canst thou bottle ones' sorrow? Canst thou drown it in tears?\n"
+"Tears are mostly water, with a few other salts and trace proteins, including\n"
+" hormones like  prolactin, adrenocorticotropic hormone, and Leu-enkephalin.",
+L"Looks all wet, sadly."
+			     ));
+    emplace(itemTypeKey::heavy_water, // (water + bashing/earth damage)
+	    new itemTypeImpl(2.561104527040676154, materialType::liquid, L'~', L"heavy water",  // half a pint
+			     // https://www.aqua-calc.com/page/density-table lists Tritium Oxide as 1.25g/l
+			     // and D2O as 1.1059000244141 g/l
+			     //http://www.differencebetween.net/science/difference-between-water-and-heavy-water/
+L"With a pH of 7.41, heavy water is mildly alkaline. It has an identical\n"
+"chemical structure to water, with duterium isotopes of hydrogen atoms\n"
+"with a high occurance, having 2 neutrons in the nucleus instead of one.\n"
+"The increased density is particularly useful in absorbing radioactive\n"
+"particles, making D₂O the fluid of choice for generating heat from nuclear\n"
+"reactors.",
+L"This water is weighty."
+			     ));
+    emplace(itemTypeKey::fire_water, // (water + fire)
+	    new itemTypeImpl(2.1730597421557556844, materialType::liquid, L'~', L"fire water",  // half a pint
+			     // 0.93834g/l as for whiskey (http://www.answers.com/Q/What_is_the_density_of_whiskey)
+L"A strong, alcoholic liquor. Advise caution when drinking. An inflammible,\n"
+"liquid good for sterilizing wounds.",
+L"Smells boozy." // ref:Nethack - potion of booze
+			     ));
+    emplace(itemTypeKey::fizzy_pop, // (water + air)
+	    new itemTypeImpl(2.2926968313555834, materialType::liquid, L'~', L"fizzy pop",  // half a pint as water
+			     // based on 0.99g/l; about 1% carbonation. See
+			     // https://sciencing.com/density-carbonated-water-6925741.html
+L"The neck of the bottle is crimped to accommodate a free-floating marble,\n"
+"held firmly against the upper portion of the neck by the pressure of the\n"
+"carbon dioxide dissolved in the delicious flavoured fluid. To release the\n"
+"fluid, hold the bottle to your mouth and push the marble down with your\n"
+"tongue. May contain sugar or artificial sweeteners.",
+L"There's a marble in this glass! Let's get it out and play a game?"
+			     ));
+    emplace(itemTypeKey::dehydrated_water, // (water + time)
+	    new itemTypeImpl(1.15792769260383, materialType::liquid, L'~', L"dehydrated water",  // quater of a pint as water
+			     // http://www.instructables.com/id/Make-Your-Own-Dehydrated-Water/
+L"The process of dehydration, while it can be speeded up with heat, will\n"
+"occur naturally over time, if the air humidity is low. It's best to keep\n"
+"drinking water in sealed containers, such as bottles, and keep them away from"
+"heat to prevent loss due to evaporation.\n"
+"The process of dehydration can be used to good effect when preserving solid\n"
+"items, as it prevents the growth of bacteria.",
+L"Just add water."
+			     ));
+    emplace(itemTypeKey::spring_water, // (water + flora damage)
+	    new itemTypeImpl(2.31585538520766, materialType::liquid, L'~', L"natural spring water",  // half a pint as water
+L"Natural sources of water, such as lakes and streams, provide a habitat for\n"
+"all sorts of microscopic acquatic life, which can alter the balance of the\n"
+"water and introduce impurities. Spring water is filtered through many layers\n"
+"of rock, reducing impurities of this sort. The main impurity in spring water\n"
+"is trace amounts of rock salts, which are good for hydration and an\n"
+"important dietary mineral.",
+L"Looks kind-of wet. It doesn't *smell* like gin..." // as water
+			     ));
+    emplace(itemTypeKey::electro_pop, // (water + lightning damage) - TODO: synthesis
+	    new itemTypeImpl(2.31585538520766, materialType::liquid, L'~', L"electro pop",  // half a pint as water
+L"When exposed to large tension (voltage) of electricity, it degrades into\n"
+"hydrogen and oxygen molecules, in a process known as cracking.\n"
+"Electro-pop is similar to normal carbonated pop, but is particularly useful\n"
+"in synthesis.",
+L"Popular music can be loosely destribed as modern music, usually with one\n"
+"instrument and one or two vocals. The simplicity of the musical composition\n"
+"allows a speedy production cycle, so allowing a great quanity of output and\n"
+"so a large variety of subgenres. Synth-pop is a subgenre of pop music using\n"
+"electronic synthesisers as instruments. Electropop is a subgenre of synth-\n"
+"pop in which the synthesisers are deliberately configured to produce an\n"
+"artificial electronic sound."
+			     ));
+
     emplace(itemTypeKey::wooden_ring,
 	    new itemTypeImpl(0.05, materialType::woody, L'*', L"wooden ring",
 L"Often used by gymnasts to demonstrate the graceful application of upper-body\n"

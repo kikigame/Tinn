@@ -403,7 +403,7 @@ public:
 
 class bottlingKit;
 
-
+// NB: We must be an itemHolder, to meet the itemHolderMap contract.
 class bottle : public basicItem, private itemHolder {
   friend class bottlingKit;
 private:
@@ -470,7 +470,7 @@ public:
       if (holder().addItem(c.value())) {
 	ios().message(std::wstring(name()) + L" smashes; you now have a " + cname);
       } else {
-	itemHolder::destroyItem(c.value());
+      itemHolder::destroyItem(c.value());
 	ios().message(std::wstring(name()) + L" smashes; you lose the " + cname);
       }
     }
@@ -652,7 +652,8 @@ public:
     }
     auto &pc = dynamic_cast<monster&>(holder());
     optionalRef<item> bot = pc.firstItem([](item &i) {
-	return dynamic_cast<bottle*>(&i) != 0;
+	auto *bot = dynamic_cast<bottle*>(&i);
+	return bot != 0 && bot->content();
       });
     if (!bot) {
       ios().message(L"You'll need a bottle in your inventory to do that.");
@@ -764,6 +765,13 @@ item& createItem(const itemTypeKey & t, const io & ios) {
     rtn = new basicContainer(r[t], ios);
     break;
   case itemTypeKey::water:
+  case itemTypeKey::tears:
+  case itemTypeKey::heavy_water:
+  case itemTypeKey::fire_water:
+  case itemTypeKey::fizzy_pop:
+  case itemTypeKey::dehydrated_water:
+  case itemTypeKey::spring_water:
+  case itemTypeKey::electro_pop:
     rtn = new basicItem(r[t], ios); // TODO: undropability
     break;
   case itemTypeKey::wooden_ring:
@@ -797,14 +805,27 @@ item &createCorpse(const io &ios, const monsterType &mt, const unsigned char max
   return *rtn;
 }
 
+item & createBottledItem(const itemTypeKey &type, const io &ios) {
+  auto &rtn = createItem(itemTypeKey::bottle, ios);
+  auto &toBottle = createItem(type, ios);
+  dynamic_cast<bottle &>(rtn).addItem(toBottle);
+  return rtn;
+}
+
 // create a random item suitable for the given level depth
 // TODO: depth limitations
 item &createRndItem(const int depth, const io & ios) {
   auto &r = itemTypeRepo::instance();
   while (true) {
     auto type = rndPick(r.begin(), r.end());
-    if (type->first == itemTypeKey::water) continue;
+    // we can produce water, but we must bottle it:
+    if (type->first == itemTypeKey::water)
+      return createBottledItem(itemTypeKey::water, ios);
+    // other more exotic liquids are ignored for now:
+    if (r[type->first].material() == materialType::liquid) continue;
+    // we never autogenerate a corpse because they always need a monster first:
     if (type->first == itemTypeKey::corpse) continue;
+    // general case: call createItem():
     return createItem(type->first, ios); // already enrolled
   }
 }

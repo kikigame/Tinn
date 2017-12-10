@@ -33,6 +33,9 @@ class shared_item : public std::enable_shared_from_this<item> {
 class item : public renderable, public virtual shared_item {
   friend class itemHolderMap;
 public:
+  item () = default;
+  item (const item &) = delete;
+  item (const item &&) = delete;
   // delegate to itemType by default
   virtual const wchar_t render() const = 0;
   // built up of itemType and adjectives etc.
@@ -108,6 +111,8 @@ protected:
 };
 
 // create an item of the given type. io may be used later by that item, eg for prompts when using.
+// NB: if "it" is a water type, then it should normally only be placed in a fluid container (eg bottle).
+// TODO: Type system should enforce fluidity somehow.
 item & createItem(const itemTypeKey & it, const io & ios);
 
 class deity;
@@ -119,5 +124,8 @@ item & createCorpse(const io &ios, const monsterType &mt, const unsigned char ma
 
 // create a random item suitable for the given level depth
 item & createRndItem(const int depth, const io & ios);
+
+// create a bottled item
+item & createBottledItem(const itemTypeKey &, const io &);
 
 #endif // ndef ITEMS_HPP__
