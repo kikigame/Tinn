@@ -203,6 +203,8 @@ public:
     std::vector<std::wstring> rtn;
     if (isUnidentified())
       return rtn;
+    if (type_ == itemTypeRepo::instance()[itemTypeKey::spring_water])
+      rtn.push_back(L"natural");
     if (isBlessed()) rtn.push_back(L"blessed");
     if (isCursed()) rtn.push_back(L"cursed");
     auto &dr = damageRepo::instance();

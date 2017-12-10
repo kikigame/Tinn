@@ -61,6 +61,10 @@ const materialType itemType::material() const {
   return pImpl_->material(); 
 }
 
+bool itemType::operator ==(const itemType &other) const {
+  return pImpl_ == other.pImpl_;
+}
+
 std::vector<damageType> allDamageTypes = {
   damageType::edged, 
   damageType::bashing,
@@ -234,7 +238,7 @@ L"The process of dehydration, while it can be speeded up with heat, will\n"
 L"Just add water."
 			     ));
     emplace(itemTypeKey::spring_water, // (water + flora damage)
-	    new itemTypeImpl(2.31585538520766, materialType::liquid, L'~', L"natural spring water",  // half a pint as water
+	    new itemTypeImpl(2.31585538520766, materialType::liquid, L'~', L"spring water",  // half a pint as water
 L"Natural sources of water, such as lakes and streams, provide a habitat for\n"
 "all sorts of microscopic acquatic life, which can alter the balance of the\n"
 "water and introduce impurities. Spring water is filtered through many layers\n"

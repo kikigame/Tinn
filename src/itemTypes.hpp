@@ -24,6 +24,7 @@ public:
   const wchar_t * const vagueDescription() const;
   const double baseWeight() const;
   const materialType material() const;
+  bool operator ==(const itemType &other) const;
 };
 
 
