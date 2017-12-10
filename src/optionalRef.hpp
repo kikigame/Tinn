@@ -22,6 +22,7 @@ public:
   }
   operator bool() const { return has_value_; };
   T & value() {return *value_; }
+  const T & value() const { return *value_; }
   void reset() { has_value_ = false; value_ = 0; }
 };
 
