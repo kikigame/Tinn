@@ -146,3 +146,12 @@ optionalRef<item> itemHolder::firstItem(std::function<bool(item&)> f) {
 bool itemHolder::empty() const {
   return contents_.empty();
 }
+bool itemHolder::replaceItem(item &from, item &to) {
+  for (auto i = contents_.begin(); i != contents_.end(); ++i)
+    if (i->lock().get() == &from) {
+      i = contents_.erase(i);
+      contents_.insert(i, to.shared_from_this());
+      return true;
+    }
+  return false;
+}

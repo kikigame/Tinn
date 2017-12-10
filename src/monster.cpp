@@ -303,6 +303,10 @@ int calcAppBonus(const std::map<const slot*, optionalRef<item> > eq) {
 
 bool monster::equip(item &item, const slotType slot) {
   auto s = slotBy(slot);
+  return equip(item, s);
+}
+
+bool monster::equip(item &item, const slot *s) {
   auto i = equipment_.find(s);
   if (i == equipment_.end()) return false; // monster doesn't have this slot
   if (i->second) return false; // already occupied

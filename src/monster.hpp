@@ -117,6 +117,7 @@ public:
 
   // try and wield/wear etc. the given item in the specified slot. Returns true if successful, false
   // if the slot was full or n/a for this monster type. Precodition: slot must be available for type.
+  bool equip(item &item, const slot *slot);
   bool equip(item &item, const slotType slot);
   // try to unequip an item. Returns true on success, false if not equipped or cursed
   bool unequip(item &item);

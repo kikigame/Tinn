@@ -231,7 +231,7 @@ public:
     if (isProof(type)) return false;
     auto i = damageTrack_.find(type);
     if (i == damageTrack_.end()) return false;
-    ++(i->second); // TODO: many items should be destroyed if they get too damaged. Here or in caller?
+    ++(i->second); // TODO: many items should be destroyed if they get too damaged. Do it here or transmute won't work.
     return true;
   }
   // repair previous damage (return false only if no effect, eg undamaged)
@@ -727,6 +727,42 @@ public:
     return false;
   }
 };
+
+
+void transmutate(item &from, item &to) {
+  const slot *slot;
+  monster *m = dynamic_cast<monster *>(&from);
+  auto h = from.holder();
+  if (m) {
+    slot = m->slotOf(from); // may be nullptr
+    if (slot != nullptr) m->unequip(from);
+  }
+  auto &map = itemHolderMap::instance();
+  auto &holder = map.forItem(from);
+  holder.replaceItem(from, to);
+  for (auto &dt : allDamageTypes) {
+    // ignore return value; if to ignores the damage type there's no need to tell user it's fixed.
+    const auto amount = from.damageOfType(dt);
+    if (amount != 0)
+      for (int i=0; i < amount; ++i) 
+	to.strike(dt);
+    if (from.isProof(dt))
+      to.proof(dt);
+  }
+  if (from.isBlessed())
+    to.bless(true);
+  if (from.isCursed())
+    to.curse(true);
+  if (from.isUnidentified())
+    to.unidentify(true);
+  if (from.isSexy())
+    to.sexUp(true);
+  const auto charm = from.enchantment();
+  if (charm != 0)
+    to.enchant(charm);
+  if (slot != nullptr)
+    m->equip(to, slot);
+}
 
 // create an item of the given type. io may be used later by that item, eg for prompts when using.
 // TODO: Randomness for flavour: enchantment, flags, etc.

@@ -128,4 +128,9 @@ item & createRndItem(const int depth, const io & ios);
 // create a bottled item
 item & createBottledItem(const itemTypeKey &, const io &);
 
+// replace an item with another of a different type
+// "from" must be a fully created object in a container.
+// "to" must be an enrolled object not yet in a container.
+void transmutate(item & from, item &to);
+
 #endif // ndef ITEMS_HPP__
