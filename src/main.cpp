@@ -218,15 +218,15 @@ int handleActiveError() {
 	      << "https://github.com/kikigame/Tinn/issues" << std::endl;
     return -1;
   } catch (itemTypeKey key) {
-    std::cerr << "Unknown item type key" << static_cast<int>(key) << std::endl
+    std::cerr << "Unknown item type key: " << static_cast<int>(key) << std::endl
 	      << "https://github.com/kikigame/Tinn/issues" << std::endl;
     return -1;
   } catch (slotType key) {
-    std::cerr << "Unknown item slot type key" << static_cast<int>(key) << std::endl
+    std::cerr << "Unknown item slot type key: " << static_cast<int>(key) << std::endl
 	      << "https://github.com/kikigame/Tinn/issues" << std::endl;
     return -1;
   } catch (terrainType key) {
-    std::cerr << "Unknown terrain type key" << static_cast<int>(key) << std::endl
+    std::cerr << "Unknown terrain type key: " << static_cast<int>(key) << std::endl
 	      << "https://github.com/kikigame/Tinn/issues" << std::endl;
     return -1;
   } catch (coord c) {
