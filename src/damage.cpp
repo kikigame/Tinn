@@ -17,8 +17,14 @@ bool damage::canDamage(const materialType type) const {
 damageType damage::type() const { return type_; }
 const wchar_t * const damage::name() const { return name_; }
 const wchar_t * const damage::mendName() const { return mendName_; }
-const wchar_t * const damage::proofAdj(const materialType type) const { return proof_.at(type); }
-const wchar_t * const damage::damageAdj(const materialType type) const { return damaged_.at(type); }
+const wchar_t * const damage::proofAdj(const materialType type) const { 
+  auto rtn = proof_.find(type);
+  return rtn == proof_.end() ? nullptr : proof_.at(type); 
+}
+const wchar_t * const damage::damageAdj(const materialType type) const {
+  auto rtn = damaged_.find(type);
+  return rtn == damaged_.end() ? nullptr : damaged_.at(type);
+}
 
 std::unique_ptr<damageRepo> damageRepo::instance_;
 

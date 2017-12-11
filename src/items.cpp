@@ -192,7 +192,9 @@ public:
     for (auto dt : allDamageTypes) {
       if (isProof(dt)) {
 	// adjective for being (this material) being proof to this damage type:
-	rtn.push_back(std::wstring(dr[dt].proofAdj(m)));
+	auto ptr = dr[dt].proofAdj(m);
+	if (ptr != nullptr)
+	  rtn.push_back(std::wstring(ptr));
 	continue;
       }
       int d = damageOfType(dt);
