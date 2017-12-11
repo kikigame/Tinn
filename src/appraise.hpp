@@ -6,6 +6,7 @@
 #define APPRAISE_HPP__
 
 #include "items.hpp"
+class monster;
 
 double appraise(const monster &monster, const item &thing);
 
