@@ -388,11 +388,23 @@ level & monster::curLevel() {
 
 
 std::wstring monster::onMove(const coord &pos, const terrain &terrain) {
+  if (intrinsics_.entrapped())
+    return L"You try, but you're still escaping from the trap!";
   if (terrain.type() == terrainType::PIT) {
     bool flying(abilities().fly());
-    const wchar_t * const message =
-      flying ? L"You are now over a pit." :
-      fall(dPc() / 10);
+    if (flying) return L"You are now over a pit.";
+    const auto message = fall(dPc() / 10);
+    const auto climb = abilities().climb();
+    const int count=climb == bonus(false) ? 5 : climb == bonus() ? 3 : 1;
+    intrinsics_.entrap(count);
+    eachTick([this](){
+	intrinsics_.entrap(-1);
+	if (!intrinsics_.entrapped()) {
+	  // TODO: tell player they've escaped
+	  time::offPlayerMove(*(eachTick_.rbegin())); // traps must be in filo stack order
+	  eachTick_.pop_back();
+	}
+      });
     return message;
   }
   return L"";

@@ -292,7 +292,7 @@ public:
       attack(m, *(mn->second)); // can't move into monster
       return;
     }
-    moveTo(m, c);
+    move(m, std::make_pair<char,char>(0,-1), true);
     //      pcPos_ = c;
   }
   void south(monster &m) {
@@ -305,7 +305,7 @@ public:
       attack(m, *(mn->second)); // can't move into monster
       return;
     }
-    moveTo(m, c);
+    move(m, std::make_pair<char,char>(0,+1), true);
   }
   void east(monster &m) {
     coord c = posOf(m);
@@ -317,7 +317,7 @@ public:
       attack(m, *(mn->second)); // can't move into monster
       return;
     }
-    moveTo(m, c);
+    move(m, std::make_pair<char,char>(+1,0), true);
   }
   void west(monster &m) {
     coord c = posOf(m);
@@ -329,7 +329,7 @@ public:
       attack(m, *(mn->second)); // can't move into monster
       return;
     }
-    moveTo(m, c);
+    move(m, std::make_pair<char,char>(-1,0), true);
   }
   void up(monster &m) {
     coord c = posOf(m);
@@ -499,8 +499,9 @@ public:
       // can't move this way.
       return;
     }
-    // TODO: traps and their avoidance
-    moveTo(m, pos);
+    if (!avoidTraps || !terrain_[pos]->entraps(m, false)) // avoid traps if we should & can see them
+      if (!m.abilities().entrapped()) // can't move if trapped regardless
+	moveTo(m, pos);
     // TODO: monster items and inventory- collect the new stuff?
   }
   void removeMonster(const monster &m) {

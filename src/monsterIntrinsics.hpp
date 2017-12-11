@@ -50,6 +50,9 @@ public:
   // can you fly?
   virtual void fly(const bool canSwim) = 0;
   virtual const bool fly() const = 0;
+  // are you stuck in a trap right now?
+  virtual void entrap(const int ticksToEscape) = 0;
+  virtual const bool entrapped() const = 0;
   // good at climbing?
   virtual void climb(const bonus & canClimb) = 0;
   virtual const bonus & climb() const = 0;
@@ -103,6 +106,9 @@ public:
   // can you fly?
   virtual void fly(const bool canSwim);
   virtual const bool fly() const;
+  // are you stuck in a trap right now?
+  virtual void entrap(const int ticksToEscape);
+  virtual const bool entrapped() const;
   // good at climbing?
   virtual void climb(const bonus & canClimb);
   virtual const bonus & climb() const;

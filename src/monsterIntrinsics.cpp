@@ -16,18 +16,21 @@ enum class bonusType {
     seeing, // TODO
     flying,
     swimming, // TODO (need water too)
-    climbing // TODO (need pits)
+    climbing, // fast at escaping pits
+    entrapped // stuck in a pit
     };
 
 class monsterIntrinsicsImpl {
 private:
   std::bitset<9> damageProof; // TODO: Magic constant is number of damageType enum values
 public:
+  int turnsToEscape_;
   mutable std::map<bonusType, bonus> bonuses; // mutable allows [] to auto-fill default
   std::map<damageType *, char> resistLevel;
   std::map<damageType *, char> extraDamageLevel;
   std::map<terrainType, bool> terrainMove;
-  monsterIntrinsicsImpl() {
+  monsterIntrinsicsImpl() :
+    damageProof(), turnsToEscape_(0), bonuses(), resistLevel(), extraDamageLevel(), terrainMove() {
     // all creatures move on ground by default:
     terrainMove[terrainType::ROCK] = false;
     terrainMove[terrainType::GROUND] = true;
@@ -146,6 +149,13 @@ void monsterIntrinsics::fly(const bool fly) {
 }
 const bool monsterIntrinsics:: fly() const {
   return pImpl_->bonuses[bonusType::flying] == bonus(true);
+}
+// are you trapped right now?
+void monsterIntrinsics::entrap(const int turnsToEscape) {
+  pImpl_->turnsToEscape_ += turnsToEscape;
+}
+const bool monsterIntrinsics::entrapped() const {
+  return pImpl_->turnsToEscape_ > 0;
 }
 // how fast can we get out of a pit?
 void monsterIntrinsics::climb(const bonus & sight) {
