@@ -574,7 +574,7 @@ public:
   }
   // put into or take out of bag:
   virtual bool use(item &other) {
-    if (contains(other)) // not in this container, so put in
+    if (!contains(other)) // not in this container, so put in
       itemHolder::addItem(other);
     else // in this container, so take out (add to *our* holder)
       holder().addItem(other);
