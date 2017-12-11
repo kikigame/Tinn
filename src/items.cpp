@@ -153,26 +153,6 @@ public:
     return buffer_.c_str();
   }
 
-  /*  virtual void move(itemHolder &holderTo) {
-    // do nothing if we're already moved (or in the process of moving!)
-    if (holder_ == &holderTo) return;
-    // take a shared pointer, so we don't expire when removing from old container
-    auto pThis = shared_from_this();
-    // remove from the old container first
-    if (holder_){ // new items have a null holder
-      auto c = holder_->contents();
-      for (auto i = c.begin(); i != c.end(); ++i)
-	if (&(**i) == this) {
-	  c.erase(i);
-	  break;
-	}
-    }
-    // note our new container; now safe to call ourselves recursively
-    holder_ = &holderTo;
-    // now add to the new container; may call move() recursively as it can't set holder_
-    holderTo.addItem(pThis);
-    }*/
-
   virtual itemHolder& holder() const {
     auto &map = itemHolderMap::instance();
     // sanity check to avoid null reference:
@@ -404,6 +384,65 @@ public:
 };
 
 class bottlingKit;
+
+class transmutedWater : public basicItem {
+private:
+  damageType toRepair_;
+public:
+  transmutedWater(const itemType &type, const io &ios, const damageType &toRepair)
+    : basicItem(type, ios), toRepair_(toRepair) {}
+  virtual bool strike(const damageType &t) {
+    if (t != toRepair_)
+      return basicItem::strike(t);
+    return false;
+  }
+  virtual bool repair(const damageType &t) {
+    if (t == toRepair_)
+      transmutate(*this, createItem(itemTypeKey::water, ios()));
+    else
+      return basicItem::repair(t);
+    return true;
+  }
+};
+
+class water : public basicItem {
+public:
+  water(const io &ios) :
+    basicItem(itemTypeRepo::instance()[itemTypeKey::water], ios) {}
+  virtual bool strike(const damageType &t) {
+    itemTypeKey next;
+    switch (t) {
+      /* tearing (cutting skin/armour) */
+    case damageType::edged: 
+      next = itemTypeKey::tears; break;
+      /* & earth /falling */
+    case damageType::bashing:
+      next = itemTypeKey::heavy_water; break;
+      /* & file (burning skin/armour)*/
+    case damageType::hot: 
+      next = itemTypeKey::fire_water; break;
+    case damageType::cold: 
+      /* water (rotting) */
+    case damageType::wet:
+      next = itemTypeKey::pop; break;
+      /* air (damages hearing) */
+    case damageType::sonic: 
+      next = itemTypeKey::fizzy_pop; break;
+      /* time */
+    case damageType::disintegration: 
+      next = itemTypeKey::dehydrated_water; break;
+      /* flora */
+    case damageType::starvation:
+      next = itemTypeKey::spring_water; break;
+      /* lightning */
+    case damageType::electric:
+      next = itemTypeKey::electro_pop; break;
+    }
+    transmutate(*this, createItem(next, ios()));
+    return true;
+  }  
+};
+
 
 // NB: We must be an itemHolder, to meet the itemHolderMap contract.
 class bottle : public basicItem, private itemHolder {
@@ -803,14 +842,31 @@ item& createItem(const itemTypeKey & t, const io & ios) {
     rtn = new basicContainer(r[t], ios);
     break;
   case itemTypeKey::water:
+    rtn = new basicItem(r[t], ios);
+    break;
   case itemTypeKey::tears:
+    rtn = new transmutedWater(r[t], ios, damageType::edged);
+    break;
   case itemTypeKey::heavy_water:
+    rtn = new transmutedWater(r[t], ios, damageType::bashing);
+    break;
   case itemTypeKey::fire_water:
+    rtn = new transmutedWater(r[t], ios, damageType::hot);
+    break;
+  case itemTypeKey::pop:
+    rtn = new transmutedWater(r[t], ios, damageType::wet);
+    break;
   case itemTypeKey::fizzy_pop:
+    rtn = new transmutedWater(r[t], ios, damageType::sonic);
+    break;
   case itemTypeKey::dehydrated_water:
+    rtn = new transmutedWater(r[t], ios, damageType::disintegration);
+    break;
   case itemTypeKey::spring_water:
+    rtn = new transmutedWater(r[t], ios, damageType::starvation);
+    break;
   case itemTypeKey::electro_pop:
-    rtn = new basicItem(r[t], ios); // TODO: undropability
+    rtn = new transmutedWater(r[t], ios, damageType::electric);
     break;
   case itemTypeKey::wooden_ring:
     rtn = new basicEquip(r[t], ios, slotType::ring_left_thumb, slotType::ring_left_index, slotType::ring_left_middle, slotType::ring_left_ring, slotType::ring_left_little, slotType::ring_right_thumb, slotType::ring_right_index, slotType::ring_right_middle, slotType::ring_right_ring, slotType::ring_right_little, slotType::toe_left_thumb, slotType::toe_left_index, slotType::toe_left_middle, slotType::toe_left_fourth, slotType::toe_left_little, slotType::toe_right_thumb, slotType::toe_right_index, slotType::toe_right_middle, slotType::toe_right_fourth, slotType::toe_right_little);

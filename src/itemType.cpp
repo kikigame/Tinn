@@ -215,6 +215,12 @@ L"A strong, alcoholic liquor. Advise caution when drinking. An inflammible,\n"
 "liquid good for sterilizing wounds.",
 L"Smells boozy." // ref:Nethack - potion of booze
 			     ));
+    emplace(itemTypeKey::pop,
+	    new itemTypeImpl(2.31585538520766, materialType::liquid, L'~', L"water",  // half a pint
+L"This looks like water and has a mild taste, but the container suggests it\n"
+"contains an assortment of healthy options in miniscule amounts.",
+L"If spilled, wash with copeous amounts of water." // ref: COSHH sheet safety guide for water
+			     ));
     emplace(itemTypeKey::fizzy_pop, // (water + air)
 	    new itemTypeImpl(2.2926968313555834, materialType::liquid, L'~', L"fizzy pop",  // half a pint as water
 			     // based on 0.99g/l; about 1% carbonation. See

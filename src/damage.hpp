@@ -24,6 +24,7 @@ enum class damageType {
     sonic, 
   /* time */
     disintegration, 
+  /* flora */
     starvation,
   /* lightning */
     electric

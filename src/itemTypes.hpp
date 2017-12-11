@@ -84,6 +84,7 @@ enum class itemTypeKey {
     tears, // (water + tear damage) // potion of sorrow (TODO)
     heavy_water, // (water + bashing/earth damage)
     fire_water, // (water + fire)
+    pop, // (water + water)
     fizzy_pop, // (water + air)
     dehydrated_water, // (water + time)
     spring_water, // (water + flora damage)
