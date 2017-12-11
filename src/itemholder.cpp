@@ -87,14 +87,14 @@ bool itemHolder::addItem(item &item) {
   auto pi = item.shared_from_this(); // keep alive
   if (!map.beforeFirstAdd(item)) {
     auto &h = map.forItem(item);
-    if (!h.removeItemForMove(item)) return false;
+    if (!h.removeItemForMove(item, *this)) return false;
   }
   map.move(item, *this);
   contents_.push_back(pi);
   return true;
 }
 
-bool itemHolder::removeItemForMove(item &it) {
+bool itemHolder::removeItemForMove(item &it, itemHolder &holder) {
   const std::weak_ptr<item> i = it.shared_from_this();
   for (auto iter = contents_.begin(); iter != contents_.end(); ++iter)
     if (iter->lock().get() == &it) {

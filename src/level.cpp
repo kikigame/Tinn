@@ -177,7 +177,7 @@ public:
   itemHolderLevel(levelImpl & level, const coord & c) :
     level_(level), coord_(c) {}
   virtual bool addItem(item &item); // overridden to handle movement callbacks
-  virtual bool removeItem(item &item); // overridden to handle movement callbacks
+  virtual bool removeItemForMove(item &item, itemHolder &next); // overridden to handle movement callbacks
   virtual ~itemHolderLevel() {}
 };
 
@@ -892,16 +892,19 @@ bool itemHolderLevel::addItem(item &item) {
   // Can't add liquid items to a level
   if (item.material() == materialType::liquid)
     return false;
-  for (auto z : level_.zonesAt(coord_))
-    if (!z->onEnter(item.shared_from_this(), *this)) return false;
+  auto &map = itemHolderMap::instance();
+  if (!map.beforeFirstAdd(item)) {
+    for (auto z : level_.zonesAt(coord_))
+      if (!z->onEnter(item.shared_from_this(), item.holder())) return false;
+  }
   itemHolder::addItem(item);
   level_.addItem(item, coord_);
   return true;
 }
-bool itemHolderLevel::removeItem(item &item) {
+bool itemHolderLevel::removeItemForMove(item &item, itemHolder &next) {
   auto pos = level_.posOf(item);
   for (auto z : level_.zonesAt(coord_))
-    if (!z->onExit(item.shared_from_this(), *this)) return false;
+    if (!z->onExit(item.shared_from_this(), next)) return false;
   level_.removeItem(coord_, item);
   return true;
 }

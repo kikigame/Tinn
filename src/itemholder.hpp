@@ -53,7 +53,7 @@ public:
   // remove an item from this container with the intention of putting it somewhere else
   // If overridden to return false, the move is aborted.
   // If returning true (default), the item is removed, but may be lost if the other container's addItem() returns false.
-  virtual bool removeItemForMove(item &item);
+  virtual bool removeItemForMove(item &item, itemHolder &next);
   // destroy an item from the game. To move an item, call addItem() on its new location
   virtual bool destroyItem(item &item);
   // for each item in inventory; param takes the item and its rendered name

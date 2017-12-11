@@ -29,7 +29,7 @@ public:
   virtual bool onEnter(std::shared_ptr<T>, itemHolder &prev); // impremented for monsters & items
   // called whenever leaving the zone
   // NB: For an item, this can also be by being taken
-  virtual bool onExit(std::shared_ptr<T>, itemHolder &prev); // implemented for monsters
+  virtual bool onExit(std::shared_ptr<T>, itemHolder &next); // implemented for monsters
   // Called whenever a monster in the zone attacks another monster or item
   // (currently, zones affect whether you can attack, not whether you can be attacked)
   virtual bool onAttack(monster&, T&); // implemented for monsters

@@ -89,7 +89,7 @@ bool shrine::onExit(std::shared_ptr<item> item, itemHolder &prev) {
     return true;
   // TODO: alignment counters
   if (p->injury().pc() > 10)
-    io_.message(L"You steal an offering intended for the needy...");
+    io_.message(L"You take an offering intended for the needy...");
   else
     io_.message(std::wstring(L"You accept the charity of ") + align_.name());
   return true;
