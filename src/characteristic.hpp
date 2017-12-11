@@ -54,6 +54,7 @@ public:
 
   // returns damage as a percentage
   unsigned char pc() const { 
+    if (max_ == 0) return 0;
     return static_cast<unsigned char>((100 * static_cast<int>(current_)) / max_); }
 
   // the maximum maximum value of any stat.
