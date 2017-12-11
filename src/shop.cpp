@@ -18,6 +18,7 @@ extern const int numKeeperNames;
 extern const wchar_t * const shopAdjectives[]; // defined in adjectives.cpp
 extern const int numShopAdjectives;
 
+
 // NB: most common are in the middle due to bell curve:
 // NB: Last shop is very rare (role of 99 or 100 given 11 shops)
 enum shopType {
@@ -31,7 +32,7 @@ enum shopType {
   gambling,
   luggage,
   bottles,
-  // TODO: tools
+  tools,
   END
 };
 
@@ -47,7 +48,7 @@ const wchar_t * shopName(const shopType & type) {
   case gambling: return  L"house of Gambling"; // L'$' -- exchanging valuables for other valuables by bartering = casino
   case luggage: return  L"Luggage Emporium"; // L'='
   case bottles: return  L"shop of Potables and Curios"; // L'8'
-  // TODO: tools => Equipment
+  case tools: return L"Toolshop"; // L'('
   default: throw type;
   }
 };
@@ -83,11 +84,13 @@ public:
     damage_(rndPick(damageRepo::instance().begin(), damageRepo::instance().end())->second),
     align_(*rndPick(deityRepo::instance().begin(), deityRepo::instance().end())),
     isFriendly_(adjective == L"Friendly") {
-    // TODO: What does the shop have to sell?
+    // What does the shop have to sell?
+    restock();
     // TODO: When does the shop get restocked? Or do we get new shops each time?
     // "enchanting" shops sell enchantments:
     if (adjective == L"Enchanting")
       services_.push_back(serviceType::enchantment);
+    // "protective" shops sell a proofing service:
     if (adjective == L"Protective")
       services_.push_back(serviceType::proofing);
   }
@@ -99,7 +102,7 @@ public:
   const wchar_t * const description() const {
     return
       L"Shopping has been known to relax the mind and enhance wellbeing,\n"
-      "although you must beware of the gruen transfer. The modern shop -\n"
+      "although you must beware of the Gruen Transfer. The modern shop -\n"
       "meaning a barn or shed for work or trade - uses a process called\n"
       "scripted disorientation to psychologically encourage the shopper to \n"
       "pick up more bargains and spend more money than originally planned.\n\n"
@@ -122,6 +125,36 @@ public:
     handleSale();
   }
 private:
+  wchar_t itemCat() {
+      switch (shopType_) {
+      case stylii: return L'/';
+      case groceries: return L'%';
+      case weapons: return L'!';
+      case thrown: return L'¬';
+      case clothes: return L'[';
+      case readable: return L'¶';
+      case jewellery: return L'*';
+      case gambling: return L'$'; // -- exchanging valuables for other valuables by bartering = casino
+      case luggage: return L'=';
+      case bottles: return L'8';
+      case tools: return L'(';
+      default: throw shopType_;
+      }
+  }
+  void restock() {
+    unsigned int numItems = 4 + (dPc() / 20); // 4 to 9
+    auto cat = itemCat();
+    itemHolder h;
+    while (forSale_.size() < numItems) {
+      auto &i = createRndItem(100, io_);
+      if (i.render() != cat) {
+	h.addItem(i);
+	h.destroyItem(i);
+      } else {
+	forSale_.push_back(i.shared_from_this()); // should shop be an item holder?
+      }
+    }
+  }
   void handleSale() {
     if (forSale_.empty() && services_.empty()) {
       // TODO: restock timer; or new shops each time?
@@ -221,7 +254,7 @@ private:
     auto &item = pickItem(prompt, std::wstring(L"Choose the item on which to bestow resistance"),
 			 L"This will completely protect your item against " + 
 			 std::wstring(damage_.name()) +
-			 L"attacks, traps and effects. When you wear an item with this protection,"
+			 L" attacks, traps and effects. When you wear an item with this protection,"
 			 "it will also protect any items worn under it.");
     
     if (item.proof(damage_.type()))
