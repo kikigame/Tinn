@@ -20,7 +20,7 @@ enum class terrainType {
   PIT_HIDDEN,
   // TRAP: pit entraps non-flying players/monsters. Requires 4(ish) turns to escape, halved with fast-climb.
   // Falling into a pit instakills Zombies, else deals dPc()/10 bashing damage.
-  PIT // TODO: climbing out of pits. Speed-climbing.
+  PIT
 };
 
 const wchar_t * const to_string(const terrainType &);

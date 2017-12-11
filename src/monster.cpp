@@ -395,7 +395,7 @@ std::wstring monster::onMove(const coord &pos, const terrain &terrain) {
     if (flying) return L"You are now over a pit.";
     const auto message = fall(dPc() / 10);
     const auto climb = abilities().climb();
-    const int count=climb == bonus(false) ? 5 : climb == bonus() ? 3 : 1;
+    const int count=climb == bonus(false) ? 6 : climb == bonus() ? 4 : 2;
     intrinsics_.entrap(count);
     eachTick([this](){
 	intrinsics_.entrap(-1);
