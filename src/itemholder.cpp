@@ -121,17 +121,20 @@ bool itemHolder::contains(item &item) const {
 }
 
 void itemHolder::forEachItem(const std::function<void(item &, std::wstring name)> f) {
+  // take copy of pointers in case list is changed during iteration
   auto copy = contents_; // copy of pointers in case list is changed
   for (auto i : copy) {
     std::shared_ptr<item> ii = i.lock();
-    f(*ii, ii->name());
+    if (ii) // may be cleared, eg by use of previous item
+      f(*ii, ii->name());
   }
 }
 void itemHolder::forEachItem(const std::function<void(const item &, std::wstring name)> f) const {
   auto copy = contents_; // copy of pointers in case list is changed
   for (auto i : copy) {
     std::shared_ptr<item> ii = i.lock();
-    f(*ii, ii->name());
+    if (ii) // may be cleared, eg by use of previous item
+      f(*ii, ii->name());
   }
 }
 
