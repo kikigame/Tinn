@@ -252,7 +252,6 @@ private:
   }
 
   void handlePayment() {
-    // 1) appraise the total value of the items, P (price)
     double p;
     for (auto &s : servicesBought_)
       p += s.second;
@@ -261,6 +260,9 @@ private:
     handlePayment(p);
   }
 
+  /*
+   * P) appraised total value of the items for sale
+   */
   bool handlePayment(double p) {
     // 2) muliply P by a factor 1-2 based on the player's outward appearance, Q
     double q = p * (200 - inventory_.appearance().pc()) / 100;
@@ -272,26 +274,29 @@ private:
       paymentFailed();
       return false;
     }
-    // 4) suggest price to player, or ask to barter
-    if (suggestForSale(barter)) {
-    // 5.a) if player accepts price, adjust inventory and done
-      completeSale(barter);
-      return true;
-    } else {
-    // 5.b) if player barters, start an add/remove list
-      barter = doBarter(barter);
-    }
-    // 6) if players items' price is above P, adjust inventory and done
-    double b;
-    for (auto &i : barter)
-      b += appraise(inventory_, *i);
-    if (b > p) {
-      completeSale(barter);
-      return true;
-    } else {
-      io_.message(L"Thank you for your kind offer, but I think you've undervaluing my wares.");
-      paymentFailed();
-      return false;
+    bool bartering = false;
+    while (true) {
+      // 4) suggest price to player, or ask to barter
+      if (!bartering && suggestForSale(barter)) {
+	// 5.a) if player accepts price, adjust inventory and done
+	completeSale(barter);
+	return true;
+      } else {
+	// 5.b) if player barters, start an add/remove list
+	barter = doBarter(barter);
+      }
+      // 6) if players items' price is above P, adjust inventory and done
+      double b;
+      for (auto &i : barter)
+	b += appraise(inventory_, *i);
+      if (b > p) {
+	completeSale(barter);
+	return true;
+      } else {
+	io_.message(L"\"Thank ye for your kind offer, but I think you've undervaluing my wares.\"");
+	paymentFailed();
+	bartering = true;
+      }
     }
   }
 
@@ -326,18 +331,20 @@ private:
   std::vector<std::shared_ptr<item> > doBarter(std::vector<std::shared_ptr<item> > barter) {
     int choice;
     do {
+      auto offer = L"Your offer:\n" + toList(barter);
       std::vector<std::pair<int, const wchar_t*> > choices = {
 	{1, L"Clear list and start again"},
 	{2, L"Remove an item from your offer"},
-	{3, L"Offer an extra item"},
-	{4, L"Barter"}
+	{3, L"Offer more things"},
+	{4, L"Attempt the barter"}
       };
-      choice = io_.choice(L"Please select: ", L"", choices);
+      choice = io_.choice(L"Please select: ", offer, choices);
       switch (choice) {
       case 1:
 	barter.clear();
 	break;
-      case 2: { // remove item
+      case 2:  // remove item
+	if (!barter.empty()) {
 	std::vector<std::pair<std::shared_ptr<item>, const wchar_t*> > c;
 	for (auto i : barter)
 	  c.emplace_back(i, i->name());
@@ -345,7 +352,20 @@ private:
 	barter.erase(std::find(barter.begin(), barter.end(), toRemove));
 	break;
       }
-      case 3: // add item TODO
+      case 3: // add item
+	if (inventory_.size() > barter.size()) {
+	  auto &toAdd = pickItem(L"What do you want to offer:", L"Choose the item to add to your offer",
+/*Njorthrbiartr is longest keeper name */
+keeperName_ + L" will appraise the value of the items you offer, and decide if\n"
+"it is a fair trade. If it isn't, you can modify your offer or decline.",
+				 [&barter](const item & i) {
+				   return std::find(barter.begin(), barter.end(), i.shared_from_this()) == barter.end();
+				 }
+			   );
+	  barter.push_back(toAdd.shared_from_this());
+	} else {
+	  io_.message(L"Thou hast nothing to offer!");
+	}
 	break;
       }
     } while (choice != 4);
@@ -364,8 +384,9 @@ private:
       inventory_.addItem(createIou(s.second, keeperName_, s.first, io_));
   }
 
-  bool suggestForSale(std::vector<std::shared_ptr<item> > &barter) {
-    std::wstring prompt = keeperName_ + L" asks for:\n";
+  std::wstring toList(std::vector<std::shared_ptr<item> > &barter) const {
+    if (barter.empty()) return L"\tNothing.\n";
+    std::wstring prompt;
     for (auto i = barter.begin(); i != barter.end(); ) {
       prompt += std::wstring(L"\t") + (*i)->name();
       i++;
@@ -374,21 +395,29 @@ private:
       else if ((i + 1) == barter.end())
 	prompt += L", and\n";
     }
-    prompt += L".\nIs this an acceptable trade? ";
+    return prompt;
+  }
+
+  bool suggestForSale(std::vector<std::shared_ptr<item> > &barter) const {
+    std::wstring prompt = keeperName_ + L" asks for:\n" + toList(barter)
+      + L"Is this an acceptable trade? ";
     return io_.ynPrompt(prompt);
   }
 
   // pick an item to be used below.
   item& pickItem(const std::wstring & prompt,
-				 const std::wstring & help,
-				 const std::wstring & extraHelp) const {
+		 const std::wstring & help,
+		 const std::wstring & extraHelp,
+		 const std::function<bool(const item &)> f = [](const item &){return true;}) const {
     // TODO: filter out foo-proof and/or foo-undamaged items as appropriate
     std::vector<std::pair<int, const wchar_t*>> choices;
     std::vector<item *> res;
     int i=0;
-    inventory_.forEachItem([&choices, &i, &res](item &it, std::wstring name) {
-	choices.emplace_back(i++, it.name()); // TODO: nice to use formatted name here?
-	res.emplace_back(&it);
+    inventory_.forEachItem([&choices, &i, &res, f](item &it, std::wstring name) {
+	if (f(it)) {
+	  choices.emplace_back(i++, it.name()); // TODO: nice to use formatted name here?
+	  res.emplace_back(&it);
+	}
       });
     int it = io_.choice(prompt, help, choices, extraHelp);
     return **(res.begin() + it);
