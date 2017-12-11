@@ -70,6 +70,7 @@ enum class itemTypeKey {
     codex,
     hitch_guide, // access to the in-game encyclopedia of itself
     holy_book, // for a given religion
+    iou, // given by a shop when you can't pay for an item. Undroppable
 
   ////
   // Containers ('=' as bounding something; nethack uses '(' as for all tools; cf weapons are ')')

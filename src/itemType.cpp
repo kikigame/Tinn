@@ -122,7 +122,7 @@ L"The diminutive form of /helm/; a helmet covers only the head. Originally\n"
 L"A decorative pointy metal hat."
 			     ));
     emplace(itemTypeKey::stick,
-	    new itemTypeImpl(0.5, materialType::woody, L'|', L"stick",
+	    new itemTypeImpl(0.5, materialType::woody, L'/', L"stick",
 L"In its most basic form, a wand is a device with which you may inscribe on a\n"
 "wax tablet, also known as a /stylus/. Many wands are imbued with charges of\n"
 "magical energy, often associated with druidic of fairy magic, to provide\n"
@@ -165,6 +165,12 @@ L"Unlike folios, which are mere sheets of vellum folded into verso and recto\n"
 "multiple sectionts, allowing instant access to any part of the work.\n"
 "The codex is a great method to convey complex knowledge in a lasting form.\n",
 L"Book."
+			     ));
+    emplace(itemTypeKey::iou, // assume 600gsm ID-1 card @ 85.60mm by 53.98mm
+	    // not ¶ to avoid generating in shops:
+	    new itemTypeImpl(0.0271696454, materialType::waxy, L'✎', L"I.O.U.",
+L"If you run up a debt you cannot pay, you will not be allowed to forget it.",
+L"Uh-oh..."
 			     ));
     emplace(itemTypeKey::poke,
 	    new itemTypeImpl(0.5, materialType::clothy, L'=', L"poke",

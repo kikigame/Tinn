@@ -60,11 +60,15 @@ enum class serviceType {
     fixing,
 };
 
+// declared in items.cpp
+double forIou(const item &i, double d, std::wstring &buf);
+
 class shopImpl {
 private:
-  itemHolder &inventory_;
+  monster &inventory_;
   const io & io_;
   shopType shopType_;
+  std::wstring keeperName_;
   std::wstring name_;
   std::vector<std::shared_ptr<item>> forSale_;
   std::vector<serviceType> services_;
@@ -72,14 +76,16 @@ private:
   const damage & damage_; // for proofing primarily
   deity & align_;
   bool isFriendly_;
+  std::map<std::wstring, double> servicesBought_;
 public:
-  shopImpl(itemHolder &inventory,
+  shopImpl(monster &inventory,
 	   const io & ios, shopType type,
 	   const std::wstring & keeperName, 
 	   const std::wstring & adjective) : 
     inventory_(inventory),
     io_(ios),
     shopType_(type),
+    keeperName_(keeperName),
     name_(keeperName + L"'s " + adjective + L" " + shopName(type)),
     damage_(rndPick(damageRepo::instance().begin(), damageRepo::instance().end())->second),
     align_(*rndPick(deityRepo::instance().begin(), deityRepo::instance().end())),
@@ -122,7 +128,8 @@ public:
     if (isFriendly_ && io_.ynPrompt(L"\"Welcome! May I interest you in a complimentary tea?\""))
       io_.message(L"This takes almost but not quite entirely unlike tea"); // ref:h2g2, of course.
     // TODO: Would be nice to heal a touch of damage for that. But then shops would need a way to become undamaged.
-    handleSale();
+    if (handleDebts())
+      handleSale();
   }
 private:
   wchar_t itemCat() {
@@ -155,9 +162,28 @@ private:
       }
     }
   }
+  bool handleDebts() {
+    double debt = 0;
+    std::wstring services;
+    inventory_.forEachItem([this, &debt, &services](const item &i, std::wstring){
+	debt = forIou(i, debt, services);
+      });
+    if (debt > 0) {
+      io_.longMsg(L"You must first handle your existing debt for:\n\n" + services);
+      bool rtn = handlePayment(debt);
+      if (rtn)
+	inventory_.forEachItem([this, &debt, &services](item &i, std::wstring){
+	    if (i.render() == L'✎') // detect IOUs; probably should have exposed the enum key
+	      inventory_.destroyItem(i);
+	  });
+      return rtn;
+    }
+    else
+      return true;
+  }
   void handleSale() {
     if (forSale_.empty() && services_.empty()) {
-      // TODO: restock timer; or new shops each time?
+      // we'll eventually get a new shop:
       io_.message(L"This shop is empty. Please try again later.");
       return;
     }
@@ -187,17 +213,25 @@ private:
 			 choices,
 			 (const wchar_t*)L"per-item help is TODO.");
     i=0;
-    //TODO:payment
     for (auto s : services_) {
       if (i++ == idx) switch (s) {
 	case serviceType::enchantment:
-	  enchant();
+	  if (!inventory_.empty()) {
+	    enchant();
+	    handlePayment();
+	  } else io_.message(L"You have nothing to enchant!");
 	  return;
 	case serviceType::proofing:
-	  proof();
+	  if (!inventory_.empty()) {
+	    proof();
+	    handlePayment();
+	  } else io_.message(L"You have nothing to protect!");
 	  return;
 	case serviceType::fixing:
-	  mend();
+	  if (!inventory_.empty()) {
+	    mend();
+	    handlePayment();
+	  } else io_.message(L"You have nothing to repair!");
 	  return;
 	default:
 	  throw s;
@@ -206,10 +240,142 @@ private:
     if (i == 0) ++i;
     basket_.push_back(forSale_[idx-i]);
     forSale_.erase(forSale_.begin() + (idx-i));
-    if (!io_.ynPrompt(std::wstring(L"You have ") + std::to_wstring(basket_.size()) + 
+    if (forSale_.empty()) {
+      io_.message(L"You have " + std::to_wstring(basket_.size()) + 
+		  std::wstring(L" items in your basket."));
+      handlePayment();
+    } else if (!io_.ynPrompt(L"You have " + std::to_wstring(basket_.size()) + 
 		      std::wstring(L" items in your basket. Check out?")))
       enter();
-    io_.message(L"TODO: Payment");
+    else
+      handlePayment();
+  }
+
+  void handlePayment() {
+    // 1) appraise the total value of the items, P (price)
+    double p;
+    for (auto &s : servicesBought_)
+      p += s.second;
+    for (auto &i : basket_)
+      p += appraise(inventory_, *i);
+    handlePayment(p);
+  }
+
+  bool handlePayment(double p) {
+    // 2) muliply P by a factor 1-2 based on the player's outward appearance, Q
+    double q = p * (200 - inventory_.appearance().pc()) / 100;
+    // 3) work out items to ask for from the player, whose price is above Q
+    std::vector<std::shared_ptr<item> > barter;
+    barter = suggestForSale(q, barter);
+    if (barter.empty()) {
+      io_.message(L"You don't have enough valuables to interest " + keeperName_);
+      paymentFailed();
+      return false;
+    }
+    // 4) suggest price to player, or ask to barter
+    if (suggestForSale(barter)) {
+    // 5.a) if player accepts price, adjust inventory and done
+      completeSale(barter);
+      return true;
+    } else {
+    // 5.b) if player barters, start an add/remove list
+      barter = doBarter(barter);
+    }
+    // 6) if players items' price is above P, adjust inventory and done
+    double b;
+    for (auto &i : barter)
+      b += appraise(inventory_, *i);
+    if (b > p) {
+      completeSale(barter);
+      return true;
+    } else {
+      io_.message(L"Thank you for your kind offer, but I think you've undervaluing my wares.");
+      paymentFailed();
+      return false;
+    }
+  }
+
+  std::vector<std::shared_ptr<item> > suggestForSale(double q, std::vector<std::shared_ptr<item> > barter) {
+    double t; // total appraised value
+    do {
+      // TODO: rework this to try valuables first.
+      // find the most valuable item in inventory not already in barter, and add to selection
+      std::shared_ptr<item> found; double itemPrice=0;
+      inventory_.forEachItem([this, &found, &itemPrice, &barter](item &i, std::wstring) {
+	if (inventory_.slotOf(i) != nullptr) return; // skip clothing
+	if (i.isCursed()) return; // skip cursed items, including ious!
+	auto pi = i.shared_from_this();
+	auto end = barter.end();
+	if (std::find(barter.begin(), end, pi) == end) { // not already for barter
+	  double price = appraise(inventory_,i);
+	  if (itemPrice < price) {
+	    found = pi;
+	    itemPrice = price;
+	  }
+	}
+	});
+      if (found == nullptr) { barter.clear(); return barter;} // not enough
+      barter.push_back(found);
+      t=0;
+      for (auto &i : barter)
+	t += appraise(inventory_, *i);
+    } while (t < q);
+    return barter;
+  }
+
+  std::vector<std::shared_ptr<item> > doBarter(std::vector<std::shared_ptr<item> > barter) {
+    int choice;
+    do {
+      std::vector<std::pair<int, const wchar_t*> > choices = {
+	{1, L"Clear list and start again"},
+	{2, L"Remove an item from your offer"},
+	{3, L"Offer an extra item"},
+	{4, L"Barter"}
+      };
+      choice = io_.choice(L"Please select: ", L"", choices);
+      switch (choice) {
+      case 1:
+	barter.clear();
+	break;
+      case 2: { // remove item
+	std::vector<std::pair<std::shared_ptr<item>, const wchar_t*> > c;
+	for (auto i : barter)
+	  c.emplace_back(i, i->name());
+	auto toRemove = io_.choice(L"Shelve offer for:", L"", c);
+	barter.erase(std::find(barter.begin(), barter.end(), toRemove));
+	break;
+      }
+      case 3: // add item TODO
+	break;
+      }
+    } while (choice != 4);
+    return barter;
+  }
+
+  void completeSale(std::vector<std::shared_ptr<item> > &barter) {
+    io_.message(L"Your offer is accetable.\nThank you; come again."); // ref:Simpsons, Apu
+    for (auto i : barter) inventory_.destroyItem(*i);
+    for (auto i : basket_) inventory_.addItem(*i);
+  }
+
+  void paymentFailed() {
+    // add any IOUs:
+    for (auto s : servicesBought_)
+      inventory_.addItem(createIou(s.second, keeperName_, s.first, io_));
+  }
+
+  bool suggestForSale(std::vector<std::shared_ptr<item> > &barter) {
+    std::wstring prompt = keeperName_ + L" asks for:\n";
+    for (auto i = barter.begin(); i != barter.end(); ) {
+      prompt += std::wstring(L"\t") + (*i)->name();
+      i++;
+      if (i == barter.end())
+	prompt += L".\n";
+      else if ((i + 1) == barter.end())
+	prompt += L", and\n";
+    }
+    prompt += L".\nIs this an acceptable trade? ";
+    return io_.ynPrompt(prompt);
   }
 
   // pick an item to be used below.
@@ -245,7 +411,10 @@ private:
     if (de > 0)
       io_.message(std::wstring(L"Magical enenergy flows into your ") + item.name());
     else // let's see if the user's paying attention...
-      io_.message(std::wstring(L"Magical enenergy flows through your ") + item.name());      
+      io_.message(std::wstring(L"Magical enenergy flows through your ") + item.name());
+
+    servicesBought_.emplace(std::wstring(L"Enchantment to ") + item.name(),
+			    appraise(inventory_, item));
   }
 
   void proof() {
@@ -265,6 +434,9 @@ private:
       io_.message((std::wstring(L"The ") + damage_.mendName()) + 
 		 L" of your " + std::wstring(item.name()) +
 		 L" could use a little more work");
+
+    servicesBought_.emplace(std::wstring(damage_.mendName()) + L" protection unto " + item.name(),
+			    appraise(inventory_, item));
   }
 
   void mend() {
@@ -282,6 +454,9 @@ private:
       io_.message((std::wstring(L"The ") + damage_.mendName()) + 
 		 L" of your " + std::wstring(item.name()) +
 		 L" seems unchanged");
+
+    servicesBought_.emplace(std::wstring(damage_.mendName()) + L" reparation unto " + item.name(),
+			    appraise(inventory_, item));
   }
 
 };
@@ -296,7 +471,7 @@ const wchar_t * const shop::description() const {
   return pImpl_->description();
 };
 
-shop::shop(const io & ios, itemHolder & inventory) {
+shop::shop(const io & ios, monster & inventory) {
   const auto type = static_cast<shopType>(dPc() / shopType::END);
   const std::wstring keeperName = *rndPick(keeperNames, keeperNames + numKeeperNames);
   const std::wstring adjective = *rndPick(shopAdjectives, shopAdjectives + numShopAdjectives);
@@ -330,7 +505,7 @@ private:
   shop g;
   shop h;
 public:
-  shoppingCentre(const io & ios, itemHolder &inventory) :
+  shoppingCentre(const io & ios, monster &inventory) :
     a(ios,inventory),
     b(ios,inventory),
     c(ios,inventory),
@@ -356,7 +531,7 @@ public:
   }
 };
 
-void goShopping(const io & ios, itemHolder &inventory) {
+void goShopping(const io & ios, monster &inventory) {
   // how to choose the number of shops?
   // When you need a magic number, and don't have any other criteria, turn to ref:Pratchett's Discworld.
   shoppingCentre shops(ios, inventory);
@@ -374,28 +549,4 @@ void goShopping(const io & ios, itemHolder &inventory) {
 		 );
     shops[shop].enter();
   } while (ios.ynPrompt(L"Do you want to continue shopping?"));
-}
-
-
-
-void shop::buy( itemIter & basket_begin, itemIter & basket_end,
-		itemIter & barter_begin, itemIter & barter_end,
-		monster & buyer) {
-  // how much stuff do you want to buy?
-  double value = 0;
-  for (auto i = basket_begin; i != basket_end; ++i) {
-    value += appraise(buyer, **i);
-  }
-
-  double payment = 0;
-  for (auto i = barter_begin; i != barter_end; ++i) {
-    payment += appraise(buyer, **i);
-  }
-
-  // TODO: should there be a random amount?
-  if (payment >= value) {
-    // TODO: We can buy the things
-  } else {
-    // TODO: We can't buy the things
-  }
 }

@@ -225,12 +225,12 @@ public:
     --(i->second);
     return true;
   }
-  // proof against dagage type  (return false only if no effect, eg already proofed or n/a for material type)
+  // proof against dagage type  (return false only if no more effect possible, eg already proofed or n/a for material type)
   virtual bool proof(const damageType &type) {
     auto i = proof_.find(type);
-    bool rtn = i != proof_.end();
-    proof_.insert(type);
-    return rtn;
+    if (i == proof_.end())
+	proof_.insert(type);
+    return true;
   }
   // are we fooproof?
   virtual bool isProof(const damageType &type) const {
@@ -278,7 +278,6 @@ public:
     return false; // can't equip this item type by default
   }
 
-  // TODO: destroy items
   // destroy an item in inventory
   virtual void destroy() {
     if (holder().contains(*this) )
@@ -566,7 +565,6 @@ public:
       });
     return rtn;
   }
-  // TODO: when we destroy a container, what happens to its contents?
 
   virtual bool use() {
     const std::wstring name(basicItem::name());
@@ -650,9 +648,8 @@ public:
     if (align_.nonaligned())
       // ref: Russell's Teapot, a phylosophical analogy used to place the buden of proof on the preacher.
       return L"Book of the Teapot";
-    static std::wstring rtn;
-    rtn = L"holy book of " + std::wstring(align_.name());
-    return rtn.c_str();
+    buffer_ = L"holy book of " + std::wstring(align_.name());
+    return buffer_.c_str();
   }
   virtual bool use() {
     if (isCursed()) {
@@ -665,14 +662,56 @@ public:
   }
 };
 
+class iou : public readableItem {
+private:
+  const double amount_;
+  const std::wstring whom_;
+  const std::wstring service_;
+public:
+  iou(double amount, std::wstring whom, std::wstring service, const io &ios) :
+    readableItem(itemTypeRepo::instance()[itemTypeKey::iou], ios),
+    amount_(amount), whom_(whom), service_(service) {
+    curse(true);
+  }
+  virtual ~iou() {};
+  virtual const wchar_t * const name() {
+    buffer_ = L"I.O.U. (";
+    buffer_ += whom_ + L")";
+    return buffer_.c_str();
+  }
+  virtual damageType weaponDamage() {
+    return damageType::electric; // ref: nethack has a ball-and-chain punishment, which makes a reasonable weapon...
+  }
+  virtual bool use() {
+    std::wstring msg = name();
+    msg += L"\nFor services rendered:\n\n\t";
+    msg += service_;
+    msg += L"\n\nIf payment is not received within 100 turns of issue, debt\n"
+      "collectors will be deployed.\nYou have been warned.\n\n"
+      "Payment may be made to any Platinum Express Shop"; // ref: see platinum express card
+    ios().longMsg(msg);
+    return true;
+  }
+  virtual void destroy() {
+    holder().addItem(createIou(amount_, whom_, service_, ios()));
+  }
+  virtual bool isBlessed() { return false;}
+  virtual bool isCursed() { return true;}
+  virtual bool isProof(const damageType &type) { return true; }
+  double amount() const { return amount_; }
+  const std::wstring & service() const { return service_; }
+};
+
 class shopCard : public basicItem {
 public:
   shopCard(const itemType& type, const io &ios) :
     basicItem(type, ios) {}  
   virtual ~shopCard(){}
   virtual bool use() {
-    ::goShopping(ios(), holder());
-    return true;
+    auto m = dynamic_cast<monster*>(&holder());
+    if (m)
+      ::goShopping(ios(), *m);
+    return m;
   }
 };
 
@@ -840,6 +879,7 @@ item& createItem(const itemTypeKey & t, const io & ios) {
   case itemTypeKey::holy_book:
     rtn = new holyBook(ios);
     break;
+    //   case itemTypeKey::iou: // not handled here
   case itemTypeKey::poke:
     rtn = new basicContainer(r[t], ios);
     break;
@@ -908,6 +948,21 @@ item & createBottledItem(const itemTypeKey &type, const io &ios) {
   return rtn;
 }
 
+item & createIou(const double amount, const std::wstring &whom, const std::wstring &service, const io &ios) {
+  auto rtn = new iou(amount, whom, service, ios);
+  itemHolderMap::instance().enroll(*rtn); // takes ownership
+  return *rtn;
+}
+
+double forIou(const item &i, double d, std::wstring &buf) {// used in shop.cpp
+  const iou *ii = dynamic_cast<const iou*>(&i);
+  if (ii) {
+    buf = buf + L"\t" + ii->service() + L"\n";
+    return ii->amount() + d;
+  } else
+    return d;
+}
+
 // create a random item suitable for the given level depth
 // TODO: depth limitations
 item &createRndItem(const int depth, const io & ios) {
@@ -921,6 +976,8 @@ item &createRndItem(const int depth, const io & ios) {
     if (r[type->first].material() == materialType::liquid) continue;
     // we never autogenerate a corpse because they always need a monster first:
     if (type->first == itemTypeKey::corpse) continue;
+    // we never autogenerate an IOU; they're only created by shops
+    if (type->first == itemTypeKey::iou) continue;
     // general case: call createItem():
     return createItem(type->first, ios); // already enrolled
   }

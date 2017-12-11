@@ -60,7 +60,7 @@ public:
   virtual bool strike(const damageType &type) = 0;
   // repair previous damage (return false only if no effect, eg undamaged)
   virtual bool repair(const damageType &type) = 0;
-  // proof against dagage type  (return false only if no effect, eg already proofed or n/a for material type)
+  // proof against dagage type  (return true only if no more effect possible, eg already proofed or n/a for material type)
   virtual bool proof(const damageType &type) = 0;
   virtual bool isProof(const damageType &type) const = 0; // proof accessor
 
@@ -127,6 +127,9 @@ item & createRndItem(const int depth, const io & ios);
 
 // create a bottled item
 item & createBottledItem(const itemTypeKey &, const io &);
+
+// create an IOU card
+item & createIou(const double amount, const std::wstring &whom, const std::wstring &service, const io &);
 
 // replace an item with another of a different type
 // "from" must be a fully created object in a container.
