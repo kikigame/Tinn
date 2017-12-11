@@ -747,6 +747,12 @@ std::vector<std::pair<unsigned int, monsterType*>> spawnMonsters(int depth, int 
   return rndGen<monsterType*, std::vector<monsterType*>::iterator>(from, to, depth, rooms);
 }
 
+bool monster::removeItemForMove(item &item, itemHolder &next) {
+  if (item.isCursed()) return false; // cursed items can't be dropped.
+  if (slotOf(item) != nullptr && !unequip(item)) return false; // must unequip before move
+  return itemHolder::removeItemForMove(item, next);
+}
+
 void monster::forEachItem(const std::function<void(item&, std::wstring)> f) {
   itemHolder::forEachItem([this, f](item& i, std::wstring msg) {
     auto slot = slotOf(i);

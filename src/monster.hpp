@@ -154,9 +154,9 @@ public:
   virtual void forEachItem(std::function<void(const item&, std::wstring)>) const;
   virtual void forEachItem(std::function<void(item&, std::wstring)>);
 
-  // TODO: overridden to disable dropping of cursed items
-  // - or is this too low-level? allow stealing etc?
-  // virtual bool removeItemForMove(item &item);
+  // overridden to disable dropping of cursed items
+  // and ensure items unequipped on move
+  virtual bool removeItemForMove(item &item, itemHolder &next);
 
 protected:
 
