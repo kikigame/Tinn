@@ -42,40 +42,40 @@ public:
 struct slotRepoType {
   std::map<monsterCategory, std::vector<const slot*> > byCat_;
   // NB: if we polymorph between a quadruped and a centaur form, the weapon slot name jumps from forepaws to hands. This does not make sense if weapons are cursed.
-  std::unique_ptr<slotImpl> primary_weapon = std::unique_ptr<slotImpl>(new slotImpl(L"wielded (left hand)", {{monsterCategory::quadruped, L"wielded (left forepaw)"}, {monsterCategory::hooved_quadruped, L"wielded (left forehoof)"}, {monsterCategory::dragon, L"wielded (left forepaw)"}, {monsterCategory::bird, L"wielded (left wing)"}, {monsterCategory::blob, L"outermost left blobby protrusion"}}));
-  std::unique_ptr<slotImpl> secondary_weapon = std::unique_ptr<slotImpl>(new slotImpl(L"wielded (right hand)", {{monsterCategory::quadruped, L"wielded (right forepaw)"}, {monsterCategory::hooved_quadruped, L"wielded (right forehoof)"}, {monsterCategory::hooved_quadruped, L"wielded (right forepaw)"}, {monsterCategory::bird, L"wielded (right wing)"}, {monsterCategory::blob, L"outermost right blobby protrusion"}}));
+  std::unique_ptr<slotImpl> primary_weapon = std::unique_ptr<slotImpl>(new slotImpl(L"wielded (left hand)", {{monsterCategory::quadruped, L"wielded (left forepaw)"}, {monsterCategory::hooved_quadruped, L"wielded (left forehoof)"}, {monsterCategory::dragon, L"wielded (left forepaw)"}, {monsterCategory::bird, L"wielded (left wing)"}, {monsterCategory::birdOfPrey, L"wielded (left wing)"}, {monsterCategory::blob, L"outermost left blobby protrusion"}}));
+  std::unique_ptr<slotImpl> secondary_weapon = std::unique_ptr<slotImpl>(new slotImpl(L"wielded (right hand)", {{monsterCategory::quadruped, L"wielded (right forepaw)"}, {monsterCategory::hooved_quadruped, L"wielded (right forehoof)"}, {monsterCategory::hooved_quadruped, L"wielded (right forepaw)"}, {monsterCategory::bird, L"wielded (right wing)"}, {monsterCategory::birdOfPrey, L"wielded (right wing)"}, {monsterCategory::blob, L"outermost right blobby protrusion"}}));
   std::unique_ptr<slotImpl> headband = std::unique_ptr<slotImpl>(new slotImpl(L"headband", {{monsterCategory::blob, L"top blobby protrusion"}}));
   std::unique_ptr<slotImpl> hat = std::unique_ptr<slotImpl>(new slotImpl(L"hat", {{monsterCategory::blob, L"topmost blobby protrusion"}}));
   std::unique_ptr<slotImpl> glasses = std::unique_ptr<slotImpl>(new slotImpl(L"eyes", {{monsterCategory::blob, L"top front blobby protrusion"}}));
   std::unique_ptr<slotImpl> amulet = std::unique_ptr<slotImpl>(new slotImpl(L"neck",  {{monsterCategory::blob, L"upper blobby protrusion"}}));
-  std::unique_ptr<slotImpl> ring_left_index = std::unique_ptr<slotImpl>(new slotImpl(L"left first claw",   {{monsterCategory::biped, L"left index finger"}, {monsterCategory::blob, L"first left blobby protrusion"}}));
-  std::unique_ptr<slotImpl> ring_left_middle = std::unique_ptr<slotImpl>(new slotImpl(L"left second claw", {{monsterCategory::biped, L"left middle finger"}, {monsterCategory::blob, L"second left blobby protrusion"}}));
-  std::unique_ptr<slotImpl> ring_left_ring = std::unique_ptr<slotImpl>(new slotImpl(L"left third claw",    {{monsterCategory::biped, L"left ring finger"}, {monsterCategory::blob, L"third left blobby protrusion"}}));
-  std::unique_ptr<slotImpl> ring_left_little = std::unique_ptr<slotImpl>(new slotImpl(L"left fourth claw", {{monsterCategory::biped, L"left little finger"}, {monsterCategory::blob, L"fourth left blobby protrusion"}}));
-  std::unique_ptr<slotImpl> ring_left_thumb = std::unique_ptr<slotImpl>(new slotImpl(L"left fifth claw",   {{monsterCategory::biped, L"left thumb"}, {monsterCategory::blob, L"fifth left blobby protrusion"}}));
+  std::unique_ptr<slotImpl> ring_left_index = std::unique_ptr<slotImpl>(new slotImpl(L"left first claw",   {{monsterCategory::biped, L"left index finger"}, {monsterCategory::birdOfPrey, L"left first talon"}, {monsterCategory::blob, L"first left blobby protrusion"}}));
+  std::unique_ptr<slotImpl> ring_left_middle = std::unique_ptr<slotImpl>(new slotImpl(L"left second claw", {{monsterCategory::biped, L"left middle finger"}, {monsterCategory::birdOfPrey, L"left second talon"}, {monsterCategory::blob, L"second left blobby protrusion"}}));
+  std::unique_ptr<slotImpl> ring_left_ring = std::unique_ptr<slotImpl>(new slotImpl(L"left third claw",    {{monsterCategory::biped, L"left ring finger"}, {monsterCategory::birdOfPrey, L"left third talon"}, {monsterCategory::blob, L"third left blobby protrusion"}}));
+  std::unique_ptr<slotImpl> ring_left_little = std::unique_ptr<slotImpl>(new slotImpl(L"left fourth claw", {{monsterCategory::biped, L"left little finger"}, {monsterCategory::birdOfPrey, L"left fourth talon"}, {monsterCategory::blob, L"fourth left blobby protrusion"}}));
+  std::unique_ptr<slotImpl> ring_left_thumb = std::unique_ptr<slotImpl>(new slotImpl(L"left fifth claw",   {{monsterCategory::biped, L"left thumb"}, {monsterCategory::birdOfPrey, L"left opposed talon"}, {monsterCategory::blob, L"fifth left blobby protrusion"}}));
   std::unique_ptr<slotImpl> bracelet_left = std::unique_ptr<slotImpl>(new slotImpl(L"left foreleg", {{monsterCategory::biped, L"left wrist"}, {monsterCategory::blob, L"upper left blobby protrusion"}}));
   std::unique_ptr<slotImpl> gloves = std::unique_ptr<slotImpl>(new slotImpl(L"forepaws", {{monsterCategory::biped, L"hands"}, {monsterCategory::blob, L"outer left blobby protrusion"}}));
   // gauntlets read the same as gloves, but they are different slots; you can wear gauntlets over gloves:
   std::unique_ptr<slotImpl> gauntlets = std::unique_ptr<slotImpl>(new slotImpl(L"forepaws", {{monsterCategory::biped, L"hands"}, {monsterCategory::blob, L"outer left blobby protrusion"}}));
-  std::unique_ptr<slotImpl> ring_right_index = std::unique_ptr<slotImpl>(new slotImpl(L"right first claw", {{monsterCategory::biped, L"right index finger"}, {monsterCategory::blob, L"first right blobby protrusion"}}));
-  std::unique_ptr<slotImpl> ring_right_middle = std::unique_ptr<slotImpl>(new slotImpl(L"right second claw", {{monsterCategory::biped, L"right middle finger"}, {monsterCategory::blob, L"second right blobby protrusion"}}));
-  std::unique_ptr<slotImpl> ring_right_ring = std::unique_ptr<slotImpl>(new slotImpl(L"right third claw", {{monsterCategory::biped, L"right ring finger"}, {monsterCategory::blob, L"third right blobby protrusion"}}));
-  std::unique_ptr<slotImpl> ring_right_little = std::unique_ptr<slotImpl>(new slotImpl(L"right fourth claw", {{monsterCategory::biped, L"right little finger"}, {monsterCategory::blob, L"fourth right blobby protrusion"}}));
-  std::unique_ptr<slotImpl> ring_right_thumb = std::unique_ptr<slotImpl>(new slotImpl(L"right fifth claw", {{monsterCategory::biped, L"right thumb"}, {monsterCategory::blob, L"fifth right blobby protrusion"}}));
+  std::unique_ptr<slotImpl> ring_right_index = std::unique_ptr<slotImpl>(new slotImpl(L"right first claw", {{monsterCategory::biped, L"right index finger"}, {monsterCategory::birdOfPrey, L"right first talon"}, {monsterCategory::blob, L"first right blobby protrusion"}}));
+  std::unique_ptr<slotImpl> ring_right_middle = std::unique_ptr<slotImpl>(new slotImpl(L"right second claw", {{monsterCategory::biped, L"right middle finger"}, {monsterCategory::birdOfPrey, L"right second talon"}, {monsterCategory::blob, L"second right blobby protrusion"}}));
+  std::unique_ptr<slotImpl> ring_right_ring = std::unique_ptr<slotImpl>(new slotImpl(L"right third claw", {{monsterCategory::biped, L"right ring finger"}, {monsterCategory::birdOfPrey, L"right third talon"}, {monsterCategory::blob, L"third right blobby protrusion"}}));
+  std::unique_ptr<slotImpl> ring_right_little = std::unique_ptr<slotImpl>(new slotImpl(L"right fourth claw", {{monsterCategory::biped, L"right little finger"}, {monsterCategory::birdOfPrey, L"right fourth talon"}, {monsterCategory::blob, L"fourth right blobby protrusion"}}));
+  std::unique_ptr<slotImpl> ring_right_thumb = std::unique_ptr<slotImpl>(new slotImpl(L"right fifth claw", {{monsterCategory::biped, L"right thumb"}, {monsterCategory::birdOfPrey, L"right opposed talon"}, {monsterCategory::blob, L"fifth right blobby protrusion"}}));
   std::unique_ptr<slotImpl> bracelet_right = std::unique_ptr<slotImpl>(new slotImpl(L"right foreleg", {{monsterCategory::biped, L"right wrist"}, {monsterCategory::blob, L"upper right blobby protrusion"}}));
-  std::unique_ptr<slotImpl> toe_left_index = std::unique_ptr<slotImpl>(new slotImpl(L"left first claw", {{monsterCategory::biped, L"left index toe"}, {monsterCategory::blob, L"first left blobby protrusion"}})); // wikipedia allows "index toe", so we'll keep it the same as for fingers.
-  std::unique_ptr<slotImpl> toe_left_middle = std::unique_ptr<slotImpl>(new slotImpl(L"left second claw", {{monsterCategory::biped, L"left middle toe"}, {monsterCategory::blob, L"second left blobby protrusion"}}));
-  std::unique_ptr<slotImpl> toe_left_fourth = std::unique_ptr<slotImpl>(new slotImpl(L"left third claw", {{monsterCategory::biped, L"left ring toe"}, {monsterCategory::blob, L"third left blobby protrusion"}}));
-  std::unique_ptr<slotImpl> toe_left_little = std::unique_ptr<slotImpl>(new slotImpl(L"left fourth claw", {{monsterCategory::biped, L"left little toe"}, {monsterCategory::blob, L"fourth left blobby protrusion"}}));
-  std::unique_ptr<slotImpl> toe_left_thumb = std::unique_ptr<slotImpl>(new slotImpl(L"left fifth claw", {{monsterCategory::biped, L"left big toe"}, {monsterCategory::blob, L"fifth left blobby protrusion"}})); // the latin name for the big toe is the "hallux"
-  std::unique_ptr<slotImpl> anklet_left = std::unique_ptr<slotImpl>(new slotImpl(L"left hindleg", {{monsterCategory::biped, L"left ankle"}, {monsterCategory::bird, L"left leg"}, {monsterCategory::blob, L"lower left blobby protrusion"}}));
+  std::unique_ptr<slotImpl> toe_left_index = std::unique_ptr<slotImpl>(new slotImpl(L"left first claw", {{monsterCategory::biped, L"left index toe"}, {monsterCategory::birdOfPrey, L"left first talon"}, {monsterCategory::blob, L"first left blobby protrusion"}})); // wikipedia allows "index toe", so we'll keep it the same as for fingers.
+  std::unique_ptr<slotImpl> toe_left_middle = std::unique_ptr<slotImpl>(new slotImpl(L"left second claw", {{monsterCategory::biped, L"left middle toe"}, {monsterCategory::birdOfPrey, L"left second talon"}, {monsterCategory::blob, L"second left blobby protrusion"}}));
+  std::unique_ptr<slotImpl> toe_left_fourth = std::unique_ptr<slotImpl>(new slotImpl(L"left third claw", {{monsterCategory::biped, L"left ring toe"}, {monsterCategory::birdOfPrey, L"left third talon"}, {monsterCategory::blob, L"third left blobby protrusion"}}));
+  std::unique_ptr<slotImpl> toe_left_little = std::unique_ptr<slotImpl>(new slotImpl(L"left fourth claw", {{monsterCategory::biped, L"left little toe"}, {monsterCategory::birdOfPrey, L"left fourth talon"}, {monsterCategory::blob, L"fourth left blobby protrusion"}}));
+  std::unique_ptr<slotImpl> toe_left_thumb = std::unique_ptr<slotImpl>(new slotImpl(L"left fifth claw", {{monsterCategory::biped, L"left big toe"}, {monsterCategory::birdOfPrey, L"left opposed talon"}, {monsterCategory::blob, L"fifth left blobby protrusion"}})); // the latin name for the big toe is the "hallux"
+  std::unique_ptr<slotImpl> anklet_left = std::unique_ptr<slotImpl>(new slotImpl(L"left hindleg", {{monsterCategory::biped, L"left ankle"}, {monsterCategory::bird, L"left leg"}, {monsterCategory::birdOfPrey, L"left leg"}, {monsterCategory::blob, L"lower left blobby protrusion"}}));
 
-  std::unique_ptr<slotImpl> toe_right_index = std::unique_ptr<slotImpl>(new slotImpl(L"right first claw", {{monsterCategory::biped, L"right index toe"}, {monsterCategory::blob, L"first right blobby protrusion"}}));
-  std::unique_ptr<slotImpl> toe_right_middle = std::unique_ptr<slotImpl>(new slotImpl(L"right second claw", {{monsterCategory::biped, L"right middle toe"}, {monsterCategory::blob, L"second right blobby protrusion"}}));
-  std::unique_ptr<slotImpl> toe_right_fourth = std::unique_ptr<slotImpl>(new slotImpl(L"right third claw", {{monsterCategory::biped, L"right ring toe"}, {monsterCategory::blob, L"third right blobby protrusion"}}));
-  std::unique_ptr<slotImpl> toe_right_little = std::unique_ptr<slotImpl>(new slotImpl(L"right fourth claw", {{monsterCategory::biped, L"right little toe"}, {monsterCategory::blob, L"fourth right blobby protrusion"}}));
-  std::unique_ptr<slotImpl> toe_right_thumb = std::unique_ptr<slotImpl>(new slotImpl(L"right fifth claw", {{monsterCategory::biped, L"right big toe"}, {monsterCategory::blob, L"fifth right blobby protrusion"}}));
-  std::unique_ptr<slotImpl> anklet_right = std::unique_ptr<slotImpl>(new slotImpl(L"right hindleg", {{monsterCategory::biped, L"right ankle"}, {monsterCategory::bird, L"right leg"}, {monsterCategory::blob, L"lower right blobby protrusion"}}));
+  std::unique_ptr<slotImpl> toe_right_index = std::unique_ptr<slotImpl>(new slotImpl(L"right first claw", {{monsterCategory::biped, L"right index toe"}, {monsterCategory::birdOfPrey, L"right first talon"}, {monsterCategory::blob, L"first right blobby protrusion"}}));
+  std::unique_ptr<slotImpl> toe_right_middle = std::unique_ptr<slotImpl>(new slotImpl(L"right second claw", {{monsterCategory::biped, L"right middle toe"}, {monsterCategory::birdOfPrey, L"right second talon"}, {monsterCategory::blob, L"second right blobby protrusion"}}));
+  std::unique_ptr<slotImpl> toe_right_fourth = std::unique_ptr<slotImpl>(new slotImpl(L"right third claw", {{monsterCategory::biped, L"right ring toe"}, {monsterCategory::birdOfPrey, L"right third talon"}, {monsterCategory::blob, L"third right blobby protrusion"}}));
+  std::unique_ptr<slotImpl> toe_right_little = std::unique_ptr<slotImpl>(new slotImpl(L"right fourth claw", {{monsterCategory::biped, L"right little toe"}, {monsterCategory::birdOfPrey, L"right fourth talon"}, {monsterCategory::blob, L"fourth right blobby protrusion"}}));
+  std::unique_ptr<slotImpl> toe_right_thumb = std::unique_ptr<slotImpl>(new slotImpl(L"right fifth claw", {{monsterCategory::biped, L"right big toe"}, {monsterCategory::birdOfPrey, L"right opposed talon"}, {monsterCategory::blob, L"fifth right blobby protrusion"}}));
+  std::unique_ptr<slotImpl> anklet_right = std::unique_ptr<slotImpl>(new slotImpl(L"right hindleg", {{monsterCategory::biped, L"right ankle"}, {monsterCategory::bird, L"right leg"}, {monsterCategory::birdOfPrey, L"right leg"}, {monsterCategory::blob, L"lower right blobby protrusion"}}));
 
   // like gloves and gauntlets, socks go under boots but are reported as the same slot:
   std::unique_ptr<slotImpl> socks = std::unique_ptr<slotImpl>(new slotImpl(L"hindpaws", {{monsterCategory::biped, L"feet"}, {monsterCategory::blob, L"lower blobby protrusions"}}));
@@ -369,6 +369,33 @@ struct slotRepoType {
 	  robe.get(), // robe/cloak/peytral (horse chest armour)
 	  tail.get() // tail ring/bow
 	  }));//bird
+    byCat_.emplace(monsterCategory::birdOfPrey,  std::vector<const slot * >({
+	  hat.get(), //Helmet/hat/headdress/shaffron (shaffron is a horse helmet)
+	  glasses.get(),
+	  amulet.get(),//Necklace/amulet/talisman/medallian
+	  toe_left_thumb.get(),
+	  toe_left_index.get(),
+	  toe_left_middle.get(),
+	  toe_left_fourth.get(), // owls have 2 talons, 1 opposable and 1 opposed, so skip "little toe"
+	  anklet_left.get(),
+	  toe_right_thumb.get(),
+	  toe_right_index.get(),
+	  toe_right_middle.get(),
+	  toe_right_fourth.get(),
+	  anklet_right.get(),
+	  socks.get(),
+	  boots.get(), //boots/shoes
+	  underwear.get(),
+	  shorts.get(), ///trousers/skirt/crupper (crupper is horse rump armour)
+	  belt.get(), //scabbord/belt
+	  shirt.get(),
+	  doublet.get(),
+	  hauburk.get(), //  hauburk (chain portion of plate armour)/hauburgeon (sleeveless hauburk)
+	  saddle.get(),
+	  jerkin.get(), // jerkin/flanchard (flanchard is horse armour between saddle and crupper)
+	  robe.get(), // robe/cloak/peytral (horse chest armour)
+	  tail.get() // tail ring/bow
+	  }));//birdOfPrey
     byCat_.emplace(monsterCategory::blob,  std::vector<const slot * >({
 	  saddle.get() // think we should be able to saddle most things
 	    }));//blob

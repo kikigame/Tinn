@@ -728,6 +728,7 @@ std::shared_ptr<monster> ofType(const monsterType &type, level & level, const st
     ptr = std::make_shared<dragon>(b);
     break;
   case monsterTypeKey::bird:
+  case monsterTypeKey::birdOfPrey:
   default:
     ptr = std::make_shared<trivialMonster>(b);
   }

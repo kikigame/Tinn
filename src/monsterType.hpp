@@ -27,8 +27,10 @@ enum class monsterCategory {
   // NB: We don't model the wings, as they are vestigial and cannot hold thigns.
   // TODO: Is this system breaking down? If you polymorph from a dragon into a bird, your foreleg-equipped weapons will jump to your wings. On the one hand, this makes sense (dragons wouldn't hold things in their wings while birds need to), but on the other hand, how does a cursed item move?
     dragon,
-  // birds have wings, head and torso. TODO: claws should become talons perhaps?
+  // birds have wings, head and torso. "digits" are claws. (There's some debate online about whether all birds have talons, or whether claws are something separate. But I think colloquially we would talk about a song-bird's claws or a falcon's talons).
     bird,
+  // as bird, but "digits" are talons.
+    birdOfPrey,
   // blobs have nothing. They are just blobs.
     blob
 };
@@ -54,6 +56,7 @@ enum class genderAssignType {
 
 enum class monsterTypeKey {
   bird,
+  birdOfPrey,
   dragon,
   hound,
   human, 

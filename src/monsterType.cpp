@@ -313,8 +313,8 @@ public:
 			   ));
 
     // unique features: flying
-    emplace(monsterTypeBuilder(monsterTypeKey::bird)
-	    .category(monsterCategory::bird)
+    emplace(monsterTypeBuilder(monsterTypeKey::birdOfPrey)
+	    .category(monsterCategory::birdOfPrey)
 	    .name(L"Falcon")
 	    .name(L"Eagle")
 	    .name(L"Big Bird") // TODO: Better bird names
