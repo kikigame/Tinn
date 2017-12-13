@@ -613,13 +613,13 @@ I'd like to stick to original and public-domain monsters, so lots of drawing fro
 
 * Faeries should drop fairy cakes instead of dead fairies (Ref: Dark Bower, Samhuinn Festival 2016, Edinburgh).
 * Foocubi have a special monster attack, which is basically rape in mythology (they are, after all, evil). This attack should be carried out regardless of gender and on all monster types; gender only influences if the outcome is positive or negative.
-* "Mundane" animals: rats, foxes, hounds, wolves, wild dogs
+* "Mundane" animals: rats, foxes, hounds, wolves, wild dogs, ferrets ("little thief")
 * One track could be "earthworm" (chance for Earthworm Jim refs), to "Sandworm" (from dune). A Wikipedia page on wormws in fiction exists, and suggests the Mongolian Death Worm as a suitable intermediate legendary creature (instakil poison to touch, shoots venom and electricity. Also graboids from Tremmors films. Boreworms (Flash Gordon) might offer another point on the track.
 * Nethack has "team ant" (giant ants, fire ants, bees and giant beetles all appear with "a"). I think we should just implement fire ants, giant wasps (wasps are nastier than bees and don't require us to model honey) and bulls (which are a "herd" when grazing and a "drive" when moving).
 * Dragons: These have been clobbered by D&D, where Nethack inherits different colours (species) of dragon, each with their own attack. In Britain, the term "dragon" once meant an insult, although it originally meant "huge serpant". There are, of course, bearded dragons which are relatively big lizards (about the size of a human forearm when fully grown) and eat insects when young and mostly vegetable matter when adult. Historic words include "dragonet (14th c, young dragon) and drake (older form of the word dragon). The main forms of dragon in mythology are known as the European dragon (4 legs, 2 wings, scaly, reptillian, animal-level intelligence) and Chinese dragon (4 legs, no wings, serpantine); many other forms of dragon exist worldwide. We need a sub-project to rethink the dragon.
 * Birds and flying things. Everyone likes bats (creepy things that will suck the fruit right out of your veins - but good luck in Chinese mythology and a harbinger of good to the native Americans), while birds of prey of various kinds could be added easily. Not only are flighted creaturus impervious to pits, but they could well pick up the player and fly off with them as a special attack - stranging them on a nest (trap) or carrying them out of the level entirely. Notable birds of prey: eagle (symbol of power, thought by the Romans to be a warding bird especially against storms), crow (& the larger raven; associated with harbingers and messengers), hawks (solar bird, see also falcon; messanger of Apollo, royalty to ancient Egypt, prophetic bird with healing powers in Polynesia), vultures (scavengers hence omens of death), owl (wise in British folklore)
 * Ghosts: just as we can have "a dead <foo>" as an item, we should be able to have "a ghostly <foo>" as a monster. Killing any monster after (say) level 10 could have a percentage chance of creating a ghost, which would haunt that space. Ghosts ignore terrain and can only be killed by blessed weapons. "Killing" a ghost with a bottling kit should create a bottle of ectoplasm. Ghosts may respawn once "killed". (Nethack uses "destroy" for ghosts, and ghosts of the player can occur in bones levels; there are also graveyards where ghosts and other undead are likely).
-
+* Orcs: It seems Tolkein created these as a deviation from the goblins of folklore. They are often considered the same. Fokelorish "Goblins" are called "Goblette" when female. Goblins and ogres are offspring of Cain [Beowulf]. Redcap goblins dye their hats in human blood. Hobgoblins are friendly trickster goblins. Erlking = a named manevolent goblin (or giant). Goblin-rat is a monster from Japanese folklore who was killed by cats to protect a boy. Dokkaebi are Korean goblins (tricksters).
 
 We should have a collective noun for each monster type, so if we have lots of a monster on one square we can report it as "a swarm of giant wasps" or similar. NB: "swarm" is colloquially used for any group of bees/wasps, but technically means the directed movement of a whole group of bees looking for a new hive. We should check definitions carefully. Think about translations before implementing collective nouns; maybe postpose till the next release? Wiki suggests that Old French had collective nouns but very few modern languages use them.
 
@@ -630,6 +630,29 @@ Special Level ideas
 --------------------
 
 There could be a bridge level, with a central section of the screen existing at two different levels depending on how you approached it. The lowel level would not draw the player, and you would meet a lot of trolls.
+
+I like the idea of a dragon level, where a powerful beast sits on a hoard of treasure in one large room, perhaps with suitable elemental creatures or simirar around it. Out of the room is a cross-tunnel, with 3 small rooms off it - a 3x3 entrance room, a 3x3 exit room, and a shrine to the Dragon's deity.
+
+A level of shrines could put 63 (7x3x3) shrines in one level perhaps? Neutral = entrance; other = exit. This would need 2 exits per shrine.
+
+One option would be (no easy unicursor solution):
+#################################################################
+#   # _ # _ # _ # _ # _ # _ # _ # _ # _ # _ # _ # _ # _ # _ # _ #
+# <                                                             #
+#   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #
+############################################################## ##
+# _ # _ # _ # _ # _ # _ # _ # _ # _ # _ # _ # _ # _ # _ # _ #   #
+#                                                              _#
+#   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #
+## ##############################################################
+#   # _ # _ # _ # _ # _ # _ # _ # _ # _ # _ # _ # _ # _ # _ # _ #
+#       #       #       #       #       #       #       #       #
+#   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #
+## ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
+#   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #
+#_          #       #       #       #       #       #       # > #
+#   # _ # _ # _ # _ # _ # _ # _ # _ # _ # _ # _ # _ # _ # _ #   #
+#################################################################
 
 
 Item ideas
