@@ -15,12 +15,15 @@ dungeon::dungeon(::std::shared_ptr<io> ios)
   : alive_(true),
     cur_level_(1),
     io_(ios) {
-    //    refresher_(true, new std::function<void()>([this]() { draw(); })) { // http://en.cppreference.com/w/cpp/utility/functional/function
+  levelFactory factory(*this, ios, NUM_LEVELS);
+  for (auto l : factory)
+    level_.emplace_back(l);
+  /*
   for (int l = 0; l <= NUM_LEVELS; ++l) {
     // the last level has no down ramp
     bool downRamp = l < NUM_LEVELS;
     level_.emplace_back(new level(*this, ios, l, downRamp));
-  }
+    }*/
   playerBuilder pb = chargen(*ios);
   level &start = *(level_[cur_level_]);
   pb.startOn(start);

@@ -126,7 +126,7 @@ public:
 };
 
 // a level generator that fills the level with randomly-placed rooms
-class roomGen : private levelGen {
+class roomGen : public levelGen {
 private:
   const bool addDownRamp_; // do we need a downwards stairwell?
 public:
@@ -205,7 +205,7 @@ public:
   std::map<coord, ::std::unique_ptr<itemHolder> > holders_;
 
   // constructor fills the level with something suitable
-  levelImpl(dungeon &dungeon, int depth, std::shared_ptr<io> ios, level& pub, bool downRamp) :
+  levelImpl(dungeon &dungeon, int depth, std::shared_ptr<io> ios) :
     dungeon_(dungeon),
     depth_(depth),
     io_(ios) {
@@ -215,7 +215,7 @@ public:
 	coord c(x,y);
 	terrain_[c] = tFactory.get(terrainType::ROCK);
       }
-    roomGen(this, pub, downRamp).build();
+    //roomGen(this, pub, downRamp).build();
   }
   virtual ~levelImpl() {}
 
@@ -807,9 +807,8 @@ void levelGen::place(const coord &c, terrainType type) {
 
 // the pImpl (pointer-to-implementation) pattern keeps the structure of the class out of the header file:
 
-level::level(dungeon &dungeon, std::shared_ptr<io> ios, const int depth, bool addDownRamp) : 
-  pImpl_(::std::make_shared<levelImpl>(dungeon, depth, ios, *this, addDownRamp)) {
-}
+level::level(levelImpl *pImpl) :
+  pImpl_(pImpl) {}
 level::~level() { 
 }
 
@@ -935,6 +934,46 @@ level::zonesAt(const coord & c) {
   return zoneTraits<T>::zonesAt(*pImpl_, c);
 }
 
+
+class levelFactoryImpl {
+private:
+  std::vector<levelImpl*> levels_;
+  std::vector<level*> levelPubs_;
+  std::vector<std::unique_ptr<levelGen> > levelGen_;
+public:
+  levelFactoryImpl(dungeon &dungeon, std::shared_ptr<io> io, const int numLevels) {
+    for (int i=0; i < numLevels; ++i) {
+      levelImpl *l = new levelImpl(dungeon, i, io);
+      levels_.push_back(l);
+      levelPubs_.emplace_back(new level(l));
+      auto &level = *(levelPubs_.rbegin());
+      bool addDownRamp = i < numLevels;
+      levelGen_.emplace_back(new roomGen(l,*level, addDownRamp));
+    }
+  }
+  void build() {
+    for (auto &g : levelGen_)
+      g->build();
+  }
+  std::vector<level*>::iterator begin() {
+    return levelPubs_.begin();
+  }
+  std::vector<level*>::iterator end() {
+    return levelPubs_.end();
+  }
+};
+
+levelFactory::levelFactory(dungeon &dungeon, std::shared_ptr<io> io, const int numLevels) :
+  pImpl_(new levelFactoryImpl(dungeon, io, numLevels)) {
+  pImpl_->build();
+}
+
+std::vector<level*>::iterator levelFactory::begin() {
+  return pImpl_->begin();
+}
+std::vector<level*>::iterator levelFactory::end() {
+  return pImpl_->end();
+}
 
 // these need to be defined (not just declared) in order to take a reference to them, as in (eg)
 // std::max(x, level::MAX_WIDTH); - oddities of the dark corners of C++ I guess.

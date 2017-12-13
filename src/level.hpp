@@ -27,13 +27,24 @@ class drawIter;
 class io;
 class renderByCoord;
 
+class level;
+class levelFactoryImpl;
+class levelFactory {
+private:
+  std::shared_ptr<levelFactoryImpl> pImpl_;
+public:
+  levelFactory(dungeon &dungeon, std::shared_ptr<io>, const int numLevels);
+  std::vector<level*>::iterator begin();
+  std::vector<level*>::iterator end();
+};
+
 class level {
 private:
-  std::shared_ptr<levelImpl> pImpl_;
+  std::unique_ptr<levelImpl> pImpl_;
 public:
   static const int MAX_WIDTH = 70;
   static const int MAX_HEIGHT = 20;
-  level(dungeon & dungeon_, ::std::shared_ptr<io> ios, int depth, bool hasDownRamp);
+  level(levelImpl *);
   level(const level &other) = delete; // disallow copying
   level(const level &&other) = delete; // disallow moving
   ~level();
