@@ -119,13 +119,16 @@ public:
   // if the slot was full or n/a for this monster type. Precodition: slot must be available for type.
   bool equip(item &item, const slot *slot);
   bool equip(item &item, const slotType slot);
+  // equip a 2-handed weapon, or a pair of something:
+  bool equip(item &item, const std::pair<slotType, slotType> slots);
+  bool equip(item &item, const std::array<const slot *, 2> slots);
   // try to unequip an item. Returns true on success, false if not equipped or cursed
   bool unequip(item &item);
   // returns true if this monster has this equipment slot and it is empty
   // returns false if this monster does not have this slot, or it is occupied.
   bool slotAvail(const slot * slot) const;
   // returns the slot if equipped, nullptr otherwise:
-  const slot * slotOf(const item &item) const;
+  const std::array<const slot *, 2> slotsOf(const item &item) const;
   // drop an item. Returns true on success, false on failure (eg cursed)
   bool drop(item &item) { return drop(item, level_->posOf(*this)); }
   // drop an item. Returns true on success, false on failure (eg cursed)
@@ -169,6 +172,10 @@ protected:
   // called when a monster dies
   virtual void death();
 
+private:
+  // called after item is equipped to calculate bonuses
+  // for single-slot items, pass s1 == s2
+  void onEquip(item &item, const slot *s1, const slot *s2);
 };
 
 class monsterBuilder {

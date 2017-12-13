@@ -301,6 +301,23 @@ int calcAppBonus(const std::map<const slot*, optionalRef<item> > eq) {
   return rtn;
 }
 
+bool monster::equip(item &item, const std::pair<slotType, slotType> slots) {
+  std::array<const slot *, 2> sl{ slotBy(slots.first), slotBy(slots.second) };
+  return equip(item, sl);
+}
+
+bool monster::equip(item &item, const std::array<const slot *,2> slots) {
+
+  for (auto s : slots) {
+    auto i = equipment_.find(s);
+    if (i == equipment_.end()) return false; // monster doesn't have this slot
+    if (i->second) return false; // already occupied
+  }
+
+  onEquip(item, slots[0], slots[1]);
+  return true;
+}
+
 bool monster::equip(item &item, const slotType slot) {
   auto s = slotBy(slot);
   return equip(item, s);
@@ -310,56 +327,70 @@ bool monster::equip(item &item, const slot *s) {
   auto i = equipment_.find(s);
   if (i == equipment_.end()) return false; // monster doesn't have this slot
   if (i->second) return false; // already occupied
+  onEquip(item, s, s);
+  return true;
+}
+
+void monster::onEquip(item &item, const slot *s1, const slot *s2) {
   // we can equip the item. Calculate any previous bonuses
   const int strBonus = calcStrBonus(equipment_);
   const int appBonus = calcAppBonus(equipment_);
   const int dodBonus = calcDodBonus(equipment_);
   // equip the item
   //  equipment_.insert(std::pair<const slot*, std::shared_ptr<item>>(s, item));
-  equipment_[s] = item;
+  equipment_[s1] = item;
+  equipment_[s2] = item;
   // calculate any new bonuses and apply adjustment
   strength_ += calcStrBonus(equipment_) - strBonus;
   appearance_ += calcAppBonus(equipment_) - appBonus;
   dodge_ += calcDodBonus(equipment_) - dodBonus;
-  return true;
 }
 
 bool monster::unequip(item &item) {
   if (item.isCursed()) return false;
+  // Calculate any previous bonuses
+  const int strBonus = calcStrBonus(equipment_);
+  const int appBonus = calcAppBonus(equipment_);
+  const int dodBonus = calcDodBonus(equipment_);
+  bool rtn = false;
   auto eend = equipment_.end();
   for (auto e = equipment_.begin(); e != eend; ++e)
     if (e->second && &(e->second.value()) == &item) {
-      // we can equip the item. Calculate any previous bonuses
-      const int strBonus = calcStrBonus(equipment_);
-      const int appBonus = calcAppBonus(equipment_);
-      const int dodBonus = calcDodBonus(equipment_);
+      // we can equip the item. 
       // unequip the item
-      equipment_.erase(e); 
-      // calculate any new bonuses and apply adjustment
-      strength_ += calcStrBonus(equipment_) - strBonus;
-      appearance_ += calcAppBonus(equipment_) - appBonus;
-      dodge_ += calcDodBonus(equipment_) - dodBonus;
-      return true;
+      optionalRef<::item> nullItem;
+      e->second = nullItem;
+      rtn = true;
     }
-  return false;
+  if (rtn) {
+    // calculate any new bonuses and apply adjustment
+    strength_ += calcStrBonus(equipment_) - strBonus;
+    appearance_ += calcAppBonus(equipment_) - appBonus;
+    dodge_ += calcDodBonus(equipment_) - dodBonus;
+  }
+  return rtn;
 }
 
 bool monster::slotAvail(const slot *s) const {
   return equipment_.find(s) != equipment_.end();
 }
-const slot * monster::slotOf(const item &item) const {
-  for (auto i : equipment_) {
-    if (i.second && &(i.second.value()) == &item)
-      return i.first;
-  }
-  return nullptr;
+const std::array<const slot *,2> monster::slotsOf(const item &item) const {
+  std::array<const slot *,2> rtn = {nullptr, nullptr };
+  bool foundOne = false;
+  for (auto i : equipment_)
+    if (i.second && &(i.second.value()) == &item) {
+      rtn[foundOne ? 1 : 0] = i.first;
+      foundOne = true;
+    }
+  if (rtn[1] == nullptr) rtn[1] = rtn[0];
+  return rtn;
 }
 
 bool monster::drop(item &ite, const coord &c) {
   if (ite.isCursed()) return false;
   // unequip before dropping:
-  const slot * sl = slotOf(ite);
-  if (sl != nullptr && !unequip(ite)) return false;
+  auto sl = slotsOf(ite);
+  if (sl[0] != nullptr && !unequip(ite)) return false;
   auto i = firstItem([&ite](item &it) { return &it == &ite; });
   if (!i) return false; // can't drop what we don't have
   // drop
@@ -761,17 +792,21 @@ std::vector<std::pair<unsigned int, monsterType*>> spawnMonsters(int depth, int 
 
 bool monster::removeItemForMove(item &item, itemHolder &next) {
   if (item.isCursed()) return false; // cursed items can't be dropped.
-  if (slotOf(item) != nullptr && !unequip(item)) return false; // must unequip before move
+  if (slotsOf(item)[0] != nullptr && !unequip(item)) return false; // must unequip before move
   return itemHolder::removeItemForMove(item, next);
 }
 
 void monster::forEachItem(const std::function<void(item&, std::wstring)> f) {
   itemHolder::forEachItem([this, f](item& i, std::wstring msg) {
-    auto slot = slotOf(i);
-    if (slotOf(i) != nullptr) {
+    auto slots = slotsOf(i);
+    if (slots[0] != nullptr) {
       msg += L": ";
-      msg += slot->name(monster::type().category());
+      msg += slots[0]->name(monster::type().category());
       msg += L" ";
+      if (slots[1] != slots[0]) {
+	msg += slots[1]->name(monster::type().category());
+	msg += L" ";
+      }
     }
     f(i, msg);
     });
@@ -779,11 +814,15 @@ void monster::forEachItem(const std::function<void(item&, std::wstring)> f) {
 
 void monster::forEachItem(const std::function<void(const item&, std::wstring)> f) const {
   itemHolder::forEachItem([this, f](const item& i, std::wstring msg) {
-    auto slot = slotOf(i);
-    if (slotOf(i) != nullptr) {
+    auto slots = slotsOf(i);
+    if (slots[0] != nullptr) {
       msg += L": ";
-      msg += slot->name(monster::type().category());
+      msg += slots[0]->name(monster::type().category());
       msg += L" ";
+      if (slots[1] != slots[0]) {
+	msg += slots[1]->name(monster::type().category());
+	msg += L" ";
+      }
     }
     f(i, msg);
     });

@@ -92,11 +92,13 @@ public:
 
   // try to equip an item. Precondition: item must be available for monster to equip.
   // returns true if successful, false otherwise (ie no suitable slots)
-  virtual bool equip(std::shared_ptr<monster> owner) = 0;
+  virtual bool equip(monster &owner) = 0;
 
   // in which slots can this item be equipped?
   // empty set if none
-  virtual std::set<slotType> slots() = 0;
+  //virtual std::set<slotType> slots() = 0;
+  enum equipType { wielded, worn, none } type;
+  virtual equipType equippable() const = 0;
 
   // given a damage figue of damage of a given type,
   // return the total damage taken (which may be negative!)

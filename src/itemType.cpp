@@ -104,6 +104,15 @@ L"This bashing weapon sits neatly between a club and a flail. Surprisingly\n"
 "mace into your opponent.\n",
 L"This cold, hard stick has a bobble on the end. Looks good for hitting with."
 			     ));
+    emplace(itemTypeKey::two_sword,
+	    // 3lb 11oz based on http://myarmoury.com/feature_oakeshott.html (Baron)
+	    // 1.673kg, but I've rounded up because I'm guessing reproductions are lighter and I want a heavy sword
+	    new itemTypeImpl(16.5, materialType::metallic, L'!', L"2-handed sword",
+L"A type XIIa sword in the Oakeshott classification. Unlike many swords, this\n"
+"one has a sharpened heavy blade to rip through the chain-mail of one's\n"
+"opponent. Its massive weight requires both hands to wield.",
+L"Heavy long bit of metal with a big handle."
+			     ));
     emplace(itemTypeKey::rock,
 	    new itemTypeImpl(8, materialType::stony, L'¬', L"rock",
 L"Not the fundamental building blocks, but the building blocks of the\n"

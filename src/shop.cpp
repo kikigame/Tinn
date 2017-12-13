@@ -307,7 +307,7 @@ private:
       // find the most valuable item in inventory not already in barter, and add to selection
       std::shared_ptr<item> found; double itemPrice=0;
       inventory_.forEachItem([this, &found, &itemPrice, &barter](item &i, std::wstring) {
-	if (inventory_.slotOf(i) != nullptr) return; // skip clothing
+	if (inventory_.slotsOf(i)[0] != nullptr) return; // skip clothing & wields
 	if (i.isCursed()) return; // skip cursed items, including ious!
 	auto pi = i.shared_from_this();
 	auto end = barter.end();

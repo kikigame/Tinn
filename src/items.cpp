@@ -274,10 +274,12 @@ public:
     enchantment_ += enchantment;
   }
 
-  virtual bool equip(std::shared_ptr<monster> owner) {
+  virtual bool equip(monster &owner) {
     return false; // can't equip this item type by default
   }
-
+  virtual equipType equippable() const { 
+    return equipType::none; 
+  }
   // destroy an item in inventory
   virtual void destroy() {
     if (holder().contains(*this) )
@@ -340,7 +342,9 @@ public:
 
 /*
  * Objects that can be equipped - worn, wielded, etc.
+ * Except for 2-slot items; these use twoEquip
  */
+template<int equipTyp>
 class basicEquip : public basicItem {
 private:
   // slots in which this may be equipped, in preference order
@@ -352,18 +356,18 @@ public:
     supportedSlots_({slots...}) {
   }
   virtual ~basicEquip() {}
-  virtual bool equip(std::shared_ptr<monster> owner) {
+  virtual bool equip(monster &owner) {
     for (slotType s : supportedSlots_)
-      if (owner->equip(*this, s))
+      if (owner.equip(*this, s))
 	return true;
     return false;
   }
-  virtual std::set<slotType>slots() {
-    return supportedSlots_;
+  virtual equipType equippable() const {
+    return static_cast<equipType>(equipTyp);
   }
 };
 
-class basicWeapon : public basicEquip {
+class basicWeapon : public basicEquip<item::equipType::wielded> {
 private:
   damageType damageType_;
 public:
@@ -371,8 +375,11 @@ public:
     basicEquip(type, ios, slotType::primary_weapon, slotType::secondary_weapon),
     damageType_(damage) {}
   virtual ~basicWeapon() {}
-  damageType weaponDamage() const {
+  virtual damageType weaponDamage() const {
     return damageType_;
+  }
+  virtual equipType equippable() const {
+    return equipType::wielded;
   }
 };
 
@@ -382,6 +389,45 @@ public:
   basicThrown(const itemType & type, const io &ios, const damageType damage) :
     basicWeapon(type, ios, damage) {}
   virtual ~basicThrown() {};
+};
+
+// as basicEquip, but requiring 2 slots
+template<int equipTyp>
+class twoEquip : public basicItem {
+private:
+  // slots in which this may be equipped, in preference order
+  std::set<std::pair<slotType, slotType>> supportedSlots_;
+public:
+  template<typename... S>
+  twoEquip(const itemType& type, const io &ios, S... slots) :
+    basicItem(type, ios),
+    supportedSlots_({slots...}) {
+  }
+  virtual ~twoEquip() {}
+  virtual bool equip(monster &owner) {
+    for (std::pair<slotType, slotType> s : supportedSlots_)
+      if (owner.equip(*this, s))
+	return true;
+    return false;
+  }
+  virtual equipType equippable() const {
+    return static_cast<equipType>(equipTyp);
+  }
+
+};
+
+class twoHandedWeapon : public twoEquip<item::equipType::wielded> {
+private:
+  damageType damageType_;
+public:
+  twoHandedWeapon(const itemType &type, const io &ios, const damageType &damage) :
+    twoEquip(type, ios,
+	     std::make_pair(slotType::primary_weapon, slotType::secondary_weapon)
+	     ), damageType_(damage) {};
+  virtual ~twoHandedWeapon() {}
+  virtual damageType weaponDamage() const {
+    return damageType_;
+  }
 };
 
 class bottlingKit;
@@ -810,12 +856,12 @@ public:
 
 
 void transmutate(item &from, item &to) {
-  const slot *slot;
+  std::array<const slot *,2> slots = {nullptr, nullptr};
   monster *m = dynamic_cast<monster *>(&from);
   auto h = from.holder();
   if (m) {
-    slot = m->slotOf(from); // may be nullptr
-    if (slot != nullptr) m->unequip(from);
+    auto slots = m->slotsOf(from); // may be nullptr, nullptr
+    if (slots[0] != nullptr) m->unequip(from);
   }
   auto &map = itemHolderMap::instance();
   auto &holder = map.forItem(from);
@@ -840,8 +886,9 @@ void transmutate(item &from, item &to) {
   const auto charm = from.enchantment();
   if (charm != 0)
     to.enchant(charm);
-  if (slot != nullptr)
-    m->equip(to, slot);
+  if (slots[0] != nullptr) {
+    m->equip(to, slots);
+  }
 }
 
 // create an item of the given type. io may be used later by that item, eg for prompts when using.
@@ -858,11 +905,14 @@ item& createItem(const itemTypeKey & t, const io & ios) {
   case itemTypeKey::mace:
     rtn = new basicWeapon(r[t], ios, damageType::bashing);
     break;
+  case itemTypeKey::two_sword:
+    rtn = new twoHandedWeapon(r[t], ios, damageType::edged); // we specifically chose a historical 2-handed cutting sword to annoy the reenactment purists :)
+    break;
   case itemTypeKey::rock:
     rtn = new basicThrown(r[t], ios, damageType::bashing);
     break;
   case itemTypeKey::helmet:
-    rtn = new basicEquip(r[t], ios, slotType::hat);
+    rtn = new basicEquip<item::equipType::worn>(r[t], ios, slotType::hat);
     break;
   case itemTypeKey::stick:
     rtn = new basicItem(r[t], ios); // TODO: wands & charges
@@ -911,7 +961,7 @@ item& createItem(const itemTypeKey & t, const io & ios) {
     rtn = new transmutedWater(r[t], ios, damageType::electric);
     break;
   case itemTypeKey::wooden_ring:
-    rtn = new basicEquip(r[t], ios, slotType::ring_left_thumb, slotType::ring_left_index, slotType::ring_left_middle, slotType::ring_left_ring, slotType::ring_left_little, slotType::ring_right_thumb, slotType::ring_right_index, slotType::ring_right_middle, slotType::ring_right_ring, slotType::ring_right_little, slotType::toe_left_thumb, slotType::toe_left_index, slotType::toe_left_middle, slotType::toe_left_fourth, slotType::toe_left_little, slotType::toe_right_thumb, slotType::toe_right_index, slotType::toe_right_middle, slotType::toe_right_fourth, slotType::toe_right_little);
+    rtn = new basicEquip<item::equipType::worn>(r[t], ios, slotType::ring_left_thumb, slotType::ring_left_index, slotType::ring_left_middle, slotType::ring_left_ring, slotType::ring_left_little, slotType::ring_right_thumb, slotType::ring_right_index, slotType::ring_right_middle, slotType::ring_right_ring, slotType::ring_right_little, slotType::toe_left_thumb, slotType::toe_left_index, slotType::toe_left_middle, slotType::toe_left_fourth, slotType::toe_left_little, slotType::toe_right_thumb, slotType::toe_right_index, slotType::toe_right_middle, slotType::toe_right_fourth, slotType::toe_right_little);
     break;
   case itemTypeKey::kalganid:
     rtn = new basicItem(r[t], ios); // TODO: should we be able to equip coins on our eyes?

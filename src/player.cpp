@@ -111,10 +111,12 @@ void player::containerInventory(std::wstringstream &inv,
 				const std::wstring indent,
 				const item &i) const {
   inv << indent << i.render() << L" " << i.name();
-  auto sl = monster::slotOf(i);
+  auto sl = monster::slotsOf(i);
   // "mace: wielded (left hand)" or "wooden ring: right ring finger"
-  if (sl != nullptr)
-    inv << L": " << sl->name(monster::type().category());
+  if (sl[0] != nullptr)
+    inv << L": " << sl[0]->name(monster::type().category());
+  if (sl[1] != sl[0])
+    inv << L": " << sl[1]->name(monster::type().category());
   inv << L"\n";
   auto container = dynamic_cast<const itemHolder*>(&i);
   if (container) {
@@ -147,25 +149,21 @@ void player::takeInventory() {
 void player::equip() {
   auto ws = weaponSlots();
   auto result = firstItem([this, &ws](item &i) {
-      if (slotOf(i) != nullptr) return false; // don't multi-wield/equip things yet
-      std::set<slotType> iSlots = i.slots();
-      for (auto s : iSlots) {
-	auto sl = slotBy(s);
-	if (slotAvail(sl)) {
-	  std::wstring msg = L"Do you ";
-	  bool weap = ws.count(sl) != 0;
-	  if (weap) msg += L"wield ";
-	  else msg += L"wear ";
-	  msg += i.name();
-	  msg += L"?";
-	  if (io_->ynPrompt(msg)) {
-	    if (monster::equip(i, s))
-	      return true;
-	    else if (weap)
-	      io_->message(std::wstring(L"This ") + i.name() + L" won't be your " + sl->name(monster::type().category()) + L" weapon");
-	    else io_->message(std::wstring(L"This ") + i.name() + L" won't fit your " + sl->name(monster::type().category()));
-	  }
-	}
+      if (slotsOf(i)[0] != nullptr) return false; // already equipped
+      auto type = i.equippable();
+      if (type == item::equipType::none) return false; // unequippable
+      std::wstring msg = L"Do you ";
+      bool weap = type == item::equipType::wielded;
+      if (weap) msg += L"wield ";
+      else msg += L"wear ";
+      msg += i.name();
+      msg += L"?";
+      if (io_->ynPrompt(msg)) {
+	auto rtn = i.equip(*this);
+	if (rtn) return true;
+	else if (weap)
+	  io_->message(std::wstring(L"This ") + i.name() + L" won't be your weapon");
+	else io_->message(std::wstring(L"This ") + i.name() + L" doesn't fit anywhere");
       }
       return false;
     });

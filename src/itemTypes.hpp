@@ -41,6 +41,7 @@ enum class itemTypeKey {
   ////
   // club,
     mace, // a basic bashing weapon, but also the stuff of myths.
+    two_sword, // 2-handed sword of cutting type
   //flail, 
 
   ////
