@@ -58,6 +58,8 @@ enum class monsterTypeKey {
   bird,
   birdOfPrey,
   dragon,
+  ferret,
+  goblin,
   hound,
   human, 
   troll, 

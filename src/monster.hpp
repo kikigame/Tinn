@@ -153,6 +153,9 @@ public:
   // retrieve a saying
   virtual const wchar_t * say() const;
 
+  // delegate to type by default, but overridden for special behiour
+  virtual const movementType & movement() const;
+
   // overridden to include slot names in the prompt.
   virtual void forEachItem(std::function<void(const item&, std::wstring)>) const;
   virtual void forEachItem(std::function<void(item&, std::wstring)>);

@@ -492,10 +492,15 @@ public:
   }
 };
 
+// delegate to type by default, but overridden for special behiour
+const movementType & monster::movement() const {
+  return type_.movement();
+}
+
 
 void moveMonster(monster &mon) {
   level & level = mon.curLevel();
-  const movementType &type = mon.type().movement();
+  const movementType &type = mon.movement();
 
   auto fastness = mon.intrinsics().adjust(type.speed_);
 
@@ -658,6 +663,20 @@ public:
   virtual ~trivialMonster() {}
 };
 
+// ferrets steal things (TODO) then run away
+class ferret : public monster {
+public:
+  ferret(monsterBuilder &b) : 
+    monster(b) {}
+  virtual ~ferret() {}
+  const movementType & movement() const {
+    if (empty())
+      return type().movement(); // go to player; they might have sometihng fun!
+    else // I've got it! Run away!
+      return movementType{speed::turn2, goTo::player, goBy::avoid, 25};
+  }
+};
+
 // zombies: instakilled by pit traps
 class zombie : public monster {
 public:
@@ -761,6 +780,10 @@ std::shared_ptr<monster> ofType(const monsterType &type, level & level, const st
   // invoke move() every move, even when the player is helpless:
   std::shared_ptr<monster> ptr;
   switch (type.type()) {
+  case monsterTypeKey::ferret:
+  case monsterTypeKey::goblin:
+    ptr = std::make_shared<trivialMonster>(b);
+    break;
   case monsterTypeKey::hound:
     ptr = std::make_shared<hound>(b);
     break;

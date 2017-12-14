@@ -211,6 +211,67 @@ public:
 	    .encyclopedium(L"Canines are furry, with four legs and a tail. They are easily excited, always\n"
 "hungry and pack hunters. They enjoy bones and some are known to bark or howl."));
 
+    // unique feature: stealing something & running away (TODO)
+    emplace(monsterTypeBuilder (monsterTypeKey::ferret)
+	    .category(monsterCategory::quadruped)
+	    .name(L"ferret kit")
+	    .name(L"ferret")
+	    .name(L"hunting ferret")
+	    .name(L"space ferret")
+	    .className(L"small hunting mammels")
+	    .levelFactor(1)
+	    .levelOffset(-1)
+	    .minSpawn(1)
+	    .maxSpawn(3)
+	    .xpFactor(5)
+	    .xpOffset(5)
+	    .renderChar(L'f') // felines in nethack
+	    .strength(10)
+	    .appearance(50) // beautiful but smelly
+	    .fighting(30)
+	    .dodge(40)
+	    .maxDamage(2) // not very vicious, except against rabbits
+	    .gen(genderAssignType::mf)
+	    .align(dr.getExact(Element::earth, Domination::aggression, Outlook::kind))
+	    .saying(L"*poing*") // ref: Sluggy Freelance
+	    .movement({speed::turn2, goTo::player, goBy::smart, 75})
+	    .encyclopedium(
+L"Meaning \"Little Thief\", ferrets are small, hyperflexible elongated mammels\n"
+"of the Mustela family. They are domesticated hunting working animals bread for\n"
+"hunting rabbit. While they don't burrow, they love running through tunnels,\n"
+"playing with whatever comes to hand, and biting - which, with poor eyesight\n"
+"and smell, is how they mostly investigate the world."));
+
+    // unique feature: stealing treasure (TODO) (TODO: magic)
+    emplace(monsterTypeBuilder (monsterTypeKey::goblin)
+	    .category(monsterCategory::biped)
+	    .name(L"goblin")
+	    .name(L"red-cap goblin")
+	    .className(L"goblin")
+	    .levelFactor(1)
+	    .levelOffset(-1)
+	    .minSpawn(1)
+	    .maxSpawn(1) // often alone in folklore
+	    .xpFactor(5)
+	    .xpOffset(5)
+	    .renderChar(L'o') // as nethack
+	    .strength(30)
+	    .appearance(10)
+	    .fighting(30)
+	    .dodge(80) // they are tricky, so should be hard to hit
+	    .maxDamage(40)
+	    .gen(genderAssignType::indirect) //we know there are male & female goblims, and myths that don't spicify or care, but I can't imagine any goblin not messing with any foocubus one way or the other.
+	    .align(dr.getExact(Element::fire, Domination::aggression, Outlook::cruel)) // warlike
+	    .align(dr.getExact(Element::time, Domination::aggression, Outlook::cruel)) // trickster
+	    .align(dr.getExact(Element::none, Domination::aggression, Outlook::cruel)) 
+	    .saying(L"TODO") // there's a youtube video called "what does the goblin say"
+	    .movement({speed::turn2, goTo::player, goBy::smart, 75})
+	    .encyclopedium(
+L"The difference between a goblin and an orc is that orcs don't exist.\n"
+"Not all goblins are malevolent; some are merely mischievous. All are obsessed\n"
+"with shiny treasure; they will take what they want by force, trickery or even\n"
+"magic."));
+
     // unique feature: uniquely, no unique features
     emplace(monsterTypeBuilder (monsterTypeKey::human)
 	    .category(monsterCategory::biped)
