@@ -666,13 +666,27 @@ public:
   virtual ~trivialMonster() {}
 };
 
+// monsters that perform an action when they successfully hit a target in combat
+class targetActionMonster : public monster {
+public:
+  typedef sharedAction<monster,monster>::key key;
+private:
+  const key actionKey_;
+public:
+  targetActionMonster(monsterBuilder &b, key actionKey) :
+    monster(b), actionKey_(actionKey) {}
+  virtual void onHit(monster &opponent, int) {
+    actionFactory<monster,monster>::get(actionKey_)(*this, opponent);
+  }
+};
+
 // ferrets steal little things then run away
-class ferret : public monster {
+class ferret : public targetActionMonster {
 private:
   movementType away_;
 public:
   ferret(monsterBuilder &b) : 
-    monster(b),
+    targetActionMonster(b, key::steal_small),
     away_({speed::turn2, goTo::player, goBy::avoid, 25}){}
   virtual ~ferret() {}
   const movementType & movement() const {
@@ -680,9 +694,6 @@ public:
       return type().movement(); // go to player; they might have sometihng fun!
     else // I've got it! Run away!
       return away_;
-  }
-  virtual void onHit(monster &opponent, int) {
-    actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::steal_small)(*this, opponent);
   }
 };
 
@@ -793,7 +804,7 @@ std::shared_ptr<monster> ofType(const monsterType &type, level & level) {
     ptr = std::make_shared<ferret>(b);
     break;
   case monsterTypeKey::goblin:
-    ptr = std::make_shared<trivialMonster>(b);
+    ptr = std::make_shared<targetActionMonster>(b, targetActionMonster::key::steal_shiny);
     break;
   case monsterTypeKey::hound:
     ptr = std::make_shared<hound>(b);

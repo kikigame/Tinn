@@ -52,8 +52,10 @@ public:
   typedef sharedAction<monster, monster> action;
   static const action &get(const typename action::key k) {
     static std::map<action::key, std::shared_ptr<action> > m{
-      std::make_pair<action::key, std::shared_ptr<action> >(action::key::steal_small, std::shared_ptr<action>(new steal([](item &i) { return i.weight() <= 1; }))),
-      std::make_pair<action::key, std::shared_ptr<action> >(action::key::steal_shiny, std::shared_ptr<action>(new steal([](item &i) { return i.render() == L'*'; })))
+      std::make_pair<action::key, std::shared_ptr<action> >
+	(action::key::steal_small, std::shared_ptr<action>(new steal([](item &i) { return i.weight() <= 1; }))),
+      std::make_pair<action::key, std::shared_ptr<action> >
+	(action::key::steal_shiny, std::shared_ptr<action>(new steal([](item &i) { return i.render() == L'*' || i.render() == L'$'; })))
     };
     return *(m[k]);
   };

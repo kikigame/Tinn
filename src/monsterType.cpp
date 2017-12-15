@@ -211,7 +211,7 @@ public:
 	    .encyclopedium(L"Canines are furry, with four legs and a tail. They are easily excited, always\n"
 "hungry and pack hunters. They enjoy bones and some are known to bark or howl."));
 
-    // unique feature: stealing something & running away (TODO)
+    // unique feature: stealing something & running away
     emplace(monsterTypeBuilder (monsterTypeKey::ferret)
 	    .category(monsterCategory::quadruped)
 	    .name(L"ferret kit")
@@ -242,7 +242,7 @@ L"Meaning \"Little Thief\", ferrets are small, hyperflexible elongated mammels\n
 "playing with whatever comes to hand, and biting - which, with poor eyesight\n"
 "and smell, is how they mostly investigate the world."));
 
-    // unique feature: stealing treasure (TODO) (TODO: magic)
+    // unique feature: stealing treasure (TODO: magic)
     emplace(monsterTypeBuilder (monsterTypeKey::goblin)
 	    .category(monsterCategory::biped)
 	    .name(L"goblin")
