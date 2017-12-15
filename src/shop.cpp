@@ -76,6 +76,7 @@ private:
   const damage & damage_; // for proofing primarily
   deity & align_;
   bool isFriendly_;
+  bool isGenerous_;
   std::map<std::wstring, double> servicesBought_;
 public:
   shopImpl(monster &inventory,
@@ -89,7 +90,8 @@ public:
     name_(keeperName + L"'s " + adjective + L" " + shopName(type)),
     damage_(rndPick(damageRepo::instance().begin(), damageRepo::instance().end())->second),
     align_(*rndPick(deityRepo::instance().begin(), deityRepo::instance().end())),
-    isFriendly_(adjective == L"Friendly") {
+    isFriendly_(adjective == L"Friendly"),
+    isGenerous_(adjective == L"Generous") {
     // What does the shop have to sell?
     restock();
     // TODO: When does the shop get restocked? Or do we get new shops each time?
@@ -127,6 +129,8 @@ public:
   void enter() {
     if (isFriendly_ && io_.ynPrompt(L"\"Welcome! May I interest you in a complimentary tea?\""))
       io_.message(L"This takes almost but not quite entirely unlike tea"); // ref:h2g2, of course.
+    if (isGenerous_)
+      io_.longMsg(L"Special offer! Free delivery on everything in store!"); // ref:every supermarket deal ever. Looks good, but vacuous.
     // TODO: Would be nice to heal a touch of damage for that. But then shops would need a way to become undamaged.
     if (handleDebts())
       handleSale();
