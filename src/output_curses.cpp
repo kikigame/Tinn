@@ -428,12 +428,18 @@ private:
 };
 
 // logic to create the user's preferred I/O goes here:
-namespace ioFactory {
-  std::shared_ptr<io> create() {
-    // we only have one implementation thus far:
-    // Warning: putting the parens on "new ncurse()" causes the object
-    // to be sliced and the destructor not called. I am unsure why exactly.
-    return std::shared_ptr<io>(new ncurse());
-  }
+std::shared_ptr<io> ioFactory::create() {
+  if (impl_.lock()) throw "Already implemented";
+  // we only have one implementation thus far:
+  // Warning: putting the parens on "new ncurse()" causes the object
+  // to be sliced and the destructor not called. I am unsure why exactly.
+  auto rtn = std::shared_ptr<io>(new ncurse());
+  impl_ = rtn;
+  return rtn;
 }
 
+const io &ioFactory::instance() {
+  return *(impl_.lock());
+}
+
+std::weak_ptr<io> ioFactory::impl_;

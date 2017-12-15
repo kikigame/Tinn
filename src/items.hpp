@@ -18,7 +18,6 @@ class monster;
 class monsterType;
 class level;
 class coord;
-class io;
 
 class item;
 
@@ -107,31 +106,28 @@ public:
   // this base implementation simply returns the supplied value.
   virtual long modDamage(long pc, const damage & type) const = 0;
 
-
-protected:
-  const io & ios();
 };
 
 // create an item of the given type. io may be used later by that item, eg for prompts when using.
 // NB: if "it" is a water type, then it should normally only be placed in a fluid container (eg bottle).
 // TODO: Type system should enforce fluidity somehow.
-item & createItem(const itemTypeKey & it, const io & ios);
+item & createItem(const itemTypeKey & it);
 
 class deity;
 // create a holy book with specific alignment
-item & createHolyBook(const io &ios, const deity &align);
+item & createHolyBook(const deity &align);
 
 // corpses need especial handling:
-item & createCorpse(const io &ios, const monsterType &mt, const unsigned char maxDamage);
+item & createCorpse(const monsterType &mt, const unsigned char maxDamage);
 
 // create a random item suitable for the given level depth
-item & createRndItem(const int depth, const io & ios);
+item & createRndItem(const int depth);
 
 // create a bottled item
-item & createBottledItem(const itemTypeKey &, const io &);
+item & createBottledItem(const itemTypeKey &);
 
 // create an IOU card
-item & createIou(const double amount, const std::wstring &whom, const std::wstring &service, const io &);
+item & createIou(const double amount, const std::wstring &whom, const std::wstring &service);
 
 // replace an item with another of a different type
 // "from" must be a fully created object in a container.

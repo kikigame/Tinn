@@ -76,9 +76,13 @@ public:
   virtual void interrogate(const renderByCoord &, const coord &c) const = 0;
 };
 
-namespace ioFactory {
+class ioFactory {
+private:
+  static std::weak_ptr<io> impl_;
+public:
   // logic to create the user's preferred I/O goes here:
   std::shared_ptr<io> create();
+  static const io &instance();
 };
 
 class drawIter;

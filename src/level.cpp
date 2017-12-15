@@ -301,8 +301,6 @@ public:
   ::std::multimap<coord, ::std::shared_ptr<monster> > monsters_;
   // terrain type by coordinate
   ::std::map<coord, ::std::shared_ptr<terrain> > terrain_;
-  // tell the user when stuff happens:
-  std::shared_ptr<io> io_;
   // what special zones are in this level?
   std::vector<std::shared_ptr<zoneArea<item> > > itemZones_;
   std::vector<std::shared_ptr<zoneArea<monster> > > monsterZones_;
@@ -311,10 +309,9 @@ public:
   std::map<coord, ::std::unique_ptr<itemHolder> > holders_;
 
   // constructor fills the level with something suitable
-  levelImpl(dungeon &dungeon, int depth, std::shared_ptr<io> ios) :
+  levelImpl(dungeon &dungeon, int depth) :
     dungeon_(dungeon),
-    depth_(depth),
-    io_(ios) {
+    depth_(depth) {
     using namespace std;
     for (int x=0; x < level::MAX_WIDTH ; ++x)
       for (int y=0; y < level::MAX_HEIGHT ; ++y) {
@@ -380,8 +377,8 @@ public:
       rtn = rtn + L"\n" + tName + L" dies.";
       longMsg = true;
     }
-    if (longMsg) io_->longMsg(rtn);
-    else io_->message(rtn);
+    if (longMsg) ioFactory::instance().longMsg(rtn);
+    else ioFactory::instance().message(rtn);
   }
 
   // NB: Moving of non-player monsters doesn't use cardinals
@@ -437,7 +434,7 @@ public:
   void up(monster &m) {
     coord c = posOf(m);
     if (depth_ <= 1) {
-      io_->message(L"Leaving the dungeon isn't implemented yet.");
+      ioFactory::instance().message(L"Leaving the dungeon isn't implemented yet.");
       return;
     }
     switch (terrain_[c]->type()) {
@@ -448,13 +445,13 @@ public:
       m.onLevel(&dungeon_.cur_level());
       break;
     default:
-      io_->message(L"There is no way up here.");
+      ioFactory::instance().message(L"There is no way up here.");
     }
   }
   void down(monster &m) {
     coord c = posOf(m);
     if (depth_ == dungeon_.maxLevel()) {
-      io_->message(L"You are already at the bottom of the game.");
+      ioFactory::instance().message(L"You are already at the bottom of the game.");
       return;
     }
     switch (terrain_[c]->type()) {
@@ -465,7 +462,7 @@ public:
       m.onLevel(&dungeon_.cur_level());
       break;
     default:
-      io_->message(L"There is no way down here.");
+      ioFactory::instance().message(L"There is no way down here.");
     }
   }
   coord posOf(const item &it) const {
@@ -539,7 +536,7 @@ public:
     // reveal any pits:
     if (!m.abilities().fly() && terrain_[dest]->type() == terrainType::PIT_HIDDEN) {
       if (m.isPlayer()) // TODO: Pit traps should not be revealed by flying monsters, or should they?
-	io_->message(L"It's a (pit) trap!"); // ref: Admiral Ackbar, Star Wars film Episode VI: Return of the Jedi.
+	ioFactory::instance().message(L"It's a (pit) trap!"); // ref: Admiral Ackbar, Star Wars film Episode VI: Return of the Jedi.
       terrain_[dest] = tFactory.get(terrainType::PIT);
     }
     m.onMove(dest, *(terrain_[dest]));
@@ -564,12 +561,12 @@ public:
       return; // no message
     case 1:
       message += L"There's a " + msg[0] + L" here";
-      io_->message(message);
+      ioFactory::instance().message(message);
       break;
     default:
       message = L"In your space are:\n";
       for (auto m : msg) message += m + L"\n";
-      io_->longMsg(message);
+      ioFactory::instance().longMsg(message);
     }
   }
 
@@ -623,7 +620,7 @@ public:
 	h.addItem(i);
       });
     // corpse is added
-    auto &corpse = createCorpse(*io_, m.type(), m.injury().max());
+    auto &corpse = createCorpse(m.type(), m.injury().max());
     holder(c).addItem(corpse);
     // monster is removed
     removeMonster(m);
@@ -664,10 +661,10 @@ public:
     auto pos = pcPos();
     auto h = holder(pos);
     if (h.empty()) {
-      io_->message(L"You can see nothing to collect here.");
+      ioFactory::instance().message(L"You can see nothing to collect here.");
     }
     h.forEachItem([this,pos](item &it, std::wstring name) {
-      if (io_->ynPrompt(L"Do you want to collect: " + name + L"?")) {
+      if (ioFactory::instance().ynPrompt(L"Do you want to collect: " + name + L"?")) {
 	dungeon_.pc()->addItem(it);
 	removeItem(pos, it);
       }});
@@ -777,11 +774,10 @@ std::pair<coord,coord> levelGen::addShrine() {
 
   auto loc = std::pair<coord,coord>(topLeft,btmRight);
 
-  auto &io = *(level_->io_);
-    auto shr = std::make_shared<shrine>(topLeft, btmRight, io);
+  auto shr = std::make_shared<shrine>(topLeft, btmRight);
   level_->itemZones_.push_back(shr);
   level_->monsterZones_.push_back(shr);
-  level_->holder(coord(xPos+2,yPos+2)).addItem(createHolyBook(io, shr->align()));
+  level_->holder(coord(xPos+2,yPos+2)).addItem(createHolyBook(shr->align()));
 
   return loc;
 }
@@ -799,7 +795,7 @@ void levelGen::addMonsters(std::vector<std::pair<coord,coord>> coords /*by value
 
     for (unsigned int c=0; c < i.first; ++c) {
       auto &mt = *(i.second);
-      auto monster = ofType(mt, pub_, level_->io_);
+      auto monster = ofType(mt, pub_);
       addMonster(monster, midPoint, *room);
     }
     coords.erase(room); // don't use the same room twice; tend to avoid the packs of monsters starting together
@@ -845,7 +841,7 @@ void levelGen::addItems(const std::pair<coord,coord> &coords) {
   std::uniform_int_distribution<int> dy(coords.first.second+1, coords.second.second - 2);
   for (int i=0; i < itemCount; ++i) {
     const coord c(dx(generator), dy(generator));
-    item &item = createRndItem(level_->depth(), *(level_->io_));
+    item &item = createRndItem(level_->depth());
     level_->holder(c).addItem(item);
   }
 }
@@ -1041,10 +1037,10 @@ private:
   std::vector<level*> levelPubs_;
   std::vector<std::unique_ptr<levelGen> > levelGen_;
 public:
-  levelFactoryImpl(dungeon &dungeon, std::shared_ptr<io> io, const int numLevels) : 
+  levelFactoryImpl(dungeon &dungeon, const int numLevels) : 
     numLevels_(numLevels) {
     for (int i=0; i < numLevels; ++i) {
-      levelImpl *l = new levelImpl(dungeon, i, io);
+      levelImpl *l = new levelImpl(dungeon, i);
       levels_.push_back(l);
       levelPubs_.emplace_back(new level(l));
       auto &level = *(levelPubs_.rbegin());
@@ -1104,8 +1100,8 @@ private:
   }
 };
 
-levelFactory::levelFactory(dungeon &dungeon, std::shared_ptr<io> io, const int numLevels) :
-  pImpl_(new levelFactoryImpl(dungeon, io, numLevels)) {
+levelFactory::levelFactory(dungeon &dungeon, const int numLevels) :
+  pImpl_(new levelFactoryImpl(dungeon, numLevels)) {
   pImpl_->build();
 }
 

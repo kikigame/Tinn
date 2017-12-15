@@ -50,7 +50,6 @@ double forIou(const item &i, double d, std::wstring &buf);
 class shopImpl {
 private:
   monster &inventory_;
-  const io & io_;
   shopType shopType_;
   std::wstring keeperName_;
   std::wstring name_;
@@ -64,11 +63,10 @@ private:
   std::map<std::wstring, double> servicesBought_;
 public:
   shopImpl(monster &inventory,
-	   const io & ios, shopType type,
+	   const shopType type,
 	   const std::wstring & keeperName, 
 	   const std::wstring & adjective) : 
     inventory_(inventory),
-    io_(ios),
     shopType_(type),
     keeperName_(keeperName),
     name_(keeperName + L"'s " + adjective + L" " + shopName(type)),
@@ -111,10 +109,11 @@ public:
   }
 
   void enter() {
-    if (isFriendly_ && io_.ynPrompt(L"\"Welcome! May I interest you in a complimentary tea?\""))
-      io_.message(L"This takes almost but not quite entirely unlike tea"); // ref:h2g2, of course.
+    auto &ios = ioFactory::instance();
+    if (isFriendly_ && ios.ynPrompt(L"\"Welcome! May I interest you in a complimentary tea?\""))
+      ios.message(L"This takes almost but not quite entirely unlike tea"); // ref:h2g2, of course.
     if (isGenerous_)
-      io_.longMsg(L"Special offer! Free delivery on everything in store!"); // ref:every supermarket deal ever. Looks good, but vacuous.
+      ios.longMsg(L"Special offer! Free delivery on everything in store!"); // ref:every supermarket deal ever. Looks good, but vacuous.
     // TODO: Would be nice to heal a touch of damage for that. But then shops would need a way to become undamaged.
     if (handleDebts())
       handleSale();
@@ -141,7 +140,7 @@ private:
     auto cat = itemCat();
     itemHolder h;
     while (forSale_.size() < numItems) {
-      auto &i = createRndItem(100, io_);
+      auto &i = createRndItem(100);
       if (i.render() != cat) {
 	h.addItem(i);
 	h.destroyItem(i);
@@ -157,7 +156,7 @@ private:
 	debt = forIou(i, debt, services);
       });
     if (debt > 0) {
-      io_.longMsg(L"You must first handle your existing debt for:\n\n" + services);
+      ioFactory::instance().longMsg(L"You must first handle your existing debt for:\n\n" + services);
       bool rtn = handlePayment(debt);
       if (rtn)
 	inventory_.forEachItem([this, &debt, &services](item &i, std::wstring){
@@ -172,7 +171,7 @@ private:
   void handleSale() {
     if (forSale_.empty() && services_.empty()) {
       // we'll eventually get a new shop:
-      io_.message(L"This shop is empty. Please try again later.");
+      ioFactory::instance().message(L"This shop is empty. Please try again later.");
       return;
     }
     std::vector<std::pair<int, const wchar_t*>> choices;
@@ -196,30 +195,31 @@ private:
     if (i == 0) ++i; // start at 1
     for (auto it : forSale_)
       choices.emplace_back(i++, it->name());
-    int idx = io_.choice((const wchar_t*)L"What would you like to buy?",
+    int idx = ioFactory::instance().choice((const wchar_t*)L"What would you like to buy?",
 			 (const wchar_t*)L"Choose the item you want to add to your shopping basket",
 			 choices,
 			 (const wchar_t*)L"per-item help is TODO.");
     i=0;
+    auto &ios = ioFactory::instance();
     for (auto s : services_) {
       if (i++ == idx) switch (s) {
 	case serviceType::enchantment:
 	  if (!inventory_.empty()) {
 	    enchant();
 	    handlePayment();
-	  } else io_.message(L"You have nothing to enchant!");
+	  } else ios.message(L"You have nothing to enchant!");
 	  return;
 	case serviceType::proofing:
 	  if (!inventory_.empty()) {
 	    proof();
 	    handlePayment();
-	  } else io_.message(L"You have nothing to protect!");
+	  } else ios.message(L"You have nothing to protect!");
 	  return;
 	case serviceType::fixing:
 	  if (!inventory_.empty()) {
 	    mend();
 	    handlePayment();
-	  } else io_.message(L"You have nothing to repair!");
+	  } else ios.message(L"You have nothing to repair!");
 	  return;
 	default:
 	  throw s;
@@ -229,10 +229,10 @@ private:
     basket_.push_back(forSale_[idx-i]);
     forSale_.erase(forSale_.begin() + (idx-i));
     if (forSale_.empty()) {
-      io_.message(L"You have " + std::to_wstring(basket_.size()) + 
+      ios.message(L"You have " + std::to_wstring(basket_.size()) + 
 		  std::wstring(L" items in your basket."));
       handlePayment();
-    } else if (!io_.ynPrompt(L"You have " + std::to_wstring(basket_.size()) + 
+    } else if (!ios.ynPrompt(L"You have " + std::to_wstring(basket_.size()) + 
 		      std::wstring(L" items in your basket. Check out?")))
       handleSale();
     else
@@ -258,7 +258,7 @@ private:
     std::vector<std::shared_ptr<item> > barter;
     barter = suggestForSale(q, barter);
     if (barter.empty()) {
-      io_.message(L"You don't have enough valuables to interest " + keeperName_);
+      ioFactory::instance().message(L"You don't have enough valuables to interest " + keeperName_);
       paymentFailed();
       return false;
     }
@@ -281,7 +281,7 @@ private:
 	completeSale(barter);
 	return true;
       } else {
-	io_.message(L"\"Thank ye for your kind offer, but I think you've undervaluing my wares.\"");
+	ioFactory::instance().message(L"\"Thank ye for your kind offer, but I think you've undervaluing my wares.\"");
 	paymentFailed();
 	bartering = true;
       }
@@ -326,7 +326,7 @@ private:
 	{3, L"Offer more things"},
 	{4, L"Attempt the barter"}
       };
-      choice = io_.choice(L"Please select: ", offer, choices);
+      choice = ioFactory::instance().choice(L"Please select: ", offer, choices);
       switch (choice) {
       case 1:
 	barter.clear();
@@ -336,7 +336,8 @@ private:
 	std::vector<std::pair<std::shared_ptr<item>, const wchar_t*> > c;
 	for (auto i : barter)
 	  c.emplace_back(i, i->name());
-	auto toRemove = io_.choice(L"Shelve offer for:", L"", c);
+	auto &ios = ioFactory::instance();
+	auto toRemove = ios.choice(L"Shelve offer for:", L"", c);
 	barter.erase(std::find(barter.begin(), barter.end(), toRemove));
 	break;
       }
@@ -352,7 +353,8 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
 			   );
 	  barter.push_back(toAdd.shared_from_this());
 	} else {
-	  io_.message(L"Thou hast nothing to offer!");
+	  auto &ios = ioFactory::instance();
+	  ios.message(L"Thou hast nothing to offer!");
 	}
 	break;
       }
@@ -361,7 +363,7 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
   }
 
   void completeSale(std::vector<std::shared_ptr<item> > &barter) {
-    io_.message(L"Your offer is accetable.\nThank you; come again."); // ref:Simpsons, Apu
+    ioFactory::instance().message(L"Your offer is accetable.\nThank you; come again."); // ref:Simpsons, Apu
     for (auto i : barter) inventory_.destroyItem(*i);
     for (auto i : basket_) inventory_.addItem(*i);
   }
@@ -369,7 +371,7 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
   void paymentFailed() {
     // add any IOUs:
     for (auto s : servicesBought_)
-      inventory_.addItem(createIou(s.second, keeperName_, s.first, io_));
+      inventory_.addItem(createIou(s.second, keeperName_, s.first));
   }
 
   std::wstring toList(std::vector<std::shared_ptr<item> > &barter) const {
@@ -389,7 +391,7 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
   bool suggestForSale(std::vector<std::shared_ptr<item> > &barter) const {
     std::wstring prompt = keeperName_ + L" asks for:\n" + toList(barter)
       + L"Is this an acceptable trade? ";
-    return io_.ynPrompt(prompt);
+    return ioFactory::instance().ynPrompt(prompt);
   }
 
   // pick an item to be used below.
@@ -407,7 +409,7 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
 	  res.emplace_back(&it);
 	}
       });
-    int it = io_.choice(prompt, help, choices, extraHelp);
+    int it = ioFactory::instance().choice(prompt, help, choices, extraHelp);
     return **(res.begin() + it);
   }
 
@@ -425,10 +427,11 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
     else if (!cursed || dPc() < 50) de = 1;
     item.enchant(de);
 
+    auto &ios = ioFactory::instance();
     if (de > 0)
-      io_.message(std::wstring(L"Magical enenergy flows into your ") + item.name());
+      ios.message(std::wstring(L"Magical enenergy flows into your ") + item.name());
     else // let's see if the user's paying attention...
-      io_.message(std::wstring(L"Magical enenergy flows through your ") + item.name());
+      ios.message(std::wstring(L"Magical enenergy flows through your ") + item.name());
 
     servicesBought_.emplace(std::wstring(L"Enchantment to ") + item.name(),
 			    appraise(inventory_, item));
@@ -443,12 +446,13 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
 			 L" attacks, traps and effects. When you wear an item with this protection,"
 			 "it will also protect any items worn under it.");
     
+    auto &ios = ioFactory::instance();
     if (item.proof(damage_.type()))
-      io_.message((std::wstring(L"The ") + damage_.mendName()) + 
+      ios.message((std::wstring(L"The ") + damage_.mendName()) + 
 		 L" of your " + std::wstring(item.name()) +
 		 L" seems just as complete as it can be.");
     else
-      io_.message((std::wstring(L"The ") + damage_.mendName()) + 
+      ios.message((std::wstring(L"The ") + damage_.mendName()) + 
 		 L" of your " + std::wstring(item.name()) +
 		 L" could use a little more work");
 
@@ -463,12 +467,13 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
 			 L"This will repair your item against " + std::wstring(damage_.name()) +
 			 L"damage already taken.");
     
+    auto &ios = ioFactory::instance();
     if (item.repair(damage_.type()))
-      io_.message((std::wstring(L"The ") + damage_.mendName()) + 
+      ios.message((std::wstring(L"The ") + damage_.mendName()) + 
 		 L" of your " + std::wstring(item.name()) +
 		 L" improves.");
     else
-      io_.message((std::wstring(L"The ") + damage_.mendName()) + 
+      ios.message((std::wstring(L"The ") + damage_.mendName()) + 
 		 L" of your " + std::wstring(item.name()) +
 		 L" seems unchanged");
 
@@ -488,9 +493,9 @@ const wchar_t * const shop::description() const {
   return pImpl_->description();
 };
 
-shop::shop(const io & ios, monster & inventory, std::wstring adjective, shopType type) {
+shop::shop(monster & inventory, std::wstring adjective, shopType type) {
   const std::wstring keeperName = *rndPick(keeperNames, keeperNames + numKeeperNames);
-  pImpl_.reset(new shopImpl(inventory, ios, type, keeperName, adjective));
+  pImpl_.reset(new shopImpl(inventory, type, keeperName, adjective));
 }
 
 shop::~shop() {}
@@ -538,16 +543,16 @@ private:
     return adjective;
   }
 public:
-  shoppingCentre(const io & ios, monster &inventory) :
+  shoppingCentre(monster &inventory) :
     types_(), adjectives_(),
-    a(shop(ios, inventory, adjective(), sType())),
-    b(shop(ios, inventory, adjective(), sType())),
-    c(shop(ios, inventory, adjective(), sType())),
-    d(shop(ios, inventory, adjective(), sType())),
-    e(shop(ios, inventory, adjective(), sType())),
-    f(shop(ios, inventory, adjective(), sType())),
-    g(shop(ios, inventory, adjective(), sType())),
-    h(shop(ios, inventory, adjective(), sType())) {
+    a(shop(inventory, adjective(), sType())),
+    b(shop(inventory, adjective(), sType())),
+    c(shop(inventory, adjective(), sType())),
+    d(shop(inventory, adjective(), sType())),
+    e(shop(inventory, adjective(), sType())),
+    f(shop(inventory, adjective(), sType())),
+    g(shop(inventory, adjective(), sType())),
+    h(shop(inventory, adjective(), sType())) {
 	types_.clear();
 	adjectives_.clear();
 }  
@@ -569,14 +574,15 @@ public:
   }
 };
 
-void goShopping(const io & ios, monster &inventory) {
+void goShopping(monster &inventory) {
   // how to choose the number of shops?
   // When you need a magic number, and don't have any other criteria, turn to ref:Pratchett's Discworld.
-  shoppingCentre shops(ios, inventory);
+  shoppingCentre shops(inventory);
   std::vector<std::pair<int,const wchar_t*> > choices;
   for (int c=0; c < 8; ++c) {
     choices.emplace_back(c, shops[c].name());
   }
+  auto &ios = ioFactory::instance();
   do {
     auto shop = 
       ios.choice(L"There are 8 shops open presently. Would you like to visit:",

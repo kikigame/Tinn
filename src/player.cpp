@@ -15,8 +15,7 @@
 player::player(playerBuilder &b) :
   monster(b), // we start at level 1, but not yet...
   name_(b.name_),
-  foodLevel_(characteristic::MAX_MAX / 2),
-  io_(b.io_) {
+  foodLevel_(characteristic::MAX_MAX / 2) {
   // attributes are handled by the monster builder itself,
   // but intrinsics are done here, as monsters don't get them
   // from alignment:
@@ -80,7 +79,7 @@ player::player(playerBuilder &b) :
   // I feel a player should start with a deterministic inventory, perhaps based
   // on their class and race.
   // But for now, we'll just let them go shopping:
-  addItem(createItem(itemTypeKey::shop_card, *io_));
+  addItem(createItem(itemTypeKey::shop_card));
 }
 
 player::~player() {}
@@ -100,7 +99,7 @@ const wchar_t* const player::description() const {
 std::wstring player::onMove(const coord &pos, const terrain &terrain) {
   std::wstring msg = monster::onMove(pos, terrain);
   if (msg.length() > 0)
-    io_->message(msg); // only place this message is output; we ignore the plight of other monsters for now
+    ioFactory::instance().message(msg); // only place this message is output; we ignore the plight of other monsters for now
   return msg; // not used
 }
 
@@ -133,7 +132,7 @@ void player::containerInventory(std::wstringstream &inv,
 
 void player::takeInventory() {
   if (empty()) {
-    io_->message(L"You have no weapons.\n"
+    ioFactory::instance().message(L"You have no weapons.\n"
 		 "You are naked.\n"
 		 "You have no possessions on your person.\n\n"
 		 "Hint: You may want to get some things");
@@ -142,13 +141,14 @@ void player::takeInventory() {
     forEachItem([this, &inv](const item &i, std::wstring) {
 	containerInventory(inv, L"", i);
       });
-    io_->longMsg(inv.str()); // TODO: description hints
+    ioFactory::instance().longMsg(inv.str()); // TODO: description hints
   }
 }
 
 void player::equip() {
   auto ws = weaponSlots();
-  auto result = firstItem([this, &ws](item &i) {
+  auto &ios = ioFactory::instance();
+  auto result = firstItem([this, &ws, &ios](item &i) {
       if (slotsOf(i)[0] != nullptr) return false; // already equipped
       auto type = i.equippable();
       if (type == item::equipType::none) return false; // unequippable
@@ -158,26 +158,27 @@ void player::equip() {
       else msg += L"wear ";
       msg += i.name();
       msg += L"?";
-      if (io_->ynPrompt(msg)) {
+      if (ios.ynPrompt(msg)) {
 	auto rtn = i.equip(*this);
 	if (rtn) return true;
 	else if (weap)
-	  io_->message(std::wstring(L"This ") + i.name() + L" won't be your weapon");
-	else io_->message(std::wstring(L"This ") + i.name() + L" doesn't fit anywhere");
+	  ios.message(std::wstring(L"This ") + i.name() + L" won't be your weapon");
+	else ios.message(std::wstring(L"This ") + i.name() + L" doesn't fit anywhere");
       }
       return false;
     });
   if (!result)
-    io_->message(L"Nothing to equip");
+    ios.message(L"Nothing to equip");
 }
 
 void player::drop(level &lvl) {
   auto c = lvl.pcPos();
   std::function<void(item&, std::wstring)> f = 
     [this, &lvl, &c](item& i, std::wstring name){
-    if (io_->ynPrompt(std::wstring(L"Drop ") + name + L"?"))
+    auto &ios = ioFactory::instance();
+    if (ios.ynPrompt(std::wstring(L"Drop ") + name + L"?"))
       if (!monster::drop(i, c))
-	io_->message(std::wstring(L"You cannot drop the ") + i.name());
+	ios.message(std::wstring(L"You cannot drop the ") + i.name());
   };
   forEachItem(f);
 }
@@ -185,16 +186,17 @@ void player::drop(level &lvl) {
 void player::use() {
   std::function<void(item&, std::wstring)> f = [this](item &i, std::wstring name){
     if (&(i.holder()) != this) return; // item has moved out of this container by a previously used item
-    if (io_->ynPrompt(std::wstring(L"Use ") + name + L"?"))
+    auto &ios = ioFactory::instance();
+    if (ios.ynPrompt(std::wstring(L"Use ") + name + L"?"))
       if (!i.use())
-	io_->message(L"That doesn't seem to work.");
+	ios.message(L"That doesn't seem to work.");
   };
   forEachItem(f);
 }
 
 const wchar_t* const player::fall(unsigned char reductionPc) {
   auto rtn = monster::fall(reductionPc);
-  io_->message(rtn);
+  ioFactory::instance().message(rtn);
   return rtn;
 };
 
@@ -214,4 +216,3 @@ void playerBuilder::name(const std::wstring &c) { name_ = c; }
 void playerBuilder::job(const role &r) { role_  = &r; }
 const role & playerBuilder::job() { return *role_; }
 
-void playerBuilder::ios(const io * ios) { io_ = ios; }

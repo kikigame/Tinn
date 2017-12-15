@@ -13,9 +13,9 @@
 #include <map>
 
 // generate the player character (interactively) and return a fully-populated builder.
-playerBuilder chargen(io &ios) {
+playerBuilder chargen() {
   playerBuilder b;
-  b.ios(&ios);
+  const io &ios = ioFactory::instance();
   /*  if (true) {
     b.name(L"ki");
     b.align(deityRepo::instance().nonaligned());

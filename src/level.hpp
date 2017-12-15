@@ -24,7 +24,6 @@ class levelImpl;
 class dungeon;
 class drawIter;
 
-class io;
 class renderByCoord;
 
 class level;
@@ -33,7 +32,7 @@ class levelFactory {
 private:
   std::shared_ptr<levelFactoryImpl> pImpl_;
 public:
-  levelFactory(dungeon &dungeon, std::shared_ptr<io>, const int numLevels);
+  levelFactory(dungeon &dungeon, const int numLevels);
   std::vector<level*>::iterator begin();
   std::vector<level*>::iterator end();
 };

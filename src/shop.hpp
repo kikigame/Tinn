@@ -9,7 +9,6 @@
 #include "itemholder.hpp"
 #include <memory>
 #include <vector>
-class io;
 class item;
 class shopImpl;
 class monster;
@@ -39,7 +38,7 @@ public:
   // create a new shop
   // ios -> used for user interaction
   // inventory -> itemholder for customer's inventory to buy and sell
-  shop(const io & ios, monster & inventory, std::wstring adjective, shopType type);
+  shop(monster & inventory, std::wstring adjective, shopType type);
   shop(const shop &) = delete;
   shop(shop &&) = default;
   ~shop();
@@ -57,7 +56,7 @@ public:
 
 // run the shop routine using the given monster's inventory
 // (probably the PC for now):
-void goShopping(const io &ios, monster & inventory);
+void goShopping(monster & inventory);
 
 
 #endif // ndef SHOP_HPP

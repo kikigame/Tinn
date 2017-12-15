@@ -12,14 +12,12 @@
 
 class level;
 class playerBuilder;
-class io;
 
 class player : public monster {
 private:
   const std::wstring name_;
   // how much food have we eaten?
   int foodLevel_;
-  const io* io_;
 public:
   player(playerBuilder &builder);
   virtual ~player();
@@ -55,14 +53,12 @@ class playerBuilder : public monsterBuilder {
 private:
   std::wstring name_;
   const role * role_;
-  const io * io_;
 public:
   playerBuilder();
   virtual ~playerBuilder();
   void name(const std::wstring &n);
   void job(const role & r);
   const role & job();
-  void ios(const io * ios);
 };
 
 #endif // ndef PLAYER_HPP__

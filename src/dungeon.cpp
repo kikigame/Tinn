@@ -11,11 +11,10 @@
 const int NUM_LEVELS = 100;
 
 // initialise the dungeon:
-dungeon::dungeon(::std::shared_ptr<io> ios) 
+dungeon::dungeon() 
   : alive_(true),
-    cur_level_(1),
-    io_(ios) {
-  levelFactory factory(*this, ios, NUM_LEVELS);
+    cur_level_(1) {
+  levelFactory factory(*this, NUM_LEVELS);
   for (auto l : factory)
     level_.emplace_back(l);
   /*
@@ -24,7 +23,7 @@ dungeon::dungeon(::std::shared_ptr<io> ios)
     bool downRamp = l < NUM_LEVELS;
     level_.emplace_back(new level(*this, ios, l, downRamp));
     }*/
-  playerBuilder pb = chargen(*ios);
+  playerBuilder pb = chargen();
   level &start = *(level_[cur_level_]);
   pb.startOn(start);
   player_ = std::shared_ptr<player> (new player(pb));
@@ -36,7 +35,7 @@ dungeon::~dungeon() {
 }
 
 void dungeon::draw () const{
-  io_->draw(*this);
+  ioFactory::instance().draw(*this);
 }
 
 std::shared_ptr<player> dungeon::pc() {
@@ -67,7 +66,7 @@ void dungeon::quit() {
   alive_ = false;
 }
 void dungeon::playerDeath() {
-  io_->longMsg(L"You are no longer alive.");
+  ioFactory::instance().longMsg(L"You are no longer alive.");
   alive_ = false;
 }
 
@@ -77,5 +76,5 @@ bool dungeon::alive() const {
 
 void dungeon::interrogate() const {
   auto &l = *level_[cur_level_];
-  io_->interrogate(l, l.pcPos());
+  ioFactory::instance().interrogate(l, l.pcPos());
 }

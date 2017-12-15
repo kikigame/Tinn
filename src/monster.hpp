@@ -225,7 +225,7 @@ public:
 };
 
 // create a reaming monster initially on the given level:
-std::shared_ptr<monster> ofType(const monsterType &t, level &onLvl, const std::shared_ptr<io> ios);
+std::shared_ptr<monster> ofType(const monsterType &t, level &onLvl);
 
 std::vector<std::pair<unsigned int, monsterType*>> spawnMonsters(int depth, int rooms);
 

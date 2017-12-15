@@ -609,7 +609,7 @@ void moveMonster(monster &mon) {
   }
 }
 
-void monsterAttacks(monster &mon, const std::shared_ptr<io> ios) {
+void monsterAttacks(monster &mon) {
   level & level = mon.curLevel();
   // currently, all monsters will attack anything that
   // a) they are adjacent to, and
@@ -643,10 +643,11 @@ void monsterAttacks(monster &mon, const std::shared_ptr<io> ios) {
 
 	auto m = msg.str();
 
+	auto &ios = ioFactory::instance();
 	if (m.find(L"\n") != m.npos)
-	  ios->longMsg(m);
+	  ios.longMsg(m);
 	else
-	  ios->message(m);
+	  ios.message(m);
 
 	if (dam.cur() == dam.max())
 	  return; // defensive coding against resistive attacks from other monsters
@@ -770,7 +771,7 @@ private:
   }
 };
 
-std::shared_ptr<monster> ofType(const monsterType &type, level & level, const std::shared_ptr<io> ios ) {
+std::shared_ptr<monster> ofType(const monsterType &type, level & level) {
   monsterBuilder b(true);
   b.startOn(level);
   // stats, alignment etc are also set when type is set:
@@ -803,7 +804,7 @@ std::shared_ptr<monster> ofType(const monsterType &type, level & level, const st
   // you can't create a second shared_ptr on the same pointer.
   auto &m = *ptr;
   ptr->eachTick([&m]() {moveMonster(m);} );
-  ptr->eachTick([&m, ios]() {monsterAttacks(m, ios);} );
+  ptr->eachTick([&m]() {monsterAttacks(m);} );
   return ptr;
 }
 

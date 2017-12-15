@@ -24,7 +24,6 @@ long renderable::count_ = 0;
 class encyclopedia {
 private:
   const std::set<const renderable*> &renderables_;
-  const io &io_;
   const bool allowFreeSearch_;
   wchar_t category_;
   mutable std::vector<std::wstring> opts_; // buffer used by choiceKeys() to keep returned pointers alive (used internally)
@@ -34,8 +33,8 @@ public:
    * Constructor. Note we construct these as needed rather than attaching them to the item, as they can
    * do quite a bit of work and hold transient data.
    */
-  encyclopedia(const io &io, const bool allowFreeSearch) :
-    renderables_(renderable::all()), io_(io), allowFreeSearch_(allowFreeSearch),
+  encyclopedia(const bool allowFreeSearch) :
+    renderables_(renderable::all()), allowFreeSearch_(allowFreeSearch),
     category_(L'\0') {}
 
   /*
@@ -59,7 +58,7 @@ public:
 	} else {
 	  search();
 	}
-	if (!io_.ynPrompt(L"Try again?"))
+	if (!ioFactory::instance().ynPrompt(L"Try again?"))
 	  category_ = L'\0';
       }
   }
@@ -83,9 +82,10 @@ private:
     if (!freeSearch) prompt = std::wstring(L"You have selected \"") + category_ + std::wstring(L"\". ");
     prompt += std::wstring(L"Search for ? ");
     std::wstring needle;
+    auto &ios = ioFactory::instance();
     while (needle.length() == 0)
       needle =
-	io_.linePrompt(prompt, std::wstring(L"Powered by Grail")); // Ref:The quest for the grail; hard to find.
+	ios.linePrompt(prompt, std::wstring(L"Powered by Grail")); // Ref:The quest for the grail; hard to find.
     std::basic_string<wint_t> needleLc;
     for (unsigned int i=0; i < needle.length(); ++i)
       needleLc += std::towlower(needle[i]);
@@ -95,16 +95,17 @@ private:
 	return;
       }
     }
-    io_.longMsg(L"Have you seen my towel?"); // ref:Hitchhiker's Guide to the Galaxy, in which it is explained that a hitchhiker can get away with anything provided he has a towel with him.
+    ios.longMsg(L"Have you seen my towel?"); // ref:Hitchhiker's Guide to the Galaxy, in which it is explained that a hitchhiker can get away with anything provided he has a towel with him.
   }
 
   // show an encyclopedium
   void show(const renderable &e) const {
+    auto &ios = ioFactory::instance();
     std::wstring msg;
     if (e.highlight()) msg += L"★"; // ref:Netiquette tradition of using asterisks for bold; well established by the mid '80s. Probably a 60's/70's BBS tradition?
     msg += e.name();
     if (e.highlight()) msg += L"★";
-    io_.longMsg(msg + L"\n" + e.description());
+    ios.longMsg(msg + L"\n" + e.description());
   }
   
   // return the available keys for pickCategory()
@@ -131,7 +132,7 @@ private:
   // prompt the user for a category and return the category code
   wchar_t pickCategory() const {
     return 
-      io_.choice<wchar_t>
+      ioFactory::instance().choice<wchar_t>
       (std::wstring(L"Welcome to the Guide. Choose your category"),
        L"Choosing a category will assist us in processing your enquiry",//REF:every call centre ever
        choiceKeys());
@@ -140,6 +141,6 @@ private:
 
 
 
-void invokeGuide(const io &io, const bool allowFreeSearch, const optionalRef<item> other) {
-  encyclopedia(io, allowFreeSearch).invoke(other);
+void invokeGuide(const bool allowFreeSearch, const optionalRef<item> other) {
+  encyclopedia(allowFreeSearch).invoke(other);
 }

@@ -10,6 +10,6 @@ class dungeon;
 class io;
 
 // generate the player character (interactively) and return a fully-populated builder.
-playerBuilder chargen(io &ios);
+playerBuilder chargen();
 
 #endif // ndef CHARGEN_HPP__

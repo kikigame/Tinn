@@ -10,7 +10,6 @@
 class deity;
 class monster;
 class item;
-class io;
 
 /*
  * Shrines work by limiting entry based on religious alignment,
@@ -24,13 +23,12 @@ private:
   const coord ul_;
   const coord lr_;
   const deity &align_;
-  const io &io_;
 public:
   // construct a new shrine with the given rectangular coordinates
   // with random alignment
-  shrine(const coord &ul, const coord &lr, const io &);
+  shrine(const coord &ul, const coord &lr);
   // construct a new shrine with the given rectangular coordinates:
-  shrine(const coord &ul, const coord &lr, const deity &, const io &);
+  shrine(const coord &ul, const coord &lr, const deity &);
 
   virtual ~shrine();
 

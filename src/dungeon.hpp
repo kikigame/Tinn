@@ -19,11 +19,10 @@ private:
   ::std::vector<std::unique_ptr<level> > level_; //[NUM_LEVELS+1]; // 0 not used for now; may choose to do something with it later
   int cur_level_;
   ::std::shared_ptr<player> player_; // the hero of the game
-  ::std::shared_ptr<io> io_;
   //  ::time::callback refresher_; // redraw on player move -> done in main loop instead, in case something registered later changes the screen
 public:
-  // create the dungeon. Given IO object will be used for interaction.
-  dungeon(::std::shared_ptr<io> io);
+  // create the dungeon.
+  dungeon();
   dungeon(const dungeon &rhs) = delete;
   ~dungeon();
   dungeon & operator=(const dungeon &rhs) = delete;

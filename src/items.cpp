@@ -57,7 +57,6 @@ class basicItem : public item {
 private:
   enum { blessed, cursed, unidentified, sexy, NUM_FLAGS } flags;
   const itemType& type_;
-  const io& io_;
   std::map<damageType, int> damageTrack_;
   // what are we *explicitly* proof against?
   // something may be proof against a material even with no damage track; this may
@@ -70,10 +69,9 @@ private:
 protected:
   mutable std::wstring buffer_; // for transient returns.
 public:
-  basicItem(const itemType& type, const io &ios) :
+  basicItem(const itemType& type) :
     item(),
     type_(type),
-    io_(ios),
     enchantment_(0) {
     const damageRepo &dr = damageRepo::instance();
     for (auto dt : allDamageTypes)
@@ -298,10 +296,6 @@ public:
     return empty;
   }
 
-  const io & ios() {
-    return io_;
-  }
-
   virtual long modDamage(long pc, const damage & type) const {
     return pc;
   }
@@ -313,11 +307,8 @@ public:
  * Mixin for items that can be used with other items
  */
 class useWithMixin : public virtual shared_item {
-private:
-  const io &io_;
 public:
-  useWithMixin(const io &io) : 
-    io_(io) {};
+  useWithMixin() {}
   virtual bool use(const std::wstring &withName,
 		   const std::wstring &action,
 		   const std::wstring &preposition,
@@ -325,9 +316,10 @@ public:
     std::function<void(item&, std::wstring)> f = 
       [this,&withName,&action,&preposition](item &i, std::wstring name){
       if (dynamic_cast<useWithMixin*>(&i) == this) return; // can't use an item with itself
-      if (io_.ynPrompt(action + name + L" "+ preposition +L" your " + withName + L"?"))
+      auto &ios = ioFactory::instance();
+      if (ios.ynPrompt(action + name + L" "+ preposition +L" your " + withName + L"?"))
 	if (!use(i))
-	  io_.message(L"That doesn't seem to work.");
+	  ios.message(L"That doesn't seem to work.");
     };
     itemHolder.forEachItem(f);
     return true;
@@ -351,8 +343,8 @@ private:
   std::set<slotType> supportedSlots_;
 public:
   template <typename... S>
-  basicEquip(const itemType& type, const io &ios, S... slots) :
-    basicItem(type, ios),
+  basicEquip(const itemType& type,  S... slots) :
+    basicItem(type),
     supportedSlots_({slots...}) {
   }
   virtual ~basicEquip() {}
@@ -371,8 +363,8 @@ class basicWeapon : public basicEquip<item::equipType::wielded> {
 private:
   damageType damageType_;
 public:
-  basicWeapon(const itemType & type, const io &ios, const damageType damage) :
-    basicEquip(type, ios, slotType::primary_weapon, slotType::secondary_weapon),
+  basicWeapon(const itemType & type,  const damageType damage) :
+    basicEquip(type, slotType::primary_weapon, slotType::secondary_weapon),
     damageType_(damage) {}
   virtual ~basicWeapon() {}
   virtual damageType weaponDamage() const {
@@ -386,8 +378,8 @@ public:
 class basicThrown : public basicWeapon {
   // TODO: Throwability. For now, we just wield them menacingly...
 public:
-  basicThrown(const itemType & type, const io &ios, const damageType damage) :
-    basicWeapon(type, ios, damage) {}
+  basicThrown(const itemType & type,  const damageType damage) :
+    basicWeapon(type, damage) {}
   virtual ~basicThrown() {};
 };
 
@@ -399,8 +391,8 @@ private:
   std::set<std::pair<slotType, slotType>> supportedSlots_;
 public:
   template<typename... S>
-  twoEquip(const itemType& type, const io &ios, S... slots) :
-    basicItem(type, ios),
+  twoEquip(const itemType& type,  S... slots) :
+    basicItem(type),
     supportedSlots_({slots...}) {
   }
   virtual ~twoEquip() {}
@@ -420,8 +412,8 @@ class twoHandedWeapon : public twoEquip<item::equipType::wielded> {
 private:
   damageType damageType_;
 public:
-  twoHandedWeapon(const itemType &type, const io &ios, const damageType &damage) :
-    twoEquip(type, ios,
+  twoHandedWeapon(const itemType &type,  const damageType &damage) :
+    twoEquip(type,
 	     std::make_pair(slotType::primary_weapon, slotType::secondary_weapon)
 	     ), damageType_(damage) {};
   virtual ~twoHandedWeapon() {}
@@ -436,8 +428,8 @@ class transmutedWater : public basicItem {
 private:
   damageType toRepair_;
 public:
-  transmutedWater(const itemType &type, const io &ios, const damageType &toRepair)
-    : basicItem(type, ios), toRepair_(toRepair) {}
+  transmutedWater(const itemType &type,  const damageType &toRepair)
+    : basicItem(type), toRepair_(toRepair) {}
   virtual bool strike(const damageType &t) {
     if (t != toRepair_)
       return basicItem::strike(t);
@@ -445,7 +437,7 @@ public:
   }
   virtual bool repair(const damageType &t) {
     if (t == toRepair_)
-      transmutate(*this, createItem(itemTypeKey::water, ios()));
+      transmutate(*this, createItem(itemTypeKey::water));
     else
       return basicItem::repair(t);
     return true;
@@ -454,8 +446,8 @@ public:
 
 class water : public basicItem {
 public:
-  water(const io &ios) :
-    basicItem(itemTypeRepo::instance()[itemTypeKey::water], ios) {}
+  water() :
+    basicItem(itemTypeRepo::instance()[itemTypeKey::water]) {}
   virtual bool strike(const damageType &t) {
     itemTypeKey next;
     switch (t) {
@@ -485,7 +477,7 @@ public:
     case damageType::electric:
       next = itemTypeKey::electro_pop; break;
     }
-    transmutate(*this, createItem(next, ios()));
+    transmutate(*this, createItem(next));
     return true;
   }  
 };
@@ -510,8 +502,8 @@ private:
     return rtn;
   }
 public:
-  bottle(const itemType& type, const io &ios) :
-    basicItem(type, ios) {}
+  bottle(const itemType& type) :
+    basicItem(type) {}
   bottle(const bottle &) = delete;
   virtual ~bottle() {}
   virtual const wchar_t * const name() const {
@@ -547,19 +539,20 @@ public:
   // when a bottle is destroyed, its contents are revealed:
   virtual void destroy() {
     optionalRef<item> c = content();
+    auto &ios =ioFactory::instance();
     if (!c) {
-      ios().message(std::wstring(name()) + L" smashes, and the emptiness gets out"); // Hmmm; spawn a vacuum monster?
+      ios.message(std::wstring(name()) + L" smashes, and the emptiness gets out"); // Hmmm; spawn a vacuum monster?
     } else if (c.value().material() == materialType::liquid) {
-      ios().message(std::wstring(name()) + L" smashes; there's fluid everywhere");
+      ios.message(std::wstring(name()) + L" smashes; there's fluid everywhere");
       itemHolder::destroyItem(c.value());
     } else {
       auto cname = c.value().name();
       // TODO: if it's a ship, and if we're at a dock, we should launch it itstead
       if (holder().addItem(c.value())) {
-	ios().message(std::wstring(name()) + L" smashes; you now have a " + cname);
+	ios.message(std::wstring(name()) + L" smashes; you now have a " + cname);
       } else {
       itemHolder::destroyItem(c.value());
-	ios().message(std::wstring(name()) + L" smashes; you lose the " + cname);
+	ios.message(std::wstring(name()) + L" smashes; you lose the " + cname);
       }
     }
     if (content()) throw L"Destroying bottle without losing its contents!";
@@ -569,7 +562,8 @@ public:
     // TODO: if we are in a player's inventory, get a confirm prompt 
     if (content()) {
       auto *pc = dynamic_cast<monster*>(&holder());
-      if (pc == 0 || !pc->isPlayer() || ios().ynPrompt(L"Smash the " + std::wstring(name()) + L"?"))
+      auto &ios = ioFactory::instance();
+      if (pc == 0 || !pc->isPlayer() || ios.ynPrompt(L"Smash the " + std::wstring(name()) + L"?"))
 	destroy();
     }
     return true;
@@ -586,9 +580,9 @@ public:
 // base class for multi-item containers
 class basicContainer : public basicItem, public itemHolder, public useWithMixin {
 public:
-  basicContainer(const itemType& type, const io &ios) :
-    basicItem(type, ios),
-    useWithMixin(ios) {}
+  basicContainer(const itemType& type) :
+    basicItem(type),
+    useWithMixin() {}
   virtual ~basicContainer() {}
   virtual double weight() const {
     double rtn = basicItem::weight();
@@ -655,20 +649,20 @@ protected:
 
 class readableItem : public basicItem {
 public:
-  readableItem(const itemType& type, const io &ios) :
-    basicItem(type, ios) {}
+  readableItem(const itemType& type) :
+    basicItem(type) {}
   virtual ~readableItem() {}
    // TODO: Text, spells etc.
 };
 
 class hitchGuide : public readableItem {
 public:
-  hitchGuide(const itemType& type, const io &ios) :
-    readableItem(type, ios) {}
+  hitchGuide(const itemType& type) :
+    readableItem(type) {}
   virtual ~hitchGuide() {}
   virtual bool use() {
     if (isCursed()) return false; // seems a bit harsh, but I don't have a better idea yet
-    ::invokeGuide(ios(), isBlessed());
+    ::invokeGuide(isBlessed());
     return true;
   }
   /*
@@ -683,11 +677,11 @@ class holyBook : public readableItem {
 private:
   const deity &align_;
 public:
-  holyBook(const io &ios) :
-    readableItem(itemTypeRepo::instance()[itemTypeKey::holy_book], ios),
+  holyBook() :
+    readableItem(itemTypeRepo::instance()[itemTypeKey::holy_book]),
     align_(*rndPick(deityRepo::instance().begin(), deityRepo::instance().end())) {}
-  holyBook(const io &ios, const deity &align) :
-    readableItem(itemTypeRepo::instance()[itemTypeKey::holy_book], ios),
+  holyBook( const deity &align) :
+    readableItem(itemTypeRepo::instance()[itemTypeKey::holy_book]),
     align_(align) {}
   virtual ~holyBook() {}
   virtual const wchar_t * const name() const {
@@ -698,12 +692,13 @@ public:
     return buffer_.c_str();
   }
   virtual bool use() {
+    auto &ios = ioFactory::instance();
     if (isCursed()) {
-      ios().message(L"The pages are stuck together.");
+      ios.message(L"The pages are stuck together.");
       return false;
     }
-    ios().message(L"You turn the pages of the " + std::wstring(name()));
-    ios().longMsg(align_.description());
+    ios.message(L"You turn the pages of the " + std::wstring(name()));
+    ios.longMsg(align_.description());
     return true;
   }
 };
@@ -714,8 +709,8 @@ private:
   const std::wstring whom_;
   const std::wstring service_;
 public:
-  iou(double amount, std::wstring whom, std::wstring service, const io &ios) :
-    readableItem(itemTypeRepo::instance()[itemTypeKey::iou], ios),
+  iou(double amount, std::wstring whom, std::wstring service) :
+    readableItem(itemTypeRepo::instance()[itemTypeKey::iou]),
     amount_(amount), whom_(whom), service_(service) {
     curse(true);
   }
@@ -735,11 +730,12 @@ public:
     msg += L"\n\nIf payment is not received within 100 turns of issue, debt\n"
       "collectors will be deployed.\nYou have been warned.\n\n"
       "Payment may be made to any Platinum Express Shop"; // ref: see platinum express card
-    ios().longMsg(msg);
+    auto &ios = ioFactory::instance();
+    ios.longMsg(msg);
     return true;
   }
   virtual void destroy() {
-    holder().addItem(createIou(amount_, whom_, service_, ios()));
+    holder().addItem(createIou(amount_, whom_, service_));
   }
   virtual bool isBlessed() { return false;}
   virtual bool isCursed() { return true;}
@@ -750,13 +746,13 @@ public:
 
 class shopCard : public basicItem {
 public:
-  shopCard(const itemType& type, const io &ios) :
-    basicItem(type, ios) {}  
+  shopCard(const itemType& type) :
+    basicItem(type) {}  
   virtual ~shopCard(){}
   virtual bool use() {
     auto m = dynamic_cast<monster*>(&holder());
     if (m)
-      ::goShopping(ios(), *m);
+      ::goShopping(*m);
     return m;
   }
 };
@@ -768,14 +764,15 @@ public:
 // TODO: starting charges; check number of charges
 class bottlingKit : public basicWeapon, public burnChargeMixin {
 public:
-  bottlingKit(const itemType & type, const io &ios) :
-    basicWeapon(type, ios, damageType::bashing) {
+  bottlingKit(const itemType & type) :
+    basicWeapon(type, damageType::bashing) {
     enchant(dPc());
   }
   virtual ~bottlingKit() {}
   virtual bool use() {
+    auto &ios = ioFactory::instance();
     if (!hasCharge()) {
-      ios().message(L"You are out of bottle caps.");
+      ios.message(L"You are out of bottle caps.");
       return false;
     }
     auto &pc = dynamic_cast<monster&>(holder());
@@ -784,18 +781,18 @@ public:
 	return bot != 0 && bot->content();
       });
     if (!bot) {
-      ios().message(L"You'll need a bottle in your inventory to do that.");
+      ios.message(L"You'll need a bottle in your inventory to do that.");
       return false;
     }
-    ios().message(std::wstring(L"You try the ") + bot.value().name());
+    ios.message(std::wstring(L"You try the ") + bot.value().name());
     bottle &b = dynamic_cast<bottle&>(bot.value());
-    auto found = pc.firstItem([&b, this](item &i) {
+    auto found = pc.firstItem([&b, this, &ios](item &i) {
 	if (&i == this) return false; // can't bottle a bottling kit with itself
 	if (&i == &b) return false; // can't bottle a bottle into itself
-	if (ios().ynPrompt(std::wstring(L"Bottle ") + i.name() + L"?")) {
+	if (ios.ynPrompt(std::wstring(L"Bottle ") + i.name() + L"?")) {
 	  if (b.addItem(i))
 	    return true;
-	  else ios().message(L"It didn't fit."); // just in case
+	  else ios.message(L"It didn't fit."); // just in case
 	}
 	return false;
       });
@@ -817,8 +814,8 @@ private:
   // how advanced was this in life?
   const unsigned char maxDamage_;
 public:
-  corpse(const io &ios, const monsterType &of, const unsigned char maxDamage) :
-    basicItem(itemTypeRepo::instance()[itemTypeKey::corpse], ios),
+  corpse( const monsterType &of, const unsigned char maxDamage) :
+    basicItem(itemTypeRepo::instance()[itemTypeKey::corpse]),
     type_(of),
     maxDamage_(maxDamage) {
     // TODO: should any monster types be proof against damage? Already (eg) wet?
@@ -849,7 +846,8 @@ public:
     return type_.name(maxDamage_); // overridden to change type_ from itemType to monsterType.
   }
   virtual bool use() {
-    ios().message(L"Please don't; it's not that kind of game.");
+    auto &ios = ioFactory::instance();
+    ios.message(L"Please don't; it's not that kind of game.");
     return false;
   }
 };
@@ -894,83 +892,83 @@ void transmutate(item &from, item &to) {
 // create an item of the given type. io may be used later by that item, eg for prompts when using.
 // TODO: Randomness for flavour: enchantment, flags, etc.
 // TODO: Wands will need starting enchantment.
-item& createItem(const itemTypeKey & t, const io & ios) {
+item& createItem(const itemTypeKey & t) {
   auto &r = itemTypeRepo::instance();
   item *rtn;
   switch(t) {
   case itemTypeKey::apple:
-    rtn = new basicItem(r[t], ios);
+    rtn = new basicItem(r[t]);
     break;
     //case itemTypeKey::corpse: // not handled here; we do this when a monster dies
   case itemTypeKey::mace:
-    rtn = new basicWeapon(r[t], ios, damageType::bashing);
+    rtn = new basicWeapon(r[t], damageType::bashing);
     break;
   case itemTypeKey::two_sword:
-    rtn = new twoHandedWeapon(r[t], ios, damageType::edged); // we specifically chose a historical 2-handed cutting sword to annoy the reenactment purists :)
+    rtn = new twoHandedWeapon(r[t], damageType::edged); // we specifically chose a historical 2-handed cutting sword to annoy the reenactment purists :)
     break;
   case itemTypeKey::rock:
-    rtn = new basicThrown(r[t], ios, damageType::bashing);
+    rtn = new basicThrown(r[t], damageType::bashing);
     break;
   case itemTypeKey::helmet:
-    rtn = new basicEquip<item::equipType::worn>(r[t], ios, slotType::hat);
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::hat);
     break;
   case itemTypeKey::stick:
-    rtn = new basicItem(r[t], ios); // TODO: wands & charges
+    rtn = new basicItem(r[t]); // TODO: wands & charges
     break;
   case itemTypeKey::bottle:
-    rtn = new bottle(r[t], ios);
+    rtn = new bottle(r[t]);
     break;
   case itemTypeKey::codex:
-    rtn = new readableItem(r[t], ios);
+    rtn = new readableItem(r[t]);
     break;
   case itemTypeKey::hitch_guide:
-    rtn = new hitchGuide(r[t], ios);
+    rtn = new hitchGuide(r[t]);
     break;
   case itemTypeKey::holy_book:
-    rtn = new holyBook(ios);
+    rtn = new holyBook();
     break;
     //   case itemTypeKey::iou: // not handled here
   case itemTypeKey::poke:
-    rtn = new basicContainer(r[t], ios);
+    rtn = new basicContainer(r[t]);
     break;
   case itemTypeKey::water:
-    rtn = new basicItem(r[t], ios);
+    rtn = new basicItem(r[t]);
     break;
   case itemTypeKey::tears:
-    rtn = new transmutedWater(r[t], ios, damageType::edged);
+    rtn = new transmutedWater(r[t], damageType::edged);
     break;
   case itemTypeKey::heavy_water:
-    rtn = new transmutedWater(r[t], ios, damageType::bashing);
+    rtn = new transmutedWater(r[t], damageType::bashing);
     break;
   case itemTypeKey::fire_water:
-    rtn = new transmutedWater(r[t], ios, damageType::hot);
+    rtn = new transmutedWater(r[t], damageType::hot);
     break;
   case itemTypeKey::pop:
-    rtn = new transmutedWater(r[t], ios, damageType::wet);
+    rtn = new transmutedWater(r[t], damageType::wet);
     break;
   case itemTypeKey::fizzy_pop:
-    rtn = new transmutedWater(r[t], ios, damageType::sonic);
+    rtn = new transmutedWater(r[t], damageType::sonic);
     break;
   case itemTypeKey::dehydrated_water:
-    rtn = new transmutedWater(r[t], ios, damageType::disintegration);
+    rtn = new transmutedWater(r[t], damageType::disintegration);
     break;
   case itemTypeKey::spring_water:
-    rtn = new transmutedWater(r[t], ios, damageType::starvation);
+    rtn = new transmutedWater(r[t], damageType::starvation);
     break;
   case itemTypeKey::electro_pop:
-    rtn = new transmutedWater(r[t], ios, damageType::electric);
+    rtn = new transmutedWater(r[t], damageType::electric);
     break;
   case itemTypeKey::wooden_ring:
-    rtn = new basicEquip<item::equipType::worn>(r[t], ios, slotType::ring_left_thumb, slotType::ring_left_index, slotType::ring_left_middle, slotType::ring_left_ring, slotType::ring_left_little, slotType::ring_right_thumb, slotType::ring_right_index, slotType::ring_right_middle, slotType::ring_right_ring, slotType::ring_right_little, slotType::toe_left_thumb, slotType::toe_left_index, slotType::toe_left_middle, slotType::toe_left_fourth, slotType::toe_left_little, slotType::toe_right_thumb, slotType::toe_right_index, slotType::toe_right_middle, slotType::toe_right_fourth, slotType::toe_right_little);
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::ring_left_thumb, slotType::ring_left_index, slotType::ring_left_middle, slotType::ring_left_ring, slotType::ring_left_little, slotType::ring_right_thumb, slotType::ring_right_index, slotType::ring_right_middle, slotType::ring_right_ring, slotType::ring_right_little, slotType::toe_left_thumb, slotType::toe_left_index, slotType::toe_left_middle, slotType::toe_left_fourth, slotType::toe_left_little, slotType::toe_right_thumb, slotType::toe_right_index, slotType::toe_right_middle, slotType::toe_right_fourth, slotType::toe_right_little);
     break;
   case itemTypeKey::kalganid:
-    rtn = new basicItem(r[t], ios); // TODO: should we be able to equip coins on our eyes?
+    rtn = new basicItem(r[t]); // TODO: should we be able to equip coins on our eyes?
     break;
   case itemTypeKey::shop_card:
-    rtn = new shopCard(r[t], ios);
+    rtn = new shopCard(r[t]);
     break;
   case itemTypeKey::bottling_kit:
-    rtn = new bottlingKit(r[t], ios);
+    rtn = new bottlingKit(r[t]);
     break;
   default:
     throw t; // unknown type
@@ -979,27 +977,27 @@ item& createItem(const itemTypeKey & t, const io & ios) {
   return *rtn; // now safe to take reference
 }
 
-item & createHolyBook(const io &ios, const deity &align) {
-  auto rtn = new holyBook(ios, align);
+item & createHolyBook(const deity &align) {
+  auto rtn = new holyBook(align);
   itemHolderMap::instance().enroll(*rtn); // takes ownership
   return *rtn;
 }
 
-item &createCorpse(const io &ios, const monsterType &mt, const unsigned char maxDamage) {
-  auto rtn = new corpse(ios, mt, maxDamage);
+item &createCorpse(const monsterType &mt, const unsigned char maxDamage) {
+  auto rtn = new corpse(mt, maxDamage);
   itemHolderMap::instance().enroll(*rtn); // takes ownership
   return *rtn;
 }
 
-item & createBottledItem(const itemTypeKey &type, const io &ios) {
-  auto &rtn = createItem(itemTypeKey::bottle, ios);
-  auto &toBottle = createItem(type, ios);
+item & createBottledItem(const itemTypeKey &type) {
+  auto &rtn = createItem(itemTypeKey::bottle);
+  auto &toBottle = createItem(type);
   dynamic_cast<bottle &>(rtn).addItem(toBottle);
   return rtn;
 }
 
-item & createIou(const double amount, const std::wstring &whom, const std::wstring &service, const io &ios) {
-  auto rtn = new iou(amount, whom, service, ios);
+item & createIou(const double amount, const std::wstring &whom, const std::wstring &service) {
+  auto rtn = new iou(amount, whom, service);
   itemHolderMap::instance().enroll(*rtn); // takes ownership
   return *rtn;
 }
@@ -1015,13 +1013,13 @@ double forIou(const item &i, double d, std::wstring &buf) {// used in shop.cpp
 
 // create a random item suitable for the given level depth
 // TODO: depth limitations
-item &createRndItem(const int depth, const io & ios) {
+item &createRndItem(const int depth) {
   auto &r = itemTypeRepo::instance();
   while (true) {
     auto type = rndPick(r.begin(), r.end());
     // we can produce water, but we must bottle it:
     if (type->first == itemTypeKey::water)
-      return createBottledItem(itemTypeKey::water, ios);
+      return createBottledItem(itemTypeKey::water);
     // other more exotic liquids are ignored for now:
     if (r[type->first].material() == materialType::liquid) continue;
     // we never autogenerate a corpse because they always need a monster first:
@@ -1029,6 +1027,6 @@ item &createRndItem(const int depth, const io & ios) {
     // we never autogenerate an IOU; they're only created by shops
     if (type->first == itemTypeKey::iou) continue;
     // general case: call createItem():
-    return createItem(type->first, ios); // already enrolled
+    return createItem(type->first); // already enrolled
   }
 }

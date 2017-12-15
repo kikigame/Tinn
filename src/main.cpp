@@ -20,7 +20,8 @@ std::wstring print(const xo &xo);
 
 int play() {
 
-  auto io = ioFactory::create();
+  ioFactory iof;
+  auto io = iof.create();
 
   //  io->message(;
   bool repeat = false;
@@ -64,7 +65,7 @@ int play() {
     repeat = false;
   } else if (ch.length() == 1 && (ch[0] == L'Y' || ch[0] == L'y')) {
   
-    dungeon d(io);
+    dungeon d;
     while (d.alive()) {
       // always draw as the last thing before input; this guarantees that it
       // happens after any other timers.
