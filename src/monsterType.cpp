@@ -264,7 +264,8 @@ L"Meaning \"Little Thief\", ferrets are small, hyperflexible elongated mammels\n
 	    .align(dr.getExact(Element::fire, Domination::aggression, Outlook::cruel)) // warlike
 	    .align(dr.getExact(Element::time, Domination::aggression, Outlook::cruel)) // trickster
 	    .align(dr.getExact(Element::none, Domination::aggression, Outlook::cruel)) 
-	    .saying(L"TODO") // there's a youtube video called "what does the goblin say"
+	    .saying(L"Go back to your room. Play with your toys and costumes. Forget about the baby") // ref: Labyrinth
+	    .saying(L"I ask for so little. Just fear me, love me, do as I say") // ref: Labyrinth
 	    .movement({speed::turn2, goTo::player, goBy::smart, 75})
 	    .encyclopedium(
 L"The difference between a goblin and an orc is that orcs don't exist.\n"
