@@ -10,6 +10,7 @@
 #include "encyclopedia.hpp" // for hitch-hiker's guide
 #include "religion.hpp" // for holy books
 #include "output.hpp"
+#include "action.hpp"
 #include <set>
 #include <bitset>
 #include <algorithm>

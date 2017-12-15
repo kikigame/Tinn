@@ -150,6 +150,9 @@ public:
   // called when the monster moves level
   virtual void onLevel(level * lvl);
 
+  // called whenever opponent is hit
+  virtual void onHit(monster &opponent, int damage) {};
+
   // retrieve a saying
   virtual const wchar_t * say() const;
 

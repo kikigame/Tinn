@@ -15,6 +15,7 @@
 #include "graphsearch.hpp"
 #include "damage.hpp"
 #include "pathfinder.hpp"
+#include "action.hpp"
 #include <algorithm> // find_if
 
 #include <sstream>
@@ -190,6 +191,7 @@ const attackResult monster::attack(monster &target) {
   // Now to see how much damage we did...
   auto max = target.injury().max();
   int damage = target.wound(strength_.cur(), dt);
+  onHit(target, damage);
   if (damage == 0) return attackResult(injury(), L"ineffectual");
   if (static_cast<unsigned char>(damage) == max) return attackResult(injury(), L"fatal");
   if (static_cast<unsigned char>(damage) >= max/2) return attackResult(injury(), L"good hit");
@@ -664,17 +666,23 @@ public:
   virtual ~trivialMonster() {}
 };
 
-// ferrets steal things (TODO) then run away
+// ferrets steal little things then run away
 class ferret : public monster {
+private:
+  movementType away_;
 public:
   ferret(monsterBuilder &b) : 
-    monster(b) {}
+    monster(b),
+    away_({speed::turn2, goTo::player, goBy::avoid, 25}){}
   virtual ~ferret() {}
   const movementType & movement() const {
     if (empty())
       return type().movement(); // go to player; they might have sometihng fun!
     else // I've got it! Run away!
-      return movementType{speed::turn2, goTo::player, goBy::avoid, 25};
+      return away_;
+  }
+  virtual void onHit(monster &opponent, int) {
+    actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::steal_small)(*this, opponent);
   }
 };
 
@@ -782,6 +790,8 @@ std::shared_ptr<monster> ofType(const monsterType &type, level & level) {
   std::shared_ptr<monster> ptr;
   switch (type.type()) {
   case monsterTypeKey::ferret:
+    ptr = std::make_shared<ferret>(b);
+    break;
   case monsterTypeKey::goblin:
     ptr = std::make_shared<trivialMonster>(b);
     break;
