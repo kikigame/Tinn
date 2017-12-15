@@ -1050,12 +1050,10 @@ public:
   void build() {
     auto begin = levelGen_.begin();
     auto end = levelGen_.end();
-    volatile int pos=0; // for debugging (TODO:removeme)
-    for (auto i = begin; i != end; ++i, ++pos)
+    for (auto i = begin; i != end; ++i)
       (*i)->negotiateRamps(
 	 i == end || i+1 == end ? optionalRef<levelGen>() : optionalRef<levelGen>(**(i+1)));
-    pos=0;
-    for (auto i = begin; i != end; ++i, ++pos)
+    for (auto i = begin; i != end; ++i)
       (*i)->build();
   }
   std::vector<level*>::iterator begin() {
