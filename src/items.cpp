@@ -560,7 +560,6 @@ public:
     basicItem::destroy();
   }
   virtual bool use() {
-    // TODO: if we are in a player's inventory, get a confirm prompt 
     if (content()) {
       auto *pc = dynamic_cast<monster*>(&holder());
       auto &ios = ioFactory::instance();
