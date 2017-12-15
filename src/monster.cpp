@@ -586,13 +586,13 @@ void moveMonster(monster &mon) {
     // now move the monster:
     switch (type.goBy_) {
     case goBy::avoid:
-      dir.first =- dir.first; dir.first =- dir.first;
+      dir.first =- dir.first; dir.second =- dir.second;
       // no break
     case goBy::beeline:
       level.move(mon, dir, true);
       break;
     case goBy::zomavoid:
-      dir.first =- dir.first; dir.first =- dir.first;
+      dir.first =- dir.first; dir.second =- dir.second;
       // no break
     case goBy::zombeeline:
       level.move(mon, dir, false);
