@@ -14,6 +14,23 @@ class item;
 class shopImpl;
 class monster;
 
+// NB: most common are in the middle due to bell curve:
+// NB: Last shop is very rare (role of 99 or 100 given 11 shops)
+enum shopType {
+  stylii,
+  groceries,
+  weapons,
+  thrown,
+  clothes,
+  readable,
+  jewellery,
+  gambling,
+  luggage,
+  bottles,
+  tools,
+  END
+};
+
 class shop : public renderable {
 private:
   std::unique_ptr<shopImpl> pImpl_;
@@ -22,8 +39,9 @@ public:
   // create a new shop
   // ios -> used for user interaction
   // inventory -> itemholder for customer's inventory to buy and sell
-  shop(const io & ios, monster & inventory);
+  shop(const io & ios, monster & inventory, std::wstring adjective, shopType type);
   shop(const shop &) = delete;
+  shop(shop &&) = default;
   ~shop();
   shop & operator = (const shop &) = delete;
 

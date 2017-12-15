@@ -19,22 +19,6 @@ extern const wchar_t * const shopAdjectives[]; // defined in adjectives.cpp
 extern const int numShopAdjectives;
 
 
-// NB: most common are in the middle due to bell curve:
-// NB: Last shop is very rare (role of 99 or 100 given 11 shops)
-enum shopType {
-  stylii,
-  groceries,
-  weapons,
-  thrown,
-  clothes,
-  readable,
-  jewellery,
-  gambling,
-  luggage,
-  bottles,
-  tools,
-  END
-};
 
 const wchar_t * shopName(const shopType & type) {
   switch (type) {
@@ -504,11 +488,8 @@ const wchar_t * const shop::description() const {
   return pImpl_->description();
 };
 
-shop::shop(const io & ios, monster & inventory) {
-  const auto type = static_cast<shopType>(dPc() / shopType::END);
+shop::shop(const io & ios, monster & inventory, std::wstring adjective, shopType type) {
   const std::wstring keeperName = *rndPick(keeperNames, keeperNames + numKeeperNames);
-  const std::wstring adjective = *rndPick(shopAdjectives, shopAdjectives + numShopAdjectives);
-  //  const std::wstring adjective = *rndPick(shopAdjectives.begin(), shopAdjectives.end());
   pImpl_.reset(new shopImpl(inventory, ios, type, keeperName, adjective));
 }
 
@@ -529,6 +510,8 @@ void shop::enter() {
 
 class shoppingCentre {
 private:
+  std::vector<shopType> types_;
+  std::vector<std::wstring> adjectives_;
   shop a;
   shop b;
   shop c;
@@ -537,16 +520,38 @@ private:
   shop f;
   shop g;
   shop h;
+private:
+  shopType sType() {
+    shopType type;
+    do {
+      type = static_cast<shopType>(dPc() / shopType::END);
+    } while (std::find(types_.begin(), types_.end(), type) != types_.end());
+    types_.push_back(type);
+    return type;
+  }
+  std::wstring adjective() {
+    std::wstring adjective;
+    do {
+      adjective = *rndPick(shopAdjectives, shopAdjectives + numShopAdjectives);
+    } while (std::find(adjectives_.begin(), adjectives_.end(), adjective) != adjectives_.end());
+    adjectives_.push_back(adjective);
+    return adjective;
+  }
 public:
   shoppingCentre(const io & ios, monster &inventory) :
-    a(ios,inventory),
-    b(ios,inventory),
-    c(ios,inventory),
-    d(ios,inventory),
-    e(ios,inventory),
-    f(ios,inventory),
-    g(ios,inventory),
-    h(ios,inventory) {}
+    types_(), adjectives_(),
+    a(shop(ios, inventory, adjective(), sType())),
+    b(shop(ios, inventory, adjective(), sType())),
+    c(shop(ios, inventory, adjective(), sType())),
+    d(shop(ios, inventory, adjective(), sType())),
+    e(shop(ios, inventory, adjective(), sType())),
+    f(shop(ios, inventory, adjective(), sType())),
+    g(shop(ios, inventory, adjective(), sType())),
+    h(shop(ios, inventory, adjective(), sType())) {
+	types_.clear();
+	adjectives_.clear();
+}  
+public:
   shoppingCentre(const shoppingCentre &rhs) = delete;
   ~shoppingCentre() {}
   shop& operator[](const int idx) {
@@ -569,8 +574,9 @@ void goShopping(const io & ios, monster &inventory) {
   // When you need a magic number, and don't have any other criteria, turn to ref:Pratchett's Discworld.
   shoppingCentre shops(ios, inventory);
   std::vector<std::pair<int,const wchar_t*> > choices;
-  for (int c=0; c < 8; ++c)
+  for (int c=0; c < 8; ++c) {
     choices.emplace_back(c, shops[c].name());
+  }
   do {
     auto shop = 
       ios.choice(L"There are 8 shops open presently. Would you like to visit:",
