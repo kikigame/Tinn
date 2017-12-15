@@ -95,45 +95,148 @@ private:
   void changeTerrain(coord pos, terrainType from, terrainType to);
 
 public:
+  // call to place ramps (in case of adjacent level requirements)
+  virtual void negotiateRamps(optionalRef<levelGen> next) = 0;
+  // override to specify position of our upramp
+  virtual coord upRampPos() { return coord(-1,-1); }
   // call the build() function to add rooms, monsters etc.
   virtual void build() = 0;
 };
 
-// a level generator that fills the level with a labyrinth
-class labyGen : private levelGen {
+
+// a templated level generator that fills the level with a labyrinth
+// T is the labyrinth type. See labyrinth.hpp for options.
+template <typename T>
+class labyGenT : public levelGen {
 private:
   const bool addDownRamp_; // do we need a downwards stairwell?
 public:
-  labyGen(levelImpl* const level, ::level& pub, bool addDownRamp) :
+  labyGenT(levelImpl* const level, ::level& pub, bool addDownRamp) :
     levelGen(level, pub),  
     addDownRamp_(addDownRamp) {}
-  virtual ~labyGen() {}
+  virtual ~labyGenT() {}
+  virtual void negotiateRamps(optionalRef<levelGen> next) {}
   virtual void build() {
-    auto lab = // TODO: not sure if this will work of if we need more terrain types
-    labyrinth<terrainType>(terrainType::UP, // in
-			   (addDownRamp_ ? terrainType::DOWN : terrainType::GROUND), // out
-			   terrainType::DOWN, // unassigned
-			   terrainType::ROCK, // impass
-			   terrainType::GROUND, // pass
-			   terrainType::GROUND, // join
-			   level::MAX_WIDTH,
-			   level::MAX_HEIGHT);
+    place(upRampPos(), terrainType::UP);
+    place(downRampPos(), terrainType::DOWN);
+    T lab = T(terrainType::UP, // in
+	      (addDownRamp_ ? terrainType::DOWN : terrainType::GROUND), // out
+	      terrainType::PIT_HIDDEN, // unassigned
+	      terrainType::ROCK, // impass
+	      terrainType::GROUND, // pass
+	      terrainType::PIT, // join (can't be same as ground)
+	      level::MAX_WIDTH-4,
+	      level::MAX_HEIGHT-2);
     lab.build();
 
-    std::vector<std::pair<coord,coord>> pos; // empty; there are no rooms
+    for (int y=0; y <= level::MAX_HEIGHT-2; ++y)
+      for (int x=0; x <= level::MAX_WIDTH-4; ++x)
+	place(coord(x,y+1), lab.begin()[x][y]);
+
+    std::vector<std::pair<coord,coord>> pos = locateRooms(lab); // empty if there are no rooms
+
     addMonsters(pos);
+    for (auto p : pos) {
+      addTraps(p);
+      addItems(p);
+    }
+  }
+  virtual coord upRampPos() {
+    return coord(0,1);
+  }
+  virtual coord downRampPos() {
+    return coord(level::MAX_WIDTH/2+2,
+		 level::MAX_HEIGHT); // current algorithm limitation
+  }
+private:
+  std::vector<std::pair<coord, coord> > locateRooms(const T &lab) const {
+    // identify any 2x2 squares
+    std::vector<std::pair<coord, coord> > locs;
+    for (int y=0; y <= level::MAX_HEIGHT-3; ++y)
+      for (int x=0; x <= level::MAX_WIDTH-5; ++x)
+	if ((lab.begin()[x][y] != terrainType::ROCK) &&
+	    (lab.begin()[x][y+1] != terrainType::ROCK) &&
+	    (lab.begin()[x+1][y] != terrainType::ROCK) &&
+	    (lab.begin()[x+1][y+1] != terrainType::ROCK)) {
+	  locs.emplace_back(coord(x,y), coord(x+1,y+1));
+	}
+    int count;
+    do {
+      // h-merge: merge any horizontally-adjacent areas with the same vertical height
+      count = hmerge(locs);
+      // v-merge: merge any vertially-adjacent areas with the same horizontal width
+      count += vmerge(locs);
+    } while (count > 0);
+
+    // eliminate anything overlapping (or we get too many monsters!)
+    for (int i=0; i < locs.size(); ++i)
+      for (int j=i+1; j < locs.size();)
+	if ((locs[j].first.first > locs[i].first.first && locs[j].first.first < locs[i].second.first) &&
+	    (locs[j].first.second > locs[i].first.second && locs[j].first.second < locs[i].second.second) &&
+	    (locs[j].second.first > locs[i].first.first && locs[j].first.first < locs[i].second.first) &&
+	    (locs[j].second.second > locs[i].first.second && locs[j].first.second < locs[i].second.second))
+	  locs.erase(locs.begin() + j);
+	else ++j;
+
+    return locs;
+  }
+  int hmerge(std::vector<std::pair<coord, coord> > &locs) const {
+    int size = locs.size();
+    for (int i=0; i < locs.size(); ++i)
+      for (int j=i+1; j < locs.size();)
+	if (locs[i].first.second == locs[j].first.second && locs[i].second.second == locs[j].second.second &&
+	    locs[i].second.first >= locs[j].first.first && locs[i].second.first <= locs[j].second.first) {
+	  locs[i].second.first = locs[j].second.first;
+	  locs.erase(locs.begin() + j);
+	} else ++j;
+    return locs.size() - size;
+  }
+  int vmerge(std::vector<std::pair<coord, coord> > &locs) const {
+    int size = locs.size();
+    for (int i=0; i < locs.size(); ++i)
+      for (int j=i+1; j < locs.size();)
+	if (locs[i].first.first == locs[j].first.first && locs[i].second.first == locs[j].second.first &&
+	    locs[i].second.second >= locs[j].first.second && locs[i].second.second <= locs[j].second.second) {
+	  locs[i].second.second = locs[j].second.second;
+	  locs.erase(locs.begin() + j);
+	} else ++j;
+    return locs.size() - size;
   }
 };
+
+// a level generator that fills the level with a labyrinth
+typedef labyGenT<labyrinth<terrainType> > labyGen;
+
+// a level generator that fills the entire level with rooms and divider walls
+typedef labyGenT<labyrinth<terrainType, emptyfiller<terrainType>, true, false, imperfectRecursor<terrainType, emptyfiller<terrainType>, true, false> > > labyRoomGen;
+
+// a level generator that fills the level with a very imperfect labyrinth; lots of rocks
+typedef labyGenT<labyrinth<terrainType, pathfiller<terrainType>, true, false, imperfectRecursor<terrainType, pathfiller<terrainType>, true, false > > > labySmallGen;
+
+// a labyrinth generator that prefers horizontal lines
+typedef labyGenT<labyrinth<terrainType, castellationFillerH<terrainType> > > labyHGen;
+
+// a labyrinth generator that prefers vertical lines
+typedef labyGenT<labyrinth<terrainType, castellationFillerW<terrainType> > > labyWGen;
 
 // a level generator that fills the level with randomly-placed rooms
 class roomGen : public levelGen {
 private:
-  const bool addDownRamp_; // do we need a downwards stairwell?
+  const bool addDownRamp_; // do we need a downwards exit?
+  coord downRampPos_; // if set
 public:
   roomGen(levelImpl* const level, ::level& pub, bool addDownRamp) :
     levelGen(level, pub),
-    addDownRamp_(addDownRamp) {}
+    addDownRamp_(addDownRamp),
+    downRampPos_(-1,-1) {}
   virtual ~roomGen() {}
+  virtual void negotiateRamps(optionalRef<levelGen> next) {
+    if (addDownRamp_ && next) {
+      downRampPos_ = next.value().upRampPos();
+      if (downRampPos_.first >= 0)
+	place(downRampPos_, terrainType::DOWN);
+    }
+  }
   virtual void build() {
     // let's have 3-5 rooms:
     int roomCount = numRooms();
@@ -151,8 +254,12 @@ public:
     // place an entrance in the first room and an exit in the last.
     // TODO: if all rooms, by chance, have the same midpoint, where does the down ramp go?
     place(pos.begin(), pos.end(), terrainType::UP);
-    if (addDownRamp_)
-      place(pos.rbegin(), pos.rend(), terrainType::DOWN);
+    if (addDownRamp_) {
+      if (downRampPos_.first < 0)
+	place(pos.rbegin(), pos.rend(), terrainType::DOWN);
+      else
+	addCorridor(mid(pos[0]), downRampPos_);
+    }
 
     addMonsters(pos);
 
@@ -180,7 +287,6 @@ public:
   virtual bool removeItemForMove(item &item, itemHolder &next); // overridden to handle movement callbacks
   virtual ~itemHolderLevel() {}
 };
-
 
 // implementation of level class 
 class levelImpl : public renderByCoord {
@@ -215,7 +321,6 @@ public:
 	coord c(x,y);
 	terrain_[c] = tFactory.get(terrainType::ROCK);
       }
-    //roomGen(this, pub, downRamp).build();
   }
   virtual ~levelImpl() {}
 
@@ -261,7 +366,6 @@ public:
   // aggressor can't die, so can be passed as references
   // target can, so needs to be a shared_ptr here.
   void attack(monster &aggressor, monster &target) {
-    //    std::cerr << aggressor.name() << " is attacking " << target.name() << std::endl;
     for (auto z : zonesAt(posOf(aggressor), true))
       if (!z->onAttack(aggressor, target)) return;
     const auto tName = target.name();
@@ -276,7 +380,6 @@ public:
       rtn = rtn + L"\n" + tName + L" dies.";
       longMsg = true;
     }
-    //    std::cerr << rtn << " ( monster health is " << target.injury() << ")" << std::endl;
     if (longMsg) io_->longMsg(rtn);
     else io_->message(rtn);
   }
@@ -701,16 +804,9 @@ void levelGen::addMonsters(std::vector<std::pair<coord,coord>> coords /*by value
     }
     coords.erase(room); // don't use the same room twice; tend to avoid the packs of monsters starting together
   }
-  /*
-  int monsterCount = numMonsters(); // may be < 0, to increase chance of no initial monsters in a given room
-  ::std::cerr << monsterCount << " monsters in level " << level_->depth_
-	      << "'s room at " << coords.first << " to " << coords.second
-	      << std::endl;*/
 }
 
 void levelGen::addMonster(std::shared_ptr<monster> mon, const coord &m, const std::pair<coord, coord> & coords) {
-  //::std::cerr << "Placing monster " << i << " of " << monsterCount << std::endl;
-  //  std::shared_ptr<monster> mon = roaming(pub_, level_->io_);
   for (int y = coords.first.second; y < coords.second.second; ++y)
     for (int x = coords.first.first; x < coords.second.first; ++x) {
       coord c = coord(x,y);
@@ -732,11 +828,14 @@ void levelGen::addTraps(const std::pair<coord,coord> &coords) {
   
     // IT'S A TRAP! // ref: Admiral Ackbar, Star Wars film Episode VI: Return of the Jedi.
     // Pick one at random... we've only got one this release...
-    std::uniform_int_distribution<int> dx(coords.first.first+1, coords.second.first - 2);
-    std::uniform_int_distribution<int> dy(coords.first.second+1, coords.second.second - 2);
-    const coord c(dx(generator), dy(generator));
-    if (level_->terrain_.at(c)->type() == terrainType::GROUND)
-      level_->terrain_.at(c) = tFactory.get(terrainType::PIT_HIDDEN);
+    if (coords.second.first - 2 > coords.first.first+1 && 
+	coords.second.second - 2 > coords.first.second + 1) {
+      std::uniform_int_distribution<int> dx(coords.first.first+1, coords.second.first - 2);
+      std::uniform_int_distribution<int> dy(coords.first.second+1, coords.second.second - 2);
+      const coord c(dx(generator), dy(generator)); // coords=(0,0)-(2,1) but c=gibberish
+      if (level_->terrain_.at(c)->type() == terrainType::GROUND)
+	level_->terrain_.at(c) = tFactory.get(terrainType::PIT_HIDDEN);
+    }
   }
 }
 
@@ -937,29 +1036,71 @@ level::zonesAt(const coord & c) {
 
 class levelFactoryImpl {
 private:
+  int numLevels_;
   std::vector<levelImpl*> levels_;
   std::vector<level*> levelPubs_;
   std::vector<std::unique_ptr<levelGen> > levelGen_;
 public:
-  levelFactoryImpl(dungeon &dungeon, std::shared_ptr<io> io, const int numLevels) {
+  levelFactoryImpl(dungeon &dungeon, std::shared_ptr<io> io, const int numLevels) : 
+    numLevels_(numLevels) {
     for (int i=0; i < numLevels; ++i) {
       levelImpl *l = new levelImpl(dungeon, i, io);
       levels_.push_back(l);
       levelPubs_.emplace_back(new level(l));
       auto &level = *(levelPubs_.rbegin());
-      bool addDownRamp = i < numLevels;
-      levelGen_.emplace_back(new roomGen(l,*level, addDownRamp));
+      levelGen_.emplace_back(createGen(i, l, level));
     }
   }
   void build() {
-    for (auto &g : levelGen_)
-      g->build();
+    auto begin = levelGen_.begin();
+    auto end = levelGen_.end();
+    volatile int pos=0; // for debugging (TODO:removeme)
+    for (auto i = begin; i != end; ++i, ++pos)
+      (*i)->negotiateRamps(
+	 i == end || i+1 == end ? optionalRef<levelGen>() : optionalRef<levelGen>(**(i+1)));
+    pos=0;
+    for (auto i = begin; i != end; ++i, ++pos)
+      (*i)->build();
   }
   std::vector<level*>::iterator begin() {
     return levelPubs_.begin();
   }
   std::vector<level*>::iterator end() {
     return levelPubs_.end();
+  }
+private:
+  levelGen *createGen(int depth, levelImpl *l, level *level) {
+    bool addDownRamp = depth < numLevels_;
+    if (dPc() < depth)
+      switch (depth / 10) {
+      case 0:
+	try {
+	  return new  labyRoomGen(l, *level, addDownRamp);
+	} catch (char const * msg) { /*std::cerr << "labyRoomGen: " << msg << std::endl; */}
+      case 1:
+      case 2:
+      case 3:
+      case 4:
+	try {
+	  return new  labySmallGen(l, *level, addDownRamp);
+	} catch (char const * msg) { /*std::cerr << "labySmallGen: " << msg << std::endl; */}
+      case 5:
+      case 6:
+      case 7:
+	try {
+	  return new  labyHGen(l, *level, addDownRamp);
+	} catch (char const * msg) { /*std::cerr << "labyHGen: " << msg << std::endl; */}
+      case 8:
+	try {
+	  return new  labyWGen(l, *level, addDownRamp);
+	} catch (char const * msg) { /*std::cerr << "labyWGen: " << msg << std::endl; */}
+      default:
+	try {
+	  return new  labyGen(l, *level, addDownRamp);
+	} catch (char const * msg) { /*std::cerr << "labyGen: " << msg << std::endl; */}
+      }
+    // default case & fall-through:
+    return new  roomGen(l, *level, addDownRamp); 
   }
 };
 
