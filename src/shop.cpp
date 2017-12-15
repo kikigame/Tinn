@@ -250,7 +250,7 @@ private:
       handlePayment();
     } else if (!io_.ynPrompt(L"You have " + std::to_wstring(basket_.size()) + 
 		      std::wstring(L" items in your basket. Check out?")))
-      enter();
+      handleSale();
     else
       handlePayment();
   }
