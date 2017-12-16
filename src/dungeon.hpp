@@ -50,4 +50,7 @@ public:
 
   // user dies: (or at least their character does):
   void playerDeath();
+
+  // render score information
+  std::wstring score() const;
 };

@@ -23,6 +23,7 @@ int play() {
   ioFactory iof;
   auto io = iof.create();
 
+  std::wstring endDetails;
   //  io->message(;
   bool repeat = false;
   do {
@@ -73,13 +74,13 @@ int play() {
       auto ch = io->keyPrompt(L"Your move... (? for help; q to quit) ");
       processInput(d, ch, io);
     }
+    endDetails = d.score();
   } else {
     repeat=true;
   }
 } while (repeat);
 
-  io->longMsg(L"You do not get your possessions identified."); // pun on Nethack end quote.
-  // TODO: print scores or whatever
+  io->longMsg(L"You do not get your possessions identified.\n\n" + endDetails); // pun on Nethack end quote.
 
   return 0;
 }

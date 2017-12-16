@@ -5,8 +5,10 @@
 #include "dungeon.hpp"
 #include "terrain.hpp"
 #include "output.hpp"
+#include "appraise.hpp"
 
 #include "chargen.hpp"
+#include <sstream>
 
 const int NUM_LEVELS = 100;
 
@@ -77,4 +79,17 @@ bool dungeon::alive() const {
 void dungeon::interrogate() const {
   auto &l = *level_[cur_level_];
   ioFactory::instance().interrogate(l, l.pcPos());
+}
+
+std::wstring dungeon::score() const {
+  std::wstringstream rtn;
+  double sumValue =0, sumWeight =0;
+  player_->forEachItem([this, &rtn, &sumValue, &sumWeight](item &i, std::wstring name) {
+      double value = appraise(*player_, i);
+      double weight = i.weight();
+      rtn << name << L"\t, scoring:" << value << L"\t, weight" << weight << L"N\n";
+      sumValue += value, sumWeight += weight;
+    });
+  rtn << L"Total score of " << sumValue << L"; you finished with " << sumWeight << L"N of loot";
+  return rtn.str();
 }
