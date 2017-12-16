@@ -28,7 +28,7 @@
 
 # Executables
 tinn
-*.exe
+# *.exe - we publish the Windows binary from time to time
 *.out
 *.app
 xo

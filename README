@@ -30,10 +30,6 @@ Just compile all the C++ files into the executable, linking with the curses libr
 
 A very plain Makefile is provided, so if you have the whole distribution and your C++ compile is named "c++", you can just run "make".
 
-If you have an older Linux compiler/libraries, some of the console functions won't link. You may need to modify output_curses.hpp to start with the following line:
-
-#define _XOPEN_SOURCE_EXTENDED
-
 
 Most repository packages install ncursesw with the "--disable-overwrite" option (set during *compiling* of the ncursesw library configuration). If your version of ncursesw was installed without this option, you will need to modify output_curses.hpp and change the following line (near the top of the file) from:
 
@@ -45,6 +41,7 @@ to:
 
 NB: This will not allow you to compile Tinn with the vanilla SYSV curses or plain ncurses library; the wide-character ncursesw library is still required.
 
+For compiling a Windows binary, I use MINGW and ncurses from http://invisible-island.net/ncurses/#download_mingw
 
 
 Starting the program

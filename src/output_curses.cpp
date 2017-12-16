@@ -15,6 +15,15 @@
 #include <algorithm> // find_if_not for trim
 #include <functional>
 extern "C" {
+#ifdef __MINGW64__
+#define _XOPEN_SOURCE_EXTENDED // not set implicitly on mingw. Previous README said:
+#endif
+  /*
+If you have an older Linux compiler/libraries, some of the console functions won't link. You may need to modify output_curses.hpp to start with the following line:
+
+#define _XOPEN_SOURCE_EXTENDED
+   */
+
 #include <ncursesw/curses.h> // lookit! A dependency!
 }
 

@@ -50,8 +50,20 @@ for my $cfile (`ls src/*.cpp`) {
 my $CXXFLAGS = "-Wall -g -std=c++11";
 
 print "# This is an auto-generated file. Please make changes in build.pl\n\n";
-print join(" ", "tinn", ":", "Makefile", @ofiles, "\n");
-print join(" ", "\tc++ ", @ofiles, " $CXXFLAGS -lncursesw -o tinn\n\n");
+print "CXX ?= c++\n\n"; 
+print "WINCXX ?= /usr/bin/x86_64-w64-mingw32-c++ -I../mingw-64/ncurses/include -unicode -L../mingw-64/ncurses/lib/ -Wl,--enable-auto-import\n\n";
+print "CXXLINK ?= -lncursesw\n\n";
+print "WINCXXLINK = -lncursesw -lpsapi -static\n\n";
+
+
+print join(" ", "tinn", ":", "Makefile", "ofiles", "\n");
+print join(" ", "ofiles", ":", @ofiles, "\n\n");
+print join(" ", "\t\$(CXX) ", @ofiles, " $CXXFLAGS \$(CXXLINK) -o tinn\n\n");
+
+print "# Windown port \n";
+print join(" ", "tinn.exe", ":", "Makefile", "clean", "\n");
+print "\tCXX=\"\$(WINCXX)\" make -k ofiles && \\\n";
+print join(" ", "\t\$(WINCXX) ", @ofiles, " $CXXFLAGS \$(CXXLINK) -o tinn.exe\n\n");
 
 print "Makefile: build.pl\n";
 print "\t./build.pl > Makefile\n\n";
@@ -67,8 +79,8 @@ for my $cfile (@cfiles) {
     my @deps = getDeps($cfile);
 
     print join(" ", "$ofile",":", $cfile, @deps, "\n");
-#    print "\tc++ -O2 $cfile -c $CXXFLAGS -o $ofile\n\n"
-    print "\tc++ $cfile -c $CXXFLAGS -o $ofile -finput-charset=utf8 -fexec-charset=utf8\n\n"
-#    print "\tc++ $cfile -c $CXXFLAGS -o $ofile -DDEBUG=1\n\n"
+#    print "\t\$(CXX) -O2 $cfile -c $CXXFLAGS -o $ofile\n\n"
+    print "\t\$(CXX) $cfile -c $CXXFLAGS -o $ofile -finput-charset=utf8 -fexec-charset=utf8\n\n"
+#    print "\t\$(CXX) $cfile -c $CXXFLAGS -o $ofile -DDEBUG=1\n\n"
 }
 
