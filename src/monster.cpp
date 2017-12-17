@@ -873,3 +873,43 @@ void monster::forEachItem(const std::function<void(const item&, std::wstring)> f
     });
 }
 
+class corpse;
+
+bool monster::eat(item &item) {
+  if (!type().eats(item.material())) throw inedibleException();
+  // TODO: Penalties for eating corpses?
+  if (damage_.cur() == 0)
+    throw notHungryException();
+  double weight = std::ceil(item.weight()); // round up
+  // subtract from damage; can't go below 0: 
+  damage_ -= (weight > 254.5) ? 255 : static_cast<unsigned char>(weight);
+  return item.holder().destroyItem(item);
+}
+
+void monster::eat() {
+  auto isEdible = [this](item &i) {
+    if (!type().eats(i.material())) return false;
+    if (isPlayer())
+      return ioFactory::instance().ynPrompt(std::wstring(L"Eat ") + i.name() + L"?");
+    return true; // monsters eat whatever
+  };
+  // is there anything to eat in the current location?
+  auto &holder = level_->holder(level_->posOf(*this));
+  optionalRef<item> it = holder.firstItem(isEdible);
+  // if not, try our own inventory:
+  if (!it) it = firstItem(isEdible);
+  if (!it) {
+    if (isPlayer()) ioFactory::instance().message(L"There's nothing to eat here.");
+    return;
+  }
+
+  try {
+    // keep eating until the 
+    std::weak_ptr<item> pItem = it.value().shared_from_this();
+    while (pItem.lock() && eat(it.value()));
+  } catch (notHungryException e) {
+    if (isPlayer()) ioFactory::instance().message(L"You don't feel hungry right now.");
+  } catch (inedibleException e) {
+    if (isPlayer()) ioFactory::instance().message(L"This doesn't look tasty.");
+  }
+}

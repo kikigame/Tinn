@@ -824,7 +824,7 @@ public:
   }
   virtual ~corpse() {};
   virtual materialType material() const {
-    // trolls are stony, bats are leathery, plats are veggy, etc.
+    // trolls are stony, bats are leathery, plants are veggy, etc.
     // TODO: delegate to monsterType? More code but better encapsulated
     if (type_.type() == monsterTypeKey::troll) return materialType::stony;
     return materialType::fleshy;

@@ -167,6 +167,19 @@ public:
   // and ensure items unequipped on move
   virtual bool removeItemForMove(item &item, itemHolder &next);
 
+  // consume the given item.
+  // Returns true if item is fully consumed.
+  // Returns false if item is partially consumed
+  // Throws inedibleException if item is inedible.
+  // Throws notHungryException if monster is not hungry
+  virtual bool eat(item &item);
+
+  // try to eat something, either from current location or inventory:
+  virtual void eat();
+
+  class inedibleException : public std::exception{};
+  class notHungryException : public std::exception{};
+
 protected:
 
   // given a damage figue of damage of a given type,

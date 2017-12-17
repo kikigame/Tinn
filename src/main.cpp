@@ -96,6 +96,7 @@ const wchar_t * help() {
     "e) Equip (wield/wear) weapons, clothing, jewellery or armour\n"
     "l) Leave (drop) items\n"
     "u) Use an individual item\n"
+    "c) Consume something\n"
     "\n"
     "Have fun!";
 }
@@ -169,6 +170,10 @@ void processInput(dungeon & d, const std::wstring &c, const std::shared_ptr<io> 
   case L'u': case L'U':
     d.pc()->use();
     time::tick(true); // always 1 turn to use an item
+    break;
+  case L'c': case L'C':
+    d.pc()->eat();
+    time::tick(true); // always 1 extra turn to eat an item
     break;
   }
 }

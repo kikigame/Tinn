@@ -38,6 +38,7 @@ private:
   materialType material_ = materialType::fleshy;
   std::vector<deity *> alignment_;
   std::wstring encyclopedium_ = L"";
+  std::bitset<materialTypeSize> foodMaterials_;
   std::vector<const wchar_t *> sayings_;
   movementType movementType_;
 public:
@@ -66,6 +67,7 @@ public:
   monsterTypeBuilder& saying(const wchar_t * const saying) { sayings_.push_back(saying); return *this; }
   // if an entry in the "agenda" is an "agendum", then an entry in the "encyclopedia" must be an...
   monsterTypeBuilder& encyclopedium(const std::wstring & encyclopedium) { encyclopedium_ += encyclopedium; return *this; }
+  monsterTypeBuilder& eats(materialType t) { foodMaterials_[static_cast<size_t>(t)] = true; return *this; }
   template <typename I>
   monsterTypeBuilder& align(I begin, I end) { 
     for (I i = begin; i != end; ++i)
@@ -95,6 +97,7 @@ monsterType::monsterType(const monsterTypeBuilder & b) :
   maxDamage_(b.maxDamage_),
   gen_(b.gen_),
   material_(b.material_),
+  foodMaterials_(b.foodMaterials_),
   sayings_(b.sayings_),
   alignment_(b.alignment_),
   movementType_(b.movementType_) {}
@@ -124,6 +127,7 @@ const std::vector<const wchar_t *>::const_iterator monsterType::sayingsBegin() c
 const std::vector<const wchar_t *>::const_iterator monsterType::sayingsEnd() const {
   return sayings_.end();
 }
+const bool monsterType::eats(const materialType foodType) const { return foodMaterials_[static_cast<size_t>(foodType)]; }
 bool monsterType::operator == (const monsterType & rhs) const {
   return key_ == rhs.key_;
 }
@@ -174,6 +178,8 @@ public:
 	    .dodge(5) // they're big
 	    .maxDamage(80) // not easy to kill even as a baby, although tougher creatures exist
 	    .gen(genderAssignType::indirect)
+	    .eats(materialType::fleshy)
+	    .eats(materialType::leathery) // definitely carnivores, but I'm guessing they'll eat some of your armour too
 	    .saying(L"Behold the Powerful Dragon") // should not actually say this; depends on the monster's specifics
 	    .encyclopedium(L"The dragon is a powerful creature shrouded in mystery.")); // TODO: Better this
 
@@ -206,6 +212,7 @@ public:
 	    .align(dr.getExact(Element::earth, Domination::aggression, Outlook::kind))
 	    .align(dr.getExact(Element::earth, Domination::aggression, Outlook::cruel))
 	    .align(dr.getExact(Element::earth, Domination::aggression, Outlook::none))
+	    .eats(materialType::fleshy)
 	    .saying(L"(howl)") // todo: woof for puppies & dogs
 	    .movement({speed::turn2, goTo::player, goBy::smart, 50})
 	    .encyclopedium(L"Canines are furry, with four legs and a tail. They are easily excited, always\n"
@@ -234,6 +241,7 @@ public:
 	    .gen(genderAssignType::mf)
 	    .align(dr.getExact(Element::earth, Domination::aggression, Outlook::kind))
 	    .saying(L"*poing*") // ref: Sluggy Freelance
+	    .eats(materialType::fleshy) // obligate carnivores
 	    .movement({speed::turn2, goTo::player, goBy::smart, 75})
 	    .encyclopedium(
 L"Meaning \"Little Thief\", ferrets are small, hyperflexible elongated mammels\n"
@@ -266,6 +274,11 @@ L"Meaning \"Little Thief\", ferrets are small, hyperflexible elongated mammels\n
 	    .align(dr.getExact(Element::none, Domination::aggression, Outlook::cruel)) 
 	    .saying(L"Go back to your room. Play with your toys and costumes. Forget about the baby") // ref: Labyrinth
 	    .saying(L"I ask for so little. Just fear me, love me, do as I say") // ref: Labyrinth
+	    .eats(materialType::papery) // not very fussy
+	    .eats(materialType::clothy) // not very fussy
+	    .eats(materialType::veggy)
+	    .eats(materialType::fleshy)
+	    .eats(materialType::leathery)
 	    .movement({speed::turn2, goTo::player, goBy::smart, 75})
 	    .encyclopedium(
 L"The difference between a goblin and an orc is that orcs don't exist.\n"
@@ -298,6 +311,8 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .saying(L"(mumble mumble) synergise (mumble muble) teamwork.") // clearly a manager...
 	    .saying(L"Have you seen my 'phone?") // something people say. They're obsessed with 'phones, but none in this game.
 	    .saying(L"Cor; it's like Picadilly Circus 'round 'ere.") // ref: I cannot source this quote, but it's a common saying for "it's busy/crowded/lots of people"
+	    .eats(materialType::veggy)
+	    .eats(materialType::fleshy)
 	    .encyclopedium(L"Amongst the smelliest of monsters, these strange creatures have a poor sense\n"
 " of smell. They lack in intelligece, cunning, learning, strength, power and\n"
 "speed - but are very adept at using tools and being unpredictable."));
@@ -329,6 +344,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .material(materialType::stony)
 	    .align(dr.getExact(Element::earth, Domination::none, Outlook::cruel))
 	    .movement({speed::slow3, goTo::player, goBy::beeline, 25})
+	    .eats(materialType::stony)
 	    // Mostly based on http://www.mysticfiles.com/trolls-from-ancient-to-modern/
 	    .encyclopedium(L"Dim-witted creatures of Norse and Scandinavian origin. Big and ugly, trolls\n"
 "are known for possessing magical objects and treasures - like gold, or\n"
@@ -361,6 +377,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .material(materialType::fleshy)
 	    .align(dr.getExact(Element::time, Domination::aggression, Outlook::none))
 	    .movement({speed::slow3, goTo::player, goBy::zombeeline, 0})
+	    // do not eat
 	    // ref: https://skeptoid.com/episodes/4262
 	    .encyclopedium(
      L"Zombie powder is derived from the pufferfish, human bones and various\n"
@@ -379,7 +396,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .category(monsterCategory::birdOfPrey)
 	    .name(L"Falcon")
 	    .name(L"Eagle")
-	    .name(L"Big Bird") // TODO: Better bird names
+	    .name(L"Big Bird") // TODO: Better bird names (ref:Sesame Stree for now)
 	    .className(L"bird of prey")
 	    .levelFactor(4)
 	    .levelOffset(3)
@@ -400,6 +417,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .align(dr.getExact(Element::air, Domination::concentration, Outlook::none))
 	    .align(dr.getExact(Element::air, Domination::concentration, Outlook::cruel))
 	    .movement({speed::turn2, goTo::wander, goBy::avoid, 0})
+	    .eats(materialType::fleshy)
 	    // ref: https://skeptoid.com/episodes/4262
 	    .encyclopedium(
      L"Most flying creatures will leave you alone unless disturbed, but\n"
@@ -452,6 +470,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .saying(L"You will be Converted!")
 	    .saying(L"Resistance is useless!")
 	    .gen(genderAssignType::neuter) // gender has been removed along with the brain, and we'll assume sex has too. Mats & Mites get none anyway.
+	    // do not eat. We could let them eat metals, but then they'd not eat paper. Cybers recharge electrically I believe.
 	    .align(dr.getExact(Element::time, Domination::aggression, Outlook::neutral))
 	    .movement({speed::slow2, goTo::player, goBy::beeline, 10})
 	    .encyclopedium(L"Mondas calls whence they hail; the twin planet of Earth,\n"

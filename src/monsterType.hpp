@@ -9,6 +9,7 @@
 #include "movement.hpp"
 #include <vector>
 #include <string>
+#include <bitset>
 
 
 // broad categories of monster
@@ -80,9 +81,6 @@ private:
   // TODO: weapon damage types dealt bitset
   // TODO: weapon proofs / resistance
   // TODO: othir intrinsics
-  // TODO: special attacks
-  // TODO: special defences
-  // TODO: special ad-hocs
   // TODO: starting inventory
   const std::vector<const wchar_t *> monsterNames_; // by experience
   const std::wstring encyclopedium_;
@@ -107,6 +105,9 @@ private:
 
   // most monsters are fleshy but not all...
   const materialType material_;
+
+  // what materials can this monster eat?
+  const std::bitset<materialTypeSize> foodMaterials_;
 
   // 1 of more things that monsters of this kind can say.
   // The game will prefix this with "If I could speak, I would say..."
@@ -163,6 +164,8 @@ public:
 
   const std::vector<const wchar_t *>::const_iterator sayingsBegin() const;
   const std::vector<const wchar_t *>::const_iterator sayingsEnd() const;
+
+  const bool eats(const materialType foodType) const;
 
   bool operator == (const monsterType & rhs) const;
 };
