@@ -183,40 +183,6 @@ public:
 	    .saying(L"Behold the Powerful Dragon") // should not actually say this; depends on the monster's specifics
 	    .encyclopedium(L"The dragon is a powerful creature shrouded in mystery.")); // TODO: Better this
 
-    // unique features: change saying based on size.
-    emplace(monsterTypeBuilder (monsterTypeKey::hound)
-	    .category(monsterCategory::quadruped)
-	    //.name(L"puppy") // I don't mind puppies, but I don't want puppy combat on level 1 thanks
-	    .name(L"dog")
-	    .name(L"coyote") // NB: Nethack announces coyotes with silly latin names, a reference to the Road Runner cartoons
-	    .name(L"hound") // bit of an odd track, as "hound" means tamed hunting dog
-	    .name(L"wolfhound") // hound for hunting wolves
-	    .name(L"wild dog")
-	    .name(L"painted dog") // aka african hunting dog or african hunting wolf
-	    .name(L"wolf")
-	    .name(L"Big Bad Wolf") // ref:fairytales
-	    .className(L"Canid") // genus canus
-	    .levelFactor(1)
-	    .levelOffset(0)
-	    .minSpawn(1)
-	    .maxSpawn(12) // todo: unsure how big dog packs can be
-	    .xpFactor(1)
-	    .xpOffset(10)
-	    .renderChar(L'd') // as per Nethack
-	    .strength(10)
-	    .appearance(20)
-	    .fighting(40)
-	    .dodge(20) // they're frisky, but we don't want a puppy to kill a starting player
-	    .maxDamage(10) // not easy to kill even as a baby, although tougher creatures exist
-	    .gen(genderAssignType::mf)
-	    .align(dr.getExact(Element::earth, Domination::aggression, Outlook::kind))
-	    .align(dr.getExact(Element::earth, Domination::aggression, Outlook::cruel))
-	    .align(dr.getExact(Element::earth, Domination::aggression, Outlook::none))
-	    .eats(materialType::fleshy)
-	    .saying(L"(howl)") // todo: woof for puppies & dogs
-	    .movement({speed::turn2, goTo::player, goBy::smart, 50})
-	    .encyclopedium(L"Canines are furry, with four legs and a tail. They are easily excited, always\n"
-"hungry and pack hunters. They enjoy bones and some are known to bark or howl."));
 
     // unique feature: stealing something & running away
     emplace(monsterTypeBuilder (monsterTypeKey::ferret)
@@ -286,6 +252,41 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 "with shiny treasure; they will take what they want by force, trickery or even\n"
 "magic."));
 
+    // unique features: change saying based on size.
+    emplace(monsterTypeBuilder (monsterTypeKey::hound)
+	    .category(monsterCategory::quadruped)
+	    //.name(L"puppy") // I don't mind puppies, but I don't want puppy combat on level 1 thanks
+	    .name(L"dog")
+	    .name(L"coyote") // NB: Nethack announces coyotes with silly latin names, a reference to the Road Runner cartoons
+	    .name(L"hound") // bit of an odd track, as "hound" means tamed hunting dog
+	    .name(L"wolfhound") // hound for hunting wolves
+	    .name(L"wild dog")
+	    .name(L"painted dog") // aka african hunting dog or african hunting wolf
+	    .name(L"wolf")
+	    .name(L"Big Bad Wolf") // ref:fairytales
+	    .className(L"Canid") // genus canus
+	    .levelFactor(1)
+	    .levelOffset(0)
+	    .minSpawn(1)
+	    .maxSpawn(12) // todo: unsure how big dog packs can be
+	    .xpFactor(1)
+	    .xpOffset(10)
+	    .renderChar(L'd') // as per Nethack
+	    .strength(10)
+	    .appearance(20)
+	    .fighting(40)
+	    .dodge(20) // they're frisky, but we don't want a puppy to kill a starting player
+	    .maxDamage(10) // not easy to kill even as a baby, although tougher creatures exist
+	    .gen(genderAssignType::mf)
+	    .align(dr.getExact(Element::earth, Domination::aggression, Outlook::kind))
+	    .align(dr.getExact(Element::earth, Domination::aggression, Outlook::cruel))
+	    .align(dr.getExact(Element::earth, Domination::aggression, Outlook::none))
+	    .eats(materialType::fleshy)
+	    .saying(L"(howl)") // todo: woof for puppies & dogs
+	    .movement({speed::turn2, goTo::player, goBy::smart, 50})
+	    .encyclopedium(L"Canines are furry, with four legs and a tail. They are easily excited, always\n"
+"hungry and pack hunters. They enjoy bones and some are known to bark or howl."));
+
     // unique feature: uniquely, no unique features
     emplace(monsterTypeBuilder (monsterTypeKey::human)
 	    .category(monsterCategory::biped)
@@ -350,6 +351,40 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 "are known for possessing magical objects and treasures - like gold, or\n"
 "princesses. They wander little and are fierecely territorial, but have been\n"
 "known to attack human shrines. They are known to hate sunlight."));
+
+    // unique feature: staying put & minding their own business
+    emplace(monsterTypeBuilder (monsterTypeKey::venusTrap)
+	    .category(monsterCategory::blob)
+	    .name(L"venus fly trap")
+	    .name(L"venus moth trap")
+	    .name(L"venus spider trap")
+	    .name(L"venus beetle trap")
+	    .name(L"venus cockroach trap")
+	    .name(L"venus human trap")
+	    .name(L"venus troll trap")
+	    .className(L"plants")
+	    .levelFactor(1)
+	    .levelOffset(-1)
+	    .minSpawn(1)
+	    .maxSpawn(1)
+	    .xpFactor(10)
+	    .xpOffset(1)
+	    .renderChar(L'#') // trees in Nethack are '#' or '±'
+	    .strength(10)
+	    .appearance(90) // beautiful but look dangerous
+	    .fighting(50)
+	    .dodge(0)
+	    .maxDamage(10)
+	    .gen(genderAssignType::neuter)
+	    .align(dr.getExact(Element::plant, Domination::aggression, Outlook::cruel))
+	    .eats(materialType::fleshy) // obligate carnivores
+	    .movement({speed::slow3, goTo::none, goBy::avoid, 0})
+	    .encyclopedium(
+L"There are a great number of creatures in the world, and not all sit neatly\n"
+"in their categories. The Venus trap is a deadly flora which allures its\n"
+"victims with sweet aromas, until they meet their deadly end within its hairy\n"
+"jaw-like leaves...\n"
+"The Dionaea muscipula is found mostly in sub-tropical wetlands."));
 
     // unique feature: beeline approach ignoring all traps. Instant death on pin traps
     emplace(monsterTypeBuilder (monsterTypeKey::zombie)

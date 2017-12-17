@@ -9,6 +9,7 @@
 #include "random.hpp"
 #include "labyrinth.hpp"
 #include "shrine.hpp"
+#include "religion.hpp"
 
 #include <algorithm> // max/min
 #include <random>
@@ -266,6 +267,8 @@ public:
     // place a shrine sometimes
     if (dPc() <= 10) {
       auto shrinePos = addShrine();
+      ++shrinePos.second.first;
+      ++shrinePos.second.second;
       auto shrineDir = addCorridor(mid(shrinePos), mid(pos[0]));
       coord alterPos = shrineDir.next(mid(shrinePos));
       place(alterPos, terrainType::ALTAR);
@@ -770,7 +773,7 @@ std::pair<coord,coord> levelGen::addShrine() {
   }
 
   coord topLeft(xPos,yPos);
-  coord btmRight(xPos+width, yPos+height);
+  coord btmRight(xPos+width-2, yPos+height-2);
 
   auto loc = std::pair<coord,coord>(topLeft,btmRight);
 
@@ -778,6 +781,15 @@ std::pair<coord,coord> levelGen::addShrine() {
   level_->itemZones_.push_back(shr);
   level_->monsterZones_.push_back(shr);
   level_->holder(coord(xPos+2,yPos+2)).addItem(createHolyBook(shr->align()));
+  if (shr->align().element() == Element::plant &&
+      shr->align().domination() == Domination::aggression &&
+      shr->align().outlook() == Outlook::cruel) {
+    auto &monsterType = monsterTypeRepo::instance()[monsterTypeKey::venusTrap];
+    level_->addMonster(ofType(monsterType, pub_), coord(xPos+1,yPos+1));
+    level_->addMonster(ofType(monsterType, pub_), coord(xPos+1,yPos+3));
+    level_->addMonster(ofType(monsterType, pub_), coord(xPos+3,yPos+1));
+    level_->addMonster(ofType(monsterType, pub_), coord(xPos+3,yPos+3));
+  }
 
   return loc;
 }

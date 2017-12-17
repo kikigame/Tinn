@@ -64,6 +64,7 @@ enum class monsterTypeKey {
   hound,
   human, 
   troll, 
+  venusTrap,
   zombie,
 };
 
