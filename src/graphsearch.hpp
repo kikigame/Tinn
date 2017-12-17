@@ -23,7 +23,7 @@ public:
       if (p != mEnd // slot exists
 	  && p->second // slot is filled
 	  ) return true; // something is covering n.
-      if (isCovered(m, p->first))
+      if (isCovered(m, slot))
 	return true; // nothing in this slot, but may be something in a more outer one recursively.
     }
     return false;

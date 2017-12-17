@@ -53,7 +53,28 @@ enum class itemTypeKey {
   // Clothing types ('[' as nethack armour until we can improve on it)
   // Useful ref: http://medieval.stormthecastle.com/all-about-medieval-armor.htm
   ////
+    bow, // worn by horses on their tail
+    boots,
+    cloak,
+    crupper, // (horse rump armour)
+    doublet,
+    flanchard, // (horse mid-back armour)
+    haubergeon,
+    hauberk,
     helmet,
+    jerkin,
+    peytral, // (horse chest armour)
+    robe,
+    saddle, // horses aren't currently rideable, but this is important as armour
+    scabbord, // currently behaves the same as a belt
+    shirt,
+    shorts,
+    skirt,
+    socks,
+    trousers,
+    tshirt, // sexy if wet or torn
+    underpants,
+    
 
   ////
   // Stylii ('/' for wand in nethack, cf \ for throne)

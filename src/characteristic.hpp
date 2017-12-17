@@ -47,6 +47,9 @@ public:
   // reduce the maximum stat in a more permanent way; will reduce current and max
   void cripple(unsigned char amout);
 
+  // apply bonus if necessary to increase, otherwise reduce
+  void adjustBy(int amount);
+
   void enhancement(int amount) { amount > 0 ? bonus(amount) : cripple(amount); };
 
   // returns true if current = max

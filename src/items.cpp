@@ -423,6 +423,20 @@ public:
   }
 };
 
+class tshirt : public basicEquip<item::equipType::worn> {
+public:
+  tshirt() :
+    basicEquip(itemTypeRepo::instance()[itemTypeKey::tshirt],
+	       slotType::shirt) {}
+  virtual ~tshirt() {}
+  //tshirts are sexy if wet or torn, but this only helps if worn as an outer layer.
+  virtual bool isSexy() { // ref: wet tshirt contents I guess
+    return basicItem::isSexy() ||
+      damageOfType(damageType::edged) > 0 ||
+      damageOfType(damageType::wet) > 0;
+  }
+};
+
 class bottlingKit;
 
 class transmutedWater : public basicItem {
@@ -909,8 +923,68 @@ item& createItem(const itemTypeKey & t) {
   case itemTypeKey::rock:
     rtn = new basicThrown(r[t], damageType::bashing);
     break;
+  case itemTypeKey::bow:
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::hat, slotType::tail);
+    break;
+  case itemTypeKey::boots:
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::shoes);
+    break;
+  case itemTypeKey::cloak:
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::robe);
+    break;
+  case itemTypeKey::crupper:
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::shorts);
+    break;
+  case itemTypeKey::doublet:
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::doublet);
+    break;
+  case itemTypeKey::flanchard:
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::jerkin);
+    break;
+  case itemTypeKey::haubergeon:
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::hauburk);
+    break;
+  case itemTypeKey::hauberk:
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::hauburk);
+    break;
   case itemTypeKey::helmet:
     rtn = new basicEquip<item::equipType::worn>(r[t], slotType::hat);
+    break;
+  case itemTypeKey::jerkin:
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::jerkin);
+    break;
+  case itemTypeKey::peytral:
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::robe);
+    break;
+  case itemTypeKey::robe:
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::robe);
+    break;
+  case itemTypeKey::saddle:
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::saddle);
+    break;
+  case itemTypeKey::scabbord:
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::belt);
+    break;
+  case itemTypeKey::shirt:
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::shirt);
+    break;
+  case itemTypeKey::shorts:
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::shorts);
+    break;
+  case itemTypeKey::skirt:
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::shorts);
+    break;
+  case itemTypeKey::socks:
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::socks);
+    break;
+  case itemTypeKey::trousers:
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::shorts);
+    break;
+  case itemTypeKey::tshirt:
+    rtn = new tshirt();
+    break;
+  case itemTypeKey::underpants:
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::underwear);
     break;
   case itemTypeKey::stick:
     rtn = new basicItem(r[t]); // TODO: wands & charges

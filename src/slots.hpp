@@ -50,7 +50,7 @@ enum class slotType {
     toe_right_little,
     anklet_right,
     socks,
-    boots, //boots/shoes
+    shoes, //boots/shoes (boots also take up anklet slots?)
 
     underwear,
     shorts, ///trousers/skirt/crupper (crupper is horse rump armour)

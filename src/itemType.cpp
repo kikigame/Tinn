@@ -123,12 +123,154 @@ L"Not the fundamental building blocks, but the building blocks of the\n"
 "genre.",
 L"Like, totally stoned man." // just a pun, but it could reference nethack's hallucination
 			     ));
+    emplace(itemTypeKey::bow, // 25momme = mediumweight silk
+	    // http://lovasilk.com/guide-to-silk-bedding/momme-weight-explained/ - 1momme = lb weight of 100yds@45"
+	    // we want 8"x1" for a decemnt bow, so 25*8/(36*100*45) oz = 0.0012345679 oz
+	    new itemTypeImpl(0.00034322697748849383, materialType::clothy, L'[', L"bow",
+L"Worn on the left of a hatters' hatband, the right of a milliner's fascinator\n"
+"or tied around the tail of fully-dressed warhorse, one's public appearance\n"
+"simply doesn't look finished without a length of ribbon in a neatly-tied bow.",
+L"Someone stole the present!"
+			     ));
+    emplace(itemTypeKey::boots, // answers.com says average ~48oz
+	    new itemTypeImpl(13.34466488475264, materialType::leathery, L'[', L"pair of boots",
+L"A good pair of boots will protect your feet and ankles when walking.",
+L"Tall shoes"
+			     ));
+    emplace(itemTypeKey::cloak, // http://www.cloakmaker.com/cloakfaq.html suggests 14-20lb for a lined cloak; we'll take 17lb
+	    new itemTypeImpl(75.6197676802653, materialType::clothy, L'[', L"cloak",
+L"Cloaks are one of the oldest forms of clothing, and likely began as a form\f"
+"of artificial skins to wrap around onesself for warmth. This one is a semi-\n"
+"circle of fabric with a simple closing at the neck. Cloaks are excellent for\n"
+"keeping warm while travelling.",
+L"Some sort of roundded blanket."
+			     ));
+    emplace(itemTypeKey::crupper, // https://en.wikipedia.org/wiki/Horses_in_the_Middle_Ages gives 70lbs total for horse armour; we'll split that equally between crupper, flanchard, peytral & saddle for now => 17.5 lb each
+	    new itemTypeImpl(77.8438784943908, materialType::metallic, L'[', L"crupper",
+L"The simplest cruppers are mere straps intended to prevent the saddle from\n"
+"slipping forward. This is the armoured kind, also called a croupiere or\n"
+"crupiere bacul, and protects a steed's hindquarters during combat.",
+L"Metal bum"
+			     ));
+    emplace(itemTypeKey::doublet, // https://www.quora.com/How-much-did-the-armor-of-an-English-Knight-of-the-middle-16th-century-weigh?share=1 says "all weights listed included that of a 6.3kg arming doublet, ", so 6.3kg
+	    new itemTypeImpl(61.7818951804251, materialType::clothy, L'[', L"doublet",
+L"This buttoned jacket reaches down to the waist, is worn over a shirt, and\n"
+"as well as looking smart, it protects the wearer from any metallic armour\n"
+"worn over the top",
+L"Flouncy shirty thing"
+			     ));
+    emplace(itemTypeKey::flanchard,
+	    new itemTypeImpl(77.8438784943908, materialType::metallic, L'[', L"pair of flanchards",
+L"The flanchards armour the flanks of a steed during combat.",
+L"Metal plates of organic shape"
+			     ));
+    emplace(itemTypeKey::haubergeon, // https://answers.yahoo.com/question/index?qid=20110825080532AAhi650 gives 11kg for a Haubergeon
+	    new itemTypeImpl(107.873150315028, materialType::metallic, L'[', L"haubergeon",
+L"This smaller, sleeveless version of the hauberk is a metallic shirt\n"
+"offering reasonable protection at a relatively small weight.\n"
+"A shirt of chain-mail provides good protection from most kinds of weapon.\n"
+"If worn under plate mail, it covers the gaps between each plate, which would\n"
+"otherwise become leathal gaps in one's armour.\n",
+L"Shiny tshirt"
+			     ));
+    emplace(itemTypeKey::hauberk, // https://answers.yahoo.com/question/index?qid=20110825080532AAhi650 gives 55lb for a "full mail covering". I think that's probably the upper end, but as weight is the only advantage for a haubergeon, I'll take it at 55lb.
+	    new itemTypeImpl(244.6521895538, materialType::metallic, L'[', L"hauberk",
+L"A shirt of chain-mail provides good protection from most kinds of weapon.\n"
+"If worn under plate mail, it covers the gaps between each plate, which would\n"
+"otherwise become leathal gaps in one's armour.\n",
+L"Shiny shirt"
+			     ));
     emplace(itemTypeKey::helmet, // https://www.medievalarmour.com/c-790-medieval-helmets.aspx
 	    new itemTypeImpl(10, materialType::metallic, L'[', L"helmet",
 L"The diminutive form of /helm/; a helmet covers only the head. Originally\n"
 "metal or bronze, this steel protective headgear will protect from various\n"
 "forms of cranial impact. This one looks like a basic bascinet, sans aventail.",
 L"A decorative pointy metal hat."
+			     ));
+    emplace(itemTypeKey::jerkin, // I can't find a good reference, so I'm guessing 36oz for now (4 square feet; see scabbord)
+	    new itemTypeImpl(10.0084986635645, materialType::leathery, L'[', L"jerkin",
+L"Not a male gyrfalcon, but a close-fitting sleveless over-jacket worn over a\n"
+"doublet. This protects the doublet from the rain and helps to keep the core\n"
+"of the body warm, as well as providing some additional armour against\n"
+"glancing blows.\n",
+L"Some kind of waistcoat"
+			     ));
+    emplace(itemTypeKey::peytral,
+	    new itemTypeImpl(77.8438784943908, materialType::metallic, L'[', L"peytral",
+L"The peytral is one of the most important pieces of armour for any rider who\n"
+"charges their enemy in combat. It protects the chest of the horse, reaching\n"
+"down to the upper legs and as far back as the saddle.",
+L"Some kind of giant's necklace"
+			     ));
+    emplace(itemTypeKey::robe, // I found a bathrobe at "2-3lb". I imagine terrycotton would be slightly lighter than lightweight wool, so let's say 5lb https://www.sierratradingpost.com/turkish-cotton-terry-robe-closeouts-for-men~p~16453/questions/2026528~how-much-does-this-robe-weigh/
+	    new itemTypeImpl(22.2411081412545, materialType::clothy, L'[', L"robe",
+L"A simple robe protects the modesty of the wearer and keeps out most of the\n"
+"cold.",
+L"Jedi costume"
+			     ));
+    emplace(itemTypeKey::saddle,
+	    new itemTypeImpl(77.8438784943908, materialType::leathery, L'[', L"saddle",
+L"A saddle is attached to the back of the steed, and provides a platform for\n"
+"the rider to sit on. It is the attachment point for saddle-bags, peytrals\n"
+"and flanchards and so is indespensible for an armoured steed.\n",
+L"Leather step"
+			     ));
+    emplace(itemTypeKey::scabbord,  // http://www.waterhouseleather.com/leather_buying_guide.htm suggests ~9oz per square foot roughly for leather. Let's say a belt is 6'x1" = 1sq ft, but doubled leather = 2sq ft => 18oz. Times 1.5 to allow for sword loop & metal fixings => 24oz
+	    new itemTypeImpl(6.67233244237632, materialType::leathery, L'[', L"scabbord",
+L"It is said that Excalibur's scabbord is worth ten of the sword, but this is\n"
+"merely a convenient way to carry one's sword without having to wield it all\n"
+"the time.",
+L"Belt with decorative dangly bits"
+			     ));
+    emplace(itemTypeKey::shirt, // https://www.gentelle.com/blog/what-is-gsm-in-fabrics/ gives 130gsm for summer and 210 gsm for luxuary linen. I'm going with 210gsm, on the grounds that modern "luxuary" was probably more like (what would have passed for what we'd now call) year-round weight. Let's guess at 2m for a shirt (roughtly the area of human skin on the body, but shirts fit more loosely and that quickly adds up). =  420g
+	    new itemTypeImpl(4.11879301202834, materialType::clothy, L'[', L"shirt",
+L"The shirt is the most timeless wardrobe staple, and finds its place on all\n"
+"warriors, peasants and nobles alike. Only the material differs; this is a\n"
+"very servicable linen.",
+L"Cloth chainmail"
+			     ));
+    emplace(itemTypeKey::shorts, // http://www.cockeyed.com/science/weight/weight_menu.html gives 22oz for US "pants" and 16oz for Jeans. Let's take 20oz for trousers and 16oz for shorts.
+	    new itemTypeImpl(4.44822162825088, materialType::clothy, L'[', L"pair of short trousers",
+L"These trousers are cut short to the middle of the lower leg, protecting the\n"
+"modesty of the weather while guarding against hot weather.",
+L"Shirt for a short headless person"
+			     ));
+    emplace(itemTypeKey::skirt, // guessing same as shorts
+	    new itemTypeImpl(4.44822162825088, materialType::clothy, L'[', L"skirt",
+L"In tailoring or seamstering, the \"skirt\" is simply the bottom edge of any\n"
+"garment. Garments are often made with a long, straight section ending at a\n"
+"finished, mostly straight, edge. A garment worn between the waist and legs,\n"
+"consisting of a mostly straight section ending at a finished, mostly\n"
+"straight, edge, is often known simply as a skirt. This sikrt is cut short to\n"
+"the middle of the lower leg, protecting the modesty of the weather while\n"
+"guarding against hot weather.",
+L"small blanket"
+			     ));
+    emplace(itemTypeKey::socks, // http://www.cockeyed.com/science/weight/weight_menu.html gives 2oz
+	    new itemTypeImpl(0.55602770353136, materialType::clothy, L'[', L"pair of socks",
+L"Worn between feet and shoes to protect the wearer from the effects of the\n"
+"leather and to provide warmnth.",
+L"Angled mittens"
+			     ));
+    emplace(itemTypeKey::trousers,
+	    new itemTypeImpl(5.5602770353136, materialType::clothy, L'[', L"pair of trousers",
+L"A trouser is a tubular garmnt with two seams worn along the leg, as distict\n"
+"from a trew, which has only one seam. This garment consists of two trousers\n"
+"joined by a crotch and seat.",
+L"Shirt for a tall headless person"
+			     ));
+    emplace(itemTypeKey::tshirt, // http://www.cockeyed.com/science/weight/weight_menu.html 5oz for undershirt
+	    new itemTypeImpl(1.3900692588284, materialType::clothy, L'[', L"tshirt",
+L"A mass-produced cotton undergarment. These are most notorious for political\n"
+"slogons being drawn or printed on them at political protests, but have\n"
+"become a mainstream staple garment, even worn as outerwear during hot weather.",
+L"Holy Y-shaped cloth tube"
+			     ));
+    emplace(itemTypeKey::underpants, // http://www.cockeyed.com/science/weight/weight_menu.html 1--2oz for underwear; taking 1.5
+	    new itemTypeImpl(0.41702077764852, materialType::clothy, L'[', L"pair of underpants",
+L"Worn between one's neither-regions and the rest of the world; extends the\n"
+"wear time of outer garments and are easier to clean.",
+L"Novelty hat"
 			     ));
     emplace(itemTypeKey::stick,
 	    new itemTypeImpl(0.5, materialType::woody, L'/', L"stick",

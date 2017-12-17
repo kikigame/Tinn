@@ -77,9 +77,9 @@ struct slotRepoType {
   std::unique_ptr<slotImpl> toe_right_thumb = std::unique_ptr<slotImpl>(new slotImpl(L"right fifth claw", {{monsterCategory::biped, L"right big toe"}, {monsterCategory::birdOfPrey, L"right opposed talon"}, {monsterCategory::blob, L"fifth right blobby protrusion"}}));
   std::unique_ptr<slotImpl> anklet_right = std::unique_ptr<slotImpl>(new slotImpl(L"right hindleg", {{monsterCategory::biped, L"right ankle"}, {monsterCategory::bird, L"right leg"}, {monsterCategory::birdOfPrey, L"right leg"}, {monsterCategory::blob, L"lower right blobby protrusion"}}));
 
-  // like gloves and gauntlets, socks go under boots but are reported as the same slot:
+  // like gloves and gauntlets, socks go under shoes but are reported as the same slot:
   std::unique_ptr<slotImpl> socks = std::unique_ptr<slotImpl>(new slotImpl(L"hindpaws", {{monsterCategory::biped, L"feet"}, {monsterCategory::blob, L"lower blobby protrusions"}}));
-  std::unique_ptr<slotImpl> boots = std::unique_ptr<slotImpl>(new slotImpl(L"hindpaws", {{monsterCategory::biped, L"feet"}, {monsterCategory::blob, L"lower blobby protrusions"}}));
+  std::unique_ptr<slotImpl> shoes = std::unique_ptr<slotImpl>(new slotImpl(L"hindpaws", {{monsterCategory::biped, L"feet"}, {monsterCategory::blob, L"lower blobby protrusions"}}));
 
   std::unique_ptr<slotImpl> underwear = std::unique_ptr<slotImpl>(new slotImpl(L"pelvis", {{monsterCategory::blob, L"lower middle blobby protrusion"}}));
   std::unique_ptr<slotImpl> shorts = std::unique_ptr<slotImpl>(new slotImpl(L"upper legs", {{monsterCategory::quadruped, L"rump"}, {monsterCategory::hooved_quadruped, L"rump"}, {monsterCategory::centaur, L"rump"}, {monsterCategory::dragon, L"abdomen"}, {monsterCategory::blob, L"top part of lower blobby protrusion"}})); // TODO: insects & lizards should have adbomen
@@ -139,7 +139,7 @@ struct slotRepoType {
     toe_right_fourth->covered(*socks);
     toe_right_little->covered(*socks);
     anklet_right->covered(*socks);
-    socks->covered(*boots)
+    socks->covered(*shoes)
       .covers(*toe_left_thumb)
       .covers(*toe_left_index)
       .covers(*toe_left_middle)
@@ -152,7 +152,7 @@ struct slotRepoType {
       .covers(*toe_right_fourth)
       .covers(*toe_right_little)
       .covers(*bracelet_right);
-    boots->covers(*socks);
+    shoes->covers(*socks);
 
     underwear->covered(*shorts);
     shorts->covers(*underwear).covered(*belt).covered(*saddle);
@@ -200,7 +200,7 @@ struct slotRepoType {
 	  toe_right_little.get(),
 	  anklet_right.get(),
 	  socks.get(),
-	  boots.get(), //boots/shoes
+	  shoes.get(), //boots/shoes
 	  underwear.get(),
 	  shorts.get(), ///trousers/skirt/crupper (crupper is horse rump armour)
 	  belt.get(), //scabbord/belt
@@ -240,7 +240,7 @@ struct slotRepoType {
 	  toe_right_little.get(),
 	  anklet_right.get(),
 	  socks.get(),
-	  boots.get(), //boots/shoes
+	  shoes.get(), //boots/shoes
 	  underwear.get(),
 	  shorts.get(), ///trousers/skirt/crupper (crupper is horse rump armour)
 	  belt.get(), //scabbord/belt
@@ -282,7 +282,7 @@ struct slotRepoType {
 	  toe_right_little.get(),
 	  anklet_right.get(),
 	  socks.get(),
-	  boots.get(), //boots/shoes
+	  shoes.get(), //boots/shoes
 	  underwear.get(),
 	  shorts.get(), ///trousers/skirt/crupper (crupper is horse rump armour)
 	  belt.get(), //scabbord/belt
@@ -328,7 +328,7 @@ struct slotRepoType {
 	  toe_right_little.get(),
 	  anklet_right.get(),
 	  socks.get(),
-	  boots.get(), //boots/shoes
+	  shoes.get(), //boots/shoes
 	  underwear.get(),
 	  shorts.get(), ///trousers/skirt/crupper (crupper is horse rump armour)
 	  belt.get(), //scabbord/belt
@@ -357,7 +357,7 @@ struct slotRepoType {
 	  toe_right_little.get(),
 	  anklet_right.get(),
 	  socks.get(),
-	  boots.get(), //boots/shoes
+	  shoes.get(), //boots/shoes
 	  underwear.get(),
 	  shorts.get(), ///trousers/skirt/crupper (crupper is horse rump armour)
 	  belt.get(), //scabbord/belt
@@ -384,7 +384,7 @@ struct slotRepoType {
 	  toe_right_fourth.get(),
 	  anklet_right.get(),
 	  socks.get(),
-	  boots.get(), //boots/shoes
+	  shoes.get(), //boots/shoes
 	  underwear.get(),
 	  shorts.get(), ///trousers/skirt/crupper (crupper is horse rump armour)
 	  belt.get(), //scabbord/belt
@@ -445,7 +445,7 @@ const slot* slotBy(slotType slot) {
     case slotType::toe_right_little: 	return slotRepo.toe_right_little .get();
     case slotType::anklet_right: 	return slotRepo.anklet_right.get();
     case slotType::socks: 		return slotRepo.socks.get();
-    case slotType::boots: 		return slotRepo.boots.get(); //boots/shoes
+    case slotType::shoes: 		return slotRepo.shoes.get(); //boots/shoes
 							                
     case slotType::underwear: 		return slotRepo.underwear.get();
     case slotType::shorts: 		return slotRepo.shorts.get(); ///trousers/skirt/crupper (crupper is horse rump armour)

@@ -117,6 +117,13 @@ void characteristic::cripple(unsigned char amount) {
   if (max_ < 0) max_ = 0;
 }
 
+void characteristic::adjustBy(int amount) {
+  if (amount < 0)
+    (*this) -= amount;
+  else if (amount > 0)
+    bonus(static_cast<unsigned char>(std::min(100,amount)));
+}
+
 bool characteristic::isFull() const {
   return current_ == max_;
 }

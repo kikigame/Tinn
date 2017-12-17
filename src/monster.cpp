@@ -228,7 +228,7 @@ void monster::death() {
 
 
 // calculate the current strength bonus from equipment
-int calcStrBonus(const std::map<const slot*, optionalRef<item> > eq) {
+int calcStrBonus(const std::map<const slot*, optionalRef<item> > &eq) {
   int rtn = 0;
   auto e = eq.end();
   for (auto s : weaponSlots()) {
@@ -244,7 +244,7 @@ int calcStrBonus(const std::map<const slot*, optionalRef<item> > eq) {
 
 // TODO: shields. These occupy weapon slots, and allow for deflection rather than armour.
 // calculate the current strength bonus from equipment
-int calcDodBonus(const std::map<const slot*, optionalRef<item> > eq) {
+int calcDodBonus(const std::map<const slot*, optionalRef<item> > &eq) {
   int rtn = 0;
   auto wp = weaponSlots();
   auto wpe = wp.end();
@@ -253,17 +253,17 @@ int calcDodBonus(const std::map<const slot*, optionalRef<item> > eq) {
       // considering occupied non-weapon slots
       auto &item = i.second.value();
       double defence;
-      // base armour = (weight) * (material armour multiplicand):
+      // base armour = (weight) * (material armour multiplicand) / 10:
       switch (item.material()) {
       case materialType::glassy: defence = (1/3.); break; // basically untoughened leather
       case materialType::woody: defence = 0.5; break; // basically untoughened leather
       case materialType::fleshy: defence = (2/3.); break; // basically untoughened leather
       case materialType::leathery: defence = 1; break; // standard armour
       case materialType::stony: defence = 1.5; break; // very strong if very heavy...
-      case materialType::metallic: defence = 3; break; // best armour is metal
+      case materialType::metallic: defence = 3; break; // best armour is metal, but also the heaviest
       default: defence = 0;
       }
-      defence *= item.weight();
+      defence *= item.weight() / 10;
       defence += item.enchantment(); // each bonus adds +1 (=> +5%). Note that you can wear a *lot*, so enchantment adds up quite fast.
       if (item.isBlessed()) defence *= 1.5;
       if (item.isCursed()) defence *= 0.5;
@@ -279,7 +279,7 @@ class coverSearch : public graphSearch<const slot*, optionalRef<item> > {
 };
 
 // calculate the current appearance bonus from equipment
-int calcAppBonus(const std::map<const slot*, optionalRef<item> > eq) {
+int calcAppBonus(const std::map<const slot*, optionalRef<item> > &eq) {
   int rtn = 0;
   auto wp = weaponSlots();
   auto wpe = wp.end();
@@ -343,9 +343,9 @@ void monster::onEquip(item &item, const slot *s1, const slot *s2) {
   equipment_[s1] = item;
   equipment_[s2] = item;
   // calculate any new bonuses and apply adjustment
-  strength_ += calcStrBonus(equipment_) - strBonus;
-  appearance_ += calcAppBonus(equipment_) - appBonus;
-  dodge_ += calcDodBonus(equipment_) - dodBonus;
+  strength_.adjustBy(calcStrBonus(equipment_) - strBonus);
+  appearance_.adjustBy(calcAppBonus(equipment_) - appBonus);
+  dodge_.adjustBy(calcDodBonus(equipment_) - dodBonus);
 }
 
 bool monster::unequip(item &item) {
