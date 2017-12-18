@@ -62,11 +62,13 @@ public:
   // iterate over all items, stopping at first match:
   virtual optionalRef<item> firstItem(std::function<bool(item&)>);
   // test if the item is in this container
-  virtual bool contains(item &item) const;
+  bool contains(item &item) const;
   // test for an empty container
-  virtual bool empty() const;
+  bool empty() const;
   // get number of items; returns 0 if empty() == true
-  virtual unsigned int size() const;
+  unsigned int size() const;
+  // count the number of items matching functor
+  unsigned int countIf(std::function<bool(item&)>);
   // take "from" out of this container and put "to" in its place.
   // Used for transmutation, so position shouldn't change and cursed status should be ignored.
   // Return of true should mean than "from" remains in the container and "to" has not been added.

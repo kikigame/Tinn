@@ -281,7 +281,7 @@ private:
 	completeSale(barter);
 	return true;
       } else {
-	ioFactory::instance().message(L"\"Thank ye for your kind offer, but I think you've undervaluing my wares.\"");
+	ioFactory::instance().longMsg(L"\"Thank ye for your kind offer, but I think you've undervaluing my wares.\"");
 	paymentFailed();
 	bartering = true;
       }
@@ -297,6 +297,8 @@ private:
       inventory_.forEachItem([this, &found, &itemPrice, &barter](item &i, std::wstring) {
 	if (inventory_.slotsOf(i)[0] != nullptr) return; // skip clothing & wields
 	if (i.isCursed()) return; // skip cursed items, including ious!
+	auto adj = i.adjectives();
+	if (std::find(adj.begin(), adj.end(), L"dead") != adj.end()) return; // skip dead items (unless bagged); corpses are too valuable because of their weight
 	auto pi = i.shared_from_this();
 	auto end = barter.end();
 	if (std::find(barter.begin(), end, pi) == end) { // not already for barter
@@ -342,19 +344,24 @@ private:
 	break;
       }
       case 3: // add item
-	if (inventory_.size() > barter.size()) {
+	auto numItemsAvailable =  // count the number of non-cursed items in inventory
+	  inventory_.countIf([](item &i) { return !i.isCursed(); });
+	if (numItemsAvailable > barter.size()) { // still some items to add
 	  auto &toAdd = pickItem(L"What do you want to offer:", L"Choose the item to add to your offer",
 /*Njorthrbiartr is longest keeper name */
 keeperName_ + L" will appraise the value of the items you offer, and decide if\n"
 "it is a fair trade. If it isn't, you can modify your offer or decline.",
 				 [&barter](const item & i) {
-				   return std::find(barter.begin(), barter.end(), i.shared_from_this()) == barter.end();
+				   return 
+				   (!i.isCursed()) && // can't sell cursed items, such as IOUs
+				   std::find(barter.begin(), barter.end(), i.shared_from_this()) == barter.end();
 				 }
 			   );
 	  barter.push_back(toAdd.shared_from_this());
 	} else {
 	  auto &ios = ioFactory::instance();
 	  ios.message(L"Thou hast nothing to offer!");
+	  return barter;
 	}
 	break;
       }

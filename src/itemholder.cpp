@@ -152,6 +152,9 @@ bool itemHolder::empty() const {
 unsigned int itemHolder::size() const {
   return contents_.size();
 }
+unsigned int itemHolder::countIf(std::function<bool(item&)> f) {
+  return std::count_if(contents_.begin(), contents_.end(), [f](std::weak_ptr<item> i){ return f(*(i.lock())); });
+}
 bool itemHolder::replaceItem(item &from, item &to) {
   for (auto i = contents_.begin(); i != contents_.end(); ++i)
     if (i->lock().get() == &from) {
