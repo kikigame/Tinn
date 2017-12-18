@@ -21,7 +21,7 @@ private:
 public:
   role(roleImpl *);
   const wchar_t * const name() const;  
-  // there shall be more stuff here soon.
+  const wchar_t * const startGameMessage() const;
 };
 
 class roleRepoImpl;

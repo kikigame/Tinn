@@ -24,7 +24,6 @@ class monsterImpl;
 class deity;
 class monsterBuilder;
 class levelImpl;
-class role;
 class slot;
 class damage;
 

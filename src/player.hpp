@@ -12,10 +12,12 @@
 
 class level;
 class playerBuilder;
+class role;
 
 class player : public monster {
 private:
   const std::wstring name_;
+  const role &role_;
   // how much food have we eaten?
   int foodLevel_;
 public:
@@ -38,6 +40,7 @@ public:
 
   // overridden to inform the user:
   virtual const wchar_t* const fall(unsigned char reductionPc);
+  const role &job() const { return role_; }
 
 protected:
   virtual void death();

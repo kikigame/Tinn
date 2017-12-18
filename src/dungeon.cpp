@@ -6,6 +6,7 @@
 #include "terrain.hpp"
 #include "output.hpp"
 #include "appraise.hpp"
+#include "role.hpp"
 
 #include "chargen.hpp"
 #include <sstream>
@@ -31,6 +32,9 @@ dungeon::dungeon()
   player_ = std::shared_ptr<player> (new player(pb));
   // player starts on level 1, NOT the first level:
   start.addMonster(player_, start.findTerrain(terrainType::UP));
+
+  // welcome message
+  ioFactory::instance().message(player_->job().startGameMessage());
 }
 
 dungeon::~dungeon() {
