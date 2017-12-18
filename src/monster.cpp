@@ -877,10 +877,16 @@ class corpse;
 
 bool monster::eat(item &item) {
   if (!type().eats(item.material())) throw inedibleException();
+  // some things can affect consumption:
+  bonus bonus;
+  if (item.material() == materialType::veggy) 
+    bonus = abilities().eatVeggie();
   // TODO: Penalties for eating corpses?
   if (damage_.cur() == 0)
     throw notHungryException();
   double weight = std::ceil(item.weight()); // round up
+  if (bonus == ::bonus(true)) { weight *= 2; }
+  if (bonus == ::bonus(false)) { weight *= 0.5; }
   // subtract from damage; can't go below 0: 
   damage_ -= (weight > 254.5) ? 255 : static_cast<unsigned char>(weight);
   return item.holder().destroyItem(item);
