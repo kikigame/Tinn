@@ -18,8 +18,6 @@ class player : public monster {
 private:
   const std::wstring name_;
   const role &role_;
-  // how much food have we eaten?
-  int foodLevel_;
 public:
   player(playerBuilder &builder);
   virtual ~player();

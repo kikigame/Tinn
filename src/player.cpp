@@ -15,8 +15,7 @@
 player::player(playerBuilder &b) :
   monster(b), // we start at level 1, but not yet...
   name_(b.name_),
-  role_(b.job()),
-  foodLevel_(characteristic::MAX_MAX / 2) {
+  role_(b.job()) {
   // attributes are handled by the monster builder itself,
   // but intrinsics are done here, as monsters don't get them
   // from alignment:
