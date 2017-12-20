@@ -175,6 +175,18 @@ public:
     }
   }
 
+  virtual wchar_t dirPrompt() const {
+    message(L"(wsad<>.) >");
+    flushLastMsg(L"");
+    refresh();
+    const auto mask = std::wstring(L"WASD<>.wasd");
+    wchar_t rtn;
+    do {
+      rtn = key();
+    } while(!mask.find(rtn));
+    return rtn;
+  }
+
   virtual std::wstring linePrompt() const {
     return getstr_safe();
   }

@@ -65,6 +65,13 @@ public:
    */
   coord posOf(const item & i) const;
   /*
+   * Attempt to find a monster in the given direction from another.
+   * Assumes that any square (from) can move through is passible for the search.
+   * (i.e. will search through rocks if from can burrow, but not if from cannot)
+   * returns "from" if dir == L'.' (hence "from" is not const).
+   */
+  optionalRef<monster> findMonster(monster &from, const wchar_t dir) const;
+  /*
    * Which special features (if any) exist at the given location?
    */
   template <typename T>
@@ -102,8 +109,8 @@ public:
    * Iterators over all the monsters at the given coordinates.
    * NB: coordinates need not exist on the map.
    */
-  std::pair<std::multimap<coord, std::shared_ptr<monster> >::iterator,
-	    std::multimap<coord, std::shared_ptr<monster> >::iterator> monstersAt(const coord &pos);
+  std::pair<std::multimap<coord, std::shared_ptr<monster> >::const_iterator,
+	    std::multimap<coord, std::shared_ptr<monster> >::const_iterator> monstersAt(const coord &pos) const;
 
   // return a mutable holder for an item on the level
   itemHolder& holder(const item &item);

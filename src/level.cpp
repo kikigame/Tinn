@@ -432,6 +432,51 @@ public:
     }
     return coord(-1,-1);
   }
+  optionalRef<monster> findMonster(monster &from, const wchar_t dir) const {
+    if (dir == L',') return optionalRef<monster>(from);
+    coord pos = posOf(from);
+    coord towards;
+    switch (dir) {
+    case '<': { // up: find any flying monsters on the current square
+      auto mAt = monstersAt(pos);
+      for (auto i = mAt.first ; i != mAt.second; ++i) {
+	if (i->second->abilities().fly())
+	  return optionalRef<monster>(*(i->second));
+      }
+      return optionalRef<monster>();
+    }
+    case '>': {// down: find any burrowing monsters on the current square
+      auto rock = tFactory.get(terrainType::ROCK);
+      auto mAt = monstersAt(pos);
+      for (auto i = mAt.first ; i != mAt.second; ++i) {
+	if (i->second->abilities().move(*rock))
+	  return optionalRef<monster>(*(i->second));
+      }
+      return optionalRef<monster>();
+    }
+    case 'W': case 'w': // north
+      towards = coord(pos.first, 0);
+      break;
+    case 'A': case 'a': // west
+      towards = coord(0, pos.second);
+      break;
+    case 'S': case 's': // south
+      towards = coord(pos.first, level::MAX_HEIGHT);
+      break;
+    case 'D': case 'd': // east
+      towards = coord(level::MAX_WIDTH, pos.second);
+      break;
+    }
+    do {
+      pos = pos.towards(towards);
+      if (!from.curLevel().movable(pos, from, false, false))
+	return optionalRef<monster>();
+      auto mAt = monstersAt(pos);
+      if (mAt.first != mAt.second)
+	return optionalRef<monster>(*(mAt.first->second));
+    } while (pos != towards);
+    return optionalRef<monster>();
+  }
   int depth() const {
     return depth_;
   }
@@ -613,8 +658,8 @@ public:
       }});
   }
 
-  std::pair<std::multimap<coord, std::shared_ptr<monster> >::iterator,
-	    std::multimap<coord, std::shared_ptr<monster> >::iterator> monstersAt(const coord &pos) {
+  std::pair<std::multimap<coord, std::shared_ptr<monster> >::const_iterator,
+	    std::multimap<coord, std::shared_ptr<monster> >::const_iterator> monstersAt(const coord &pos) const {
     return monsters_.equal_range(pos);
   }
 
@@ -898,6 +943,9 @@ coord level::posOf(const item & it) const {
 coord level::posOf(const monster & m) const {
   return pImpl_->posOf(m);
 }
+optionalRef<monster> level::findMonster(monster &from, const wchar_t dir) const {
+  return pImpl_->findMonster(from, dir);
+}
 const coord level::pcPos() const {
   return pImpl_->pcPos();
 }
@@ -925,8 +973,8 @@ void level::removeDeadMonster(monster &m) {
 void level::pickUp() {
   pImpl_->pickUp();
 }
-std::pair<std::multimap<coord, std::shared_ptr<monster> >::iterator,
-	  std::multimap<coord, std::shared_ptr<monster> >::iterator> level::monstersAt(const coord &pos) {
+std::pair<std::multimap<coord, std::shared_ptr<monster> >::const_iterator,
+	  std::multimap<coord, std::shared_ptr<monster> >::const_iterator> level::monstersAt(const coord &pos) const {
   return pImpl_->monstersAt(pos);
 }
 itemHolder &level::holder(const item& item) {

@@ -41,6 +41,9 @@ public:
   virtual std::wstring keyPrompt(const std::wstring & msg, const std::wstring &help) const = 0;
   virtual std::wstring keyPrompt(const wchar_t *msg, const wchar_t *help) const { return keyPrompt(std::wstring(msg), std::wstring(help)); }
 
+  // request a directior from the user (WASD<>.)
+  virtual wchar_t dirPrompt() const = 0;
+
   // as keyPrompt() but will only accept Y or N (or aliases y/n)
   virtual bool ynPrompt(std::wstring msg) const = 0;
   virtual bool ynPrompt(const wchar_t *msg) const { return ynPrompt(std::wstring(msg)); }

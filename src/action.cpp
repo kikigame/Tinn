@@ -58,13 +58,14 @@ public:
   virtual ~attackRay() {};
   bool operator ()(monster &source, monster &target) {
     auto &d = damageRepo::instance()[damageType_];
+    auto name = std::wstring(target.name());
     int damage = target.wound(damagePc, d);
     auto &io = ioFactory::instance();
     bool rtn = damage > 0;
     if (!rtn)
-      io.message(std::wstring(L"The ") + std::wstring(d.name()) + L" ray fires harmlessly as " + target.name());
+      io.message(std::wstring(L"The " + std::wstring(d.name()) + L" ray fires harmlessly as " + name));
     else 
-      io.message(std::wstring(d.name()) + L" takes " + target.name() + L" damage.");
+      io.message(name + L" takes " + d.name() + L" damage.");
     return rtn;
   }
 };

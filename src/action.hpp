@@ -54,7 +54,7 @@ renderedAction(const wchar_t * const name, const wchar_t * const description) :
 template<class ...T>
 class actionFactory {
 public:
-  static sharedAction<T...> &get(const typename sharedAction<T...>::key k);
+  static renderedAction<T...> & get(const typename sharedAction<T...>::key k);
 };
 
 #endif //ndef ACTION_HPP__

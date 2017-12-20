@@ -309,7 +309,6 @@ public:
  */
 class useWithMixin : public virtual shared_item {
 public:
-  useWithMixin() {}
   virtual bool use(const std::wstring &withName,
 		   const std::wstring &action,
 		   const std::wstring &preposition,
@@ -331,6 +330,54 @@ public:
     return false; // no effect by default
   }
 };
+
+/*
+ * Mixin for items that have an effect against a monster
+ */
+class actionMonsterMixin : public virtual shared_item {
+private:
+  renderedAction<monster, monster> &action_;
+public:
+  actionMonsterMixin(renderedAction<monster, monster> &action) :
+    action_(action) {}
+  virtual ~actionMonsterMixin(){}
+  virtual const wchar_t *const actionName() const { return action_.name(); }
+  virtual bool fire() {
+    auto holder = &(shared_from_this()->holder());
+    monster *m;
+    do {
+      m = dynamic_cast<monster *>(holder);
+      item * it = dynamic_cast<item *>(holder);
+      if (it) holder = &(it->holder());
+    } while (m == nullptr);
+    optionalRef<monster> target;
+    if (m->isPlayer()) {
+      wchar_t dir;
+      // prompt the user for a monster to fire on
+      auto &io = ioFactory::instance();
+      dir = io.dirPrompt();
+      switch (dir) {
+      case L'<': case L'>':
+	break; // you will miss
+      case L'.':
+	target = optionalRef<monster>(*m); // firing at onesself
+	break;
+      default:
+	target = m->curLevel().findMonster(*m, dir);
+	break;
+      }
+      if (!target)
+	io.message(L"You don't hit even one monster.");
+    } else {
+      // select a monster to fire on
+      return false; // TODO
+    }
+    if (target)
+      return action_(*m, target.value());
+    else return false;
+  }
+};
+
 
 
 /*
@@ -903,6 +950,43 @@ void transmutate(item &from, item &to) {
   }
 }
 
+
+// wands: sticks that carry charges in their enchantment and some sort of action.
+class wand : public basicItem, public burnChargeMixin, public actionMonsterMixin {
+public:
+  wand(unsigned char numCharges, renderedAction<monster, monster> &action) :
+    basicItem(itemTypeRepo::instance()[itemTypeKey::stick]),
+    burnChargeMixin(),
+    actionMonsterMixin(action) {
+    enchant(numCharges);
+  }
+  virtual ~wand() {};
+  virtual const wchar_t *const simpleName() const {
+    return hasCharge() ? L"wand" : basicItem::simpleName();
+  }
+  virtual const wchar_t *const name() const {
+    basicItem::name(); // sets buffer_
+    buffer_ += L" of ";
+    buffer_ += actionMonsterMixin::actionName();
+    return buffer_.c_str();
+  }
+  virtual bool use() {
+    if (!hasCharge()) return false;
+    if (isCursed()) {
+      // fail to work about half the time:
+      if (dPc() < 50) {
+	if (isBlessed()) return false; // blessed cursed wands don't lose charges when they fail to work
+	useCharge();
+	return false; // plain cursed wands do lose charges if they fail to work
+      }
+    }
+    if (!isBlessed() || dPc() < 50) // blessed wands use a charge only 50% of the time, normal wands 100%
+      useCharge();
+    return fire();
+  }
+};
+
+
 // create an item of the given type. io may be used later by that item, eg for prompts when using.
 // TODO: Randomness for flavour: enchantment, flags, etc.
 // TODO: Wands will need starting enchantment.
@@ -986,9 +1070,11 @@ item& createItem(const itemTypeKey & t) {
   case itemTypeKey::underpants:
     rtn = new basicEquip<item::equipType::worn>(r[t], slotType::underwear);
     break;
-  case itemTypeKey::stick:
-    rtn = new basicItem(r[t]); // TODO: wands & charges
+  case itemTypeKey::stick: {
+    auto &action = actionFactory<monster, monster>::get(sharedAction<monster,monster>::key::attack_ray_small_water); // TODO: randomise
+    rtn = new wand(dPc(), action);
     break;
+  }
   case itemTypeKey::bottle:
     rtn = new bottle(r[t]);
     break;
