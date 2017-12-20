@@ -21,6 +21,25 @@ enum class slotType {
     hat, //Helmet/hat/headdress/shaffron (shaffron is a horse helmet)
     glasses,
     amulet,//Necklace/amulet/talisman/medallian
+
+  // dragons can have up to 5 heads, so we replicate the headgear slots 5 times:
+    headband_2,
+    hat_2,
+    glasses_2,
+    amulet_2,
+    headband_3,
+    hat_3,
+    glasses_3,
+    amulet_3,
+    headband_4,
+    hat_4,
+    glasses_4,
+    amulet_4,
+    headband_5,
+    hat_5,
+    glasses_5,
+    amulet_5,
+
     ring_left_thumb,
     ring_left_index,
     ring_left_middle,

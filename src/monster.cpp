@@ -136,6 +136,25 @@ monster::monster(monsterBuilder & b) :
     equipment_.emplace(slot, optionalRef<item>());
 }
 
+monster::monster(monsterBuilder & b, std::vector<const slot *>slots) :
+  level_(b.iLevel()),
+  strength_(b.strength()),
+  appearance_(b.appearance()),
+  fighting_(b.fighting()),
+  dodge_(b.dodge()),
+  damage_(b.damage(), b.maxDamage()), //characteristic(0, 20)),
+  male_(b.male_),
+  female_(b.female_),
+  eachTick_(),
+  type_(*b.type_),
+  align_(b.align_),
+  equipment_(),
+  intrinsics_() {
+  // create all slots as empty initially
+  for (auto slot : slots)
+    equipment_.emplace(slot, optionalRef<item>());
+}
+
 void monster::eachTick(const std::function<void()> &callback) { 
   //  eachTick_.emplace_back(new time::callback(true, callback));
   eachTick_.emplace_back(true, callback);
@@ -737,7 +756,7 @@ private:
   const bool western_;
 public:
   dragon(monsterBuilder &b) : 
-    monster(roll(b)),
+    monster(roll(b), equipment(b)),
     western_(align().domination() == Domination::aggression) {
     // DRAGONS DON'T FLY! It's mythologically inaccurate...
     intrinsics().speedy(true);
@@ -772,7 +791,10 @@ private:
       Outlook::cruel;
 
     b.align(deityRepo::instance().getExact(element, dominion, outlook));
+    return b;
+  }
 
+  static std::vector<const slot*> equipment(monsterBuilder &b) {
     // number of claws depends on the level
     // In Chinese mythology, more claws mean more power.
     const int depth = b.iLevel()->depth(); // 0 - 100 inclusive
@@ -785,8 +807,71 @@ private:
       (val <= 1) ? 1 :
       (val > claws) ? claws : // never more heads than claws.
       val;
+    // remove any kit slots for claws we don't have:
+    std::vector<const slot*> rtn = slotsFor(monsterCategory::dragon);
+    auto e = rtn.end();
+    switch (claws) {
+    case 0:
+      e = std::remove(rtn.begin(), e, slotBy(slotType::ring_left_index));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::ring_right_index));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::toe_left_index));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::toe_right_index));
+      // no break
+    case 1:
+      e = std::remove(rtn.begin(), e, slotBy(slotType::ring_left_middle));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::ring_right_middle));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::toe_left_middle));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::toe_right_middle));
+      // no break
+    case 2:
+      e = std::remove(rtn.begin(), e, slotBy(slotType::ring_left_ring));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::ring_right_ring));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::toe_left_fourth));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::toe_right_fourth));
+      // no break
+    case 3:
+      e = std::remove(rtn.begin(), e, slotBy(slotType::ring_left_little));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::ring_right_little));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::toe_left_little));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::toe_right_little));
+      // no break
+    case 4:
+      e = std::remove(rtn.begin(), e, slotBy(slotType::ring_left_thumb));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::ring_right_thumb));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::toe_left_thumb));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::toe_right_thumb));
+      // no break
+    }
+    switch (heads) {
+    case 0:
+    case 1:
+      e = std::remove(rtn.begin(), e, slotBy(slotType::headband_2));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::hat_2));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::glasses_2));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::amulet_2));
+      // no break
+    case 2:
+      e = std::remove(rtn.begin(), e, slotBy(slotType::headband_3));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::hat_3));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::glasses_3));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::amulet_3));
+      // no break
+    case 3:
+      e = std::remove(rtn.begin(), e, slotBy(slotType::headband_4));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::hat_4));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::glasses_4));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::amulet_4));
+      // no break
+    case 4:
+      e = std::remove(rtn.begin(), e, slotBy(slotType::headband_5));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::hat_5));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::glasses_5));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::amulet_5));
+      // no break
+    }
+    rtn.erase(e, rtn.end());
 
-    return b;
+    return rtn;
   }
 };
 
