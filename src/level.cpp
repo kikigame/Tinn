@@ -1,6 +1,7 @@
 /* License and copyright go here*/
 
 #include "level.hpp"
+#include "levelGen.hpp"
 #include "items.hpp"
 #include "monster.hpp"
 #include "terrain.hpp"
@@ -10,6 +11,7 @@
 #include "labyrinth.hpp"
 #include "shrine.hpp"
 #include "religion.hpp"
+#include "role.hpp"
 
 #include <algorithm> // max/min
 #include <random>
@@ -41,68 +43,6 @@ template<>
 bool zoneArea<item>::onExit(std::shared_ptr<item>, itemHolder&) { return true; }
 template<>
 bool zoneArea<item>::onAttack(monster&, item&) { return true; }
-
-
-
-// helper class to generate a random layout of a level
-class levelGen {
-private:
-
-  levelImpl* const level_; // non-owning pointer
-  level& pub_; // non-owning reference
-
-public:
-  levelGen(levelImpl* const level, ::level& pub) :
-    level_(level), pub_(pub) {}
-  virtual ~levelGen() {}
-
-protected:
-  // add an individual room. Returns first=top-left, second=bottom-right
-  std::pair<coord,coord> addRoom();
-
-  // add a shrine. Returns first=top-left, second=bottom-right
-  std::pair<coord, coord> addShrine();
-
-  // possibly entrap a room:
-  void addTraps(const std::pair<coord,coord> &coords);
-
-  // possibly add some monsters to the room:
-  void addMonsters(std::vector<std::pair<coord,coord>>);
-
-  // possibly add some items to the room:
-  void addItems(const std::pair<coord,coord> &);
-
-  // add a monster to the room, but not at c: (used by addMonsters)
-  void addMonster(const std::shared_ptr<monster> mon, const coord &c, const std::pair<coord,coord> &);
-
-  // adds a corridor starting at from and ending at to. Very basic for now.
-  // returns first square adjacent to "from"
-  coord addCorridor(const coord from, const coord to);
-
-  // average two coords and return their midpoint.
-  coord mid(const std::pair<coord,coord> &p) const {
-    return coord((p.first.first + p.second.first) / 2,
-		 (p.first.second + p.second.second) / 2);
-  }
-
-  template<class iter>
-  void place(const iter & begin,
- 	     const iter & end,
-	     terrainType terrainType);
-
-  void place(const coord &c, terrainType terrainType);
-
-private:
-  void changeTerrain(coord pos, terrainType from, terrainType to);
-
-public:
-  // call to place ramps (in case of adjacent level requirements)
-  virtual void negotiateRamps(optionalRef<levelGen> next) = 0;
-  // override to specify position of our upramp
-  virtual coord upRampPos() { return coord(-1,-1); }
-  // call the build() function to add rooms, monsters etc.
-  virtual void build() = 0;
-};
 
 
 // a templated level generator that fills the level with a labyrinth
@@ -784,14 +724,18 @@ std::pair<coord,coord> levelGen::addShrine() {
   if (shr->align().element() == Element::plant &&
       shr->align().domination() == Domination::aggression &&
       shr->align().outlook() == Outlook::cruel) {
-    auto &monsterType = monsterTypeRepo::instance()[monsterTypeKey::venusTrap];
-    level_->addMonster(ofType(monsterType, pub_), coord(xPos+1,yPos+1));
-    level_->addMonster(ofType(monsterType, pub_), coord(xPos+1,yPos+3));
-    level_->addMonster(ofType(monsterType, pub_), coord(xPos+3,yPos+1));
-    level_->addMonster(ofType(monsterType, pub_), coord(xPos+3,yPos+3));
+    addMonster(monsterTypeKey::venusTrap, coord(xPos+1,yPos+1));
+    addMonster(monsterTypeKey::venusTrap, coord(xPos+1,yPos+3));
+    addMonster(monsterTypeKey::venusTrap, coord(xPos+3,yPos+1));
+    addMonster(monsterTypeKey::venusTrap, coord(xPos+3,yPos+3));
   }
 
   return loc;
+}
+
+void levelGen::addMonster(monsterTypeKey m, const coord &c) {
+  auto &mt = monsterTypeRepo::instance()[m];
+  level_->addMonster(ofType(mt, pub_), c);
 }
 
 void levelGen::addMonsters(std::vector<std::pair<coord,coord>> coords /*by value*/) {
@@ -807,8 +751,8 @@ void levelGen::addMonsters(std::vector<std::pair<coord,coord>> coords /*by value
 
     for (unsigned int c=0; c < i.first; ++c) {
       auto &mt = *(i.second);
-      auto monster = ofType(mt, pub_);
-      addMonster(monster, midPoint, *room);
+      auto m = ofType(mt, pub_);
+      addMonster(m, midPoint, *room);
     }
     coords.erase(room); // don't use the same room twice; tend to avoid the packs of monsters starting together
   }
@@ -1048,9 +992,11 @@ private:
   std::vector<levelImpl*> levels_;
   std::vector<level*> levelPubs_;
   std::vector<std::unique_ptr<levelGen> > levelGen_;
+  const role &role_;
 public:
-  levelFactoryImpl(dungeon &dungeon, const int numLevels) : 
-    numLevels_(numLevels) {
+  levelFactoryImpl(dungeon &dungeon, const int numLevels, const playerBuilder &pb) : 
+    numLevels_(numLevels),
+    role_(pb.job()) {
     for (int i=0; i < numLevels; ++i) {
       levelImpl *l = new levelImpl(dungeon, i);
       levels_.push_back(l);
@@ -1076,6 +1022,8 @@ public:
   }
 private:
   levelGen *createGen(int depth, levelImpl *l, level *level) {
+    if (depth == numLevels_)
+      return role_.newQuestLevelGen(*l, *level);
     bool addDownRamp = depth < numLevels_;
     if (dPc() < depth)
       switch (depth / 10) {
@@ -1110,8 +1058,8 @@ private:
   }
 };
 
-levelFactory::levelFactory(dungeon &dungeon, const int numLevels) :
-  pImpl_(new levelFactoryImpl(dungeon, numLevels)) {
+levelFactory::levelFactory(dungeon &dungeon, const int numLevels, const playerBuilder &pb) :
+  pImpl_(new levelFactoryImpl(dungeon, numLevels, pb)) {
   pImpl_->build();
 }
 

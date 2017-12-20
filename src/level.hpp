@@ -19,10 +19,12 @@ class item;
 class monster;
 class terrain;
 enum class terrainType;
+enum class monsterTypeKey;
 
 class levelImpl;
 class dungeon;
 class drawIter;
+class playerBuilder;
 
 class renderByCoord;
 
@@ -32,7 +34,7 @@ class levelFactory {
 private:
   std::shared_ptr<levelFactoryImpl> pImpl_;
 public:
-  levelFactory(dungeon &dungeon, const int numLevels);
+  levelFactory(dungeon &dungeon, const int numLevels, const playerBuilder &pb);
   std::vector<level*>::iterator begin();
   std::vector<level*>::iterator end();
 };

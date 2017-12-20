@@ -17,16 +17,19 @@ const int NUM_LEVELS = 100;
 dungeon::dungeon() 
   : alive_(true),
     cur_level_(1) {
-  levelFactory factory(*this, NUM_LEVELS);
+  // NB: Dependency order provides some oddities here.
+  // player needs a level, and level needs a level factory, and level
+  // factory needs a role (to build role-specific levels).
+  // so we give the level factory the player builder AFTER the user
+  // has filled it in. Not terribly satisfactory, as it's in an
+  // incomplete state, but it'll do for now.
+  // TODO: should level be passed separately to monsterbuilder for further decoupling?
+  playerBuilder pb = chargen();
+
+  levelFactory factory(*this, NUM_LEVELS, pb);
   for (auto l : factory)
     level_.emplace_back(l);
-  /*
-  for (int l = 0; l <= NUM_LEVELS; ++l) {
-    // the last level has no down ramp
-    bool downRamp = l < NUM_LEVELS;
-    level_.emplace_back(new level(*this, ios, l, downRamp));
-    }*/
-  playerBuilder pb = chargen();
+
   level &start = *(level_[cur_level_]);
   pb.startOn(start);
   player_ = std::shared_ptr<player> (new player(pb));

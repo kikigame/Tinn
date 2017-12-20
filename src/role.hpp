@@ -13,6 +13,9 @@ enum class roleType {
   shopkeeper
 };
 
+class level;
+class levelImpl;
+class levelGen;
 class roleImpl;
 
 class role {
@@ -20,8 +23,12 @@ private:
   std::unique_ptr<roleImpl> pImpl_;
 public:
   role(roleImpl *);
+  // name of this role
   const wchar_t * const name() const;  
+  // message to user when starting the game
   const wchar_t * const startGameMessage() const;
+  // per-role quest level:
+  levelGen * newQuestLevelGen(levelImpl &, level &) const; // returns new instance
 };
 
 class roleRepoImpl;

@@ -214,5 +214,5 @@ playerBuilder::~playerBuilder() {}
 void playerBuilder::name(const std::wstring &c) { name_ = c; }
 
 void playerBuilder::job(const role &r) { role_  = &r; }
-const role & playerBuilder::job() { return *role_; }
+const role & playerBuilder::job() const { return *role_; }
 

@@ -165,6 +165,8 @@ public:
 	    .name(L"dragon")
 	    .name(L"dragon")
 	    .className(L"Dragon") // TODO: Some dragons are serpants, others are lizards.
+	    // alignment of a dragon is overwritten in dragon constructor
+	    .align(dr.getExact(Element::none, Domination::none, Outlook::none))
 	    .levelFactor(10)
 	    .levelOffset(10)
 	    .minSpawn(1)

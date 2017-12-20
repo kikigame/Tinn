@@ -63,6 +63,9 @@ private:
   // cursed tail bow).
   std::map<const slot*, optionalRef<item> > equipment_;
   monsterIntrinsics intrinsics_;
+protected:
+  // create monster by builder, with specific weapon slots (used internally by dragons)
+  monster(monsterBuilder & b, std::vector<const slot *>slots);
 public:
   /*
    * Passed a callback, which will be invoked each tick and discarded
@@ -72,7 +75,9 @@ public:
   virtual const wchar_t render() const; // delegate to type by default
   virtual const wchar_t * const name() const; // delegate to type depending on level by default;
   virtual const wchar_t * const description() const; // delegate to type by default
+  // create monster by type
   monster(level * onLvl, const monsterType &type);
+  // create monster by builder
   monster(monsterBuilder & builder);
   virtual ~monster();
   bool operator == (const monster &rhs);

@@ -59,7 +59,7 @@ public:
   virtual ~playerBuilder();
   void name(const std::wstring &n);
   void job(const role & r);
-  const role & job();
+  const role & job() const;
 };
 
 #endif // ndef PLAYER_HPP__
