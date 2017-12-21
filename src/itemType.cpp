@@ -277,7 +277,8 @@ L"Novelty hat"
 L"In its most basic form, a wand is a device with which you may inscribe on a\n"
 "wax tablet, also known as a /stylus/. Many wands are imbued with charges of\n"
 "magical energy, often associated with druidic of fairy magic, to provide\n"
-"various enchantments.",
+"an enchantment associated with the material of the wand. It is not usually\n"
+"possible to derive the nature of a stick other than by enchanting it.",
 L"With enough sticks and a little patience, you too can make a camp fire."
 			     ));
     emplace(itemTypeKey::bottle, // 2N based on a 20oz Coke bottle (old style)

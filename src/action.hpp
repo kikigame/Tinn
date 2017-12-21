@@ -31,8 +31,40 @@ class sharedAction<monster, monster>{
     steal_small,
     // steal treasure item (category '*')
     steal_shiny,
-    // water ray 5%
-      attack_ray_small_water,
+    // attack rays @ 5%
+    attack_ray_small_edged,
+    attack_ray_small_bashing,
+    attack_ray_small_hot,
+    attack_ray_small_cold,
+    attack_ray_small_water,
+    attack_ray_small_sonic,
+    attack_ray_small_disintegration,
+    attack_ray_small_starvation,
+    attack_ray_small_electric,
+    // attack rays @ 20%
+    attack_ray_med_edged,
+    attack_ray_med_bashing,
+    attack_ray_med_hot,
+    attack_ray_med_cold,
+    attack_ray_med_water,
+    attack_ray_med_sonic,
+    attack_ray_med_disintegration,
+    attack_ray_med_starvation,
+    attack_ray_med_electric,
+    // attack rays @ 100%
+    death_ray_edged,
+    death_ray_bashing,
+    death_ray_hot,
+    death_ray_cold,
+    death_ray_water,
+    death_ray_sonic,
+    death_ray_disintegration,
+    death_ray_starvation,
+    death_ray_electric,
+    // swap places
+    exchange_ray,
+    // heal by veggie food consumption
+    heal_ray_veggie,
     END
   };
 };

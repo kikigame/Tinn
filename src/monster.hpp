@@ -176,7 +176,8 @@ public:
   // Returns false if item is partially consumed
   // Throws inedibleException if item is inedible.
   // Throws notHungryException if monster is not hungry
-  virtual bool eat(item &item);
+  // if "force" is true, exceptions are not thrown, but damage is taken instead.
+  virtual bool eat(item &item, bool force = false);
 
   // try to eat something, either from current location or inventory:
   virtual void eat();

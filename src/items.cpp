@@ -989,7 +989,6 @@ public:
 
 // create an item of the given type. io may be used later by that item, eg for prompts when using.
 // TODO: Randomness for flavour: enchantment, flags, etc.
-// TODO: Wands will need starting enchantment.
 item& createItem(const itemTypeKey & t) {
   auto &r = itemTypeRepo::instance();
   item *rtn;
@@ -1071,8 +1070,9 @@ item& createItem(const itemTypeKey & t) {
     rtn = new basicEquip<item::equipType::worn>(r[t], slotType::underwear);
     break;
   case itemTypeKey::stick: {
-    auto &action = actionFactory<monster, monster>::get(sharedAction<monster,monster>::key::attack_ray_small_water); // TODO: randomise
-    rtn = new wand(dPc(), action);
+    auto &action = actionFactory<monster, monster>::get(static_cast<sharedAction<monster,monster>::key>(rndPickI(0, static_cast<int>(sharedAction<monster,monster>::key::END))));
+    // random wands are initially created as sticks, must be enchanted to use:
+    rtn = new wand(0, action);
     break;
   }
   case itemTypeKey::bottle:

@@ -44,6 +44,17 @@ Iter rndPick(/*by value*/Iter start, const Iter &end) {
   return start;
 }
 
+// as rndPick, but between 2 numbers:
+template <typename I>
+I rndPickI(/*by value*/I start, const I end) {
+  const auto max = end - start;
+  if (max > 1) { // don't burn random numbers to pick from single lists; happens a lot.
+    std::uniform_int_distribution<int> dis(0, max - 1);
+    start += dis(generator);
+  }
+  return start;
+}
+
 /*
  * "Roll the dice" method (normal curve)
  *
