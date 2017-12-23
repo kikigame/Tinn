@@ -695,7 +695,7 @@ public:
   targetActionMonster(monsterBuilder &b, key actionKey) :
     monster(b), actionKey_(actionKey) {}
   virtual void onHit(monster &opponent, int) {
-    actionFactory<monster,monster>::get(actionKey_)(*this, opponent);
+    actionFactory<monster,monster>::get(actionKey_)(false, false, *this, opponent);
   }
 };
 

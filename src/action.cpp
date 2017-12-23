@@ -14,7 +14,7 @@ public:
   steal(const wchar_t * const name, const wchar_t * const description, std::function<bool(item &)> f) : 
     renderedAction(name, description), f_(f) {};
   virtual ~steal() {};
-  bool operator ()(monster &source, monster &target) {
+  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
     auto &io = ioFactory::instance();
     auto pitem = target.firstItem(f_);
     if (pitem) {
@@ -56,7 +56,7 @@ public:
   attackRay(const wchar_t * const name, const wchar_t * const description, damageType type) :
     renderedAction(name, description), damageType_(type) {};
   virtual ~attackRay() {};
-  bool operator ()(monster &source, monster &target) {
+  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
     auto &d = damageRepo::instance()[damageType_];
     auto name = std::wstring(target.name());
     int damage = target.wound(damagePc, d);
@@ -76,7 +76,7 @@ public:
   exchangeAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description) {};
   virtual ~exchangeAction() {}
-  bool operator ()(monster &source, monster &target) {
+  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
     auto &sLevel = source.curLevel();
     auto sPos = sLevel.posOf(source);
 
@@ -116,7 +116,7 @@ public:
   forceHealAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description) {};
   virtual ~forceHealAction() {}
-  bool operator ()(monster &source, monster &target) {
+  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
     auto &sprouts = createItem(itemTypeKey::apple);
     source.addItem(sprouts);
     return target.eat(sprouts, true);

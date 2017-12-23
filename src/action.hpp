@@ -7,6 +7,7 @@
 #define ACTION_HPP__
 
 #include "renderable.hpp"
+#include "bonus.hpp"
 
 class item;
 class monster;
@@ -17,7 +18,7 @@ class sharedAction {
 public:
   virtual ~sharedAction() {};
   // takes targets; returns true if action was successful, false if blocked or failed.
-  virtual bool operator ()(T & ... ) = 0;
+  virtual bool operator ()(bool blessed, bool cursed, T & ... ) = 0;
 };
 
 
@@ -25,7 +26,7 @@ public:
 template<>
 class sharedAction<monster, monster>{
  public:  
-  virtual bool operator ()(monster &source, monster &target) = 0;
+  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) = 0;
   enum class key {
     // steal small items (1N or less) from target
     steal_small,
@@ -77,7 +78,7 @@ private:
 public:
 renderedAction(const wchar_t * const name, const wchar_t * const description) :
   sharedAction<T...>(), name_(name), description_(description) {}
-  virtual bool operator()(T &...) = 0;
+  virtual bool operator()(bool, bool, T &...) = 0;
   virtual const wchar_t render() const { return L'☇'; } // lightning bolt for magic
   virtual const wchar_t * const name() const { return name_; };
   const wchar_t * const description() const { return description_; };

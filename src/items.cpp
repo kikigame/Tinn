@@ -372,9 +372,10 @@ public:
       // select a monster to fire on
       return false; // TODO
     }
-    if (target)
-      return action_(*m, target.value());
-    else return false;
+    if (!target)
+      return false;
+    auto pThis = shared_from_this();
+      return action_(pThis->isBlessed(), pThis->isCursed(), *m, target.value());
   }
 };
 
