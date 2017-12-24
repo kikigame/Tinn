@@ -57,6 +57,24 @@ public:
       toward.second == second ? second : second - 1;
     return rtn;
   }
+  /*
+   * Return the coord 1-space further from "toward"
+   * in each dimension. eg if this = (2,3) and toward = (5,7)
+   * would return (1,2).
+   * any dimension where this and toward are the same are unchanged,
+   * eg if this = (2,3) and toward = (2,7)
+   * would return (2,2).
+   */
+  coord away(const coord &toward) {
+    coord rtn;
+    rtn.first = 
+      toward.first > first ? first-1 :
+      toward.first == first ? first : first + 1;
+    rtn.second = 
+      toward.second > second ? second-1 :
+      toward.second == second ? second : second + 1;
+    return rtn;
+  }
   // abitrarily sort on x then y
   bool operator <(const coord &other) {
     return first < other.first ? true :
