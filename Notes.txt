@@ -612,7 +612,7 @@ Monster ideas
 I'd like to stick to original and public-domain monsters, so lots of drawing from folklore and mythologies. Rough ideas go here:
 
 * Faeries should drop fairy cakes instead of dead fairies (Ref: Dark Bower, Samhuinn Festival 2016, Edinburgh).
-* Foocubi have a special monster attack, which is basically rape in mythology (they are, after all, evil). This attack should be carried out regardless of gender and on all monster types; gender only influences if the outcome is positive or negative.
+* Foocubi have a special monster attack, which is basically rape in mythology (they are, after all, evil). This attack should be carried out regardless of gender and on all monster types; gender only influences if the outcome is positive or negative. (Nethack has effects of increasing & exercising characteristics, restoring HP, increasing level, or the opposite of one of these; also removal of clothing, donning a ring of adornment [if female] and charging gold).
 * "Mundane" animals: rats, foxes, hounds, wolves, wild dogs, ferrets ("little thief")
 * One track could be "earthworm" (chance for Earthworm Jim refs), to "Sandworm" (from dune). A Wikipedia page on wormws in fiction exists, and suggests the Mongolian Death Worm as a suitable intermediate legendary creature (instakil poison to touch, shoots venom and electricity. Also graboids from Tremmors films. Boreworms (Flash Gordon) might offer another point on the track.
 * Nethack has "team ant" (giant ants, fire ants, bees and giant beetles all appear with "a"). I think we should just implement fire ants, giant wasps (wasps are nastier than bees and don't require us to model honey) and bulls (which are a "herd" when grazing and a "drive" when moving).
