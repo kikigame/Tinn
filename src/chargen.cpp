@@ -110,9 +110,9 @@ playerBuilder chargen() {
        /*F0*/
        L"Hint: non-females are protected from sucubii's worst effects",
        /*F%*/
-       L"Hint: female characters may have a bonus from inkubii",
+       L"Hint: female characters may have a bonus from incubii",
        /*M0*/
-       L"Hint: non-males are protected from inkubii's worst effects",
+       L"Hint: non-males are protected from incubii's worst effects",
        /*M%*/
        L"Hint: male characters may have a bonus from sucubii");
 
