@@ -380,6 +380,7 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
     // add any IOUs:
     for (auto s : servicesBought_)
       inventory_.addItem(createIou(s.second, keeperName_, s.first));
+    servicesBought_.clear();
   }
 
   std::wstring toList(std::vector<std::shared_ptr<item> > &barter) const {
