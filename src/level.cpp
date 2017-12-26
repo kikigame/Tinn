@@ -205,13 +205,17 @@ public:
     addMonsters(pos);
 
     // place a shrine sometimes
-    if (dPc() <= 10) {
-      auto shrinePos = addShrine();
-      ++shrinePos.second.first;
-      ++shrinePos.second.second;
-      auto shrineDir = addCorridor(mid(shrinePos), mid(pos[0]));
-      coord alterPos = shrineDir.next(mid(shrinePos));
-      place(alterPos, terrainType::ALTAR);
+    try {
+      if (dPc() <= 10) {
+	auto shrinePos = addShrine();
+	++shrinePos.second.first;
+	++shrinePos.second.second;
+	auto shrineDir = addCorridor(mid(shrinePos), mid(pos[0]));
+	coord alterPos = shrineDir.next(mid(shrinePos));
+	place(alterPos, terrainType::ALTAR);
+      }
+    } catch (std::wstring s) {
+      // ignore; we can manage without a shrine
     }
   }
 };
@@ -301,6 +305,33 @@ public:
       }
     throw wstring(L"Terrain type ") + to_string(type) + wstring(L" not found on level ") + to_wstring(depth_);
   }
+
+  coord findTerrain(const terrainType t, const int width, const int height) const {
+    auto rock = tFactory.get(t);
+    bool found = false;
+    int xPos, yPos;
+    for (int triesLeft=100; triesLeft>0 && !found; --triesLeft) {
+      // X pos is between 1 (to allow for border on left) and MAX_WIDTH - width - 2
+      std::uniform_int_distribution<int> xPosD(1,level::MAX_WIDTH - width - 2);
+      // Y pos is between 1 (to allow for border on top) and MAX_HEIGHT - height - 2
+      std::uniform_int_distribution<int> yPosD(1,level::MAX_HEIGHT - height - 2);
+      xPos = xPosD(generator), yPos = yPosD(generator);
+	  
+      found = true;
+      for (int y=0; y < height; ++y)
+	for (int x=0; x < width; ++x) {
+	  coord c(x + xPos,y + yPos);
+	  if (terrain_.at(c) != rock) {
+	    found = false;
+	    break;
+	  }
+	}
+      if (found) return coord(xPos,yPos);
+    }
+    using namespace std;
+    throw wstring(L"Terrain type ") + to_string(t) + wstring(L" not found in required size on level ") + to_wstring(depth_);
+  }
+
 
   // dead creatures are removed from the level (shared_ptr).
   // aggressor can't die, so can be passed as references
@@ -721,33 +752,12 @@ std::pair<coord,coord> levelGen::addRoom() {
   return loc;
 }
 
+
 std::pair<coord,coord> levelGen::addShrine() {
-  int width = 5, height = 5;
-
-  auto rock = tFactory.get(terrainType::ROCK);
-
+  const int width = 5, height = 5;
   // look for a contiguous 5x5 place on the map that is only rock.
-  bool found;
-  int xPos, yPos;
-  do {
-    // for now, just place the room. Don't care if they overlap.
-    // X pos is between 1 (to allow for border on left) and MAX_WIDTH - width - 2
-    std::uniform_int_distribution<int> xPosD(1,level::MAX_WIDTH - width - 2);
-    // Y pos is between 1 (to allow for border on top) and MAX_HEIGHT - height - 2
-    std::uniform_int_distribution<int> yPosD(1,level::MAX_HEIGHT - height - 2);
-    xPos = xPosD(generator), yPos = yPosD(generator);
-
-    found = true;
-    for (int y=0; y < height; ++y)
-      for (int x=0; x < width; ++x) {
-	coord c(x + xPos,y + yPos);
-	if (level_->terrain_.at(c) != rock) {
-	  found = false;
-	  break;
-	}
-      }
-
-  } while (!found);
+  coord topLeft = level_->findTerrain(terrainType::ROCK, width, height);
+  int xPos = topLeft.first, yPos = topLeft.second;
 
   auto ground = tFactory.get(terrainType::GROUND);
   for (int y=1; y < height-1; ++y) {
@@ -757,7 +767,6 @@ std::pair<coord,coord> levelGen::addShrine() {
     }
   }
 
-  coord topLeft(xPos,yPos);
   coord btmRight(xPos+width-2, yPos+height-2);
 
   auto loc = std::pair<coord,coord>(topLeft,btmRight);
