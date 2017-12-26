@@ -953,6 +953,7 @@ void transmutate(item &from, item &to) {
 
 
 // wands: sticks that carry charges in their enchantment and some sort of action.
+// TODO: if a wand is blessed by a deity, it could be come a holy rod of that deity, preventing access from other temples and providing extra effects in the right shrine or against the right monster?
 class wand : public basicItem, public burnChargeMixin, public actionMonsterMixin {
 public:
   wand(unsigned char numCharges, renderedAction<monster, monster> &action) :
@@ -967,8 +968,10 @@ public:
   }
   virtual const wchar_t *const name() const {
     basicItem::name(); // sets buffer_
-    buffer_ += L" of ";
-    buffer_ += actionMonsterMixin::actionName();
+    if (hasCharge()) {
+      buffer_ += L" of ";
+      buffer_ += actionMonsterMixin::actionName();
+    }
     return buffer_.c_str();
   }
   virtual bool use() {
