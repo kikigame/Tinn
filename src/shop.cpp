@@ -282,7 +282,6 @@ private:
 	return true;
       } else {
 	ioFactory::instance().longMsg(L"\"Thank ye for your kind offer, but I think you've undervaluing my wares.\"");
-	paymentFailed();
 	bartering = true;
       }
     }
