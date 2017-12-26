@@ -91,6 +91,11 @@ public:
   const characteristic& fighting() const; // chance to hit during combat
   const characteristic& dodge() const; // chance to avoid being hit during combat (affected by armour)
   const characteristic& injury() const; // damage track
+  characteristic& strength(); // affect how hard we hit, and how much we can carry
+  characteristic& appearance(); // affects prices in shops; foocubi
+  characteristic& fighting(); // chance to hit during combat
+  characteristic& dodge(); // chance to avoid being hit during combat (affected by armour)
+  characteristic& injury(); // damage track
 
   // I've decided to make these characteristics, so that they can be lost and regained during the game.
   const characteristic& male() const;

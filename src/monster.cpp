@@ -181,6 +181,11 @@ const characteristic& monster::appearance() const { return appearance_; }
 const characteristic& monster::fighting() const { return fighting_; }
 const characteristic& monster::dodge() const { return dodge_; }
 const characteristic& monster::injury() const { return damage_; }
+characteristic& monster::strength() { return strength_; }
+characteristic& monster::appearance() { return appearance_; }
+characteristic& monster::fighting() { return fighting_; }
+characteristic& monster::dodge() { return dodge_; }
+characteristic& monster::injury() { return damage_; }
 const characteristic& monster::male() const { return male_; }
 const characteristic& monster::female() const { return female_; }
 
