@@ -351,8 +351,10 @@ private:
 keeperName_ + L" will appraise the value of the items you offer, and decide if\n"
 "it is a fair trade. If it isn't, you can modify your offer or decline.",
 				 [&barter](const item & i) {
+				   auto adj = i.adjectives();
 				   return 
 				   (!i.isCursed()) && // can't sell cursed items, such as IOUs
+				   (std::find(adj.begin(), adj.end(), L"dead") == adj.end()) && // skip dead items (unless bagged); corpses are too valuable because of their weight
 				   std::find(barter.begin(), barter.end(), i.shared_from_this()) == barter.end();
 				 }
 			   );
