@@ -176,6 +176,9 @@ public:
   // and ensure items unequipped on move
   virtual bool removeItemForMove(item &item, itemHolder &next);
 
+  // overridden to ensure items unequipped on destroy
+  virtual bool destroyItem(item &item);
+
   // consume the given item.
   // Returns true if item is fully consumed.
   // Returns false if item is partially consumed

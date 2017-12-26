@@ -925,6 +925,11 @@ std::vector<std::pair<unsigned int, monsterType*>> spawnMonsters(int depth, int 
   return rndGen<monsterType*, std::vector<monsterType*>::iterator>(from, to, depth, rooms);
 }
 
+bool monster::destroyItem(item &item) {
+  if (slotsOf(item)[0] != nullptr && !unequip(item)) return false; // must unequip before move
+  return itemHolder::destroyItem(item);
+}
+
 bool monster::removeItemForMove(item &item, itemHolder &next) {
   if (item.isCursed()) return false; // cursed items can't be dropped.
   if (slotsOf(item)[0] != nullptr && !unequip(item)) return false; // must unequip before move
