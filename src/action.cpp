@@ -4,6 +4,7 @@
 #include "monster.hpp"
 #include "items.hpp"
 #include "output.hpp"
+#include "random.hpp"
 #include <map>
 
 // source steals an item from target
@@ -111,6 +112,7 @@ public:
   }
 };
 
+// forcably cause the target monster to consume some sprouts
 class forceHealAction : public renderedAction<monster, monster> {
 public:
   forceHealAction(const wchar_t * const name, const wchar_t * const description) :
@@ -123,11 +125,147 @@ public:
   }
 };
 
+// do something funny, and possibly slightly inconvenient, to the target
+class comedyAction : public renderedAction<monster, monster> {
+public:
+  comedyAction(const wchar_t * const name, const wchar_t * const description) :
+    renderedAction(name, description) {};
+  virtual ~comedyAction() {}
+  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+    // perform the first applicable effect:
+    // - trousers fall down (deequip & become dropped)
+    // - primary weapon turns to flowers (50% chance sexy, not normally equippable)
+    // - fall over (1% damage, stun for 1 turn)
+    // - summon another monster to chase them
+    // - cream pie in face to blind them (ref:Nethack, keystone kops)
+    // - levitation (ref: Mary Poppins)
+    // - "there's glitter everywhere". Add glittery adjective to corpse.
+    throw "Not implemented TODO!";
+  }
+};
+
+// make the target monster sad
+class tragedyAction : public renderedAction<monster, monster> {
+public:
+  tragedyAction(const wchar_t * const name, const wchar_t * const description) :
+    renderedAction(name, description) {};
+  virtual ~tragedyAction() {}
+  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+    // monster becomes sad.
+    // - reduce attack by 20% of current value (rounded down)
+    // + reduce movement rate by 1 slot
+    throw "Not implemented TODO!";
+  }
+};
+
+// move the target as far as possible (manhatten distance) from the source, 
+// leaving it on a movable, untrapped square
+class teleportAwayAction : public renderedAction<monster, monster> {
+public:
+  teleportAwayAction(const wchar_t * const name, const wchar_t * const description) :
+    renderedAction(name, description) {};
+  virtual ~teleportAwayAction() {}
+  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+    auto sPos = source.curLevel().posOf(source);
+    auto &level = target.curLevel();
+    auto tPos = level.posOf(target);
+    int maxDist=0;
+    coord dPos;
+    for (int x=0; x < level::MAX_WIDTH; ++x)
+      for (int y=0; y < level::MAX_HEIGHT; ++y) {
+	coord pos(x,y);
+	if (!level.movable(pos, target, true, true)) continue;
+	int dist = std::abs(tPos.first-pos.first)
+	         + std::abs(tPos.second-pos.second);
+	if (dist > maxDist) {
+	  maxDist = dist; dPos = pos;
+	}
+      }
+    if (maxDist > 0)
+      level.moveTo(target, dPos);
+    // no message
+    return level.posOf(target) == dPos;
+  }
+};
+
+// create a prison on the level, putting the target monster in it
+// may fail if insufficient space to create a prison
+class lockAwayAction : public renderedAction<monster, monster> {
+public:
+  lockAwayAction(const wchar_t * const name, const wchar_t * const description) :
+    renderedAction(name, description) {};
+  virtual ~lockAwayAction() {}
+  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+    // Look for a 3x3 solid ground
+    try {
+      auto &l = target.curLevel();
+      l.moveTo(target, l.createPrison());
+    } catch (std::wstring x) {
+      // no pos; give up
+      return false;
+    }
+  }
+};
+
+// repulse target by (movement speed + 1 square away from player, stopping at impassible)
+// if blessed, will move into traps; if cursed, will move 1 fewer squares
+class repulsionAction : public renderedAction<monster, monster> {
+public:
+  repulsionAction(const wchar_t * const name, const wchar_t * const description) :
+    renderedAction(name, description) {};
+  virtual ~repulsionAction() {}
+  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+    auto &tLevel = target.curLevel();
+    auto tSpeed = target.movement().speed_;
+    const int maxDist = (cursed ? 0 : 1) + static_cast<int>(tSpeed);
+    coord sPos = source.curLevel().posOf(source);
+    coord tPos = tLevel.posOf(target);
+    coord pos = tPos;
+    if (maxDist == 0) return false;
+    for (int i=0; i < maxDist; ++i) {
+      pos = tPos.away(sPos);
+      if (!tLevel.movable(pos,target,blessed,blessed))
+	break;
+      else tPos = pos;
+    }
+    tLevel.moveTo(target, tPos);
+    return true;
+  }
+};
+
+// foocubi attacks
+template <bool incubus>
+class foocubusAction : public sharedAction<monster, monster> {
+public:
+  virtual ~foocubusAction() {}
+  bool operator ()(bool blessed, bool cursed, monster &source, monster &target);
+};
+
+
+// actions to promote/demote an item attribute based on a monster
+class monsterItemAction : public renderedAction<monster, monster> {
+private:
+  std::function<bool(item &)> filter_;
+  std::function<void(item &)> apply_;
+public:
+  monsterItemAction(const wchar_t * const name, const wchar_t * const description,
+		  std::function<bool(item &)> filter, std::function<void(item &)> apply) :
+    renderedAction(name, description),
+    filter_(filter), apply_(apply) {}
+  virtual ~monsterItemAction() {}
+  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+    auto t = target.firstItem(filter_);
+    if (!t) return false;
+    apply_(t.value());
+    return true;
+  }
+};
+
 template<>
 class actionFactory<monster, monster> {
 public:
   typedef sharedAction<monster, monster> action;
-  static const action &get(const typename action::key k) {
+  static action &get(const typename action::key k) {
     static std::map<action::key, std::shared_ptr<action> > m{
       std::make_pair(action::key::steal_small, std::shared_ptr<action>(new steal(L"pickpocketing",
 L"Pickpocketing is an act of petty larceny.\n"
@@ -233,7 +371,71 @@ L"Useful for getting out of a scrape, especially when trapped.\n"
 "The effect of an exchange ray is to swap places with everyone and everything\n"
 "at the target's location."))),
 	std::make_pair(action::key::heal_ray_veggie, std::shared_ptr<action>(new forceHealAction(L"Vegan food ray",
-L"Force-feeds a few sprouts. This can be a life-saver, but is also unpleasant.")))
+L"Force-feeds a few sprouts. This can be a life-saver, but is also unpleasant."))),
+	/*	std::make_pair(action::key::comedy, std::shared_ptr<action>(new comedyAction(L"comedy",
+L"Comedy and Tragedy are two sides of the same coin. Neither is predictable,\n"
+"but like all social commentary, both can be effective when used carefully."))),
+	std::make_pair(action::key::comedy, std::shared_ptr<action>(new tragedyAction(L"tragedy",
+L"Comedy and Tragedy are two sides of the same coin. Neither is predictable,\n"
+"but like all social commentary, both can be effective when used carefully."))),
+	*/
+	std::make_pair(action::key::teleport_away, std::shared_ptr<action>(new teleportAwayAction(L"curse",
+L"Sometimes you just need to put some distance between yourself and an\n"
+"adversary. Teleport Away causes the target to move as far away from you as\n"
+"possible (but in a line)."))),
+	std::make_pair(action::key::lock_away, std::shared_ptr<action>(new teleportAwayAction(L"lock away",
+L"Designed for use against criminals, locking a monster away is a very safe\n"
+"escape plan. It works less well on those creatures that are at home within\n"
+"the earth"))),
+	std::make_pair(action::key::repulsion, std::shared_ptr<action>(new teleportAwayAction(L"repulsion",
+L"Some magical effects move the enemy away from you. Repulsion usually just\n"
+"buys you a little time, but it can be used to good effect if you time it\n"
+"right and get your enemy where they don't want to be."))),
+
+	std::make_pair(action::key::curse_item, std::shared_ptr<action>(new monsterItemAction(L"curse",
+L"A curse can prevent items from being dropped as well as reducing their effectiveness.",
+[](const item &i) {return !i.isCursed();}, [](item &i) {i.curse(true);}))),
+	std::make_pair(action::key::uncurse_item, std::shared_ptr<action>(new monsterItemAction(L"remove curse",
+L"Curses on items can be difficult to remove, but a specialist tool can sometimes be effective.",
+[](const item &i) {return i.isCursed();}, [](item &i) {i.curse(false);}))),
+	std::make_pair(action::key::bless_item, std::shared_ptr<action>(new monsterItemAction(L"bless",
+L"A blessing can increase the effectiveness or utility of an item.",
+[](const item &i) {return !i.isBlessed();}, [](item &i) {i.bless(true);}))),
+	std::make_pair(action::key::unbless_item, std::shared_ptr<action>(new monsterItemAction(L"remove blessing",
+L"Blessings on items can be difficult to remove, but a specialist tool can sometimes be effective.",
+[](const item &i) {return i.isBlessed();}, [](item &i) {i.bless(false);}))),
+	std::make_pair(action::key::enchant_item, std::shared_ptr<action>(new monsterItemAction(L"enchantment",
+L"An active item can be enchanted to reveal or recover its effect.\n" 
+"A weapon or armour can be enchanted to increase its effectiveness.",
+[](const item &i) {return true;}, [](item &i) {i.enchant(dPc() / 20);}))), //TODO: should this match shop's blessed/cursed rules?
+	std::make_pair(action::key::disenchant_item, std::shared_ptr<action>(new monsterItemAction(L"disenchantment",
+L"An active item can be disenchanted to hide or limit its effect.\n"
+"A weapon or armour can be disenchanted to reduce its effectiveness.",
+[](const item &i) {return i.enchantment() > 0;}, [](item &i) {i.enchant(-dPc() / 20);}))),
+	std::make_pair(action::key::sex_up_item, std::shared_ptr<action>(new monsterItemAction(L"sexiness",
+L"Sexy items will increase your physical appearance when visibly worn.\n",
+[](const item &i) {return !i.isSexy() && i.equippable() == item::equipType::worn;}, [](item &i) {i.sexUp(true);}))),
+	std::make_pair(action::key::sex_down_item, std::shared_ptr<action>(new monsterItemAction(L"chastity",
+L"Unsexy items do nothing for your physical appearance, meaning you can wear\n"
+"them without affecting your appearance percentage.",
+[](const item &i) {return i.isSexy();}, [](item &i) {i.sexUp(false);}))),
+	std::make_pair(action::key::nudity, std::shared_ptr<action>(new monsterItemAction(L"nudity",
+L"Clothing and armour can provide a number of benifits, to defensibility and\n"
+"also to outward appearance. Some can also provide less helpful effects.\n"
+"The main tenet of nudism; however, suggests that nothing can compare to the\n"
+"simple effect of feeling the forces of the world directly on your bare skin.",
+[](const item &i) {return i.equippable() == item::equipType::worn && 
+                   dynamic_cast<monster&>(i.holder()).slotsOf(i)[0] != nullptr;}, 
+[](item &i) {return dynamic_cast<monster&>(i.holder()).unequip(i);}))),
+	std::make_pair(action::key::disarm, std::shared_ptr<action>(new monsterItemAction(L"disarm",
+L"Weapons can be used to intimidate, attack, harm or destroy an opponent.\n"
+"Sometimes; however, a more inclusive, open-handed (open-clawed,\n"
+"open-beaked) approach can be effective.\n"
+"This power will not assist against an opponent who uses its own body as a\n"
+"weapon.",
+[](const item &i) {return i.equippable() == item::equipType::wielded && 
+                   dynamic_cast<monster&>(i.holder()).slotsOf(i)[0] != nullptr;}, 
+[](item &i) {return dynamic_cast<monster&>(i.holder()).unequip(i);})))
 	};
     auto &rtn = m[k];
     return *rtn;
@@ -243,3 +445,78 @@ L"Force-feeds a few sprouts. This can be a life-saver, but is also unpleasant.")
 void ignored() {
   actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::END);
 }
+
+
+// uses template, so define acter specialisation:
+template<bool incubus>
+bool foocubusAction<incubus>::operator () (bool blessed, bool cursed, monster &source, monster &target) {
+    /*
+     * Let's think about this. *cubi are very bad demons who basically rape people in their dreams.
+     * BUT, we don't want to say that sex is bad. So, in homage to Nethack, and to make gender have
+     * an in-game effect, we will say that there are 3 possible outcomes:
+     * 1 target resists the *cubus's dreamy advances
+     * 2 dream-sex happens and the *cubus wins, feeding off the life-force of its victim
+     * 3 dream-sex happens and the target wins, causing positive benifits.
+     *
+     * Source & target have strength, appearance, fighting, dodge,
+     * damage and 2xgender attributes.  Of these, appearance and
+     * gender are the most applicable.  Since *cubi are heterosexual
+     * in mythology, we'll use gender to determine 1 (if the *fucubus
+     * in interested).
+     * We differentiate 2-3 on appearance.
+     */
+    bool isProtected = incubus ? !target.isFemale() : !target.isMale();
+    bool isCompatible = incubus ? target.isFemale() : target.isMale();
+    auto &ios = ioFactory::instance();
+      return false;
+    if (!isProtected) {
+      if (source.isPlayer()) ios.message(L"You aren't in the mood.");
+      else ios.message(source.name() + std::wstring(L" doesn't seem to be in the mood."));
+      return false;
+    }
+    if (isCompatible && dPc() < target.appearance().cur()) {
+      // good outcome; consent happened.
+      ios.message(target.isPlayer() ? L"You consent to the advances of the " + std::wstring(source.name())
+		  : source.isPlayer() ? L"The " + std::wstring(target.name()) + L" consents to your advances..."
+		  : L"The " + std::wstring(target.name()) + L" consents to the advances of the " + source.name() + L"..."
+		  );
+      // target receives a good outcome; source receives a moderatly good outcome
+      target.strength() += 5; target.dodge() += 5;
+      source.dodge() += 1;
+      sharedAction<monster,monster> &act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::sex_up_item);
+      act(false, false, source, target);
+      (act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::uncurse_item))(false, false, source, target) ||
+	(act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::bless_item))(false, false, source, target) ||
+	(act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::enchant_item))(false, false, source, target);
+    } else {
+      // bad outcome
+      ios.message(target.isPlayer() ? L"You are violated by the "  + std::wstring(source.name() + L'!')
+		  : source.isPlayer() ? L"You feel bad about violating the " + std::wstring(target.name()) + L"..."
+		  : L"The " + std::wstring(target.name()) + L" does not consents to the advances of the " + source.name() + L"..."
+		  );
+      // target receives a bad outcome; source receives a good outcome
+      source.strength() += 5;
+      target.dodge() -= 10; target.strength() -= 10;
+      sharedAction<monster,monster> &act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::sex_up_item);
+      act(false, false, target, source);
+      (act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::uncurse_item))(false, false, target, source) ||
+	(act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::bless_item))(false, false, target, source) ||
+	(act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::enchant_item))(false, false, target, source);
+    }
+    return true;
+}
+
+
+sharedAction<monster, monster> &incubusAction() {
+  static foocubusAction<true> incubusAction;
+  return incubusAction;
+}
+
+sharedAction<monster, monster> &sucubusAction() {
+  static foocubusAction<false> sucubusAction;
+  return sucubusAction;
+}
+
+
+// TODO: area-effect actions
+// wand of health & safety: reveals all traps on level, clears any damage, removes any cloak, dons safety glasses & doublet becomes a fluorescent jacket.

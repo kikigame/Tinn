@@ -118,6 +118,10 @@ public:
   // return a mutable holder for items in the given square
   itemHolder& holder(const coord c);
 
+  // create a prison in an empty portion of the map.
+  // throws std::wstring if no part of the map could be found (after 100 tries)
+  coord createPrison();
+
   // get a reference to the dungeon
   dungeon & dung();
 
@@ -126,6 +130,8 @@ public:
 
   // prevent copying
   level operator =(level &other) = delete;
+  // prevent moving
+  level operator =(level &&other) = delete;
 
   operator const renderByCoord&() const;
 };

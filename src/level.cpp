@@ -719,6 +719,36 @@ public:
 	return;
       }
   }
+
+  coord createPrison() {
+    bool found = false;
+    for (int triesLeft=10; triesLeft > 0 && !found; --triesLeft) {
+      coord c, pos = findTerrain(terrainType::ROCK, 3, 3);
+      found = true;
+      for (c.first = pos.first; c.first < pos.first + 3; ++c.first)
+	for (c.second = pos.second; c.second < pos.second + 3; ++c.second) {
+	  auto ma = monstersAt(c);
+	  if (ma.first == ma.second) {
+	    found = false;
+	    goto COORDLOOPDONE; // too many rocky monsters; c++ doesn't have break LABEL
+	  }
+	  auto &h = holder(c);
+	  auto i = h.firstItem([](item &) {return true;});
+	  if (!i) {
+	    found = false;
+	    goto COORDLOOPDONE; // too many items in the rock; c++ doesn't have break LABEL
+	  }
+	}
+    COORDLOOPDONE:
+      if (found) {
+	coord mid(c.first+1, c.second+1);
+	auto ground = tFactory.get(terrainType::GROUND);
+	terrain_.at(mid) = ground;
+	return mid;
+      }
+    }
+    throw std::wstring(L"Too many rocky things to create a prison!");
+  }
 };
 
 std::pair<coord,coord> levelGen::addRoom() {

@@ -66,6 +66,46 @@ class sharedAction<monster, monster>{
     exchange_ray,
     // heal by veggie food consumption
     heal_ray_veggie,
+    // perform a random "funny" effect to detriment of target monster:
+    // comedy, TODO
+    // make the target "sad":
+    // tradgedy, TODO
+    // move the target as far as possible from the source
+    teleport_away,
+    // move the target into a new rocky prison where there are no items or monsters
+    lock_away,
+    // push the other monster somewhere it can't get to player in one move
+    repulsion,
+    // curse 1 item in main inventory
+    curse_item,
+    // remove curse from 1 item in main inventory
+    uncurse_item,
+    // bless 1 item in main inventory
+    bless_item,
+    // unbless 1 item in main inventory
+    unbless_item,
+    // enchant 1 item in main inventory
+    enchant_item,
+    // disenchant 1 item in main inventory
+    disenchant_item,
+    // sexUp 1 item in main inventory
+    sex_up_item,
+    // remove "sexy" adjective from 1 item in main inventory
+    sex_down_item,
+    // unequip worn item:
+    nudity,
+    // unequip wielded item:
+    disarm,
+    // TODO: Should we have individual intrinsic setters, or should we have an extrinsic -> intrinsic effector?
+    // dblAttacks TODO
+    // resistances TODO
+    // hearing TODO
+    // seeing TODO
+    // swimming TODO
+    // flying TODO
+    // entrapment TODO
+    // climbing TODO
+    // speedy TODO
     END
   };
 };
@@ -89,5 +129,9 @@ class actionFactory {
 public:
   static renderedAction<T...> & get(const typename sharedAction<T...>::key k);
 };
+
+// specific actions that don't get their own wands (and so can't have entries in the key enum):
+sharedAction<monster, monster> &incubusAction();
+sharedAction<monster, monster> &sucubusAction();
 
 #endif //ndef ACTION_HPP__
