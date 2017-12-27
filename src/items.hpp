@@ -9,6 +9,7 @@
 #include "itemTypes.hpp"
 #include "itemholder.hpp"
 #include "slots.hpp"
+#include "action.hpp"
 #include <memory>
 #include <string>
 #include <vector>
@@ -125,6 +126,9 @@ item & createRndItem(const int depth);
 
 // create a bottled item
 item & createBottledItem(const itemTypeKey &);
+
+// create a wand
+item & createWand(sharedAction<monster,monster>::key of);
 
 // create an IOU card
 item & createIou(const double amount, const std::wstring &whom, const std::wstring &service);

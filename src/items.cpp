@@ -1160,6 +1160,14 @@ item & createBottledItem(const itemTypeKey &type) {
   return rtn;
 }
 
+item & createWand(sharedAction<monster,monster>::key of) {
+  auto &action = actionFactory<monster, monster>::get(of);
+  // non-random wands are initially created with 1-5 charges:
+  auto rtn = new wand(dPc() / 20, action);
+  itemHolderMap::instance().enroll(*rtn); // takes ownership
+  return *rtn;
+}
+
 item & createIou(const double amount, const std::wstring &whom, const std::wstring &service) {
   auto rtn = new iou(amount, whom, service);
   itemHolderMap::instance().enroll(*rtn); // takes ownership
