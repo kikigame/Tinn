@@ -273,7 +273,7 @@ L"Worn between one's neither-regions and the rest of the world; extends the\n"
 L"Novelty hat"
 			     ));
     emplace(itemTypeKey::stick,
-	    new itemTypeImpl(0.5, materialType::woody, L'/', L"stick",
+	    new itemTypeImpl(0.5, materialType::woody, L'❘', L"stick", // Nethack uses '/' for wands, but we use that for searching, which is an older standard I think.
 L"In its most basic form, a wand is a device with which you may inscribe on a\n"
 "wax tablet, also known as a /stylus/. Many wands are imbued with charges of\n"
 "magical energy, often associated with druidic of fairy magic, to provide\n"

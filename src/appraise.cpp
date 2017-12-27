@@ -22,7 +22,7 @@ double appraise(const monster &monster, const item &thing) {
     // clothing - worth much less if damaged
   case L'[': if (isDamaged(thing)) value *= 0.1; break;
     // stylii - worth lots if magical
-  case L'/': if (thing.enchantment() > 0) value *= 10; break;
+  case L'❘': if (thing.enchantment() > 0) value *= 10; break;
     // bottles
   case L'8': break;
     // readables

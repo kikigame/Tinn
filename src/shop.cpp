@@ -22,7 +22,7 @@ extern const int numShopAdjectives;
 
 const wchar_t * shopName(const shopType & type) {
   switch (type) {
-  case stylii: return  L"Stylii Shop"; // L'/'
+  case stylii: return  L"Stylii Shop"; // L'❘'
   case groceries: return  L"shop of Groceries"; // L'%'
   case weapons: return  L"Weaponsmiths' Forge"; // L'!'
   case thrown: return  L"shop of Flight"; // L'¬'
@@ -160,7 +160,7 @@ public:
 private:
   wchar_t itemCat() {
       switch (shopType_) {
-      case stylii: return L'/';
+      case stylii: return L'❘';
       case groceries: return L'%';
       case weapons: return L'!';
       case thrown: return L'¬';

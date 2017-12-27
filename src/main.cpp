@@ -140,7 +140,7 @@ void processInput(dungeon & d, const std::wstring &c, const std::shared_ptr<io> 
     d.cur_level().east(*(d.pc()));
     doTick(d);
     break;
-  case L'/':
+  case L'❘':
     d.interrogate();
     break;
   case L'<':
