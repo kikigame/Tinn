@@ -33,6 +33,7 @@ const wchar_t * shopName(const shopType & type) {
   case luggage: return  L"Luggage Emporium"; // L'='
   case bottles: return  L"shop of Potables and Curios"; // L'8'
   case tools: return L"Toolshop"; // L'('
+  case END: return L"Shop"; // used for pop-up shops
   default: throw type;
   }
 };
@@ -47,6 +48,16 @@ enum class serviceType {
 // declared in items.cpp
 double forIou(const item &i, double d, std::wstring &buf);
 
+
+class itemDestroyer : public itemHolder {
+public:
+  virtual bool addItem(item &it) {
+    return it.holder().destroyItem(it);
+  }
+  static itemDestroyer instance;
+};
+itemDestroyer itemDestroyer::instance;
+
 class shopImpl {
 private:
   monster &inventory_;
@@ -57,11 +68,13 @@ private:
   std::vector<serviceType> services_;
   std::vector<std::shared_ptr<item>> basket_;
   const damage & damage_; // for proofing primarily
-  deity & align_;
-  bool isFriendly_;
-  bool isGenerous_;
+  const deity & align_;
+  const bool isFriendly_;
+  const bool isGenerous_;
+  itemHolder &disposer_;
   std::map<std::wstring, double> servicesBought_;
 public:
+  // shopping-center shop
   shopImpl(monster &inventory,
 	   const shopType type,
 	   const std::wstring & keeperName, 
@@ -70,10 +83,15 @@ public:
     shopType_(type),
     keeperName_(keeperName),
     name_(keeperName + L"'s " + adjective + L" " + shopName(type)),
+    forSale_(),
+    services_(),
+    basket_(),
     damage_(rndPick(damageRepo::instance().begin(), damageRepo::instance().end())->second),
     align_(*rndPick(deityRepo::instance().begin(), deityRepo::instance().end())),
     isFriendly_(adjective == L"Friendly"),
-    isGenerous_(adjective == L"Generous") {
+    isGenerous_(adjective == L"Generous"),
+    disposer_(itemDestroyer::instance), // shop gets traded items to sell on via the trading network, but we won't keep the shop.
+    servicesBought_() {
     // What does the shop have to sell?
     restock();
     // TODO: When does the shop get restocked? Or do we get new shops each time?
@@ -83,6 +101,27 @@ public:
     // "protective" shops sell a proofing service:
     if (adjective == L"Protective")
       services_.push_back(serviceType::proofing);
+  }
+  // pop-up shop
+  shopImpl(monster &inventory,
+	   monster &stock) :
+    inventory_(inventory),
+    shopType_(shopType::END),
+    keeperName_(stock.name()),
+    name_(std::wstring(stock.name()) + L"'s Pop-Up Shop"),
+    forSale_(),
+    services_(),
+    basket_(),
+    damage_(rndPick(damageRepo::instance().begin(), damageRepo::instance().end())->second),
+    align_(stock.align()),
+    isFriendly_(false),
+    isGenerous_(false),
+    disposer_(stock),
+    servicesBought_() {
+    stock.forEachItem([this](item &it, const std::wstring) {
+	forSale_.push_back(it.shared_from_this());
+      });
+    // TODO: some monsters should provide services?
   }
 
   const wchar_t * const name() const {
@@ -372,7 +411,7 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
 
   void completeSale(std::vector<std::shared_ptr<item> > &barter) {
     ioFactory::instance().message(L"Your offer is accetable.\nThank you; come again."); // ref:Simpsons, Apu
-    for (auto i : barter) inventory_.destroyItem(*i);
+    for (auto i : barter) disposer_.addItem(*i); // popup shop, so switch items
     for (auto i : basket_) inventory_.addItem(*i);
   }
 
@@ -507,6 +546,9 @@ shop::shop(monster & inventory, std::wstring adjective, shopType type) {
   pImpl_.reset(new shopImpl(inventory, type, keeperName, adjective));
 }
 
+shop::shop(monster & inventory, monster &shopInventory) :
+  pImpl_(new shopImpl(inventory, shopInventory)) {}
+
 shop::~shop() {}
 
 shop::itemIter shop::begin() const {
@@ -603,4 +645,10 @@ void goShopping(monster &inventory) {
 		 );
     shops[shop].enter();
   } while (ios.ynPrompt(L"Do you want to continue shopping?"));
+}
+
+// ref: Started with Vienna December market of 1928, according to Wikipedia article on Pop-Up Retail.
+void popUpShop(monster &from, monster &to) {
+  shop s(from, to);
+  s.enter();
 }

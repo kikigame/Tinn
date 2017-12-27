@@ -106,6 +106,8 @@ class sharedAction<monster, monster>{
     // entrapment TODO
     // climbing TODO
     // speedy TODO
+    // create a shop on the fly with the inventory of the given monster
+    popup_shop,
     END
   };
 };

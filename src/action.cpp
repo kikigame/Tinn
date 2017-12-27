@@ -261,6 +261,21 @@ public:
   }
 };
 
+// defined in shop.cpp:
+void popUpShop(monster & from, monster &to);
+
+class popupShopAction : public renderedAction<monster, monster> {
+public:
+  popupShopAction(const wchar_t * const name, const wchar_t * const description) :
+    renderedAction(name, description) {}
+  virtual ~popupShopAction() {}
+  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+    if (!source.isPlayer()) return false; // TODO: Monsters demand to shop with the player!
+    popUpShop(source,target);
+    return true;
+  }  
+};
+
 template<>
 class actionFactory<monster, monster> {
 public:
@@ -435,7 +450,9 @@ L"Weapons can be used to intimidate, attack, harm or destroy an opponent.\n"
 "weapon.",
 [](const item &i) {return i.equippable() == item::equipType::wielded && 
                    dynamic_cast<monster&>(i.holder()).slotsOf(i)[0] != nullptr;}, 
-[](item &i) {return dynamic_cast<monster&>(i.holder()).unequip(i);})))
+[](item &i) {return dynamic_cast<monster&>(i.holder()).unequip(i);}))),
+	std::make_pair(action::key::popup_shop, std::shared_ptr<action>(new popupShopAction(L"shopping",
+L"A pop-up shop is a small retail event lasting for a short length of time."))),
 	};
     auto &rtn = m[k];
     return *rtn;

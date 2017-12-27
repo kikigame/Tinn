@@ -39,6 +39,10 @@ public:
   // ios -> used for user interaction
   // inventory -> itemholder for customer's inventory to buy and sell
   shop(monster & inventory, std::wstring adjective, shopType type);
+  // create a pop-up shop
+  // inventory -> itemholder for customer's inventory to buy and sell
+  // shopInventory -> monster whose items can be bought and sold
+  shop(monster & inventory, monster &shopInventory);
   shop(const shop &) = delete;
   shop(shop &&) = default;
   ~shop();
@@ -58,5 +62,7 @@ public:
 // (probably the PC for now):
 void goShopping(monster & inventory);
 
+// create a transient shop using the inventory of "to".
+void popUpShop(monster & from, monster &to);
 
 #endif // ndef SHOP_HPP
