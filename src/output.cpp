@@ -12,23 +12,24 @@
 
 io::~io(){}
 
-
-// template methods can't be virtual; score 1 for Java generics.
-// may have to rethink this, but currently only support terminal-type I/O, so this can go here safely.
 template <typename T>
-T io::choice(const std::wstring &prompt, const std::wstring &help, 
-	     const std::vector<std::pair<T, const wchar_t*>> &choices,
-	     const std::wstring &extraHelp) const {
+size_t choicePrompt(const io &ios, const std::wstring &prompt, const std::wstring &help, 
+		    const std::vector<std::pair<T, const wchar_t*> > &choices,
+		    const std::wstring &extraHelp, size_t offset) {
   unsigned int res, i;
-  const int numChoices = choices.size();
+  size_t numChoices = choices.size() - offset;
+  bool hasMoreChoices = numChoices > 9;
+  size_t maxInput = (hasMoreChoices) ? 9 : numChoices;
+  if (hasMoreChoices) numChoices = 8;
   do {
   LOOP:
     std::wstring msg = prompt + L"; please press [1] to [" + std::to_wstring(numChoices) +  L"]:";
-    std::wstring list;
-    i=1;
-    for (auto &p : choices)
-      list += L"  " + std::to_wstring(i++) + L" - " + p.second + L"\n";
-    auto ch = keyPrompt(msg, help + L"\n" + list + L"\n" + extraHelp);
+    std::wstring list;  
+    for (i=0; i < numChoices; ++i)
+      list += L"  " + std::to_wstring(i+1) + L" - " + choices[offset + i].second + L"\n";
+    if (hasMoreChoices)
+      list += L"  9 - --MORE--\n";
+    auto ch = ios.keyPrompt(msg, help + L"\n" + list + L"\n" + extraHelp);
     try {
       res = std::stoi(ch.c_str());
     } catch (std::invalid_argument) {
@@ -36,9 +37,24 @@ T io::choice(const std::wstring &prompt, const std::wstring &help,
     } catch (std::out_of_range) {
       goto LOOP; // retry after invalid string typed
     }
-  } while (res < 1 || res >= i);
+  } while (res < 1 || res > maxInput);
+  return res;
+}
+
+// template methods can't be virtual; score 1 for Java generics.
+// may have to rethink this, but currently only support terminal-type I/O, so this can go here safely.
+template <typename T>
+T io::choice(const std::wstring &prompt, const std::wstring &help, 
+	     const std::vector<std::pair<T, const wchar_t*> > &choices,
+	     const std::wstring &extraHelp) const {
+  size_t offset=0, choice, res;
+  do {
+    choice = choicePrompt(*this, prompt,help,choices,extraHelp,offset);
+    res = choice + offset;
+    if (choice == 9 && res < choices.size()) offset += 9;
+  } while (choice == 9 && res < choices.size());
   auto rtn = choices.begin();
-  for (i=1; i < res; ++i) ++rtn;
+  for (int i=1; i < res; ++i) ++rtn;
   return rtn->first;
 }
 
