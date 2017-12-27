@@ -325,7 +325,7 @@ private:
   /*
    * Aim to show help text in a consistent place; leave cursor after msg
    */
-  void helpPrompt(const std::wstring msg, const std::wstring help) const {
+  void helpPrompt(const std::wstring &msg, const std::wstring &help) const {
     flushLastMsg(L""); // output any buffered message before showing string
     ::clear();
     mvaddwstr(3,0,help.c_str());

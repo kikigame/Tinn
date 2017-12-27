@@ -44,6 +44,10 @@ private:
 public:
   const monsterTypeKey key_;
   monsterTypeBuilder(monsterTypeKey key) : 
+    category_(), monsterNames_(), levelFactor_(0), levelOffset_(0), minSpawn_(0), maxSpawn_(0),
+    xpFactor_(0), xpOffset_(0), renderChar_(L'\0'), strength_(0), appearance_(0), fighting_(0),
+    dodge_(0), maxDamage_(0), gen_(genderAssignType::neuter), alignment_(),
+    foodMaterials_(), sayings_(),
     movementType_ ({ speed::turn2, goTo::player, goBy::smart, 0 }),
     key_(key) {}					   
   monsterTypeBuilder& category(monsterCategory category) { category_ = category; return *this; }
