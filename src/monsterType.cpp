@@ -264,7 +264,7 @@ L"Meaning \"Little Thief\", ferrets are small, hyperflexible elongated mammels\n
 	    .name(L"red-cap goblin")
 	    .className(L"goblin")
 	    .levelFactor(1)
-	    .levelOffset(-1)
+	    .levelOffset(5)
 	    .minSpawn(1)
 	    .maxSpawn(1) // often alone in folklore
 	    .xpFactor(5)
@@ -308,7 +308,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .name(L"Big Bad Wolf") // ref:fairytales
 	    .className(L"Canid") // genus canus
 	    .levelFactor(1)
-	    .levelOffset(0)
+	    .levelOffset(10)
 	    .minSpawn(1)
 	    .maxSpawn(12) // todo: unsure how big dog packs can be
 	    .xpFactor(1)
