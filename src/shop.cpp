@@ -469,10 +469,18 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
     bool blessed = item.isBlessed();
     bool cursed = item.isCursed();
     
-    int de = 0;
-    if (blessed && cursed) de = 2; // cursed items get half enchantment (ie 50:50 for nbc)
-    else if (blessed) de = 4; // blessed items get *4 enchantment
-    else if (!cursed || dPc() < 50) de = 1;
+    /*
+     *    dPc: 0     50     100
+     * normal: 1     3      5
+     * blessed:2     6      10
+     * cursed: 0:1   0:3    0:5
+     * bc:     0     4      8
+     */
+
+    int de;
+    if (blessed && cursed) de = 2 * (dPc() / 25);
+    else if (blessed) de = 2 * (1+ (dPc() / 25)); // blessed items get *4 enchantment
+    else if (!cursed || dPc() < 50) de = 1+ (dPc() / 25);
     item.enchant(de);
 
     auto &ios = ioFactory::instance();
