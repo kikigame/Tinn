@@ -918,7 +918,10 @@ std::shared_ptr<monster> ofType(const monsterType &type, level & level) {
 std::vector<std::pair<unsigned int, monsterType*>> spawnMonsters(int depth, int rooms) {
   auto from = monsterTypeRepo::instance().begin();
   auto to = monsterTypeRepo::instance().end();
-  return rndGen<monsterType*, std::vector<monsterType*>::iterator>(from, to, depth, rooms);
+  auto ffrom = make_filtered_iterator([depth](monsterType* mt) {
+      return (depth <= 3 || mt->type() != monsterTypeKey::dungeoneer);
+    }, from, to);
+  return rndGen<monsterType*, std::vector<monsterType*>::iterator>(ffrom, to, depth, rooms);
 }
 
 bool monster::destroyItem(item &item) {

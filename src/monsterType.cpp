@@ -194,6 +194,35 @@ public:
 	    .encyclopedium(L"The dragon is a powerful creature shrouded in mystery.") // TODO: Better this
             .fearless());
 
+    // unique feature: doesn't descend below level 3
+    emplace(monsterTypeBuilder(monsterTypeKey::dungeoneer)
+	    .category(monsterCategory::biped)
+	    .name(L"Dungeoneer")
+	    .className(L"humanoid")
+	    .levelFactor(1)
+	    .levelOffset(0)
+	    .minSpawn(1)
+	    .maxSpawn(1)
+	    .xpFactor(1)
+	    .xpOffset(10)
+	    .renderChar(L'@')
+	    .strength(15)
+	    .appearance(60)
+	    .fighting(10)
+	    .dodge(5) // blind
+	    .maxDamage(10) // weak; often need to use brains to solve puzzles instead of fighting.
+	    .gen(genderAssignType::mf)
+	    .align(dr.getExact(Element::none, Domination::concentration, Outlook::kind))
+	    .saying(L"My Quest is for the Cup") // ref:Knightmare (TV Series)
+	    .saying(L"My Quest is for the Sword") // ref:Knightmare (TV Series)
+	    .saying(L"My Quest is for the Shield") // ref:Knightmare (TV Series)
+	    .saying(L"My Quest is for the Crown") // ref:Knightmare (TV Series)
+	    .saying(L"My Quest is for the Maiden") // ref:Knightmare (TV Series) (series 1)
+	     // no eats(); uses a napsack
+	    .movement({speed::perturn, goTo::down, goBy::smart, 100})
+	    .encyclopedium(
+L"Sometimes a human ventures into a Dungeon upon a quest. This is usually ill-\n"
+"advised."));
 
     // unique feature: stealing something & running away
     emplace(monsterTypeBuilder (monsterTypeKey::ferret)
