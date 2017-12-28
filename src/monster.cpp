@@ -720,6 +720,18 @@ public:
   }
 };
 
+// monsters that perform an action when they successfully hit a target in combat (by reference)
+class targetActionRefMonster : public monster {
+private:
+  sharedAction<monster,monster> &act_;
+public:
+  targetActionRefMonster(monsterBuilder &b, sharedAction<monster,monster> &action) :
+    monster(b), act_(action) {}
+  virtual void onHit(monster &opponent, int) {
+    act_(false, false, *this, opponent);
+  }
+};
+
 // ferrets steal little things then run away
 class ferret : public targetActionMonster {
 private:
@@ -935,6 +947,12 @@ std::shared_ptr<monster> ofType(const monsterType &type, level & level) {
     break;
   case monsterTypeKey::hound:
     ptr = std::make_shared<hound>(b);
+    break;
+  case monsterTypeKey::incubus:
+    ptr = std::make_shared<targetActionRefMonster>(b, incubusAction());
+    break;
+  case monsterTypeKey::succubus:
+    ptr = std::make_shared<targetActionRefMonster>(b, succubusAction());
     break;
   case monsterTypeKey::zombie:
     ptr = std::make_shared<zombie>(b);

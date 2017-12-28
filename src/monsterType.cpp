@@ -360,6 +360,76 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 " of smell. They lack in intelligece, cunning, learning, strength, power and\n"
 "speed - but are very adept at using tools and being unpredictable."));
 
+    // unique feature: seduction/dream-rape
+    emplace(monsterTypeBuilder(monsterTypeKey::incubus)
+	    .category(monsterCategory::biped)
+	    .name(L"Incubus")
+	    .className(L"Lesser demon")
+	    .levelFactor(1)
+	    .levelOffset(10)
+	    .minSpawn(1)
+	    .maxSpawn(1)
+	    .xpFactor(50)
+	    .xpOffset(0)
+	    .renderChar(L'&')
+	    .strength(20)
+	    .appearance(100)
+	    .fighting(50)
+	    .dodge(5) // why would they dodge?
+	    .maxDamage(30)
+	    .saying(L"You you doin'?") // ref:Friends (TV Series), Joey
+	    .saying(L"Eyy!") // ref: Arthur Herbert Fonzarelli, Happy Days
+	    .gen(genderAssignType::m)
+	    .material(materialType::liquid) // prevent player from taking corpse easily
+	    .align(dr.begin(), dr.end())
+	    .movement({speed::turn3, goTo::player, goBy::smart, 10})
+	    .eats(materialType::clothy) // ripping clothes off with its teeth...
+    //ref: http://www.chesterfieldparanormalresearch.com/incubus---sucubbus-demon.html; wikipedia; http://mythicalcreatureslist.com/mythical-creature/Succubus; others
+	    .encyclopedium(L"The word incubus comes from the Latin /incubāre/ (to lay\n"
+      "upon), from Latin /incubō/ (nightmare). Even the most hedonistic\n"
+      "of demonologist should think twice before engaging one. They have \n"
+      "been known to come to seduce women their dreams with their comely\n"
+      "appearance for their own nefarious acts, sometimes in the form of a\n"
+      "deceased spouse. They do not feel pleasure themselves, instead driven\n"
+      "by the sin of lust. All are indiscriminate and want only to spread\n"
+      "their seed for their own ends. "));
+
+    // unique feature: seduction/dream-rape
+    emplace(monsterTypeBuilder(monsterTypeKey::succubus)
+	    .category(monsterCategory::biped)
+	    .name(L"Succuubus")
+	    .className(L"Lesser demon")
+	    .levelFactor(1)
+	    .levelOffset(10)
+	    .minSpawn(1)
+	    .maxSpawn(1)
+	    .xpFactor(50)
+	    .xpOffset(0)
+	    .renderChar(L'&')
+	    .strength(20)
+	    .appearance(100)
+	    .fighting(50)
+	    .dodge(5) // why would they dodge?
+	    .maxDamage(30)
+	    .saying(L"Boop oop a doop!") // ref:Betty Boop
+	    .saying(L"Happy Birthday Mister Prisident") // ref:Marilyn Monroe
+	    .gen(genderAssignType::f)
+	    .material(materialType::liquid) // prevent player from taking corpse easily
+	    .align(dr.begin(), dr.end())
+	    .movement({speed::turn3, goTo::player, goBy::smart, 10})
+	    .eats(materialType::clothy) // ripping clothes off with its teeth...
+	    .encyclopedium(
+    //ref: http://www.chesterfieldparanormalresearch.com/incubus---sucubbus-demon.html; wikipedia; http://mythicalcreatureslist.com/mythical-creature/Succubus; others
+    L"The word succubus comes from the Latin /succubāre/ (to lie\n"
+      "under). Succubi are the Harlots of Hell. Even the most hedonistic\n"
+      "of demonologist should think twice before engaging one. They have\n"
+      "been known to come to seduce men in their dreams with their comely\n"
+      "appearance for their own nefarious acts, sometimes in the form of a\n"
+      "deceased spouse. They do not feel pleasure themselves, instead driven\n"
+      "by the sin of lust. Some say Lilith is a succubus. All are\n"
+      "indiscriminate and want only male seed and life-force for their own\n"
+    "ends."));
+
     // unique feature: eats rocks; stony corpses
     emplace(monsterTypeBuilder (monsterTypeKey::troll)
 	    .category(monsterCategory::biped)
@@ -503,24 +573,6 @@ L"There are a great number of creatures in the world, and not all sit neatly\n"
       "beware that they also effortlessly evade most traps."
 			   ));
 
-    //ref: http://www.chesterfieldparanormalresearch.com/incubus---sucubbus-demon.html; wikipedia; http://mythicalcreatureslist.com/mythical-creature/Succubus; others
-    auto todo = L"The word succubus comes from the Latin /succubāre/ (to lie\n"
-      "under). Succubi are the Harlots of Hell. Even the most hedonistic\n"
-      "of demonologist should think twice before engaging one. They have\n"
-      "been known to come to seduce men in their dreams with their comely\n"
-      "appearance for their own nefarious acts, sometimes in the form of a\n"
-      "deceased spouse. They do not feel pleasure themselves, instead driven\n"
-      "by the sin of lust. Some say Lilith is a succubus. All are\n"
-      "indiscriminate and want only male seed and life-force for their own\n"
-      "ends.";
-    auto todo1 = L"The word incubus comes from the Latin /incubāre/ (to lay\n"
-      "upon), from Latin /incubō/ (nightmare). Even the most hedonistic\n"
-      "of demonologist should think twice before engaging one. They have \n"
-      "been known to come to seduce women their dreams with their comely\n"
-      "appearance for their own nefarious acts, sometimes in the form of a\n"
-      "deceased spouse. They do not feel pleasure themselves, instead driven\n"
-      "by the sin of lust. All are indiscriminate and want only to spread\n"
-      "their seed for their own ends. ";
 
     /* TODO: each monster needs something unique. What can this have? Should we add mat-type gold & instakill?
      * how about making it more powerful or more common on Cyber Monday? - Monday after Thinkgiving, which is itself the fourth Thursday in November

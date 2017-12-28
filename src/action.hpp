@@ -142,6 +142,6 @@ public:
 
 // specific actions that don't get their own wands (and so can't have entries in the key enum):
 sharedAction<monster, monster> &incubusAction();
-sharedAction<monster, monster> &sucubusAction();
+sharedAction<monster, monster> &succubusAction();
 
 #endif //ndef ACTION_HPP__

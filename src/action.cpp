@@ -552,9 +552,9 @@ sharedAction<monster, monster> &incubusAction() {
   return incubusAction;
 }
 
-sharedAction<monster, monster> &sucubusAction() {
-  static foocubusAction<false> sucubusAction;
-  return sucubusAction;
+sharedAction<monster, monster> &succubusAction() {
+  static foocubusAction<false> succubusAction;
+  return succubusAction;
 }
 
 

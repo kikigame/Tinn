@@ -64,6 +64,8 @@ enum class monsterTypeKey {
   goblin,
   hound,
   human, 
+  incubus, // male form of succubus
+  succubus, // female form of incubus
   troll, 
   venusTrap,
   zombie,
