@@ -3,6 +3,7 @@
 // define a monster in the dungeon
 
 #include "monster.hpp"
+#include "dungeon.hpp"
 #include "monsterType.hpp"
 #include "random.hpp"
 #include "level.hpp"
@@ -648,6 +649,10 @@ void moveMonster(monster &mon) {
 
 void monsterAttacks(monster &mon) {
   level & level = mon.curLevel();
+
+  // we don't allow attacking until the player reaches us
+  if (&(level.dung().cur_level()) != &level) return;
+
   // currently, all monsters will attack anything that
   // a) they are adjacent to, and
   // b) they are a different alignment to, on at least one axis OR both unaligned.
