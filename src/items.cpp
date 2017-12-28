@@ -129,7 +129,7 @@ public:
 	"effects of the curse, but does not void it. Cursed items cannot be\n"
 	"removed if worn/wielded until the curse is removed.\n";
     else
-      buffer_ += L"This would be more effective if blessed.";
+      buffer_ += L"This would be more effective if blessed.\n";
 
     const int enchantmentPc = 5 * enchantment();
     auto *burnCharge = dynamic_cast<const burnChargeMixin*>(this);
