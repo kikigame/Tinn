@@ -41,6 +41,7 @@ private:
   std::bitset<materialTypeSize> foodMaterials_;
   std::vector<const wchar_t *> sayings_;
   movementType movementType_;
+  bonus fearless_;
 public:
   const monsterTypeKey key_;
   monsterTypeBuilder(monsterTypeKey key) : 
@@ -49,6 +50,7 @@ public:
     dodge_(0), maxDamage_(0), gen_(genderAssignType::neuter), alignment_(),
     foodMaterials_(), sayings_(),
     movementType_ ({ speed::turn2, goTo::player, goBy::smart, 0 }),
+    fearless_(),
     key_(key) {}					   
   monsterTypeBuilder& category(monsterCategory category) { category_ = category; return *this; }
   monsterTypeBuilder& name(const wchar_t * name) { monsterNames_.push_back(name); return *this; }
@@ -79,6 +81,8 @@ public:
     return *this; 
   }
   monsterTypeBuilder& movement(movementType type) { movementType_ = type; return *this; }
+  monsterTypeBuilder& fearless() { fearless_ = bonus(true); return *this; }
+  monsterTypeBuilder& scardy() { fearless_ = bonus(false); return *this; }
 };
 
 monsterType::monsterType(const monsterTypeBuilder & b) :
@@ -187,7 +191,8 @@ public:
 	    .eats(materialType::fleshy)
 	    .eats(materialType::leathery) // definitely carnivores, but I'm guessing they'll eat some of your armour too
 	    .saying(L"Behold the Powerful Dragon") // should not actually say this; depends on the monster's specifics
-	    .encyclopedium(L"The dragon is a powerful creature shrouded in mystery.")); // TODO: Better this
+	    .encyclopedium(L"The dragon is a powerful creature shrouded in mystery.") // TODO: Better this
+            .fearless());
 
 
     // unique feature: stealing something & running away
@@ -220,7 +225,8 @@ L"Meaning \"Little Thief\", ferrets are small, hyperflexible elongated mammels\n
 "of the Mustela family. They are domesticated hunting working animals bread for\n"
 "hunting rabbit. While they don't burrow, they love running through tunnels,\n"
 "playing with whatever comes to hand, and biting - which, with poor eyesight\n"
-"and smell, is how they mostly investigate the world."));
+"and smell, is how they mostly investigate the world.")
+            .scardy());
 
     // unique feature: stealing treasure (TODO: magic)
     emplace(monsterTypeBuilder (monsterTypeKey::goblin)
@@ -256,7 +262,8 @@ L"Meaning \"Little Thief\", ferrets are small, hyperflexible elongated mammels\n
 L"The difference between a goblin and an orc is that orcs don't exist.\n"
 "Not all goblins are malevolent; some are merely mischievous. All are obsessed\n"
 "with shiny treasure; they will take what they want by force, trickery or even\n"
-"magic."));
+"magic.")); // not fearless, as they prove quite tough already
+
 
     // unique features: change saying based on size.
     emplace(monsterTypeBuilder (monsterTypeKey::hound)
@@ -390,7 +397,8 @@ L"There are a great number of creatures in the world, and not all sit neatly\n"
 "in their categories. The Venus trap is a deadly flora which allures its\n"
 "victims with sweet aromas, until they meet their deadly end within its hairy\n"
 "jaw-like leaves...\n"
-"The Dionaea muscipula is found mostly in sub-tropical wetlands."));
+"The Dionaea muscipula is found mostly in sub-tropical wetlands.")
+            .fearless()); // can't move anyway
 
     // unique feature: beeline approach ignoring all traps. Instant death on pin traps
     emplace(monsterTypeBuilder (monsterTypeKey::zombie)
@@ -430,7 +438,8 @@ L"There are a great number of creatures in the world, and not all sit neatly\n"
       // ref: Zombie Island (the old 1980s console game, possibly CP/M DOS. Possibly called something like "Escape from Zombie Island" or just "Zombie". You were on an island with zombies that always moved towards you, and had to lure them into pits to defeat them. You died if you jumped into a pit or contacted a zombie.)
       "Having no sense of self-preservation, their hypnotic state makes them\n"
       "effective brute-force warriors, although they can be lured into traps."
-			   ));
+			   )
+      .fearless()); // brainless implies fearless
 
     // unique features: flying
     emplace(monsterTypeBuilder(monsterTypeKey::birdOfPrey)
