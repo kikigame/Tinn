@@ -245,6 +245,7 @@ public:
     level_(level), coord_(c) {}
   virtual bool addItem(item &item); // overridden to handle movement callbacks
   virtual bool removeItemForMove(item &item, itemHolder &next); // overridden to handle movement callbacks
+  virtual bool destroyItem(item &item); // overridden to clear the weak_ptr from the level.
   virtual ~itemHolderLevel() {}
 };
 
@@ -1056,6 +1057,13 @@ bool itemHolderLevel::removeItemForMove(item &item, itemHolder &next) {
     if (!z->onExit(item.shared_from_this(), next)) return false;
   level_.removeItem(coord_, item);
   return true;
+}
+bool itemHolderLevel::destroyItem(item &item) {
+  if (itemHolder::destroyItem(item)) {
+    level_.removeItem(coord_, item);
+    return true;
+  }
+  return false;
 }
 
 // hack to pretend we implement a readonly version of the interface:
