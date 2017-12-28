@@ -75,7 +75,7 @@ public:
     do {
       BaseIterator::operator++();
     } while (*this != end_ && !filter_(**this));
-    return this;
+    return *this;
   }
 
   filtered_iterator operator++(int) {

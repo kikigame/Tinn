@@ -10,6 +10,7 @@
 #include "itemholder.hpp"
 #include "slots.hpp"
 #include "action.hpp"
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
@@ -122,10 +123,22 @@ item & createHolyBook(const deity &align);
 item & createCorpse(const monsterType &mt, const unsigned char maxDamage);
 
 // create a random item suitable for the given level depth
-item & createRndItem(const int depth);
+item & createRndItem(const int depth, bool allowLiquids = false);
+template<typename... T> // wchar_t *
+item & createRndItem(const int depth, T... filter) {
+  std::vector<wchar_t> f{filter...};
+  while (true) {
+    item &rtn = createRndItem(depth, true);
+    wchar_t c = rtn.render();
+    if (std::find(f.begin(), f.end(), c) != f.end())
+      return rtn;
+  }
+}
 
 // create a bottled item
 item & createBottledItem(const itemTypeKey &);
+// create a bottle with random liquid contents:
+item & createRndBottledItem(const int depth);
 
 // create a wand
 item & createWand(sharedAction<monster,monster>::key of);

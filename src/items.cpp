@@ -1159,6 +1159,12 @@ item & createBottledItem(const itemTypeKey &type) {
   dynamic_cast<bottle &>(rtn).addItem(toBottle);
   return rtn;
 }
+item & createRndBottledItem(const int depth) {
+  auto &rtn = createItem(itemTypeKey::bottle);
+  auto &toBottle = createRndItem(depth, L'~');
+  dynamic_cast<bottle &>(rtn).addItem(toBottle);
+  return rtn;
+}
 
 item & createWand(sharedAction<monster,monster>::key of) {
   auto &action = actionFactory<monster, monster>::get(of);
@@ -1185,15 +1191,15 @@ double forIou(const item &i, double d, std::wstring &buf) {// used in shop.cpp
 
 // create a random item suitable for the given level depth
 // TODO: depth limitations
-item &createRndItem(const int depth) {
+item &createRndItem(const int depth, bool allowLiquids) {
   auto &r = itemTypeRepo::instance();
   while (true) {
     auto type = rndPick(r.begin(), r.end());
     // we can produce water, but we must bottle it:
-    if (type->first == itemTypeKey::water)
+    if (type->first == itemTypeKey::water && !allowLiquids)
       return createBottledItem(itemTypeKey::water);
-    // other more exotic liquids are ignored for now:
-    if (r[type->first].material() == materialType::liquid) continue;
+    // other more exotic liquids are usually ignored:
+    if (!allowLiquids && r[type->first].material() == materialType::liquid) continue;
     // we never autogenerate a corpse because they always need a monster first:
     if (type->first == itemTypeKey::corpse) continue;
     // we never autogenerate an IOU; they're only created by shops

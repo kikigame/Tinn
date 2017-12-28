@@ -896,6 +896,24 @@ private:
   }
 };
 
+void equipMonster(const monsterTypeKey &type, level &level, monster &m) {
+  switch (type) {
+  case monsterTypeKey::dungeoneer: {
+    auto &helmet = createItem(itemTypeKey::helmet); // todo: visorless
+    m.addItem(helmet);
+    m.equip(helmet, slotType::hat);
+    auto &napsack = createItem(itemTypeKey::poke); // todo: bag of consumption
+    m.addItem(napsack);
+    m.equip(napsack, slotType::hauburk);
+    m.addItem(createRndItem(10 * level.depth(), L'$', L'('));
+    m.addItem(createRndBottledItem(10 * level.depth()));
+    return;
+  }
+  default:
+    return;
+  }
+}
+
 std::shared_ptr<monster> ofType(const monsterType &type, level & level) {
   monsterBuilder b(true);
   b.startOn(level);
@@ -906,6 +924,9 @@ std::shared_ptr<monster> ofType(const monsterType &type, level & level) {
   // invoke move() every move, even when the player is helpless:
   std::shared_ptr<monster> ptr;
   switch (type.type()) {
+  case monsterTypeKey::dungeoneer:
+    ptr = std::make_shared<trivialMonster>(b);
+    break;
   case monsterTypeKey::ferret:
     ptr = std::make_shared<ferret>(b);
     break;
@@ -932,16 +953,19 @@ std::shared_ptr<monster> ofType(const monsterType &type, level & level) {
   auto &m = *ptr;
   ptr->eachTick([&m]() {moveMonster(m);} );
   ptr->eachTick([&m]() {monsterAttacks(m);} );
+  equipMonster(type.type(), level, *ptr);
   return ptr;
 }
 
 std::vector<std::pair<unsigned int, monsterType*>> spawnMonsters(int depth, int rooms) {
   auto from = monsterTypeRepo::instance().begin();
   auto to = monsterTypeRepo::instance().end();
-  auto ffrom = make_filtered_iterator([depth](monsterType* mt) {
+  auto filter = [depth](monsterType* mt) {
       return (depth <= 3 || mt->type() != monsterTypeKey::dungeoneer);
-    }, from, to);
-  return rndGen<monsterType*, std::vector<monsterType*>::iterator>(ffrom, to, depth, rooms);
+  };
+  auto ffrom = make_filtered_iterator(filter, from, to);
+  auto tto = make_filtered_iterator(filter, to, to);
+  return rndGen<monsterType*, filtered_iterator<std::vector<monsterType*>::iterator > >(ffrom, tto, depth, rooms);
 }
 
 bool monster::destroyItem(item &item) {
