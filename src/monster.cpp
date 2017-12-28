@@ -443,24 +443,39 @@ level & monster::curLevel() {
   return *level_;
 }
 
-std::wstring monster::onMove(const coord &pos, const terrain &terrain) {
+bool monster::onMove(const coord &pos, const terrain &terrain) {
   if (intrinsics_.entrapped()) {
     intrinsics_.entrap(-1);
-    if (!intrinsics_.entrapped())
-      return L"You can move again now.";
-    else 
-      return L"You try, but you can't move yet!";
+    if (isPlayer()) {
+      auto &ios = ioFactory::instance();
+      if (!intrinsics_.entrapped())
+	ios.message(L"You can move again now."); // next turn
+      else 
+	ios.message(L"You try, but you can't move yet!");
+      return false;
+    }
   }
-  if (terrain.type() == terrainType::PIT) {
+  switch (terrain.type()) {
+  case terrainType::PIT_HIDDEN:
+    if (isPlayer()) // TODO: Pit traps should not be revealed by flying monsters, or should they?
+      ioFactory::instance().message(L"It's a (pit) trap!"); // ref: Admiral Ackbar, Star Wars film Episode VI: Return of the Jedi.
+    return true; // you can move into a hidden pit
+  case terrainType::PIT: {
     bool flying(abilities().fly());
-    if (flying) return L"You are now over a pit.";
+    if (flying) {
+      if (isPlayer()) ioFactory::instance().message(L"You are now over a pit.");
+      return true;
+    }
     const auto message = fall(dPc() / 10);
     const auto climb = abilities().climb();
     const int count=climb == bonus(false) ? 6 : climb == bonus() ? 4 : 2;
     intrinsics_.entrap(count);
-    return message;
+    if (isPlayer()) ioFactory::instance().message(message);
+    return false;
   }
-  return L"";
+  default:
+    return true;
+  }
 }
 
 const wchar_t * const monster::fall(unsigned char reductionPc) {
@@ -723,7 +738,7 @@ public:
   zombie(monsterBuilder &b) :
     monster(b) {}
   virtual ~zombie() {}
-  std::wstring onMove(const coord &pos, const terrain &terrain) {
+  bool onMove(const coord &pos, const terrain &terrain) {
     auto rtn = monster::onMove(pos, terrain);
     if (terrain.type() == terrainType::PIT)
       death();

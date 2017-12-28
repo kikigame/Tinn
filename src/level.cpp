@@ -537,7 +537,8 @@ public:
   // UNLESS zone effects do not allow it
   void moveTo(monster &m, const coord &dest) {
     std::shared_ptr<monster> pM;
-    for (auto i = monsters_.begin(); i != monsters_.end(); ++i) {
+    auto i = monsters_.begin();
+    while (i != monsters_.end()) {
       if (*(i->second) == m) {
 	pM = i->second;
 	zoneActions<monster> zones(zonesAt(i->first, true), zonesAt(dest, true));
@@ -547,20 +548,18 @@ public:
 	  if (!z->onExit(pM, holder(dest))) return;
 	for (auto z : zones.entering())
 	  if (!z->onEnter(pM, holder(i->first))) return;
-	monsters_.erase(i);
 	break;
       }
+      ++i;
     }
-    addMonster(pM, dest);
-    // reveal any pits:
-    if (!m.abilities().fly() && terrain_[dest]->type() == terrainType::PIT_HIDDEN) {
-      if (m.isPlayer()) // TODO: Pit traps should not be revealed by flying monsters, or should they?
-	ioFactory::instance().message(L"It's a (pit) trap!"); // ref: Admiral Ackbar, Star Wars film Episode VI: Return of the Jedi.
-      terrain_[dest] = tFactory.get(terrainType::PIT);
-    }
-    m.onMove(dest, *(terrain_[dest]));
-    if (m.isPlayer()) {
-      describePlayerLoc(m, dest);
+    if(m.onMove(dest, *(terrain_[dest]))) {
+      monsters_.erase(i);
+      addMonster(pM, dest);
+      // reveal any pits:
+      if (!m.abilities().fly() && terrain_[dest]->type() == terrainType::PIT_HIDDEN)
+	terrain_[dest] = tFactory.get(terrainType::PIT);
+      if (m.isPlayer())
+	describePlayerLoc(m, dest);
     }
   }
 

@@ -102,13 +102,6 @@ const wchar_t* const player::description() const {
   return L"A bold and dangerous hero, quosting for adventure";
 }
 
-std::wstring player::onMove(const coord &pos, const terrain &terrain) {
-  std::wstring msg = monster::onMove(pos, terrain);
-  if (msg.length() > 0)
-    ioFactory::instance().message(msg); // only place this message is output; we ignore the plight of other monsters for now
-  return msg; // not used
-}
-
 // inventory an item, with recursive inventory of containers.
 // this will break if we have a loop, but we don't currently allow loops.
 // we may need to rethink this with some bags of holding :)
