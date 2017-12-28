@@ -619,8 +619,7 @@ public:
       return;
     }
     if (!avoidTraps || !terrain_[pos]->entraps(m, false)) // avoid traps if we should & can see them
-      if (!m.abilities().entrapped()) // can't move if trapped regardless
-	moveTo(m, pos);
+      moveTo(m, pos); // moveTo handles entrapped()
     // TODO: monster items and inventory- collect the new stuff?
   }
   void removeMonster(const monster &m) {
