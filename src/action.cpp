@@ -276,6 +276,25 @@ public:
   }  
 };
 
+class petrifyAction :  public renderedAction<monster, monster> {
+public:
+  petrifyAction(const wchar_t * const name, const wchar_t * const description) :
+    renderedAction(name, description) {}
+  virtual ~petrifyAction() {}
+  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+    auto &a = target.abilities();
+    if (a.fearless() == bonus(true))
+      return false; // monster is not susceptible
+    int turns = 2;
+    if (target.abilities().fearless() == bonus(false)) turns *= 2;
+    if (blessed) turns += (turns / 2);
+    if (cursed) turns /=2;
+    ioFactory::instance().message(target.name() + std::wstring(L" is scared stiff!"));
+    a.entrap(turns);
+    return true; // even cursed is always 1 turn
+  }
+};
+
 template<>
 class actionFactory<monster, monster> {
 public:
@@ -453,6 +472,10 @@ L"Weapons can be used to intimidate, attack, harm or destroy an opponent.\n"
 [](item &i) {return dynamic_cast<monster&>(i.holder()).unequip(i);}))),
 	std::make_pair(action::key::popup_shop, std::shared_ptr<action>(new popupShopAction(L"shopping",
 L"A pop-up shop is a small retail event lasting for a short length of time."))),
+	std::make_pair(action::key::petrify, std::shared_ptr<action>(new petrifyAction(L"petrify",
+L"The action of petrification is to cause someone to become stiff or like\n"
+"stone, to deaden in fear. Some monsters are unaffected by fear, and some\n"
+"will be affected for longer than others."))),
 	};
     auto &rtn = m[k];
     return *rtn;

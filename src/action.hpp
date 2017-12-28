@@ -96,21 +96,29 @@ class sharedAction<monster, monster>{
     nudity,
     // unequip wielded item:
     disarm,
-    // TODO: Should we have individual intrinsic setters, or should we have an extrinsic -> intrinsic effector?
-    // dblAttacks TODO
-    // resistances TODO
-    // hearing TODO
-    // seeing TODO
-    // swimming TODO
-    // flying TODO
-    // entrapment TODO
-    // climbing TODO
-    // speedy TODO
+    // freeze for a time:
+    petrify,
     // create a shop on the fly with the inventory of the given monster
     popup_shop,
     END
   };
 };
+
+template<>
+class sharedAction<monster, item>{
+ public:  
+  virtual bool operator ()(bool blessed, bool cursed, monster &source, item &target) = 0;
+  enum class key {
+    // in the sense of taking the essence of something (eg to make essential oils); reveal the intrinsic property
+    // convert an extrinsic property of the object into an intrinsic property, destroying the object.
+    // this has a chance of failure if target is cursed, depending on the enchantment.
+    // ref: In Nethack, a rock mole can eat metallic rings for a chance to gain their intrinsics.
+    // Intrinsic properties affected are: dblAttacks,resistances,hearing,seeing,swimming,flying,entrapment,climbing,speedy
+    distill,
+    END
+  };
+};
+
 
 template<class ...T>
 class renderedAction : public sharedAction<T...>, public renderable {

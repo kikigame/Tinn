@@ -17,7 +17,7 @@ enum class bonusType {
     flying,
     swimming, // TODO (need water too)
     climbing, // fast at escaping pits
-    entrapped // stuck in a pit
+    fearless // affected by petrify (or other fear) actions
     };
 
 class monsterIntrinsicsImpl {
@@ -74,6 +74,14 @@ void monsterIntrinsics::dblAttack(const bonus & isDblAttack) {
 }
 const bonus & monsterIntrinsics:: dblAttack() const {
   return pImpl_->bonuses[bonusType::dblAttack];
+}
+
+// fearless - ignores fear; penalty - 2 x rounds affected by fear
+void monsterIntrinsics::fearless(const bonus & isFearless) {
+  pImpl_->bonuses[bonusType::fearless] = isFearless;
+}
+const bonus & monsterIntrinsics:: fearless() const {
+  return pImpl_->bonuses[bonusType::fearless];
 }
 
 // resist damage of a given type (nullptr for all) - by 5% increments
@@ -137,8 +145,8 @@ const bool monsterIntrinsics:: see() const {
   return pImpl_->bonuses[bonusType::seeing] == bonus(true);
 }
 // moving in water
-void monsterIntrinsics::swim(const bool sight) {
-  pImpl_->bonuses[bonusType::swimming] = bonus(sight);
+void monsterIntrinsics::swim(const bool swim) {
+  pImpl_->bonuses[bonusType::swimming] = bonus(swim);
 }
 const bool monsterIntrinsics:: swim() const {
   return pImpl_->bonuses[bonusType::swimming] == bonus(true);
