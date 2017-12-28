@@ -136,7 +136,7 @@ public:
 	    const T& pass, // symbol for a passable space
 	    const T& join, // used to join 
 	    const int width, // maximum X-coordinate (width + 1) of cells
-	    const int height) :// maximum Y-coordinate (width + 1) of cells
+	    const int height) :// maximum Y-coordinate (height + 1) of cells
     bounds_(0, 0, width, height),
     filler_(pass, impass, unassigned, *this),
     ts_(new std::vector<std::vector<T> >(width+1, std::vector<T> (height+1, unassigned) )),

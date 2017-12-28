@@ -51,28 +51,46 @@ template <typename T>
 class labyGenT : public levelGen {
 private:
   const bool addDownRamp_; // do we need a downwards stairwell?
+  int maxX_, maxY_;
 public:
   labyGenT(levelImpl* const level, ::level& pub, bool addDownRamp) :
     levelGen(level, pub),  
-    addDownRamp_(addDownRamp) {}
+    addDownRamp_(addDownRamp), 
+    maxX_(level::MAX_WIDTH - 4),
+    maxY_(level::MAX_HEIGHT - 2) {}
   virtual ~labyGenT() {}
   virtual void negotiateRamps(optionalRef<levelGen> next) {}
   virtual void build() {
     place(upRampPos(), terrainType::UP);
     place(downRampPos(), terrainType::DOWN);
+    switch (dPc() / 10) {
+    case 0: maxX_ -=12; maxY_ -=4; break;
+    case 1: maxX_ -=12; maxY_ -=2; break;
+    case 2: maxX_ -=12; break;
+    case 3: maxX_ -=8; maxY_ -=4; break;
+    case 4: maxX_ -=8; maxY_ -=2; break;
+    case 5: maxX_ -=8; break;
+    case 6: maxX_ -=4; maxY_ -=4; break;
+    case 7: maxX_ -=4; maxY_ -=2; break;
+    case 8: maxX_ -=4; break;
+    case 9: maxY_ -=4; break;
+    case 10: maxY_ -=2; break;
+    }
     T lab = T(terrainType::UP, // in
 	      (addDownRamp_ ? terrainType::DOWN : terrainType::GROUND), // out
 	      terrainType::PIT_HIDDEN, // unassigned
 	      terrainType::ROCK, // impass
 	      terrainType::GROUND, // pass
 	      terrainType::PIT, // join (can't be same as ground)
-	      level::MAX_WIDTH-4,
-	      level::MAX_HEIGHT-2);
+	      maxX_,
+	      maxY_);
     lab.build();
 
-    for (int y=0; y <= level::MAX_HEIGHT-2; ++y)
-      for (int x=0; x <= level::MAX_WIDTH-4; ++x)
-	place(coord(x,y+1), lab.begin()[x][y]);
+    for (int y=0; y < level::MAX_HEIGHT; ++y)
+      for (int x=0; x < level::MAX_WIDTH; ++x)
+	if ( x <= maxX_ && y <= maxY_)
+	  place(coord(x,y+1), lab.begin()[x][y]);
+	else place(coord(x,y+1), terrainType::ROCK);
 
     std::vector<std::pair<coord,coord>> pos = locateRooms(lab); // empty if there are no rooms
 
@@ -93,8 +111,8 @@ private:
   std::vector<std::pair<coord, coord> > locateRooms(const T &lab) const {
     // identify any 2x2 squares
     std::vector<std::pair<coord, coord> > locs;
-    for (int y=0; y <= level::MAX_HEIGHT-3; ++y)
-      for (int x=0; x <= level::MAX_WIDTH-5; ++x)
+    for (int y=0; y <= maxY_-1; ++y)
+      for (int x=0; x <= maxX_-1; ++x)
 	if ((lab.begin()[x][y] != terrainType::ROCK) &&
 	    (lab.begin()[x][y+1] != terrainType::ROCK) &&
 	    (lab.begin()[x+1][y] != terrainType::ROCK) &&
@@ -154,11 +172,6 @@ typedef labyGenT<labyrinth<terrainType, emptyfiller<terrainType>, true, false, i
 // a level generator that fills the level with a very imperfect labyrinth; lots of rocks
 typedef labyGenT<labyrinth<terrainType, pathfiller<terrainType>, true, false, imperfectRecursor<terrainType, pathfiller<terrainType>, true, false > > > labySmallGen;
 
-// a labyrinth generator that prefers horizontal lines
-typedef labyGenT<labyrinth<terrainType, castellationFillerH<terrainType> > > labyHGen;
-
-// a labyrinth generator that prefers vertical lines
-typedef labyGenT<labyrinth<terrainType, castellationFillerW<terrainType> > > labyWGen;
 
 // a level generator that fills the level with randomly-placed rooms
 class roomGen : public levelGen {
@@ -1082,7 +1095,7 @@ public:
   levelFactoryImpl(dungeon &dungeon, const int numLevels, const playerBuilder &pb) : 
     numLevels_(numLevels),
     role_(pb.job()) {
-    for (int i=0; i < numLevels; ++i) {
+    for (int i=0; i <= numLevels; ++i) {
       levelImpl *l = new levelImpl(dungeon, i);
       levels_.push_back(l);
       levelPubs_.emplace_back(new level(l));
@@ -1113,33 +1126,27 @@ private:
     if (dPc() < depth)
       switch (depth / 10) {
       case 0:
-	try {
-	  return new  labyRoomGen(l, *level, addDownRamp);
-	} catch (char const * msg) { /*std::cerr << "labyRoomGen: " << msg << std::endl; */}
       case 1:
+    	try {
+    	  return new labyRoomGen(l, *level, addDownRamp);
+    	} catch (char const * msg) { /*std::cerr << "labyRoomGen: " << msg << std::endl; */}
       case 2:
       case 3:
       case 4:
-	try {
-	  return new  labySmallGen(l, *level, addDownRamp);
-	} catch (char const * msg) { /*std::cerr << "labySmallGen: " << msg << std::endl; */}
       case 5:
+    	try {
+    	  return new labySmallGen(l, *level, addDownRamp);
+    	} catch (char const * msg) { /*std::cerr << "labySmallGen: " << msg << std::endl; */}
       case 6:
       case 7:
-	try {
-	  return new  labyHGen(l, *level, addDownRamp);
-	} catch (char const * msg) { /*std::cerr << "labyHGen: " << msg << std::endl; */}
       case 8:
-	try {
-	  return new  labyWGen(l, *level, addDownRamp);
-	} catch (char const * msg) { /*std::cerr << "labyWGen: " << msg << std::endl; */}
       default:
-	try {
-	  return new  labyGen(l, *level, addDownRamp);
-	} catch (char const * msg) { /*std::cerr << "labyGen: " << msg << std::endl; */}
+    	try {
+    	  return new labyGen(l, *level, addDownRamp);
+    	} catch (char const * msg) { /*std::cerr << "labyGen: " << msg << std::endl; */}
       }
     // default case & fall-through:
-    return new  roomGen(l, *level, addDownRamp); 
+    return new roomGen(l, *level, addDownRamp); 
   }
 };
 
