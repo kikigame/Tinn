@@ -932,7 +932,7 @@ void equipMonster(const monsterTypeKey &type, level &level, monster &m) {
     auto &helmet = createItem(itemTypeKey::helmet); // todo: visorless
     m.addItem(helmet);
     m.equip(helmet, slotType::hat);
-    auto &napsack = createItem(itemTypeKey::poke); // todo: bag of consumption
+    auto &napsack = createItem(itemTypeKey::napsack_of_consumption);
     m.addItem(napsack);
     m.equip(napsack, slotType::hauburk);
     m.addItem(createRndItem(10 * level.depth(), L'$', L'('));

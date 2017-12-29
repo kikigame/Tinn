@@ -806,6 +806,57 @@ public:
   const std::wstring & service() const { return service_; }
 };
 
+// no need to extend basicContainer, as we always consume our contents.
+class napsackOfConsumption : public twoEquip<item::equipType::worn>, public itemHolder, public useWithMixin {
+public:
+  napsackOfConsumption() :
+    twoEquip(itemTypeRepo::instance()[itemTypeKey::napsack_of_consumption],
+	     // gameplay reason: this is a utility item that can't be worn along with armour, so use the hauburk & doublet slots where most armour lives.
+	     // story reason: In Knightmare, you see napsacks worn under cloaks, but over shirts.
+	     std::make_pair(slotType::hauburk, slotType::doublet)) {}
+  virtual ~napsackOfConsumption() {};
+  virtual bool use() {
+    if (!usable()) return false;
+    const std::wstring name(basicItem::name());
+    return useWithMixin::use(name, L"Put ", L"into", holder()); // calls use(item) as needed
+  }
+  virtual bool use(item & other) {
+    return addItem(other);
+  }
+  virtual bool addItem(item & other) {
+    if (!usable()) return false;
+    auto &m = dynamic_cast<monster &>(holder()); // checked by usable()
+    auto p = m.isPlayer();
+    bool rtn = false;
+    try {
+      rtn = m.eat(other, false);
+      if (rtn && p) ioFactory::instance().message(L"The " + std::wstring(other.name()) + L" is consumed.");
+      if (!rtn && p) ioFactory::instance().message(L"The " + std::wstring(name()) + L" partially consumes the " + other.name());
+    } catch (monster::inedibleException e) {
+      if (!rtn && p) ioFactory::instance().message(L"The " + std::wstring(name()) + L" can't consume the " + other.name());      
+    } catch (monster::notHungryException e) {
+      rtn = other.holder().destroyItem(other);
+      if (rtn && p) ioFactory::instance().message(L"The " + std::wstring(other.name()) + L" is consumed.");
+      if (!rtn && p) ioFactory::instance().message(L"The " + std::wstring(name()) + L" can't consume the " + other.name());      
+    }
+    return rtn;
+  };
+private:
+  bool usable() {
+    // 1) we must be in the main inventory of a monster
+    auto m = dynamic_cast<monster *>(&holder());
+    if (m == nullptr) return false;
+    // 2) we must be equipped to use
+    if (m->slotsOf(*this)[0] == nullptr) {
+      if (m->isPlayer())
+	ioFactory::instance().message(L"You must be wearing the napsack to open it.");
+      return false;
+    }
+    return true;
+  }
+};
+
+
 class shopCard : public basicItem {
 public:
   shopCard(const itemType& type) :
@@ -1095,6 +1146,9 @@ item& createItem(const itemTypeKey & t) {
   case itemTypeKey::poke:
     rtn = new basicContainer(r[t]);
     break;
+  case itemTypeKey::napsack_of_consumption:
+    rtn = new napsackOfConsumption();
+    break;
   case itemTypeKey::water:
     rtn = new basicItem(r[t]);
     break;
@@ -1204,6 +1258,8 @@ item &createRndItem(const int depth, bool allowLiquids) {
     if (type->first == itemTypeKey::corpse) continue;
     // we never autogenerate an IOU; they're only created by shops
     if (type->first == itemTypeKey::iou) continue;
+    // don't autogenerate napsacks of consumption; they're for Dungeoneers:
+    if (type->first == itemTypeKey::napsack_of_consumption) continue;
     // general case: call createItem():
     return createItem(type->first); // already enrolled
   }
