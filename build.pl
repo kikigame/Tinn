@@ -27,7 +27,7 @@ sub getDeps {
 	    push @r, getDeps($f);
 	}
 	%rtn = map { $_ => 1 } @rtn, @r;
-	@rtn = keys %rtn;
+	@rtn = sort keys %rtn;
    }
     $deps{$file} = \@rtn;
     @rtn;
