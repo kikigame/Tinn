@@ -72,13 +72,13 @@ unsigned char dPc();
  * I must be assignable.
  *
  * T concept must provide:
- * int getLevelFactor() : dungeon level factor (F)
+ * ((int getLevelFactor() : dungeon level factor (F) - not used; specifies power of monster))
  * int getLevelOffset() : dungeon level offset (O)
  * int getMinSpawn() : min number (Mn)
  * int getMaxSpawn() : max number (Mx)
  * T must be a copyable pointer type.
  *
- * No T may be spawned if the dungeon level, L < L * F + O.
+ * No T may be spawned if the dungeon level, L < O.
  * If spawned, number spawned is uniform between Mn--Wx
  *
  * Of the eligable Ts, a number of T will be spawned between R/2 and R,
@@ -87,7 +87,7 @@ unsigned char dPc();
  * Params:
  * from, to => options for generation
  * l => current level (L)
- * l => number of rooms (R) in current level
+ * r => number of rooms (R) in current level
  *
  * Returns a list of pairts of quantity and T
  */
@@ -99,9 +99,8 @@ rndGen(const I &from, const I & to,
   std::vector<T> buffer;
  
   for (auto i = from; i < to; ++i) {
-    auto f = (*i)->getLevelFactor();
     auto o = (*i)->getLevelOffset();
-    if (l >= (l * f + o))
+    if (l >= o)
       buffer.push_back(*i);
   }
   auto max = buffer.size();

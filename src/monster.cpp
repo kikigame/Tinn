@@ -37,7 +37,8 @@ monsterBuilder::monsterBuilder(bool allowRandom) :
   male_(0),
   female_(0),
   type_(NULL),
-  allowRandom_(allowRandom) {}
+  allowRandom_(allowRandom),
+  progress_(1) {}
 
 void monsterBuilder::startOn(level &l) { level_ = &l; }
 void monsterBuilder::strength(unsigned char s) { strength_ = s; }
@@ -59,6 +60,7 @@ void monsterBuilder::type(const monsterType &t) {
   if (dodge_ == 0) dodge_ = type_->iDodge();
   if (maxDamage_ == 0) maxDamage_ = type_->iMaxDamage();
 }
+void monsterBuilder::progress(const int p) { progress_ = p; }
 
 level * monsterBuilder::iLevel() { calcFinalStats(); return level_; }
 unsigned char monsterBuilder::strength() { calcFinalStats(); return strength_; }
@@ -81,6 +83,15 @@ const unsigned char safesub(const unsigned char value, const unsigned char amoun
   if (value < amount) rtn = value; // don't apply a penalty if it would make a stat negative
   else rtn = value - amount;
   return rtn;
+}
+
+// calculate the progression of a stat.
+// "from" is what the value would be on the first level the monster appears.
+// "p" is the level on which the monster appears, counting from 1 as the first level on which it appears..
+unsigned char progressStat(unsigned char from, int p) {
+  int progress = std::min(100, p); // just in case
+  progress = std::max(1, progress); // just in case
+  return static_cast<unsigned char>(std::max(100.,from * (100. + progress - 1) / 100.));
 }
 
 void monsterBuilder::calcFinalStats() {
@@ -116,6 +127,13 @@ void monsterBuilder::calcFinalStats() {
     break;
   default: break;
   }
+
+  // progress stats due to the monster's depth within the dungeon:
+  strength_ = progressStat(strength_, progress_);
+  appearance_ = progressStat(appearance_, progress_);
+  fighting_ = progressStat(fighting_, progress_);
+  dodge_ = progressStat(dodge_, progress_);
+  maxDamage_ = progressStat(maxDamage_, progress_);
 }
 
 monster::monster(monsterBuilder & b) :
@@ -932,6 +950,10 @@ std::shared_ptr<monster> ofType(const monsterType &type, level & level) {
   // stats, alignment etc are also set when type is set:
   //  b.type(monsterTypeRepo::instance()[type]);
   b.type(type);
+
+  const int levelFactor = type.getLevelFactor();
+  const int levelOffset = type.getLevelOffset();
+  b.progress(std::min(1, level.depth() - levelOffset) * levelFactor);
 
   // invoke move() every move, even when the player is helpless:
   std::shared_ptr<monster> ptr;

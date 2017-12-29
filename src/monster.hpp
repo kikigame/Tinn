@@ -227,6 +227,7 @@ class monsterBuilder {
   bool allowRandom_;
   bool finalStatsDone_ = false;
   void calcFinalStats(); // TODO: Initial XP for monsters
+  int progress_; // >=1, based on depth of monster
 public:
   monsterBuilder(bool allowRandom = true);
   void startOn(level &l);
@@ -252,6 +253,7 @@ public:
   unsigned char male();
   unsigned char female();
   const monsterType & type();
+  void progress(int progress);
 };
 
 // create a reaming monster initially on the given level:
