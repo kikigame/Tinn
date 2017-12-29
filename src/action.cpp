@@ -200,6 +200,7 @@ public:
     try {
       auto &l = target.curLevel();
       l.moveTo(target, l.createPrison());
+      return true;
     } catch (std::wstring x) {
       // no pos; give up
       return false;

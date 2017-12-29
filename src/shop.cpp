@@ -279,7 +279,7 @@ private:
   }
 
   void handlePayment() {
-    double p;
+    double p=0;
     for (auto &s : servicesBought_)
       p += s.second;
     for (auto &i : basket_)
@@ -313,7 +313,7 @@ private:
 	barter = doBarter(barter);
       }
       // 6) if players items' price is above P, adjust inventory and done
-      double b;
+      double b=0;
       for (auto &i : barter)
 	b += appraise(inventory_, *i);
       if (b > p) {
@@ -481,6 +481,7 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
     if (blessed && cursed) de = 2 * (dPc() / 25);
     else if (blessed) de = 2 * (1+ (dPc() / 25)); // blessed items get *4 enchantment
     else if (!cursed || dPc() < 50) de = 1+ (dPc() / 25);
+    else de = 0;
     item.enchant(de);
 
     auto &ios = ioFactory::instance();

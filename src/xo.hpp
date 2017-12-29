@@ -53,7 +53,7 @@ private:
     if (b[1][1] == tile::empty) return ogo(1,1);
     for (int xx=0; xx < 3; ++xx) for (int yy=0; yy < 3; ++yy)
 	if (b[xx][yy] == tile::empty) {
-	  int m,n;
+	  int m=0,n=0;
 	  for (int i=0; i <3; ++i) {
 	    if (b[xx][i] == tile::x) m++;
 	    else if (b[xx][i] == tile::o) m+=2;
