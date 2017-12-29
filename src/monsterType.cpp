@@ -146,8 +146,8 @@ const wchar_t * monsterType::name(const unsigned char maxDamage) const {
   // we will take damage.max() as our designated stat.
   // A type-0 monster has iMaxDamage() HP.
   // A type-N monster has up to 100 max HP.
-  // We want to divide the levels into N ranges between iMaxDamage() and 100.
-  auto threshold = (100 - iMaxDamage()) / (numNames + 1);
+  // We want to divide the levels into N ranges between iMaxDamage() and 100. -1 here results in 0-based index
+  auto threshold = (100 - iMaxDamage()) / (numNames - 1);
   // eg if there are 3 names and iMaxDamage() = 40, that gives t=15
   // so we "grow up" at 55, 70, 85, meaning 15 points at each name.
   auto idx = (maxDamage - iMaxDamage()) / threshold;
