@@ -205,6 +205,9 @@ protected:
   // called when a monster dies
   virtual void death();
 
+  // used to switch monster category
+  void polymorphCategory(monsterCategory c);
+
 private:
   // called after item is equipped to calculate bonuses
   // for single-slot items, pass s1 == s2

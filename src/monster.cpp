@@ -1107,3 +1107,24 @@ void monster::eat() {
     if (isPlayer()) ioFactory::instance().message(L"This doesn't look tasty.");
   }
 }
+
+
+void monster::polymorphCategory(monsterCategory c) {
+  const auto &slots = slotsFor(c);
+  std::vector<const slot*> toRemove;
+  for (auto p : equipment_)
+    if (std::find(slots.begin(), slots.end(), p.first) == slots.end())
+      toRemove.push_back(p.first);
+  for (auto s : slots)
+    if (equipment_.count(s) == 0)
+      equipment_.emplace(s, optionalRef<item>()); // new empty slot
+  for (auto s : toRemove) {
+    if (equipment_[s])
+      // remove item from the slot if possible. If item is cursed, the slot stays.
+      // (yes, you can get more equipment slots by polymorping with cursed items; they've got to be
+      // good for something).
+      unequip(equipment_[s].value()); // can fail (eg cursed)
+    if (!equipment_[s])
+      equipment_.erase(s);
+  }
+}
