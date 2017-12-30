@@ -67,6 +67,11 @@ enum class slotType {
     toe_right_middle,
     toe_right_fourth,
     toe_right_little,
+    ring_nose, // nose ring is the LAST ring slot...
+    ring_nose_2,
+    ring_nose_3,
+    ring_nose_4,
+    ring_nose_5,
     anklet_right,
     socks,
     shoes, //boots/shoes (boots also take up anklet slots?)

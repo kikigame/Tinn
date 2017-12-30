@@ -900,24 +900,28 @@ private:
       e = std::remove(rtn.begin(), e, slotBy(slotType::hat_2));
       e = std::remove(rtn.begin(), e, slotBy(slotType::glasses_2));
       e = std::remove(rtn.begin(), e, slotBy(slotType::amulet_2));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::ring_nose_2));
       // no break
     case 2:
       e = std::remove(rtn.begin(), e, slotBy(slotType::headband_3));
       e = std::remove(rtn.begin(), e, slotBy(slotType::hat_3));
       e = std::remove(rtn.begin(), e, slotBy(slotType::glasses_3));
       e = std::remove(rtn.begin(), e, slotBy(slotType::amulet_3));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::ring_nose_3));
       // no break
     case 3:
       e = std::remove(rtn.begin(), e, slotBy(slotType::headband_4));
       e = std::remove(rtn.begin(), e, slotBy(slotType::hat_4));
       e = std::remove(rtn.begin(), e, slotBy(slotType::glasses_4));
       e = std::remove(rtn.begin(), e, slotBy(slotType::amulet_4));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::ring_nose_4));
       // no break
     case 4:
       e = std::remove(rtn.begin(), e, slotBy(slotType::headband_5));
       e = std::remove(rtn.begin(), e, slotBy(slotType::hat_5));
       e = std::remove(rtn.begin(), e, slotBy(slotType::glasses_5));
       e = std::remove(rtn.begin(), e, slotBy(slotType::amulet_5));
+      e = std::remove(rtn.begin(), e, slotBy(slotType::ring_nose_5));
       // no break
     }
     rtn.erase(e, rtn.end());

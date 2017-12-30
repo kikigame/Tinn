@@ -98,6 +98,11 @@ struct slotRepoType {
   std::unique_ptr<slotImpl> toe_right_fourth = std::unique_ptr<slotImpl>(new slotImpl(L"right third hind claw", {{monsterCategory::biped, L"right ring toe"}, {monsterCategory::bird, L"right third claw"}, {monsterCategory::birdOfPrey, L"right third talon"}, {monsterCategory::blob, L"third right blobby protrusion"}}));
   std::unique_ptr<slotImpl> toe_right_little = std::unique_ptr<slotImpl>(new slotImpl(L"right fourth hind claw", {{monsterCategory::biped, L"right little toe"}, {monsterCategory::bird, L"right forth claw"}, {monsterCategory::birdOfPrey, L"right fourth talon"}, {monsterCategory::blob, L"fourth right blobby protrusion"}}));
   std::unique_ptr<slotImpl> toe_right_thumb = std::unique_ptr<slotImpl>(new slotImpl(L"right fifth hind claw", {{monsterCategory::biped, L"right big toe"}, {monsterCategory::bird, L"right fifth claw"}, {monsterCategory::birdOfPrey, L"right opposed talon"}, {monsterCategory::blob, L"fifth right blobby protrusion"}}));
+  std::unique_ptr<slotImpl> ring_nose = std::unique_ptr<slotImpl>(new slotImpl(L"nasal ring", {{monsterCategory::bird, L"beak ring"}, {monsterCategory::birdOfPrey, L"beak ring"}, {monsterCategory::blob, L"inner top front blobby protrusion"}}));
+  std::unique_ptr<slotImpl> ring_nose_2 = std::unique_ptr<slotImpl>(new slotImpl(L"second nasal ring", {{monsterCategory::bird, L"second beak ring"}, {monsterCategory::birdOfPrey, L"second beak ring"}, {monsterCategory::blob, L"inner top front second blobby protrusion"}}));
+  std::unique_ptr<slotImpl> ring_nose_3 = std::unique_ptr<slotImpl>(new slotImpl(L"third nasal ring", {{monsterCategory::bird, L"third beak ring"}, {monsterCategory::birdOfPrey, L"third beak ring"}, {monsterCategory::blob, L"inner top third front blobby protrusion"}}));
+  std::unique_ptr<slotImpl> ring_nose_4 = std::unique_ptr<slotImpl>(new slotImpl(L"fourth nasal ring", {{monsterCategory::bird, L"fourth beak ring"}, {monsterCategory::birdOfPrey, L"fourth beak ring"}, {monsterCategory::blob, L"inner top front fourth blobby protrusion"}}));
+  std::unique_ptr<slotImpl> ring_nose_5 = std::unique_ptr<slotImpl>(new slotImpl(L"fifth nasal ring", {{monsterCategory::bird, L"fifth beak ring"}, {monsterCategory::birdOfPrey, L"fifth beak ring"}, {monsterCategory::blob, L"inner top front fifth blobby protrusion"}}));
   std::unique_ptr<slotImpl> anklet_right = std::unique_ptr<slotImpl>(new slotImpl(L"right hind leg", {{monsterCategory::biped, L"right ankle"}, {monsterCategory::bird, L"right leg"}, {monsterCategory::birdOfPrey, L"right leg"}, {monsterCategory::blob, L"lower right blobby protrusion"}}));
 
   // like gloves and gauntlets, socks go under shoes but are reported as the same slot:
@@ -120,7 +125,24 @@ struct slotRepoType {
     secondary_weapon->covers(*gauntlets);
     headband->covered(*hat);
     hat->covers(*headband).covers(*glasses);
-    glasses->covered(*hat);
+    glasses->covered(*hat)
+      .covers(*ring_nose);
+    headband_2->covered(*hat_2);
+    hat_2->covers(*headband_2).covers(*glasses_2);
+    glasses_2->covered(*hat_2)
+      .covers(*ring_nose_2);
+    headband_3->covered(*hat_3);
+    hat_3->covers(*headband_3).covers(*glasses_3);
+    glasses_3->covered(*hat_3)
+      .covers(*ring_nose_3);
+    headband_4->covered(*hat_4);
+    hat_4->covers(*headband_4).covers(*glasses_4);
+    glasses_4->covered(*hat_4)
+      .covers(*ring_nose_4);
+    headband_5->covered(*hat_5);
+    hat_5->covers(*headband_5).covers(*glasses_5);
+    glasses_5->covered(*hat_5)
+      .covers(*ring_nose_5);
     ring_left_thumb->covered(*gloves);
     ring_left_index->covered(*gloves);
     ring_left_middle->covered(*gloves);
@@ -221,6 +243,7 @@ struct slotRepoType {
 	  toe_right_middle.get(),
 	  toe_right_fourth.get(),
 	  toe_right_little.get(),
+	  ring_nose.get(),
 	  anklet_right.get(),
 	  socks.get(),
 	  shoes.get(), //boots/shoes
@@ -261,6 +284,7 @@ struct slotRepoType {
 	  toe_right_middle.get(),
 	  toe_right_fourth.get(),
 	  toe_right_little.get(),
+	  ring_nose.get(),
 	  anklet_right.get(),
 	  socks.get(),
 	  shoes.get(), //boots/shoes
@@ -303,6 +327,7 @@ struct slotRepoType {
 	  toe_right_middle.get(),
 	  toe_right_fourth.get(),
 	  toe_right_little.get(),
+	  ring_nose.get(),
 	  anklet_right.get(),
 	  socks.get(),
 	  shoes.get(), //boots/shoes
@@ -349,6 +374,7 @@ struct slotRepoType {
 	  toe_right_middle.get(),
 	  toe_right_fourth.get(),
 	  toe_right_little.get(),
+	  ring_nose.get(),
 	  anklet_right.get(),
 	  socks.get(),
 	  shoes.get(), //boots/shoes
@@ -411,6 +437,11 @@ struct slotRepoType {
 	  toe_right_middle.get(),
 	  toe_right_fourth.get(),
 	  toe_right_little.get(),
+	  ring_nose.get(),
+	  ring_nose_2.get(),
+	  ring_nose_3.get(),
+	  ring_nose_4.get(),
+	  ring_nose_5.get(),
 	  anklet_right.get(),
 	  socks.get(),
 	  shoes.get(), //boots/shoes
@@ -537,6 +568,11 @@ const slot* slotBy(slotType slot) {
     case slotType::toe_right_middle: 	return slotRepo.toe_right_middle .get();
     case slotType::toe_right_fourth: 	return slotRepo.toe_right_fourth .get();
     case slotType::toe_right_little: 	return slotRepo.toe_right_little .get();
+    case slotType::ring_nose:	 	return slotRepo.ring_nose.get();
+    case slotType::ring_nose_2:	 	return slotRepo.ring_nose_2.get();
+    case slotType::ring_nose_3:	 	return slotRepo.ring_nose_3.get();
+    case slotType::ring_nose_4:	 	return slotRepo.ring_nose_4.get();
+    case slotType::ring_nose_5:	 	return slotRepo.ring_nose_5.get();
     case slotType::anklet_right: 	return slotRepo.anklet_right.get();
     case slotType::socks: 		return slotRepo.socks.get();
     case slotType::shoes: 		return slotRepo.shoes.get(); //boots/shoes
