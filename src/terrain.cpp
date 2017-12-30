@@ -92,6 +92,10 @@ public:
     // this symbol should be unicode (U+22BB), propositional/Boolean logical xor.
     // Nethack uses ^ for all traps, but that doesn't fit with pits at all.
     store(new terrain(L'⊻', L"Pit", L"Subterrainian earth; looks like a solid floor, but be careful or it may give way.", terrainType::PIT));
+    // Nethack uses '~' rather than U+2248 (approximately equal). I prefer the latter as it suggests more movement
+    store(new terrain(L'≈', L"Water", L"Water; most creatures avoid this due to the risk of drowning.", terrainType::WATER));
+    // Nethack uses '~' rather than U+2240 (wreath product).
+    store(new terrain(L'≀', L"Fire", L"Fire; most creatures avoid this due to the risk of burning.", terrainType::FIRE));
   }
   ::std::shared_ptr<terrain> get(terrainType type) const {
     return store_.at(type);
