@@ -14,6 +14,8 @@ const wchar_t * const to_string(const terrainType & t) {
   case terrainType::DOWN: return L"DOWN";
   case terrainType::PIT_HIDDEN: return L"PIT_HIDDEN";
   case terrainType::PIT: return L"PIT";
+  case terrainType::FIRE: return L"FIRE";
+  case terrainType::WATER: return L"WATER";
   default: throw t;
   }
 }
@@ -54,6 +56,10 @@ bool terrain::movable(const monster &m) const {
   case terrainType::PIT:
   case terrainType::PIT_HIDDEN:
     return true;
+  case terrainType::FIRE:
+    return false;
+  case terrainType::WATER:
+    return m.abilities().swim();
   default:
     throw type_; // missing type from enum
   }
@@ -71,6 +77,9 @@ bool terrain::entraps(const monster &m, bool includeHidden) const {
     return !(m.abilities().fly());
   case terrainType::PIT_HIDDEN:
     return includeHidden && !(m.abilities().fly());
+  case terrainType::FIRE:
+  case terrainType::WATER:
+    return false;
   default:
     throw type_; // missing type from enum
   }
@@ -92,6 +101,10 @@ public:
     // this symbol should be unicode (U+22BB), propositional/Boolean logical xor.
     // Nethack uses ^ for all traps, but that doesn't fit with pits at all.
     store(new terrain(L'⊻', L"Pit", L"Subterrainian earth; looks like a solid floor, but be careful or it may give way.", terrainType::PIT));
+    // Nethack uses '~' rather than U+2248 (approximately equal). I prefer the latter as it suggests more movement
+    store(new terrain(L'≈', L"Water", L"Water; most creatures avoid this due to the risk of drowning.", terrainType::WATER));
+    // Nethack uses '~' rather than U+2240 (wreath product).
+    store(new terrain(L'≀', L"Fire", L"Fire; most creatures avoid this due to the risk of burning.", terrainType::FIRE));
   }
   ::std::shared_ptr<terrain> get(terrainType type) const {
     return store_.at(type);
