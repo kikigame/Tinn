@@ -394,6 +394,43 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
       "by the sin of lust. All are indiscriminate and want only to spread\n"
       "their seed for their own ends. "));
 
+    // unique feature: shape-shift between human and horse forms
+    // unique feature: makes the sound of thunder as their tail enters the water: ref: http://www.historic-uk.com/CultureUK/The-Kelpie/
+    // TODO: An equine kelpie may have a bridle; holding this gives command over Kelpies, but they will resent it.
+    emplace(monsterTypeBuilder(monsterTypeKey::kelpie)
+	    .category(monsterCategory::biped)
+	    .name(L"Kelpie")
+	    .name(L"Each-uisge")
+	    .className(L"Water Spirits")
+	    .levelFactor(1)
+	    .levelOffset(20)
+	    .minSpawn(1)
+	    .maxSpawn(1)
+	    .xpFactor(30)
+	    .xpOffset(10)
+	    .renderChar(L'@') // or L'u' when shape-shifted
+	    .strength(30)
+	    .appearance(90)
+	    .fighting(30)
+	    .dodge(20)
+	    .maxDamage(50)
+	    .saying(L"")
+	    .gen(genderAssignType::m) // always male in folklore
+	    .material(materialType::liquid) // breaks down into a black slush, according to https://folkrealmstudies.weebly.com/-scottish-legends-the-each-uisge.html
+	    .align(dr.getExact(Element::water, Domination::concentration, Outlook::cruel))
+	    .align(dr.getExact(Element::water, Domination::aggression, Outlook::cruel))
+	    .movement({speed::perturn, goTo::player, goBy::smart, 20})
+	    .eats(materialType::fleshy)
+	    .encyclopedium(
+L"Kelpies live in rivers and streams, while the stronger Each-uisge prefers\n"
+"the sea - although there is some overlap. When in human form, either can be\n"
+"easily identified by seaweed in the hair.\n"
+"They are often alone and, like most water creatures, are often charming.\n"
+"These equine beasts are never far from water, and seem easy to ride, but\n"
+"delight in running off with and drowning their - often human - prey.\n"
+"Kelpies are often known to enact retribution for bad behaviour conducted\n"
+"on a Sunday."));
+
     // unique feature: seduction/dream-rape
     emplace(monsterTypeBuilder(monsterTypeKey::succubus)
 	    .category(monsterCategory::biped)
