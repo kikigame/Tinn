@@ -48,6 +48,9 @@ protected:
   // add a monster at c:
   void addMonster(monsterTypeKey mon, const coord &c);
 
+  // add a monster at c: (others eventually call this):
+  void addMonster(std::shared_ptr<monster> mon, const coord &c);
+
   // adds a corridor starting at from and ending at to. Very basic for now.
   // returns first square adjacent to "from"
   coord addCorridor(const coord from, const coord to);

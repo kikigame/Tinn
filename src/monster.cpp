@@ -801,6 +801,51 @@ public:
   }
 };
 
+class kelpie : public monster {
+private:
+  bool equineForm_;
+  unsigned char maxStrength_;
+public:
+  kelpie(monsterBuilder &b) :
+    monster(b),
+    equineForm_(false),
+    maxStrength_(strength().max()) {
+    intrinsics().swim(true);
+    intrinsics().move(*(tFactory.get(terrainType::WATER).get()), true);
+  }
+  virtual ~kelpie() {}
+  virtual void shapeShift() {
+    equineForm_ = !equineForm_;
+    auto &level = curLevel();
+    if (&level == &level.dung().cur_level()) {
+      auto &ios = ioFactory::instance();
+      if (equineForm_)
+	ios.message(L"The " + std::wstring(name()) + L" now looks to be a horse.");
+      else
+	ios.message(L"The " + std::wstring(name()) + L" now looks to be a human.");
+    }
+    if (equineForm_) {
+      strength().bonus(20);
+      polymorphCategory(monsterCategory::hooved_quadruped);
+    } else {
+      strength().cripple(strength().max() - maxStrength_);
+      polymorphCategory(monsterCategory::biped);
+    }
+  }
+  virtual bool onMove(const coord &pos, const terrain &terrain) {
+    if (!monster::onMove(pos, terrain)) return false;
+    // TODO: Suppress message if the player becomes deaf
+    if (terrain.type() == terrainType::WATER && equineForm_ && (&curLevel() == &curLevel().dung().cur_level()))
+      ioFactory::instance().message(L"You hear the sound of thunder as the " + std::wstring(name()) + L"'s tail hits the water");
+    if (dPc() <= 11) // ~3%
+      shapeShift();
+    return true;
+  }
+  virtual const wchar_t render() const {
+    return equineForm_ ? L'u' : L'@';
+  }
+};
+
 
 class dragon : public monster {
 private:
@@ -976,6 +1021,9 @@ std::shared_ptr<monster> ofType(const monsterType &type, level & level) {
     break;
   case monsterTypeKey::incubus:
     ptr = std::make_shared<targetActionRefMonster>(b, incubusAction());
+    break;
+  case monsterTypeKey::kelpie:
+    ptr = std::make_shared<kelpie>(b);
     break;
   case monsterTypeKey::succubus:
     ptr = std::make_shared<targetActionRefMonster>(b, succubusAction());

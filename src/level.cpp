@@ -829,9 +829,30 @@ std::pair<coord,coord> levelGen::addShrine() {
   return loc;
 }
 
+// all new monsters at level-gen time come through this method.
+void levelGen::addMonster(std::shared_ptr<monster> m, const coord &c) {
+  level_->addMonster(m,c);
+
+  // in the case of Kelpies, nice to give them some water:
+  if (m->type().type() == monsterTypeKey::kelpie) {
+    auto water = tFactory.get(terrainType::WATER);
+    // look for any other non-water monsters on same square:
+    bool found = false;
+    auto ms = level_->monstersAt(c);
+    for (auto m = ms.first; m != ms.second; ++m)
+      if (!water->movable(m->second)) {
+	found = true; 
+	break;
+      }
+    // otherwise make it watery
+    if (!found && level_->terrain_[c]->type() == terrainType::GROUND)
+      level_->terrain_[c] = tFactory.get(terrainType::WATER);
+  }
+}
+
 void levelGen::addMonster(monsterTypeKey m, const coord &c) {
   auto &mt = monsterTypeRepo::instance()[m];
-  level_->addMonster(ofType(mt, pub_), c);
+  addMonster(ofType(mt, pub_), c);
 }
 
 void levelGen::addMonsters(std::vector<std::pair<coord,coord>> coords /*by value*/) {
@@ -860,7 +881,8 @@ void levelGen::addMonster(std::shared_ptr<monster> mon, const coord &m, const st
       coord c = coord(x,y);
       if (c == m) continue;
       if (!level_->terrain_[c]->movable(mon)) continue; // roaming monster can't go on this terrain
-      level_->addMonster(mon, c);
+      addMonster(mon, c);
+
       return;
     }
 }

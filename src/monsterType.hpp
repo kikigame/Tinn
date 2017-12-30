@@ -65,6 +65,8 @@ enum class monsterTypeKey {
   hound,
   human, 
   incubus, // male form of succubus
+  kelpie, // water spirit. Can shape-shift between horse and human forms (possibly with hooves)
+  // TODO: When placing a kelpie, add some water in the same square.
   succubus, // female form of incubus
   troll, 
   venusTrap,
