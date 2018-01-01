@@ -38,6 +38,7 @@ dungeon::dungeon()
 
   // welcome message
   ioFactory::instance().message(player_->job().startGameMessage());
+  announceLevel();
 }
 
 dungeon::~dungeon() {
@@ -59,16 +60,22 @@ int dungeon::maxLevel() const {
   return level_.size() -1;
 }
 
+void dungeon::announceLevel() {
+  ioFactory::instance().message(L"You find yourself in: " + level_[cur_level_]->name());
+}
+
 void dungeon::upLevel() {
   if (cur_level_ < 0) throw L"at top"; // already checked in level{}
   cur_level_--;
   level_[cur_level_]->addMonster(pc(), level_[cur_level_]->findTerrain(terrainType::DOWN));
+  announceLevel();
 }
 
 void dungeon::downLevel() {
   if (cur_level_ >= maxLevel()) throw L"at bottom"; // already checked in level{}
   cur_level_++;
   level_[cur_level_]->addMonster(pc(), level_[cur_level_]->findTerrain(terrainType::UP));
+  announceLevel();
 }
 
 void dungeon::quit() {

@@ -49,6 +49,7 @@ public:
   level(const level &other) = delete; // disallow copying
   level(const level &&other) = delete; // disallow moving
   ~level();
+  std::wstring name() const;
   drawIter drawBegin() const;
   drawIter drawEnd() const;
   /*

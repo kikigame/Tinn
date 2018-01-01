@@ -249,6 +249,20 @@ public:
   virtual ~itemHolderLevel() {}
 };
 
+std::wstring nth(const int i) {
+  std::wstringstream rtn;
+  rtn << i;
+  if ((i % 100) >= 11 && (i % 100) <= 13)
+    rtn << L"th";
+  else switch (i % 10) {
+  case 1: rtn << L"st"; break; // 1st // 11th // 21st // 31st // 41st // 51st // 61st // 71st // 81st // 91st // 101th // 111th 
+  case 2: rtn << L"nd"; break;
+  case 3: rtn << L"rd"; break;
+  default: rtn << L"th"; break;
+  }
+  return rtn.str();
+}
+
 // implementation of level class 
 class levelImpl : public renderByCoord {
 public:
@@ -269,10 +283,14 @@ public:
   // hold the itemHolderLevels
   std::map<coord, ::std::unique_ptr<itemHolder> > holders_;
 
+  // some sort of name for the level.
+  std::wstring name_;
+
   // constructor fills the level with something suitable
   levelImpl(dungeon &dungeon, int depth) :
     dungeon_(dungeon),
-    depth_(depth) {
+    depth_(depth),
+    name_(L"The " + nth(depth) + L" Area of Adventure") {
     using namespace std;
     for (int x=0; x < level::MAX_WIDTH ; ++x)
       for (int y=0; y < level::MAX_HEIGHT ; ++y) {
@@ -282,11 +300,15 @@ public:
   }
   virtual ~levelImpl() {}
 
-  drawIter drawBegin() const  {
+  std::wstring name() const {
+    return name_;
+  }
+
+  drawIter drawBegin() const {
     return drawIter(*this, coord(0,0), level::MAX_WIDTH, level::MAX_HEIGHT);
   }
 
-  drawIter drawEnd() const  {
+  drawIter drawEnd() const {
     return drawIter(*this, coord(-1,-1), level::MAX_WIDTH, level::MAX_HEIGHT);
   }
 
@@ -834,6 +856,10 @@ std::pair<coord,coord> levelGen::addShrine() {
   return loc;
 }
 
+void levelGen::setName(const std::wstring &name) {
+  level_->name_ = name;
+}
+
 // all new monsters at level-gen time come through this method.
 void levelGen::addMonster(std::shared_ptr<monster> m, const coord &c) {
   level_->addMonster(m,c);
@@ -984,6 +1010,10 @@ void levelGen::place(const coord &c, terrainType type) {
 level::level(levelImpl *pImpl) :
   pImpl_(pImpl) {}
 level::~level() { 
+}
+
+std::wstring level::name() const {
+  return pImpl_->name();
 }
 
 drawIter level::drawBegin() const {

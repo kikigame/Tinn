@@ -67,6 +67,7 @@ public:
     place(upRampPos(), terrainType::UP);
     //    place(coord(level::MAX_WIDTH-2,10), terrainType::DOWN);
     addMonster(monsterTypeKey::dragon, coord(level::MAX_WIDTH-2, 10));
+    setName(L"The Arena");
   }
 };
 
@@ -85,6 +86,7 @@ public:
     //    place(coord(30,10), terrainType::DOWN);
     // TODO: This should be a difficult monster to trade with somehow.
     addMonster(monsterTypeKey::troll, coord(level::MAX_WIDTH-2, 10));
+    setName(L"The Shopping Arena");
   }
 };
 

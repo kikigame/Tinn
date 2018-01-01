@@ -27,6 +27,9 @@ public:
   virtual ~levelGen() {}
 
 protected:
+  // name the level (optional; default is based on depth)
+  void setName(const std::wstring & name);
+
   // add an individual room. Returns first=top-left, second=bottom-right
   std::pair<coord,coord> addRoom();
 
