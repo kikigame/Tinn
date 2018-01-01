@@ -233,6 +233,93 @@ public:
   }
 };
 
+class waterLevelGen : public levelGen {
+private:
+  const bool addDownRamp_; // do we need a downwards exit?
+  coord downRampPos_; // if set
+public:
+  waterLevelGen(levelImpl* const level, ::level& pub, bool addDownRamp) :
+    levelGen(level, pub),
+    addDownRamp_(addDownRamp),
+    downRampPos_(-1,-1) {}
+  virtual ~waterLevelGen() {}
+  virtual void negotiateRamps(optionalRef<levelGen> next) {
+    /*
+    if (addDownRamp_ && next) {
+      downRampPos_ = next.value().upRampPos();
+      if (downRampPos_.first >= 0)
+	place(downRampPos_, terrainType::DOWN);
+	}*/
+  }
+  virtual void build() {
+    for (coord c : coordRectIterator(0,1,level::MAX_WIDTH-1,level::MAX_HEIGHT-1))
+      if (at(c) == terrainType::ROCK)
+	place(c, terrainType::WATER);
+
+    for (coord c : coordRectIterator(1,1,3,3))
+      place(c, terrainType::GROUND);
+    place(coord(0,2), terrainType::UP);
+
+    for (coord c : coordRectIterator(3,level::MAX_HEIGHT-4,6,level::MAX_HEIGHT-1))
+      place(c, terrainType::GROUND);
+    place(coord(2,level::MAX_HEIGHT-2), terrainType::DOWN);
+
+    for (int d=0; d < 4; ++d)
+      for (coord c : coordRectIterator(3+10*d,3+d,3+10*(d+1),4+d))
+	place(c, terrainType::GROUND);
+
+    for (coord c : coordRectIterator(40,8,50,10))
+      place(c, terrainType::GROUND);
+
+    for (coord c : coordRectIterator(45,11,45,18))
+      place(c, terrainType::GROUND); // bridge
+
+    for (coord c : coordRectIterator(35,18,55,19))
+      place(c, terrainType::GROUND);
+
+    for (coord c : coordRectIterator(4,19,60,19))
+      place(c, terrainType::GROUND);
+
+    for (coord c : coordRectIterator(15,18,22,18))
+      place(c, terrainType::GROUND);
+    place(coord(17,17), terrainType::GROUND);
+
+    setName(L"The perilous seaside");
+
+    if (dPc() < 50) { // add a watery shrine:
+      addShrine();
+    }
+
+    // monsters. Let's start with 5 kelpie and 2 sirens:
+    for (int i=0; i < 5; ++i)
+      addMonster(monsterTypeKey::kelpie);
+    for (int i=0; i < 2; ++i)
+      addMonster(monsterTypeKey::siren);
+  }
+
+private:
+  void addMonster(monsterTypeKey mtk) {
+    coord c;
+    do {
+      c.first = rndPickI(1, level::MAX_WIDTH-1);
+      c.second = rndPickI(1, level::MAX_HEIGHT-1);
+    } while (at(c) != terrainType::WATER);
+    levelGen::addMonster(mtk, c);
+  }
+  void addShrine() {
+    optionalRef<deity> d;
+    auto &dr = deityRepo::instance();
+    do {
+      d = optionalRef<deity>(*rndPick(dr.begin(), dr.end()));
+    } while (d.value().element() != Element::water);
+    
+    levelGen::addShrine(coord(51,7),coord(57,12), d);
+    place(coord(56,9), terrainType::ALTAR);
+    place(coord(56,7), terrainType::WATER); // round the corners
+    place(coord(56,11), terrainType::WATER); // round the corners
+  }
+};
+
 // manages the items in a given cell by adapting levelImpl to the itemHolder interface
 // at specified coords
 class itemHolderLevel : 
@@ -818,20 +905,28 @@ std::pair<coord,coord> levelGen::addShrine() {
   // look for a contiguous 5x5 place on the map that is only rock.
   coord topLeft = level_->findTerrain(terrainType::ROCK, width, height);
   int xPos = topLeft.first, yPos = topLeft.second;
-
-  auto ground = tFactory.get(terrainType::GROUND);
-  for (int y=1; y < height-1; ++y) {
-    for (int x=1; x < width-1; ++x) {
-      coord c(x + xPos,y + yPos);
-      level_->terrain_.at(c) = ground;
-    }
-  }
-
   coord btmRight(xPos+width-2, yPos+height-2);
 
   auto loc = std::pair<coord,coord>(topLeft,btmRight);
 
-  auto shr = std::make_shared<shrine>(topLeft, btmRight);
+  addShrine(topLeft, btmRight);
+  return loc;
+}
+
+void levelGen::addShrine(const coord &topLeft, const coord &btmRight, optionalRef<deity> d) {
+  const int width = btmRight.first - topLeft.first + 1;
+  const int height = btmRight.second  - topLeft.second + 1;
+  auto shr = d ? std::make_shared<shrine>(topLeft, btmRight, d.value()) :
+    std::make_shared<shrine>(topLeft, btmRight);
+  int xPos = topLeft.first, yPos = topLeft.second;
+
+  auto ground = tFactory.get(terrainType::GROUND);
+  for (int y=0; y < height-1; ++y) {
+    for (int x=0; x < width-1; ++x) {
+      coord c(x + xPos,y + yPos);
+      level_->terrain_.at(c) = ground;
+    }
+  }
   level_->itemZones_.push_back(shr);
   level_->monsterZones_.push_back(shr);
   level_->holder(coord(xPos+2,yPos+2)).addItem(createHolyBook(shr->align()));
@@ -843,8 +938,6 @@ std::pair<coord,coord> levelGen::addShrine() {
     addMonster(monsterTypeKey::venusTrap, coord(xPos+3,yPos+1));
     addMonster(monsterTypeKey::venusTrap, coord(xPos+3,yPos+3));
   }
-
-  return loc;
 }
 
 void levelGen::setName(const std::wstring &name) {
@@ -993,6 +1086,10 @@ void levelGen::place(const iter & begin,
 
 void levelGen::place(const coord &c, terrainType type) {
   level_->terrain_[c]= tFactory.get(type);  
+}
+
+terrainType levelGen::at(const coord &c) const {
+  return level_->terrain_.at(c)->type();
 }
 
 
@@ -1182,6 +1279,8 @@ private:
     if (depth == numLevels_)
       return role_.newQuestLevelGen(*l, *level);
     bool addDownRamp = depth < numLevels_;
+    if (depth == 10)
+      return new waterLevelGen(l, *level, addDownRamp);
     if (dPc() < depth)
       switch (depth / 10) {
       case 0:

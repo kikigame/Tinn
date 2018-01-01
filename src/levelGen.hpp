@@ -13,6 +13,7 @@
 class level;
 class levelImpl;
 class monster;
+class deity;
 
 // helper class to generate a random layout of a level
 class levelGen {
@@ -34,7 +35,12 @@ protected:
   std::pair<coord,coord> addRoom();
 
   // add a shrine. Returns first=top-left, second=bottom-right
+  // NB: Does not place an altar, as its placement depends on the access direction
   std::pair<coord, coord> addShrine();
+
+  // place a shrine at given position (pass empty d for random)
+  // NB: Does not place an altar, as its placement depends on the access direction
+  void addShrine(const coord &tl, const coord &br, optionalRef<deity> d = optionalRef<deity>());
 
   // possibly entrap a room:
   void addTraps(const std::pair<coord,coord> &coords);
@@ -70,6 +76,8 @@ protected:
 	     terrainType terrainType);
 
   void place(const coord &c, terrainType terrainType);
+
+  terrainType at(const coord &c) const;
 
 private:
   void changeTerrain(coord pos, terrainType from, terrainType to);
