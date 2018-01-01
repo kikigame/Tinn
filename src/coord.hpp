@@ -93,4 +93,22 @@ public:
 std::ostream & operator << (std::ostream & out, const coord & c);
 std::wostream & operator << (std::wostream & out, const coord & c);
 
+class coordRectIterator {
+private:
+  coord tl_, br_, cur_;
+public:
+  coordRectIterator(int l, int t, 
+		    int r, int b) : tl_({l,t}), br_({r,b}), cur_(tl_) {};
+  coordRectIterator(coord tl, coord br) : tl_(tl), br_(br), cur_(tl) {};
+  coordRectIterator(coord tl, coord br, coord cur) : tl_(tl), br_(br), cur_(cur) {};
+  coordRectIterator begin() { return *this; } // copy
+  coordRectIterator end() { coord e(tl_.first, br_.second+1); return coordRectIterator(tl_, br_, e); }
+  coordRectIterator& operator ++() { cur_.first++; 
+    if (cur_.first > br_.first) {cur_.second++; cur_.first = tl_.first; }
+    return *this; }
+  const coord &operator *() { return cur_; }
+  bool operator == (const coordRectIterator &o) { return o.cur_ == cur_ && o.tl_ == tl_ && o.br_ == br_; }
+  bool operator != (const coordRectIterator &o) { return o.cur_ != cur_ || o.tl_ != tl_ || o.br_ != br_; }
+};
+
 #endif // ndef COORD

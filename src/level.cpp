@@ -292,11 +292,8 @@ public:
     depth_(depth),
     name_(L"The " + nth(depth) + L" Area of Adventure") {
     using namespace std;
-    for (int x=0; x < level::MAX_WIDTH ; ++x)
-      for (int y=0; y < level::MAX_HEIGHT ; ++y) {
-	coord c(x,y);
-	terrain_[c] = tFactory.get(terrainType::ROCK);
-      }
+    for (coord c : coordRectIterator(0, 0, level::MAX_WIDTH-1, level::MAX_HEIGHT-1))
+      terrain_[c] = tFactory.get(terrainType::ROCK);
   }
   virtual ~levelImpl() {}
 
@@ -333,12 +330,9 @@ public:
 
   coord findTerrain(const terrainType type) const {
     using namespace std;
-    for (int y=0; y < level::MAX_HEIGHT; ++y)
-      for (int x=0; x < level::MAX_WIDTH; ++x) {
-	coord c(x,y);
-	if (terrain_.at(c)->type() == type) 
-	  return c;
-      }
+    for (coord c : coordRectIterator(0,0,level::MAX_WIDTH-1, level::MAX_HEIGHT - 1))
+      if (terrain_.at(c)->type() == type) 
+	return c;
     throw wstring(L"Terrain type ") + to_string(type) + wstring(L" not found on level ") + to_wstring(depth_);
   }
 
@@ -354,13 +348,10 @@ public:
       xPos = xPosD(generator), yPos = yPosD(generator);
 	  
       found = true;
-      for (int y=0; y < height; ++y)
-	for (int x=0; x < width; ++x) {
-	  coord c(x + xPos,y + yPos);
-	  if (terrain_.at(c) != rock) {
-	    found = false;
-	    break;
-	  }
+      for (coord c : coordRectIterator(xPos, yPos, width + xPos-1, height + yPos - 1))
+	if (terrain_.at(c) != rock) {
+	  found = false;
+	  break;
 	}
       if (found) return coord(xPos,yPos);
     }
