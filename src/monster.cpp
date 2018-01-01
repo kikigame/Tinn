@@ -846,6 +846,29 @@ public:
   }
 };
 
+class siren : public monster {
+public:
+  siren(monsterBuilder &b) :
+    monster(b) {
+    eachTick([this]{
+	if (dPc() <= 30) // ~ 1 every 5 moves
+	  sirenCall();
+      });
+  }
+  virtual ~siren() {}
+  void sirenCall() {
+    auto &act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::attract);
+    auto &l = curLevel();
+    if (&(l.dung().cur_level()) != &l) return; // don't waste our voice if no Dungeoneer is around
+    // TODO: If player can't hear, don't put out message:
+    ioFactory::instance().message(L"The " + std::wstring(name()) + L" sings an attractive song");
+    l.forEachMonster([this,&act](monster &t){
+	if (t.type().type() != monsterTypeKey::siren) 
+	  act(false,false,*this, t);
+      });
+  }
+};
+
 
 class dragon : public monster {
 private:
@@ -1025,6 +1048,9 @@ std::shared_ptr<monster> ofType(const monsterType &type, level & level) {
   case monsterTypeKey::kelpie:
     ptr = std::make_shared<kelpie>(b);
     break;
+  case monsterTypeKey::siren:
+    ptr = std::make_shared<siren>(b);
+    break;
   case monsterTypeKey::succubus:
     ptr = std::make_shared<targetActionRefMonster>(b, succubusAction());
     break;
@@ -1053,7 +1079,10 @@ std::vector<std::pair<unsigned int, monsterType*>> spawnMonsters(int depth, int 
   auto from = monsterTypeRepo::instance().begin();
   auto to = monsterTypeRepo::instance().end();
   auto filter = [depth](monsterType* mt) {
-      return (depth <= 3 || mt->type() != monsterTypeKey::dungeoneer);
+    // Dungeoneers aren't found below level 3 (Ref: Knightmare, which had only 3 levels)
+      return (depth <= 3 || mt->type() != monsterTypeKey::dungeoneer) &&
+      // don't randomnly generate sirens; they must be on watery levels, on the rocks:
+      mt->type() != monsterTypeKey::siren;
   };
   auto ffrom = make_filtered_iterator(filter, from, to);
   auto tto = make_filtered_iterator(filter, to, to);

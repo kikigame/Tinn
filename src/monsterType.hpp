@@ -66,7 +66,7 @@ enum class monsterTypeKey {
   human, 
   incubus, // male form of succubus
   kelpie, // water spirit. Can shape-shift between horse and human forms (possibly with hooves)
-  // TODO: When placing a kelpie, add some water in the same square.
+  siren, // manevolent half-bird that sits on rocks at sea and lures travellers to their death with its song.
   succubus, // female form of incubus
   troll, 
   venusTrap,

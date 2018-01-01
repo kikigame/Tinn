@@ -431,6 +431,34 @@ L"Kelpies live in rivers and streams, while the stronger Each-uisge prefers\n"
 "Kelpies are often known to enact retribution for bad behaviour conducted\n"
 "on a Sunday."));
 
+    // unique feature: sits on rocks and lures other monsters to their death with its song
+    emplace(monsterTypeBuilder(monsterTypeKey::siren)
+	    .category(monsterCategory::bird) // TODO: birds with human heads; NB: we don't differentiate head slots
+	    .name(L"Siren")
+	    .className(L"birdoid") // NB: Will fight cross-aligned birds of prey
+	    .levelFactor(1)
+	    .levelOffset(30)
+	    .minSpawn(1)
+	    .maxSpawn(3) // 3 sirens in the Odyssey
+	    .xpFactor(50)
+	    .xpOffset(0)
+	    .renderChar(L'b')
+	    .strength(40)
+	    .appearance(80)
+	    .fighting(60)
+	    .maxDamage(20)
+	    .saying(L"La!")
+	    .gen(genderAssignType::mf) // sometimes female, but this seems to be cross-contamination with mermaid myths
+	    .material(materialType::fleshy)
+	    .align(dr.getExact(Element::air, Domination::concentration, Outlook::cruel))
+	    .align(dr.getExact(Element::water, Domination::concentration, Outlook::cruel))
+	    .movement({speed::turn3, goTo::none, goBy::smart, 10})
+	    .eats(materialType::fleshy)
+	    .encyclopedium(
+L"Of all the birds of the sea, the sirens are the most beautiful and the most\n"
+"deadly. With human heads, they sing an irrisistably enchanting song, luring\n"
+"unwary tranvellers into the sea, to dash swimmers and bots onto the rocks."));
+
     // unique feature: seduction/dream-rape
     emplace(monsterTypeBuilder(monsterTypeKey::succubus)
 	    .category(monsterCategory::biped)

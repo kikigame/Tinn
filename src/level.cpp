@@ -706,6 +706,11 @@ public:
     return monsters_.equal_range(pos);
   }
 
+  void forEachMonster(std::function<void(monster &)> f) {
+    for (auto p : monsters_)
+      f(*(p.second));
+  }
+
   dungeon & dung() { return dungeon_; }
 
   itemHolder &holder(const coord c) {
@@ -1049,6 +1054,9 @@ void level::pickUp() {
 std::pair<std::multimap<coord, std::shared_ptr<monster> >::const_iterator,
 	  std::multimap<coord, std::shared_ptr<monster> >::const_iterator> level::monstersAt(const coord &pos) const {
   return pImpl_->monstersAt(pos);
+}
+void level::forEachMonster(std::function<void(monster &)> f) {
+  pImpl_->forEachMonster(f);
 }
 itemHolder &level::holder(const item& item) {
   return holder(posOf(item)); // no need to bother pImpl for a simple wrapper

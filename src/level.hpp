@@ -112,6 +112,11 @@ public:
   std::pair<std::multimap<coord, std::shared_ptr<monster> >::const_iterator,
 	    std::multimap<coord, std::shared_ptr<monster> >::const_iterator> monstersAt(const coord &pos) const;
 
+  /*
+   * Iterate over each monster on the level
+   */
+  void forEachMonster(std::function<void(monster &)> f);
+
   // return a mutable holder for an item on the level
   itemHolder& holder(const item &item);
 

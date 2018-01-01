@@ -112,6 +112,37 @@ public:
   }
 };
 
+// move the target towards the main
+class attractAction : public renderedAction<monster, monster> {
+public:
+  attractAction(const wchar_t * const name, const wchar_t * const description) :
+    renderedAction(name, description) {};
+  virtual ~attractAction() {}
+  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+    char distance = 5;
+    if (blessed) distance *= 2;
+    if (cursed) distance /= 3;
+    auto &sLevel = source.curLevel();
+    auto &tLevel = target.curLevel();
+
+    if (&sLevel != &tLevel) return false;
+    auto sPos = tLevel.posOf(source);
+    auto tPos = tLevel.posOf(target);
+    bool rtn = false;
+    for (; distance >= 0; --distance) {
+      if (target.abilities().entrapped()) return false;
+      tPos = tPos.towards(sPos);
+      if (tPos == sPos) return true;
+      if (tLevel.movable(tPos, target, false, false)) {
+	tLevel.moveTo(target, tPos);
+	rtn = true;
+      }
+      else break;
+    }
+    return rtn;
+  }
+};
+
 // forcably cause the target monster to consume some sprouts
 class forceHealAction : public renderedAction<monster, monster> {
 public:
@@ -405,6 +436,8 @@ damageType::electric))),
 L"Useful for getting out of a scrape, especially when trapped.\n"
 "The effect of an exchange ray is to swap places with everyone and everything\n"
 "at the target's location."))),
+	std::make_pair(action::key::attract, std::shared_ptr<action>(new attractAction(L"monster attraction",
+L"To somman another creature towards you along a line of movement."))),
 	std::make_pair(action::key::heal_ray_veggie, std::shared_ptr<action>(new forceHealAction(L"Vegan food ray",
 L"Force-feeds a few sprouts. This can be a life-saver, but is also unpleasant."))),
 	/*	std::make_pair(action::key::comedy, std::shared_ptr<action>(new comedyAction(L"comedy",

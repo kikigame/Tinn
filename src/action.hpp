@@ -64,6 +64,8 @@ class sharedAction<monster, monster>{
     death_ray_electric,
     // swap places
     exchange_ray,
+    // pull towards
+    attract,
     // heal by veggie food consumption
     heal_ray_veggie,
     // perform a random "funny" effect to detriment of target monster:
