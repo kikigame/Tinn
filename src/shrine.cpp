@@ -65,8 +65,10 @@ bool shrine::onEnter(std::shared_ptr<monster> monster, itemHolder &pev) {
     }
     return success;
   }
-  if (p) ios.message(L"You enter the " + name());
-  if (align_ == monster->align()) ios.message(L"You feel very safe here.");
+  if (p) {
+    ios.message(L"You enter the " + name());
+    if (align_ == monster->align()) ios.message(L"You feel very safe here.");
+  }
   return true;
 }
 
