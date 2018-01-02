@@ -565,8 +565,7 @@ bool foocubusAction<incubus>::operator () (bool blessed, bool cursed, monster &s
     bool isProtected = incubus ? !target.isFemale() : !target.isMale();
     bool isCompatible = incubus ? target.isFemale() : target.isMale();
     auto &ios = ioFactory::instance();
-      return false;
-    if (!isProtected) {
+    if (isProtected) {
       if (source.isPlayer()) ios.message(L"You aren't in the mood.");
       else ios.message(source.name() + std::wstring(L" doesn't seem to be in the mood."));
       return false;
@@ -587,9 +586,9 @@ bool foocubusAction<incubus>::operator () (bool blessed, bool cursed, monster &s
 	(act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::enchant_item))(false, false, source, target);
     } else {
       // bad outcome
-      ios.message(target.isPlayer() ? L"You are violated by the "  + std::wstring(source.name() + L'!')
+      ios.message(target.isPlayer() ? L"You are violated by the "  + std::wstring(source.name()) + L'!'
 		  : source.isPlayer() ? L"You feel bad about violating the " + std::wstring(target.name()) + L"..."
-		  : L"The " + std::wstring(target.name()) + L" does not consents to the advances of the " + source.name() + L"..."
+		  : L"The " + std::wstring(target.name()) + L" does not consent to the advances of the " + source.name() + L"..."
 		  );
       // target receives a bad outcome; source receives a good outcome
       source.strength() += 5;
