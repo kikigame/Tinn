@@ -214,6 +214,10 @@ const monsterType& monster::type() const { return type_; }
 const deity &monster::align() const { return *align_; }
 
 const attackResult monster::attack(monster &target) {
+  if (std::find(charmedBegin(), charmedEnd(), &target) != charmedEnd()
+      && dPc() < target.appearance().cur())
+    return attackResult(0, L"seems to be under a charm");
+
   // We hit (unless dodged) the target if D% < fighting, or always on a roll of 0.
   auto dHit = dPc();
   unsigned char f = fighting().cur();
@@ -574,7 +578,18 @@ void moveMonster(monster &mon) {
     std::pair<char,char> dir(0,0);
     coord targetPos;
 
-    switch (type.goTo_) {
+    bool charmed = false;
+    if (mon.charmedBegin() != mon.charmedEnd()) {
+      auto pM = rndPick(mon.charmedBegin(), mon.charmedEnd());
+      if (dPc() < (*pM)->appearance().cur()) {
+	auto myPos = level.posOf(**pM);
+	dir.first = myPos.first < targetPos.first ? 1 : myPos.first == targetPos.first ? 0 : -1;
+	dir.second = myPos.second < targetPos.second ? 1 : myPos.second == targetPos.second ? 0 : -1;
+	charmed = true;
+      }
+    }
+
+    if (!charmed) switch (type.goTo_) {
     case goTo::none: 
       return;  // this does not move
     case goTo::wander:
@@ -1204,4 +1219,19 @@ void monster::polymorphCategory(monsterCategory c) {
     if (!equipment_[s])
       equipment_.erase(s);
   }
+}
+
+bool monster::setCharmedBy(monster & mon) {
+  auto m = &mon;
+  if (m == this) return false;
+  if (std::find(charmedBy_.begin(), charmedBy_.end(), m) != charmedBy_.end()) return false;
+  charmedBy_.push_back(m);
+  return true;
+}
+
+std::list<monster*>::const_iterator monster::charmedBegin() const {
+  return charmedBy_.begin();
+}
+std::list<monster*>::const_iterator monster::charmedEnd() const {
+  return charmedBy_.end();
 }

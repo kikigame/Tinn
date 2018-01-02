@@ -63,6 +63,8 @@ private:
   // cursed tail bow).
   std::map<const slot*, optionalRef<item> > equipment_;
   monsterIntrinsics intrinsics_;
+  // which monsters have charmed this one?
+  std::list<monster*> charmedBy_;
 protected:
   // create monster by builder, with specific weapon slots (used internally by dragons)
   monster(monsterBuilder & b, std::vector<const slot *>slots);
@@ -193,6 +195,13 @@ public:
 
   class inedibleException : public std::exception{};
   class notHungryException : public std::exception{};
+
+  // this will move towards m (dPc() < m.appearance().cur())
+  // this will be less aggressive towards m (dPc() < m.appearance().cur() to skip attack)
+  bool setCharmedBy(monster &m);
+
+  std::list<monster *>::const_iterator charmedBegin() const;
+  std::list<monster *>::const_iterator charmedEnd() const;
 
 protected:
 

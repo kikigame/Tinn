@@ -327,6 +327,25 @@ public:
   }
 };
 
+class charmAction : public renderedAction<monster, monster> {
+public:
+  charmAction(const wchar_t * const name, const wchar_t * const description) :
+    renderedAction(name, description) {}
+  virtual ~charmAction() {}
+  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+    if (source.isPlayer() && target.isPlayer()) {
+      ioFactory::instance().message(L"Charming!");
+      return true;
+    }
+    if (!target.setCharmedBy(source)) return false;
+    else if (source.isPlayer())
+      ioFactory::instance().message(L"You charm the " + std::wstring(target.name()));
+    else if (target.isPlayer())
+      ioFactory::instance().message(L"You find the " + std::wstring(target.name()) + L" quite charming.");
+    return true;
+  }
+};
+
 template<>
 class actionFactory<monster, monster> {
 public:
@@ -510,6 +529,10 @@ L"A pop-up shop is a small retail event lasting for a short length of time."))),
 L"The action of petrification is to cause someone to become stiff or like\n"
 "stone, to deaden in fear. Some monsters are unaffected by fear, and some\n"
 "will be affected for longer than others."))),
+	std::make_pair(action::key::charm, std::shared_ptr<action>(new charmAction(L"charm",
+L"Charming a monster will make it less inclined to attack you, and more\n"
+"inclined to approach. The effectiveness of the charm depends on the charmer's\n"
+"physical beauty."))),
 	};
     auto &rtn = m[k];
     return *rtn;

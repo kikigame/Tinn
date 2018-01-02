@@ -100,6 +100,8 @@ class sharedAction<monster, monster>{
     disarm,
     // freeze for a time:
     petrify,
+    // charm the monster
+    charm,
     // create a shop on the fly with the inventory of the given monster
     popup_shop,
     END
