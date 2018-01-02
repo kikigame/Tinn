@@ -9,14 +9,14 @@ CXXLINK ?= -lncursesw
 WINCXXLINK = -lncursesw -lpsapi -static
 
 tinn : Makefile ofiles 
-ofiles : src/action.o src/adjectives.o src/appraise.o src/bonus.o src/characteristic.o src/chargen.o src/coord.o src/damage.o src/dungeon.o src/encyclopedia.o src/itemholder.o src/items.o src/itemType.o src/level.o src/main.o src/monster.o src/monsterIntrinsics.o src/monsterType.o src/output.o src/output_curses.o src/output_term.o src/player.o src/religion.o src/role.o src/shop.o src/shopkeeper.o src/shrine.o src/slots.o src/terrain.o src/time.o 
+ofiles : src/action.o src/adjectives.o src/appraise.o src/bonus.o src/characteristic.o src/chargen.o src/coord.o src/damage.o src/dungeon.o src/encyclopedia.o src/itemholder.o src/items.o src/itemType.o src/level.o src/main.o src/monster.o src/monsterFactory.o src/monsterIntrinsics.o src/monsterType.o src/output.o src/output_curses.o src/output_term.o src/player.o src/religion.o src/role.o src/shop.o src/shopkeeper.o src/shrine.o src/slots.o src/terrain.o src/time.o 
 
-	$(CXX)  src/action.o src/adjectives.o src/appraise.o src/bonus.o src/characteristic.o src/chargen.o src/coord.o src/damage.o src/dungeon.o src/encyclopedia.o src/itemholder.o src/items.o src/itemType.o src/level.o src/main.o src/monster.o src/monsterIntrinsics.o src/monsterType.o src/output.o src/output_curses.o src/output_term.o src/player.o src/religion.o src/role.o src/shop.o src/shopkeeper.o src/shrine.o src/slots.o src/terrain.o src/time.o  -Wall -g -std=c++11 $(CXXLINK) -o tinn
+	$(CXX)  src/action.o src/adjectives.o src/appraise.o src/bonus.o src/characteristic.o src/chargen.o src/coord.o src/damage.o src/dungeon.o src/encyclopedia.o src/itemholder.o src/items.o src/itemType.o src/level.o src/main.o src/monster.o src/monsterFactory.o src/monsterIntrinsics.o src/monsterType.o src/output.o src/output_curses.o src/output_term.o src/player.o src/religion.o src/role.o src/shop.o src/shopkeeper.o src/shrine.o src/slots.o src/terrain.o src/time.o  -Wall -g -std=c++11 $(CXXLINK) -o tinn
 
 # Windown port 
 tinn.exe : Makefile clean 
 	CXX="$(WINCXX)" make -k ofiles && \
-	$(WINCXX)  src/action.o src/adjectives.o src/appraise.o src/bonus.o src/characteristic.o src/chargen.o src/coord.o src/damage.o src/dungeon.o src/encyclopedia.o src/itemholder.o src/items.o src/itemType.o src/level.o src/main.o src/monster.o src/monsterIntrinsics.o src/monsterType.o src/output.o src/output_curses.o src/output_term.o src/player.o src/religion.o src/role.o src/shop.o src/shopkeeper.o src/shrine.o src/slots.o src/terrain.o src/time.o  -Wall -g -std=c++11 $(CXXLINK) -o tinn.exe
+	$(WINCXX)  src/action.o src/adjectives.o src/appraise.o src/bonus.o src/characteristic.o src/chargen.o src/coord.o src/damage.o src/dungeon.o src/encyclopedia.o src/itemholder.o src/items.o src/itemType.o src/level.o src/main.o src/monster.o src/monsterFactory.o src/monsterIntrinsics.o src/monsterType.o src/output.o src/output_curses.o src/output_term.o src/player.o src/religion.o src/role.o src/shop.o src/shopkeeper.o src/shrine.o src/slots.o src/terrain.o src/time.o  -Wall -g -std=c++11 $(CXXLINK) -o tinn.exe
 
 Makefile: build.pl
 	./build.pl > Makefile
@@ -25,7 +25,7 @@ lint:
 	cppcheck --enable=performance --enable=warning --enable=portability src
 
 clean:
-	rm -f   src/action.o src/adjectives.o src/appraise.o src/bonus.o src/characteristic.o src/chargen.o src/coord.o src/damage.o src/dungeon.o src/encyclopedia.o src/itemholder.o src/items.o src/itemType.o src/level.o src/main.o src/monster.o src/monsterIntrinsics.o src/monsterType.o src/output.o src/output_curses.o src/output_term.o src/player.o src/religion.o src/role.o src/shop.o src/shopkeeper.o src/shrine.o src/slots.o src/terrain.o src/time.o 
+	rm -f   src/action.o src/adjectives.o src/appraise.o src/bonus.o src/characteristic.o src/chargen.o src/coord.o src/damage.o src/dungeon.o src/encyclopedia.o src/itemholder.o src/items.o src/itemType.o src/level.o src/main.o src/monster.o src/monsterFactory.o src/monsterIntrinsics.o src/monsterType.o src/output.o src/output_curses.o src/output_term.o src/player.o src/religion.o src/role.o src/shop.o src/shopkeeper.o src/shrine.o src/slots.o src/terrain.o src/time.o 
 
 src/action.o : src/action.cpp src/action.hpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/level.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/movement.hpp src/optionalRef.hpp src/output.hpp src/random.hpp src/renderable.hpp src/slots.hpp src/time.hpp src/zone.hpp 
 	$(CXX) src/action.cpp -c -Wall -g -std=c++11 -o src/action.o -finput-charset=utf8 -fexec-charset=utf8
@@ -60,7 +60,7 @@ src/encyclopedia.o : src/encyclopedia.cpp src/action.hpp src/bonus.hpp src/chara
 src/itemholder.o : src/itemholder.cpp src/action.hpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/encyclopedia.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/level.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/movement.hpp src/optionalRef.hpp src/output.hpp src/random.hpp src/renderable.hpp src/shop.hpp src/slots.hpp src/time.hpp src/zone.hpp 
 	$(CXX) src/itemholder.cpp -c -Wall -g -std=c++11 -o src/itemholder.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/items.o : src/items.cpp src/action.hpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/encyclopedia.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/level.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/movement.hpp src/optionalRef.hpp src/output.hpp src/random.hpp src/religion.hpp src/renderable.hpp src/shop.hpp src/slots.hpp src/time.hpp src/zone.hpp 
+src/items.o : src/items.cpp src/action.hpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/dungeon.hpp src/encyclopedia.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/level.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/movement.hpp src/optionalRef.hpp src/output.hpp src/player.hpp src/random.hpp src/religion.hpp src/renderable.hpp src/shop.hpp src/slots.hpp src/time.hpp src/zone.hpp 
 	$(CXX) src/items.cpp -c -Wall -g -std=c++11 -o src/items.o -finput-charset=utf8 -fexec-charset=utf8
 
 src/itemType.o : src/itemType.cpp src/damage.hpp src/itemTypes.hpp src/materialType.hpp src/random.hpp src/renderable.hpp 
@@ -74,6 +74,9 @@ src/main.o : src/main.cpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src
 
 src/monster.o : src/monster.cpp src/action.hpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/dungeon.hpp src/graphsearch.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/level.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/movement.hpp src/optionalRef.hpp src/output.hpp src/pathfinder.hpp src/player.hpp src/random.hpp src/religion.hpp src/renderable.hpp src/slots.hpp src/terrain.hpp src/time.hpp src/zone.hpp 
 	$(CXX) src/monster.cpp -c -Wall -g -std=c++11 -o src/monster.o -finput-charset=utf8 -fexec-charset=utf8
+
+src/monsterFactory.o : src/monsterFactory.cpp src/action.hpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/dungeon.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/level.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/movement.hpp src/optionalRef.hpp src/output.hpp src/player.hpp src/random.hpp src/religion.hpp src/renderable.hpp src/slots.hpp src/terrain.hpp src/time.hpp src/zone.hpp 
+	$(CXX) src/monsterFactory.cpp -c -Wall -g -std=c++11 -o src/monsterFactory.o -finput-charset=utf8 -fexec-charset=utf8
 
 src/monsterIntrinsics.o : src/monsterIntrinsics.cpp src/bonus.hpp src/damage.hpp src/materialType.hpp src/monsterIntrinsics.hpp src/movement.hpp src/renderable.hpp src/terrain.hpp 
 	$(CXX) src/monsterIntrinsics.cpp -c -Wall -g -std=c++11 -o src/monsterIntrinsics.o -finput-charset=utf8 -fexec-charset=utf8
