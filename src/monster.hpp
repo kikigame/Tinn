@@ -15,6 +15,7 @@
 #include "slots.hpp"
 #include "itemholder.hpp"
 #include "bonus.hpp"
+#include "damage.hpp"
 
 #include <memory> // shared_ptr
 #include <string>
@@ -125,6 +126,9 @@ public:
 
   // ... and other injuries... (returns the lossed score)
   int wound(unsigned char reductionPc, const damage & dt);
+  
+  // what kind of damage does this monster do?
+  virtual damageType unarmedDamageType() const;
 
   // try and wield/wear etc. the given item in the specified slot. Returns true if successful, false
   // if the slot was full or n/a for this monster type. Precodition: slot must be available for type.

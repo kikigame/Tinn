@@ -117,7 +117,7 @@ const attackResult monster::attack(monster &target) {
   if (weap == equipment_.end()) weap = equipment_.find(slotBy(slotType::secondary_weapon));
   optionalRef<item> weapon;
   if (weap != equipment_.end()) weapon = weap->second;
-  damageType type = (weapon) ? weapon.value().weaponDamage() : damageType::bashing;
+  damageType type = (weapon) ? weapon.value().weaponDamage() : unarmedDamageType();
   auto dt = damageRepo::instance()[type];
 
   // Now to see how much damage we did...
@@ -128,6 +128,10 @@ const attackResult monster::attack(monster &target) {
   if (static_cast<unsigned char>(damage) == max) return attackResult(injury(), L"fatal");
   if (static_cast<unsigned char>(damage) >= max/2) return attackResult(injury(), L"good hit");
   return attackResult(injury(), L"hit");
+}
+
+damageType monster::unarmedDamageType() const {
+  return damageType::bashing;
 }
 
 // wounding in combat: between 0 and the damage_ stat, averaging 50%, then rounded down:
