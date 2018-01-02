@@ -335,6 +335,48 @@ public:
   }
 };
 
+class merfolk : public monster {
+public:
+  merfolk(monsterBuilder &b) :
+    monster(b) {
+    intrinsics().see(true);
+    intrinsics().hear(true);
+    intrinsics().swim(true);
+    eachTick([this]{
+	if (dPc() <= 30) // ~ 1 every 5 moves
+	  charm();
+      });
+    // mermaids have comb & mirror in heraldry, and mermen are often given tridents, but we don't have those types.
+    addItem(createItem(itemTypeKey::conch));
+  }
+  virtual ~merfolk() {}
+  virtual const wchar_t * const name() const {
+    if (isFemale()) return L"Mermaid";
+    if (isMale()) return L"Merman";
+    return monster::name();
+  }
+  void charm() {
+    auto &act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::charm);
+    auto &l = curLevel();
+    if (&(l.dung().cur_level()) != &l) return; // don't waste our voice if no Dungeoneer is around
+    if (l.dung().pc()->abilities().see()) {
+      ioFactory::instance().message(L"The " + std::wstring(name()) + L" seems very beguiling");
+    }
+    l.forEachMonster([this,&act](monster &t){
+	if (t.type().type() != monsterTypeKey::merfolk) 
+	  act(false,false,*this, t);
+      });
+  }
+  // can't move off water
+  virtual bool onMove(const coord &pos, const terrain &terrain) {
+    return (terrain.type() == terrainType::WATER);
+  }
+  // do water damage by default
+  virtual damageType unarmedDamageType() const {
+    return damageType::wet;
+  }
+};
+
 
 class dragon : public monster {
 private:
@@ -523,6 +565,9 @@ std::shared_ptr<monster> ofType(const monsterType &type, level & level) {
   case monsterTypeKey::kelpie:
     ptr = std::make_shared<kelpie>(b);
     break;
+  case monsterTypeKey::merfolk:
+    ptr = std::make_shared<merfolk>(b);
+    break;
   case monsterTypeKey::siren:
     ptr = std::make_shared<siren>(b);
     break;
@@ -563,7 +608,9 @@ std::vector<std::pair<unsigned int, monsterType*>> spawnMonsters(int depth, int 
     // Dungeoneers aren't found below level 3 (Ref: Knightmare, which had only 3 levels)
       return (depth <= 3 || mt->type() != monsterTypeKey::dungeoneer) &&
       // don't randomnly generate sirens; they must be on watery levels, on the rocks:
-      mt->type() != monsterTypeKey::siren;
+      mt->type() != monsterTypeKey::siren &&
+      // likewise, don't generate merfolk outside the water:
+      mt->type() != monsterTypeKey::merfolk;
   };
   auto ffrom = make_filtered_iterator(filter, from, to);
   auto tto = make_filtered_iterator(filter, to, to);

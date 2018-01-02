@@ -108,7 +108,8 @@ monsterType::monsterType(const monsterTypeBuilder & b) :
   foodMaterials_(b.foodMaterials_),
   sayings_(b.sayings_),
   alignment_(b.alignment_),
-  movementType_(b.movementType_) {}
+  movementType_(b.movementType_) {
+}
 
 const monsterTypeKey monsterType::type() const { return key_; }
 const monsterCategory monsterType::category() const { return category_; }
@@ -432,6 +433,37 @@ L"Kelpies live in rivers and streams, while the stronger Each-uisge prefers\n"
 "delight in running off with and drowning their - often human - prey.\n"
 "Kelpies are often known to enact retribution for bad behaviour conducted\n"
 "on a Sunday."));
+
+    // unique feature: charms enemies, watery attacks
+    emplace(monsterTypeBuilder(monsterTypeKey::merfolk)
+	    .category(monsterCategory::merfolk)
+	    .name(L"Merfolk")
+	    .className(L"Water Spirits")
+	    .levelFactor(1)
+	    .levelOffset(30)
+	    .minSpawn(1)
+	    .maxSpawn(3) // as siren
+	    .xpFactor(50)
+	    .xpOffset(0)
+	    .renderChar(L';') // as SLASHTHEM, for all sea monsters
+	    .strength(40)
+	    .appearance(80)
+	    .fighting(60)
+	    .maxDamage(20)
+	    .saying(L"La!")
+	    .gen(genderAssignType::mf) // males are mermen, which are a different type
+	    .material(materialType::fleshy)
+	    .align(dr.getExact(Element::water, Domination::concentration, Outlook::kind))
+	    .movement({speed::turn3, goTo::none, goBy::smart, 10})
+	    .eats(materialType::fleshy)
+	    .encyclopedium(
+L"Merfolk do not like to stray outside the sea, and mermen less so. Having the\n"
+"tail of a fish and the body of the beautiful human, albeit covered in tiny\n"
+"scales, the merfolk usually exist peacefully at sea. More than one hapless\n"
+"traveller has fallen for their charms, even attempting to save them as if\n"
+"drowning, or falling in love with them, and met their end drowned at sea,\n"
+"whether by negligence or intent."));
+	    
 
     // unique feature: sits on rocks and lures other monsters to their death with its song
     emplace(monsterTypeBuilder(monsterTypeKey::siren)

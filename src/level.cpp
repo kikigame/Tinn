@@ -290,11 +290,13 @@ public:
       addShrine();
     }
 
-    // monsters. Let's start with 5 kelpie and 2 sirens:
+    // monsters. Let's start with 5 kelpie and 2 sirens, then half a dozen merfolk:
     for (int i=0; i < 5; ++i)
       addMonster(monsterTypeKey::kelpie);
     for (int i=0; i < 2; ++i)
       addMonster(monsterTypeKey::siren);
+    for (int i=0; i < 6; ++i)
+      addMonster(monsterTypeKey::merfolk);
     addEnchantedItem(itemTypeKey::conch);
   }
 
