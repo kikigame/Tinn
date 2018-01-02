@@ -466,7 +466,7 @@ L"Comedy and Tragedy are two sides of the same coin. Neither is predictable,\n"
 L"Comedy and Tragedy are two sides of the same coin. Neither is predictable,\n"
 "but like all social commentary, both can be effective when used carefully."))),
 	*/
-	std::make_pair(action::key::teleport_away, std::shared_ptr<action>(new teleportAwayAction(L"curse",
+	std::make_pair(action::key::teleport_away, std::shared_ptr<action>(new teleportAwayAction(L"teleport away",
 L"Sometimes you just need to put some distance between yourself and an\n"
 "adversary. Teleport Away causes the target to move as far away from you as\n"
 "possible (but in a line)."))),
