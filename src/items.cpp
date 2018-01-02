@@ -11,6 +11,7 @@
 #include "religion.hpp" // for holy books
 #include "output.hpp"
 #include "action.hpp"
+#include "dungeon.hpp"
 #include <set>
 #include <bitset>
 #include <algorithm>
@@ -1076,11 +1077,15 @@ public:
     return rtn;
   }
   virtual bool use() {
+    if (!dynamic_cast<monster*>(&holder()))
+      return false; // can only be used in main inventory
     if (!hasCharge()) {
-      if (type_ == itemTypeRepo::instance()[itemTypeKey::bagpipes])
-	ioFactory::instance().message(L"The beautiful sound of " + std::wstring(name()) + L" fills the air");
-      else
-	ioFactory::instance().message(L"The beautiful sound of a " + std::wstring(name()) + L" fills the air");
+      if (dynamic_cast<monster&>(holder()).curLevel().dung().pc()->abilities().hear()) {
+	if (type_ == itemTypeRepo::instance()[itemTypeKey::bagpipes])
+	  ioFactory::instance().message(L"The beautiful sound of " + std::wstring(name()) + L" fills the air");
+	else
+	  ioFactory::instance().message(L"The beautiful sound of a " + std::wstring(name()) + L" fills the air");
+      }
       return true;
     }
     if (isCursed()) {

@@ -772,7 +772,10 @@ private:
 public:
   ferret(monsterBuilder &b) : 
     targetActionMonster(b, key::steal_small),
-    away_({speed::turn2, goTo::player, goBy::avoid, 25}){}
+    away_({speed::turn2, goTo::player, goBy::avoid, 25}){
+    intrinsics().see(true);
+    intrinsics().hear(true);
+  }
   virtual ~ferret() {}
   const movementType & movement() const {
     if (empty())
@@ -801,7 +804,10 @@ public:
 class hound : public monster {
 public:
   hound(monsterBuilder &b) : 
-    monster(b) {} //
+    monster(b) {
+    intrinsics().see(true);
+    intrinsics().hear(true);
+  }
   virtual ~hound() {}
   virtual const wchar_t *say() const {
     const std::wstring nm = name();
@@ -825,6 +831,8 @@ public:
     monster(b),
     equineForm_(false),
     maxStrength_(strength().max()) {
+    intrinsics().see(true);
+    intrinsics().hear(true);
     intrinsics().swim(true);
     intrinsics().move(*(tFactory.get(terrainType::WATER).get()), true);
   }
@@ -849,8 +857,8 @@ public:
   }
   virtual bool onMove(const coord &pos, const terrain &terrain) {
     if (!monster::onMove(pos, terrain)) return false;
-    // TODO: Suppress message if the player becomes deaf
-    if (terrain.type() == terrainType::WATER && equineForm_ && (&curLevel() == &curLevel().dung().cur_level()))
+    if (terrain.type() == terrainType::WATER && equineForm_ && (&curLevel() == &curLevel().dung().cur_level())
+	&& curLevel().dung().pc()->abilities().hear())
       ioFactory::instance().message(L"You hear the sound of thunder as the " + std::wstring(name()) + L"'s tail hits the water");
     if (dPc() <= 11) // ~3%
       shapeShift();
@@ -865,6 +873,11 @@ class siren : public monster {
 public:
   siren(monsterBuilder &b) :
     monster(b) {
+    intrinsics().see(true);
+    intrinsics().hear(true);
+    intrinsics().swim(true);
+    intrinsics().fly(true);
+    intrinsics().climb(true);
     eachTick([this]{
 	if (dPc() <= 30) // ~ 1 every 5 moves
 	  sirenCall();
@@ -875,8 +888,9 @@ public:
     auto &act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::attract);
     auto &l = curLevel();
     if (&(l.dung().cur_level()) != &l) return; // don't waste our voice if no Dungeoneer is around
-    // TODO: If player can't hear, don't put out message:
-    ioFactory::instance().message(L"The " + std::wstring(name()) + L" sings an attractive song");
+    if (l.dung().pc()->abilities().hear()) {
+      ioFactory::instance().message(L"The " + std::wstring(name()) + L" sings an attractive song");
+    }
     l.forEachMonster([this,&act](monster &t){
 	if (t.type().type() != monsterTypeKey::siren) 
 	  act(false,false,*this, t);
@@ -895,6 +909,9 @@ public:
     // DRAGONS DON'T FLY! It's mythologically inaccurate...
     intrinsics().speedy(true);
     intrinsics().dblAttack(true);
+    intrinsics().see(true);
+    intrinsics().hear(true);
+    intrinsics().fearless(true);
   }
   virtual ~dragon() {}
   // overridden to return a type-dependant saying:
@@ -1047,18 +1064,24 @@ std::shared_ptr<monster> ofType(const monsterType &type, level & level) {
   switch (type.type()) {
   case monsterTypeKey::dungeoneer:
     ptr = std::make_shared<trivialMonster>(b);
+    ptr->intrinsics().hear(true); // can't see
     break;
   case monsterTypeKey::ferret:
     ptr = std::make_shared<ferret>(b);
     break;
   case monsterTypeKey::goblin:
     ptr = std::make_shared<targetActionMonster>(b, targetActionMonster::key::steal_shiny);
+    ptr->intrinsics().see(true);
+    ptr->intrinsics().hear(true);
     break;
   case monsterTypeKey::hound:
     ptr = std::make_shared<hound>(b);
     break;
   case monsterTypeKey::incubus:
     ptr = std::make_shared<targetActionRefMonster>(b, incubusAction());
+    ptr->intrinsics().see(true);
+    ptr->intrinsics().hear(true);
+    ptr->intrinsics().swim(true);
     break;
   case monsterTypeKey::kelpie:
     ptr = std::make_shared<kelpie>(b);
@@ -1068,6 +1091,9 @@ std::shared_ptr<monster> ofType(const monsterType &type, level & level) {
     break;
   case monsterTypeKey::succubus:
     ptr = std::make_shared<targetActionRefMonster>(b, succubusAction());
+    ptr->intrinsics().see(true);
+    ptr->intrinsics().hear(true);
+    ptr->intrinsics().swim(true);
     break;
   case monsterTypeKey::zombie:
     ptr = std::make_shared<zombie>(b);
@@ -1079,6 +1105,9 @@ std::shared_ptr<monster> ofType(const monsterType &type, level & level) {
   case monsterTypeKey::birdOfPrey:
   default:
     ptr = std::make_shared<trivialMonster>(b);
+    ptr->intrinsics().see(true);
+    ptr->intrinsics().hear(true);
+    ptr->intrinsics().fly(true);
   }
   // pass by value works, but creates an extra 2 persistent refs, causing a memory leak as the ref-count never hits 0.
   // pass by reference causes a SIGSEGV; not sure why.
