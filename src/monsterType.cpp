@@ -153,7 +153,9 @@ const wchar_t * monsterType::name(const unsigned char maxDamage) const {
   auto idx = (maxDamage - iMaxDamage()) / threshold;
   return monsterNames_.at(idx);
 }
-
+const genderAssignType monsterType::gen() const {
+  return gen_;
+}
 
 
 class monsterTypeRepoImpl {

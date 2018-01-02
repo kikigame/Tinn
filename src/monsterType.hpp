@@ -173,6 +173,8 @@ public:
 
   const bool eats(const materialType foodType) const;
 
+  const genderAssignType gen() const;
+
   bool operator == (const monsterType & rhs) const;
 };
 
