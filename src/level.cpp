@@ -295,6 +295,7 @@ public:
       addMonster(monsterTypeKey::kelpie);
     for (int i=0; i < 2; ++i)
       addMonster(monsterTypeKey::siren);
+    addEnchantedItem(itemTypeKey::conch);
   }
 
 private:
@@ -305,6 +306,17 @@ private:
       c.second = rndPickI(1, level::MAX_HEIGHT-1);
     } while (at(c) != terrainType::WATER);
     levelGen::addMonster(mtk, c);
+  }
+  void addEnchantedItem(itemTypeKey itk) {
+    coord c;
+    do {
+      c.first = rndPickI(1, level::MAX_WIDTH-1);
+      c.second = rndPickI(1, level::MAX_HEIGHT-1);
+    } while (at(c) != terrainType::GROUND);
+    auto &it = createItem(itk);
+    it.bless(true);
+    it.enchant(1 + dPc() / 25);
+    pub_.holder(c).addItem(it);
   }
   void addShrine() {
     optionalRef<deity> d;
