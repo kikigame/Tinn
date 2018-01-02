@@ -129,6 +129,22 @@ enum class itemTypeKey {
   ////
     shop_card, // activate to go shopping.
     bottling_kit, // for putting things into bottles
+
+  ////
+  // Instruments ('♪'; Nethack uses '(' for all tools)
+  ////
+
+    theremin,  // attack_ray_med_electric
+    visi_sonor, // charm
+    baliset, // enchant_item
+    drum, // nudity
+    bagpipes, // petrify
+    conch, // disarm
+    harmonica, // tremolo-tuned; attack_ray_med_sonic
+    pan_flute, // attraction
+    lyre, // teleport_away
+    pianoforte, // attack_ray_med_bashing
+
 };
 
 

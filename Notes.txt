@@ -553,6 +553,33 @@ Instead of "a <foo> corpse", we will just say "a dead <foo>". This allows for de
 I propose, for now, that eating a dead <foo> will produce a warning confirmation prompt and then provide a very small amount of nutrition; boons and curses can wait for another release.
 
 
+Music
+-----
+Musical instruments are objects in Nethack that can be used in two ways: to play a tune of specific notes (A,B,C,D,E,F or G), or to play a random tune. In one predefined level, playing the correct tune can open a drawbridge, while any tunes may sometimes attract monsters. All instruments (I think) have a corresponding magical counterpart, which cannot play a specific tune but instead performs some effect, usually conjuration. One exception is the drum, which cannot play notes (but there is an earthquake drum, which wakes sleeping monsters and creates pits in a random pattern).
+
+We can certainly create musical instruments, which allow us to add many more tool items to the game. Perhaps each istrument could be bound to a particular effect when enchanted, making them like wands but more predictable:
+
+Theremin - electrical instrument, ?? Possibly charged using electro-pop.
+ * power: attack_ray_med_electric
+Visi-sonor - Asimov's instrument projects sounds and emotions directly; can be altered to a lethal weapon.
+ * power: charm
+Baliset - from Dune, a very long 9-stringed zither, tuned to the Chusuk scale (Chusuk=planet of music). Played by a general for folk stoies before war
+ * power: enchant_item
+Drum - mankind's oldest instrument.
+ * power: nudity
+Bagpipes - weapons of war used to terrify one's enemies, also used musically.
+ * power: petrify
+Conch - made of shell (eg big sea-snails) associated with merfolk in my mind; also used religiously and known by other names.
+ * power: disarm
+Tremolo-tuned Harmonica - a type of mouth organ which produces a strang warbling sound by having two reeds per note, one slightly flat and the other slightly sharp.
+ * power: attack_ray_med_sonic
+Pan flute - 
+ * power: attraction
+Lyre - like a small harp; in legend, they charmed people & inanimate objects and quelled the sirens' voices
+ * power: teleport_away (opposite of siren's call)
+Pianoforte - hard to transport, but effective thrown/dropped weapons.
+ * power: attack_ray_med_bashing
+
 
 Intrinsics:
 -----------

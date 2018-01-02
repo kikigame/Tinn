@@ -470,6 +470,109 @@ L"This looks like someone's ID, but there's no photo, just a line of numbers."
 L"Bottles not included",
 L"These look like parts of some larger purpose."
 			     ));
+    emplace(itemTypeKey::theremin,
+	    // http://www.thereminworld.com/Forums/T/27511/rca-cabinet-theremin-weight says 90lb
+	    new itemTypeImpl(400, materialType::metallic, L'♪', L"theremin",
+L"An electronic musical instrument using analogue capacitence to determine an\n"
+"artificial tone.\n\n"
+"When property enchanted, the electric power of the instrtument can be\n"
+"projected towards a target.",
+L"A cabinet with an antenna"
+			     ));
+    emplace(itemTypeKey::visi_sonor,
+	    // this appears to be a hand-held weapon
+	    // assuming it's like a trumpet; http://www.answers.com/Q/How_much_does_a_trumpet_weigh 3.5lb
+	    new itemTypeImpl(15.5687756, materialType::metallic, L'♪', L"visi-sonor",
+L"A technological masterpiece of entertainment, the visi-sonor can be used by\n"
+"a skilled musician to produce a veritable symphony of music, colour, shapes\n"
+"and - in the hands of a true master - even emotions.\n"
+"When properly enchanted, the power of a visi-sonar can charm one's opponents.\n",
+L"Some sort of trumpet, probably."
+			     ));
+    emplace(itemTypeKey::baliset,
+	    // assuming 30kg for a zither (unreliable Google result
+	    new itemTypeImpl(294, materialType::woody,  L'♪', L"baliset",
+L"A baliset is a 9-stringed Zither, tuned to the Chusuk scale. It is\n"
+"notoriously difficult to play, but can be a great accompanyment to a\n"
+"good folk story.\n"
+"When properly enchanted, a baliset can transfer its enchantments over\n"
+"again.",
+L"Pocket guitar harp"
+			     ));
+    emplace(itemTypeKey::drum,
+	    // 8-15kg http://djembefola.com/learn/articles/djembe-woods (I pick 12kg)
+	    new itemTypeImpl(117.679800343667, materialType::leathery,  L'♪', L"djembe", // leathery as the skins go first
+L"One of the most popular drums, a goat-skin head is stretched over a wooden\n"
+"frame, and tightened with knotwork.\n"
+"When properly enchanted, this primal instrument can encourage naked dancing.",
+L"Decorative coffee table."
+			     ));
+    emplace(itemTypeKey::bagpipes,
+	    // http://forums.bobdunsire.com/forums/showthread.php?t=130343 says 5.5lb is heavy, so pick 5lb
+	    new itemTypeImpl(22.241108, materialType::leathery,  L'♪', L"bagpipes",
+L"A wind instrument using enclosed reeds in a number of pipes to produce\n"
+"sound from a constant supply of air produced by a leather bag. A further\n"
+"tube allows the player to keep the bag inflated. These pipes have 2 chanters\n"
+"with holes keys for the melody, and two drones, tuned to 1 and 2 octaves\n"
+"below the chanter. Stocks (sockets) hold the drones and chanters to the bag.\n"
+"Playing bagpipes well requires great skill, as the player must continuously\n"
+"re-tune the drones to achive an exact tone.\n"
+"Bagpipes are also used as weapons of war, as when untuned their dischordiant\n"
+"sound can become terrifying and carry well accross a battlefield.\n"
+"When properly enchanted, bagpipes can terrify one's enemies.\n",
+L"A taxidermically preserved haggis"
+			     ));
+    emplace(itemTypeKey::conch,
+	    // https://www.etsy.com/listing/557236236/natural-charonia-tritonis-or-tritons says 0.125kg
+	    new itemTypeImpl(1.22583125357986, materialType::stony,  L'♪', L"conch",
+L"The conch is the trumpet of the sea. The shell of a large sea snail provides\n"
+"a perfect resonance chamber; the point of the shell is broken to form a\n"
+"mouth-piece, making this an end-blown conch.\n"
+"If properly enchanted, the peaceful music of a conch can disarm your enemies.",
+L"A useful home for a rescue snail."
+			     ));
+    emplace(itemTypeKey::harmonica,
+	    // http://answers.wikia.com/wiki/How_much_does_a_harmonica_weigh 54g
+	    new itemTypeImpl(0.529559101546501, materialType::metallic,  L'♪', L"harmonica",
+L"The mouth-organ uses reeds to produce notes when blowing through a grid of\n"
+"holes, each tuned to a different note.\n"
+"A violent discord played on a properly enchanted harmonica can damage your\n"
+"opponents.\n",
+L"Sieve for spaghetti"
+			     ));
+    emplace(itemTypeKey::pan_flute,
+	    // https://www.chichesterinc.com/BambooPanFlutes.htm 8.2oz for "complete" "Zampona" pan flute
+	    new itemTypeImpl(2.27971358447858, materialType::woody,  L'♪', L"zampoña pan flute",
+L"A set of panpipes consists of closed bamboo tubes of increasing length, each\n"
+"tuned to produce a note when blown over their opening.\n"
+"When properly enchanted, the music of panpipes can attract other creatures\n"
+"towards the player.\n",
+L"A collection of bamboo of differing length."
+			     ));
+    emplace(itemTypeKey::lyre,
+	    // Ugh. The only reference I can find is http://runescape.wikia.com/wiki/Enchanted_lyre
+	    // which gives a mass of 1.814kg.
+	    new itemTypeImpl(17.789263151951, materialType::woody,  L'♪', L"lyre",
+L"This lyre has 6 tuned strings strung across a hardwood block, out of which a\n"
+"sound hole is carved.\n"
+"When properly enchanted, a lyre can undo the effects of a siren's call, by\n"
+"teleporting the player away from the magical bird - or, indeed, any other\n"
+"monster.",
+L"A shrunken guitar"
+			     ));
+    emplace(itemTypeKey::pianoforte,
+	    // https://www.reference.com/hobbies-games/much-grand-piano-weigh-aaf5cfd79427fd20
+	    // 1300lb for a concert piano.
+	    new itemTypeImpl(5782.68811672617, materialType::woody,  L'♪', L"pianoforte",
+L"The grand concert piano is one of the heaviest instruments. The great frame\n"
+"prevents the vibrations in the strings from being passed on to the case,\n"
+"ensuring a beautifully clean sound. Each key is connected to a hammer, which\n"
+"strikes a differently-tuned string to produce a note; ivory keys produce\n"
+"natural notes while ebony keys produce sharps or flats.\n"
+"When properly enchanted, the sheer weight of a piano can be converted into a\n"
+"ray of magical bashing damage.\n",
+L"A large pipeless organ"
+			     ));
 }
 void itemTypeRepo::emplace(itemTypeKey k, itemTypeImpl* impl) {
   byType_.emplace(k, std::unique_ptr<itemType>());

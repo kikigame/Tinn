@@ -15,18 +15,19 @@ class monster;
 
 // NB: most common are in the middle due to bell curve:
 // NB: Last shop is very rare (role of 99 or 100 given 11 shops)
-enum shopType {
-  stylii,
-  groceries,
-  weapons,
-  thrown,
-  clothes,
-  readable,
-  jewellery,
-  gambling,
-  luggage,
-  bottles,
-  tools,
+enum shopType {// rough chance per shop (NB: shopping centre is 8 *distinct* types)
+  stylii,     // 2%
+  weapons,    // 5%
+  groceries,  // 8%
+  thrown,     // 11.5%
+  readable,   // 14.5%
+  jewellery,  // 17%
+  gambling,   // 14.5%
+  luggage,    // 11.5%
+  bottles,    // 8%
+  tools,      // 5%
+  clothes,    // 2%
+  music,      // 0.04%
   END
 };
 

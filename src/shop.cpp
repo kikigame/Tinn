@@ -28,11 +28,12 @@ const wchar_t * shopName(const shopType & type) {
   case thrown: return  L"shop of Flight"; // L'¬'
   case clothes: return  L"Costumier and Armourer"; // L'['
   case readable: return  L"shop of Writing"; // L'¶'
-  case jewellery: return  L"jeweller's"; // L'*'
-  case gambling: return  L"house of Gambling"; // L'$' -- exchanging valuables for other valuables by bartering = casino
+  case jewellery: return  L"Jeweller's"; // L'*'
+  case gambling: return  L"House of Gambling"; // L'$' -- exchanging valuables for other valuables by bartering = casino
   case luggage: return  L"Luggage Emporium"; // L'='
   case bottles: return  L"shop of Potables and Curios"; // L'8'
   case tools: return L"Toolshop"; // L'('
+  case music: return L"Lutherie and Music Shop"; // L'♪'
   case END: return L"Shop"; // used for pop-up shops
   default: throw type;
   }
@@ -171,6 +172,7 @@ private:
       case luggage: return L'=';
       case bottles: return L'8';
       case tools: return L'(';
+      case music: return L'♪';
       default: throw shopType_;
       }
   }
@@ -572,6 +574,22 @@ void shop::enter() {
   pImpl_->enter();
 }
 
+/*
+#include <iostream>
+int main() {
+  int count[shopType::END+1];
+  for (int i=0; i <= shopType::END; ++i) count[i] = 0;
+  std::wcout << static_cast<int>(shopType::END) << std::endl;
+
+  for (int i=0; i < 100000; ++i)
+    count[(shopType::END-1) * dPc() / 100]++;
+  
+  for (int i=0; i <= shopType::END; ++i) {
+    auto type = static_cast<shopType>(i);
+    auto n = shopName(type);
+    std::wcout << n << '\t' << count[i] << std::endl;
+  }
+  }*/
 
 class shoppingCentre {
 private:
@@ -589,7 +607,7 @@ private:
   shopType sType() {
     shopType type;
     do {
-      type = static_cast<shopType>(dPc() / shopType::END);
+      type = static_cast<shopType>((shopType::END - 1) * dPc() / 100);
     } while (std::find(types_.begin(), types_.end(), type) != types_.end());
     types_.push_back(type);
     return type;

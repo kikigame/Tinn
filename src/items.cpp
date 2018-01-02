@@ -57,7 +57,6 @@ public:
 class basicItem : public item {
 private:
   enum { blessed, cursed, unidentified, sexy, NUM_FLAGS } flags;
-  const itemType& type_;
   std::map<damageType, int> damageTrack_;
   // what are we *explicitly* proof against?
   // something may be proof against a material even with no damage track; this may
@@ -69,11 +68,12 @@ private:
   int enchantment_;
 protected:
   mutable std::wstring buffer_; // for transient returns.
+  const itemType& type_;
 public:
   basicItem(const itemType& type) :
     item(),
-    type_(type),
-    enchantment_(0) {
+    enchantment_(0),
+    type_(type) {
     const damageRepo &dr = damageRepo::instance();
     for (auto dt : allDamageTypes)
       if (dr[dt].canDamage(type_.material()))
@@ -1041,6 +1041,62 @@ public:
   }
 };
 
+class instrument : public basicItem, burnChargeMixin, actionMonsterMixin {
+public:
+  instrument(renderedAction<monster, monster> &action, const itemType & type) :
+    basicItem(type),
+    burnChargeMixin(),
+    actionMonsterMixin(action) {
+    /*
+    theremin,  // attack_ray_med_electric
+    visi_sonar, // charm
+    baliset, // enchant_item
+    drum, // nudity
+    bagpipes, // petrify
+    conch, // disarm
+    harmonica, // tremolo-tuned; attack_ray_med_sonic
+    pan_flute, // attraction
+    lyre, // teleport_away
+    pianoforte, // attack_ray_med_bashing
+    */
+  }
+  virtual ~instrument() {}
+  virtual const wchar_t *const name() const {
+    basicItem::name(); // sets buffer_
+    if (hasCharge()) {
+      buffer_ += L" of ";
+      buffer_ += actionMonsterMixin::actionName();
+    }
+    return buffer_.c_str();
+  }
+  virtual std::vector<std::wstring> adjectives() const {
+    auto rtn = basicItem::adjectives();
+    if (type_ == itemTypeRepo::instance()[itemTypeKey::harmonica])
+      rtn.push_back(L"tremolo-tuned");
+    return rtn;
+  }
+  virtual bool use() {
+    if (!hasCharge()) {
+      if (type_ == itemTypeRepo::instance()[itemTypeKey::bagpipes])
+	ioFactory::instance().message(L"The beautiful sound of " + std::wstring(name()) + L" fills the air");
+      else
+	ioFactory::instance().message(L"The beautiful sound of a " + std::wstring(name()) + L" fills the air");
+      return true;
+    }
+    if (isCursed()) {
+      // fail to work about half the time:
+      if (dPc() < 50) {
+	if (isBlessed()) return false; // blessed cursed wands don't lose charges when they fail to work
+	useCharge();
+	return false; // plain cursed wands do lose charges if they fail to work
+      }
+    }
+    if (!isBlessed() || dPc() < 50) // blessed wands use a charge only 50% of the time, normal wands 100%
+      useCharge();
+    return fire();
+  }
+};
+
 
 // create an item of the given type. io may be used later by that item, eg for prompts when using.
 // TODO: Randomness for flavour: enchantment, flags, etc.
@@ -1188,6 +1244,56 @@ item& createItem(const itemTypeKey & t) {
   case itemTypeKey::bottling_kit:
     rtn = new bottlingKit(r[t]);
     break;
+  case itemTypeKey::theremin: {  // attack_ray_med_electric
+    auto &action = actionFactory<monster, monster>::get(sharedAction<monster,monster>::key::attack_ray_med_electric);
+    rtn = new instrument(action, r[t]);
+    break;
+  }
+  case itemTypeKey::visi_sonor: {// charm
+    auto &action = actionFactory<monster, monster>::get(sharedAction<monster,monster>::key::charm);
+    rtn = new instrument(action, r[t]);
+    break;
+  }
+  case itemTypeKey::baliset: {// enchant_item
+    auto &action = actionFactory<monster, monster>::get(sharedAction<monster,monster>::key::enchant_item);
+    rtn = new instrument(action, r[t]);
+    break;
+  }
+  case itemTypeKey::drum: {// nudity
+    auto &action = actionFactory<monster, monster>::get(sharedAction<monster,monster>::key::nudity);
+    rtn = new instrument(action, r[t]);
+    break;
+  }
+  case itemTypeKey::bagpipes: {// petrify
+    auto &action = actionFactory<monster, monster>::get(sharedAction<monster,monster>::key::petrify);
+    rtn = new instrument(action, r[t]);
+    break;
+  }
+  case itemTypeKey::conch: {// disarm
+    auto &action = actionFactory<monster, monster>::get(sharedAction<monster,monster>::key::disarm);
+    rtn = new instrument(action, r[t]);
+    break;
+  }
+  case itemTypeKey::harmonica: {// tremolo-tuned; attack_ray_med_sonic
+    auto &action = actionFactory<monster, monster>::get(sharedAction<monster,monster>::key::attack_ray_med_sonic);
+    rtn = new instrument(action, r[t]);
+    break;
+  }
+  case itemTypeKey::pan_flute: {// attraction
+    auto &action = actionFactory<monster, monster>::get(sharedAction<monster,monster>::key::attract);
+    rtn = new instrument(action, r[t]);
+    break;
+  }
+  case itemTypeKey::lyre: {// teleport_away
+    auto &action = actionFactory<monster, monster>::get(sharedAction<monster,monster>::key::teleport_away);
+    rtn = new instrument(action, r[t]);
+    break;
+  }
+  case itemTypeKey::pianoforte: {// attack_ray_med_bashing
+    auto &action = actionFactory<monster, monster>::get(sharedAction<monster,monster>::key::attack_ray_med_bashing);
+    rtn = new instrument(action, r[t]);
+    break;
+  }
   default:
     throw t; // unknown type
   }
