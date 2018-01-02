@@ -341,7 +341,7 @@ public:
     else if (source.isPlayer())
       ioFactory::instance().message(L"You charm the " + std::wstring(target.name()));
     else if (target.isPlayer())
-      ioFactory::instance().message(L"You find the " + std::wstring(target.name()) + L" quite charming.");
+      ioFactory::instance().message(L"You find the " + std::wstring(source.name()) + L" quite charming.");
     return true;
   }
 };
