@@ -329,7 +329,8 @@ public:
       ioFactory::instance().message(L"The " + std::wstring(name()) + L" sings an attractive song");
     }
     l.forEachMonster([this,&act](monster &t){
-	if (t.type().type() != monsterTypeKey::siren) 
+	if (t.type().type() != monsterTypeKey::siren &&
+	    t.abilities().hear()) 
 	  act(false,false,*this, t);
       });
   }
