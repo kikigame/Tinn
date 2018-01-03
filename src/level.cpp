@@ -618,19 +618,17 @@ public:
     switch (dir) {
     case '<': { // up: find any flying monsters on the current square
       auto mAt = monstersAt(pos);
-      for (auto i = mAt.first ; i != mAt.second; ++i) {
-	if (i->second->abilities().fly())
-	  return optionalRef<monster>(*(i->second));
-      }
+      for (auto i : mAt)
+	if (i.value().abilities().fly())
+	  return optionalRef<monster>(i.value());
       return optionalRef<monster>();
     }
     case '>': {// down: find any burrowing monsters on the current square
       auto &rock = tFactory.get(terrainType::ROCK);
       auto mAt = monstersAt(pos);
-      for (auto i = mAt.first ; i != mAt.second; ++i) {
-	if (i->second->abilities().move(rock))
-	  return optionalRef<monster>(*(i->second));
-      }
+      for (auto i : mAt)
+	if (i.value().abilities().move(rock))
+	  return optionalRef<monster>(i.value());
       return optionalRef<monster>();
     }
     case 'W': case 'w': // north
@@ -652,8 +650,8 @@ public:
       if (!from.curLevel().movable(cc,pos, from, false, false))
 	return optionalRef<monster>();
       auto mAt = monstersAt(pos);
-      if (mAt.first != mAt.second)
-	return optionalRef<monster>(*(mAt.first->second));
+      if (!mAt.empty())
+	return optionalRef<monster>(mAt[0].value());
     } while (pos != towards);
     return optionalRef<monster>();
   }
@@ -870,9 +868,12 @@ public:
       }});
   }
 
-  std::pair<std::multimap<coord, std::shared_ptr<monster> >::const_iterator,
-	    std::multimap<coord, std::shared_ptr<monster> >::const_iterator> monstersAt(const coord &pos) const {
-    return monsters_.equal_range(pos);
+  std::vector<ref<monster> > monstersAt(const coord &pos) const {
+    auto range = monsters_.equal_range(pos);
+    std::vector<ref<monster> > rtn;
+    for (auto i = range.first; i != range.second; ++i)
+      rtn.push_back(*(i->second.get()));
+    return rtn;
   }
 
   void forEachMonster(std::function<void(monster &)> f) {
@@ -909,23 +910,23 @@ public:
   coord createPrison() {
     bool found = false;
     for (int triesLeft=10; triesLeft > 0 && !found; --triesLeft) {
-      coord c, pos = findTerrain(terrainType::ROCK, 3, 3);
+      coord c,pos = findTerrain(terrainType::ROCK, 3, 3);
       found = true;
-      for (c.first = pos.first; c.first < pos.first + 3; ++c.first)
-	for (c.second = pos.second; c.second < pos.second + 3; ++c.second) {
-	  auto ma = monstersAt(c);
-	  if (ma.first == ma.second) {
-	    found = false;
-	    goto COORDLOOPDONE; // too many rocky monsters; c++ doesn't have break LABEL
-	  }
-	  auto &h = holder(c);
-	  auto i = h.firstItem([](item &) {return true;});
-	  if (!i) {
-	    found = false;
-	    goto COORDLOOPDONE; // too many items in the rock; c++ doesn't have break LABEL
-	  }
+      auto iter = coordRectIterator(pos.first, pos.second, pos.first+3, pos.second+3);
+      for (auto pC = iter.begin(); pC != iter.end(); ++pC) {
+	c = *pC;
+	auto ma = monstersAt(c);
+	if (ma.empty()) {
+	  found = false;
+	  break; // too many rocky monsters
 	}
-    COORDLOOPDONE:
+	auto &h = holder(c);
+	auto i = h.firstItem([](item &) {return true;});
+	if (!i) {
+	  found = false;
+	  break; // too many items in the rock
+	}
+      }
       if (found) {
 	coord mid(c.first+1, c.second+1);
 	terrain_.at(mid) = tFactory.get(terrainType::GROUND);
@@ -1022,8 +1023,8 @@ void levelGen::addMonster(std::shared_ptr<monster> m, const coord &c) {
     // look for any other non-water monsters on same square:
     bool found = false;
     auto ms = level_->monstersAt(c);
-    for (auto m = ms.first; m != ms.second; ++m)
-      if (!water.movable(m->second)) {
+    for (auto m : ms)
+      if (!water.movable(m.value())) {
 	found = true; 
 	break;
       }
@@ -1242,8 +1243,7 @@ void level::removeDeadMonster(monster &m) {
 void level::pickUp() {
   pImpl_->pickUp();
 }
-std::pair<std::multimap<coord, std::shared_ptr<monster> >::const_iterator,
-	  std::multimap<coord, std::shared_ptr<monster> >::const_iterator> level::monstersAt(const coord &pos) const {
+std::vector<ref<monster> > level::monstersAt(const coord &pos) const {
   return pImpl_->monstersAt(pos);
 }
 void level::forEachMonster(std::function<void(monster &)> f) {

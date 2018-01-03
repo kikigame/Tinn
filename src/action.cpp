@@ -97,13 +97,12 @@ public:
     for (auto pIt : sItems) tLevel.holder(tPos).addItem(*pIt);
 
     // swap monsters:
-    auto iSMonsters = sLevel.monstersAt(sPos);
-    std::vector<std::pair<coord, std::shared_ptr<monster> > > sMonsters(iSMonsters.first, iSMonsters.second);
-    auto iTMonsters = sLevel.monstersAt(sLevel.posOf(source));
-    for (auto pM = iTMonsters.first; pM != iTMonsters.second; ++pM)
-      sLevel.moveTo(*(pM->second), sPos);
-    for (auto pM : sMonsters)
-      tLevel.moveTo(*(pM.second), tPos);
+    auto sMonsters = sLevel.monstersAt(sPos);
+    auto tMonsters = sLevel.monstersAt(sLevel.posOf(source));
+    for (auto m : tMonsters)
+      sLevel.moveTo(m.value(), sPos);
+    for (auto m : sMonsters)
+      tLevel.moveTo(m.value(), tPos);
 
     if (source.isPlayer() || target.isPlayer()) // commutable action
       ioFactory::instance().message(L"Things seem to switch around.");

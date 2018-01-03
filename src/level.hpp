@@ -13,6 +13,7 @@
 
 #include "coord.hpp"
 #include "zone.hpp"
+#include "ref.hpp"
 
 class itemHolder;
 class item;
@@ -115,8 +116,7 @@ public:
    * Iterators over all the monsters at the given coordinates.
    * NB: coordinates need not exist on the map.
    */
-  std::pair<std::multimap<coord, std::shared_ptr<monster> >::const_iterator,
-	    std::multimap<coord, std::shared_ptr<monster> >::const_iterator> monstersAt(const coord &pos) const;
+  std::vector<ref<monster> > monstersAt(const coord &pos) const;
 
   /*
    * Iterate over each monster on the level

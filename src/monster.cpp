@@ -588,19 +588,19 @@ void monsterAttacks(monster &mon) {
       coord pos(myPos.first + dx, myPos.second + dy);
       auto m = level.monstersAt(pos);
       // take a copy, in case (eg a monster dies) the collection changes
-      std::vector<std::shared_ptr<monster>> monstersAt;
-      for (auto i = m.first; i != m.second; ++i) monstersAt.emplace_back(i->second);
-      for (auto en : monstersAt) {
-	if (en.get() == &mon) continue; // monsters don't usually fight themselves
-	if (en->align().coalignment(malign) >= 3) continue; // monsters don't usually fight other creautures of the same alignment
-	if (en->type() == mon.type()) continue; // monsters don't usually fight other creatures of the same class
-	auto result = mon.attack(*en);
+      std::vector<ref<monster> > monstersAt = m;
+      for (auto ren : monstersAt) {
+	auto &en = ren.value();
+	if (&en == &mon) continue; // monsters don't usually fight themselves
+	if (en.align().coalignment(malign) >= 3) continue; // monsters don't usually fight other creautures of the same alignment
+	if (en.type() == mon.type()) continue; // monsters don't usually fight other creatures of the same class
+	auto result = mon.attack(en);
 
 	std::wstringstream msg;
 	msg << (mon.isPlayer() ? L"You" : mon.name())
 	    << myPos
 	    << L" attacks "
-	    << (en->isPlayer() ? L"you" : en->name())
+	    << (en.isPlayer() ? L"you" : en.name())
 	    << pos
 	    << L": "
 	    << result.text_;
