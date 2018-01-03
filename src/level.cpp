@@ -12,6 +12,7 @@
 #include "shrine.hpp"
 #include "religion.hpp"
 #include "role.hpp"
+#include "transport.hpp"
 
 #include <algorithm> // max/min
 #include <random>
@@ -272,7 +273,7 @@ public:
       place(c, terrainType::GROUND);
 
     for (coord c : coordRectIterator(45,11,45,18))
-      place(c, terrainType::GROUND); // bridge
+      pub_.holder(c).addItem(createItem(itemTypeKey::bridge));
 
     for (coord c : coordRectIterator(35,18,55,19))
       place(c, terrainType::GROUND);
@@ -488,7 +489,7 @@ public:
     coord c = posOf(m);
     if (c.second == 0) return; // can't move above top of map
     c.second--;
-    if (!terrain_[c]->movable(m)) return; // can't move into terrain
+    if (!movable(c, m, true, false)) return; // can't move into terrain
     auto mn = monsters_.find(c);
     while (mn != monsters_.end()) {
       attack(m, *(mn->second)); // can't move into monster
@@ -501,7 +502,7 @@ public:
     coord c = posOf(m);
     c.second++;
     if (c.second == level::MAX_HEIGHT) return; // can't move below bottom of map
-    if (!terrain_[c]->movable(m)) return; // can't move into terrain
+    if (!movable(c, m, true, false)) return; // can't move into terrain
     auto mn = monsters_.find(c);
     if (mn != monsters_.end()) {
       attack(m, *(mn->second)); // can't move into monster
@@ -513,7 +514,7 @@ public:
     coord c = posOf(m);
     c.first++;
     if (c.first == level::MAX_WIDTH) return; // can't move after right of map
-    if (!terrain_[c]->movable(m)) return; // can't move into terrain
+    if (!movable(c, m, true, false)) return; // can't move into terrain
     auto mn = monsters_.find(c);
     if (mn != monsters_.end()) {
       attack(m, *(mn->second)); // can't move into monster
@@ -525,7 +526,7 @@ public:
     coord c = posOf(m);
     if (c.first == 0) return; // can't move before left of map
     c.first--;
-    if (!terrain_[c]->movable(m)) return; // can't move into terrain
+    if (!movable(c, m, true, false)) return; // can't move into terrain
     auto mn = monsters_.find(c);
     if (mn != monsters_.end()) {
       attack(m, *(mn->second)); // can't move into monster
@@ -726,11 +727,21 @@ public:
   
   bool movable(const coord &pos, const monster &m, bool avoidTraps, bool avoidHiddenTraps) {
     auto t = terrain_[pos];
+    auto &h = holder(pos);
+    if (vehicleMovable(h, m, *t)) return true;
     if (!t->movable(m)) return false;
     if (avoidTraps && t->entraps(m, false)) return false;
     if (avoidHiddenTraps && t->entraps(m, true)) return false;
     return true;
   }
+private:
+  bool vehicleMovable(itemHolder &h, const monster &m, const terrain &t) const {
+    return h.firstItem([&m, &t](item &i) { // returns true if finds any item
+	auto pV = dynamic_cast<transport *>(&i);
+	return pV && pV->terrainFor(t).movable(m); // returns item if movable
+      });
+  }
+public:
 
   // move a monster by direction, with optional safety
   void move(monster &m, const std::pair<char,char> dir, const bool avoidTraps) {
@@ -740,7 +751,7 @@ public:
     
     sanitiseCoords(pos);
 
-    if (!terrain_[pos]->movable(m) || // monster can't pass this way
+    if (!movable(pos, m, true, false) || // monster can't pass this way
 	monsters_.find(pos) != monsters_.end()) { // monsters can't *generally* move into each other.
       // can't move this way.
       return;

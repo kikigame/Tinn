@@ -447,7 +447,7 @@ L"The acquisition of money is a greedy goal, but you can swap coins like this\n"
 "indeed anyone more greedy than you. This coin is made of a light and\n"
 "unfamiliar metal. Kalganids are also available as notes, but paper money is\n"
 "not used much around here.\n",
-L"A strangly irridessent disc of metal with a worn-out inscription.\n"
+L"A strangly irridessent disc of metal with a worn-out inscription."
 			     ));
     emplace(itemTypeKey::shop_card,
 	    // ISO/IEC 7810:2003 says that ID-1 cards measure 85.60mm by 53.98mm, at 0.76mm thick,
@@ -477,7 +477,7 @@ L"An electronic musical instrument using analogue capacitence to determine an\n"
 "artificial tone.\n\n"
 "When property enchanted, the electric power of the instrtument can be\n"
 "projected towards a target.",
-L"A cabinet with an antenna"
+L"A cabinet with an antenna."
 			     ));
     emplace(itemTypeKey::visi_sonor,
 	    // this appears to be a hand-held weapon
@@ -497,7 +497,7 @@ L"A baliset is a 9-stringed Zither, tuned to the Chusuk scale. It is\n"
 "good folk story.\n"
 "When properly enchanted, a baliset can transfer its enchantments over\n"
 "again.",
-L"Pocket guitar harp"
+L"Pocket guitar harp."
 			     ));
     emplace(itemTypeKey::drum,
 	    // 8-15kg http://djembefola.com/learn/articles/djembe-woods (I pick 12kg)
@@ -520,7 +520,7 @@ L"A wind instrument using enclosed reeds in a number of pipes to produce\n"
 "Bagpipes are also used as weapons of war, as when untuned their dischordiant\n"
 "sound can become terrifying and carry well accross a battlefield.\n"
 "When properly enchanted, bagpipes can terrify one's enemies.\n",
-L"A taxidermically preserved haggis"
+L"A taxidermically preserved haggis."
 			     ));
     emplace(itemTypeKey::conch,
 	    // https://www.etsy.com/listing/557236236/natural-charonia-tritonis-or-tritons says 0.125kg
@@ -538,7 +538,7 @@ L"The mouth-organ uses reeds to produce notes when blowing through a grid of\n"
 "holes, each tuned to a different note.\n"
 "A violent discord played on a properly enchanted harmonica can damage your\n"
 "opponents.\n",
-L"Sieve for spaghetti"
+L"Sieve for spaghetti."
 			     ));
     emplace(itemTypeKey::pan_flute,
 	    // https://www.chichesterinc.com/BambooPanFlutes.htm 8.2oz for "complete" "Zampona" pan flute
@@ -558,7 +558,7 @@ L"This lyre has 6 tuned strings strung across a hardwood block, out of which a\n
 "When properly enchanted, a lyre can undo the effects of a siren's call, by\n"
 "teleporting the player away from the magical bird - or, indeed, any other\n"
 "monster.",
-L"A shrunken guitar"
+L"A shrunken guitar."
 			     ));
     emplace(itemTypeKey::pianoforte,
 	    // https://www.reference.com/hobbies-games/much-grand-piano-weigh-aaf5cfd79427fd20
@@ -571,9 +571,18 @@ L"The grand concert piano is one of the heaviest instruments. The great frame\n"
 "natural notes while ebony keys produce sharps or flats.\n"
 "When properly enchanted, the sheer weight of a piano can be converted into a\n"
 "ray of magical bashing damage.\n",
-L"A large pipeless organ"
+L"A large pipeless organ."
+			     ));
+
+    emplace(itemTypeKey::bridge,
+	    // 10 metric tonnes for transport; we *can* lift them, but don't want to encourage it...
+	    new itemTypeImpl(98066.500286389, materialType::woody, L'#', L"bridge", // Nethack uses '#' for closed drawbridge and '.' for open drawbridge
+L"This is a wooden bridge over water. It is usually too heavy to carry, but\n"
+"allows either water-based or land animals to occupy this space.",
+L"High outdoor shelf."
 			     ));
 }
+
 void itemTypeRepo::emplace(itemTypeKey k, itemTypeImpl* impl) {
   byType_.emplace(k, std::unique_ptr<itemType>());
   byType_[k].reset(new itemType(impl));

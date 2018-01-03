@@ -12,8 +12,7 @@
 #include "output.hpp"
 #include "action.hpp"
 #include "dungeon.hpp"
-#include <set>
-#include <bitset>
+#include "transport.hpp"
 #include <algorithm>
 
 
@@ -54,255 +53,238 @@ public:
   }
 };
 
-// class for items with no especial behaviour:
-class basicItem : public item {
-private:
-  enum { blessed, cursed, unidentified, sexy, NUM_FLAGS } flags;
-  std::map<damageType, int> damageTrack_;
-  // what are we *explicitly* proof against?
-  // something may be proof against a material even with no damage track; this may
-  // become useful in later development (eg transferring proofs between objects or
-  // polymorping the type and/or material of the object). Generally the existance
-  // of a damage track should be checked first.
-  std::set<damageType> proof_;
-  std::bitset<NUM_FLAGS> flags_;
-  int enchantment_;
-protected:
-  mutable std::wstring buffer_; // for transient returns.
-  const itemType& type_;
-public:
-  basicItem(const itemType& type) :
-    item(),
-    enchantment_(0),
-    type_(type) {
-    const damageRepo &dr = damageRepo::instance();
-    for (auto dt : allDamageTypes)
-      if (dr[dt].canDamage(type_.material()))
-	damageTrack_.emplace(dt, 0);
+
+basicItem::basicItem(const itemType& type) :
+  item(),
+  enchantment_(0),
+  type_(type) {
+  const damageRepo &dr = damageRepo::instance();
+  for (auto dt : allDamageTypes)
+    if (dr[dt].canDamage(type_.material()))
+      damageTrack_.emplace(dt, 0);
   }
-  basicItem(const basicItem &other) = delete;
-  virtual ~basicItem() {
-  };
-  // delegate to itemType by default
-  virtual const wchar_t render() const {
-    return type_.render();
-  }
-  // return the simple name for this item type; overridden in corpse.
-  virtual const wchar_t * const simpleName() const {
-    return type_.name();
-  }
-  // built up of itemType and adjectives etc.
-  virtual const wchar_t * const name() const {
-    buffer_ = L"";
-    if (enchantment_ < 0) buffer_ += std::to_wstring(enchantment_) + L' ';
-    if (enchantment_ > 0) buffer_ += L'+' + std::to_wstring(enchantment_) + L' ';
-    for (auto a : adjectives())
+basicItem::~basicItem() {}
+// delegate to itemType by default
+const wchar_t basicItem::render() const {
+  return type_.render();
+}
+// return the simple name for this item type; overridden in corpse.
+const wchar_t * const basicItem::simpleName() const {
+  return type_.name();
+}
+
+// built up of itemType and adjectives etc.
+const wchar_t * const basicItem::name() const {
+  buffer_ = L"";
+  if (enchantment_ < 0) buffer_ += std::to_wstring(enchantment_) + L' ';
+  if (enchantment_ > 0) buffer_ += L'+' + std::to_wstring(enchantment_) + L' ';
+  for (auto a : adjectives())
       buffer_ += a + L" ";
-    buffer_ += simpleName();
+  buffer_ += simpleName();
+  return buffer_.c_str();
+}
+// built up of all visible properties.
+const wchar_t * const basicItem::description() const {
+  name(); // sets buffer_
+  const std::size_t len = buffer_.length();
+  buffer_ += L"\n";
+  buffer_ += std::wstring(len, L'=');
+  if (isUnidentified()) {
+    buffer_ += type_.vagueDescription();
     return buffer_.c_str();
   }
-  // built up of all visible properties.
-  virtual const wchar_t * const description() const {
-    name(); // sets buffer_
-    const std::size_t len = buffer_.length();
-    buffer_ += L"\n";
-    buffer_ += std::wstring(len, L'=');
-    if (isUnidentified()) {
-      buffer_ += type_.vagueDescription();
-      return buffer_.c_str();
-    }
-    buffer_ += L"\n\nDescription:\n";
-    buffer_ += type_.description();
-    buffer_ += + L"\n\nWeight: ";
-    buffer_ += std::to_wstring(weight());
-    buffer_ += L"N\n";
+  buffer_ += L"\n\nDescription:\n";
+  buffer_ += type_.description();
+  buffer_ += + L"\n\nWeight: ";
+  buffer_ += std::to_wstring(weight());
+  buffer_ += L"N\n";
 
-    const bool blessed = isBlessed(), cursed = isCursed();
-    if (blessed && !cursed)
-      buffer_ += L"This is blessed. Most blessed items provide 1.5 times the\n"
-	"effect of a similar non-blessed, non-cursed items.\n";
-    else if (cursed && !blessed)
-      buffer_ += L"This is cursed. Most cursed items provide half the effect\n"
-	"of a similar non-blessed, non-cursed items. They cannot be removed\n"
-	"if worn/wielded until the curse is removed.\n";
-    else if (blessed && cursed)
-      buffer_ += L"This is both blessed and cursed. The blessing removes some\n"
-	"effects of the curse, but does not void it. Cursed items cannot be\n"
-	"removed if worn/wielded until the curse is removed.\n";
-    else
-      buffer_ += L"This would be more effective if blessed.\n";
+  const bool blessed = isBlessed(), cursed = isCursed();
+  if (blessed && !cursed)
+    buffer_ += L"This is blessed. Most blessed items provide 1.5 times the\n"
+      "effect of a similar non-blessed, non-cursed items.\n";
+  else if (cursed && !blessed)
+    buffer_ += L"This is cursed. Most cursed items provide half the effect\n"
+      "of a similar non-blessed, non-cursed items. They cannot be removed\n"
+      "if worn/wielded until the curse is removed.\n";
+  else if (blessed && cursed)
+    buffer_ += L"This is both blessed and cursed. The blessing removes some\n"
+      "effects of the curse, but does not void it. Cursed items cannot be\n"
+      "removed if worn/wielded until the curse is removed.\n";
+  else
+    buffer_ += L"This would be more effective if blessed.\n";
 
-    const int enchantmentPc = 5 * enchantment();
-    auto *burnCharge = dynamic_cast<const burnChargeMixin*>(this);
-    if (!burnCharge) {
-      if (enchantmentPc < 0) {
-	buffer_ += L"There is a negative enchantment. There is a penalty of ";
-	buffer_ += enchantmentPc;
-	buffer_ += L"% when\nusing this item as weapon or armour.\n";
-      } else if (enchantmentPc == 0) {
-	buffer_ += L"There is no magical enchantment on this item.\n";
-      } else {
-	buffer_ += L"There is an enchantment. There is a bonus of ";
-	buffer_ += enchantmentPc;
-	buffer_ += L"% when\nUsing this item as weapon or armour.\n";
-      }
+  const int enchantmentPc = 5 * enchantment();
+  auto *burnCharge = dynamic_cast<const burnChargeMixin*>(this);
+  if (!burnCharge) {
+    if (enchantmentPc < 0) {
+      buffer_ += L"There is a negative enchantment. There is a penalty of ";
+      buffer_ += enchantmentPc;
+      buffer_ += L"% when\nusing this item as weapon or armour.\n";
+    } else if (enchantmentPc == 0) {
+      buffer_ += L"There is no magical enchantment on this item.\n";
     } else {
-      buffer_ += burnCharge->describeCharges();
+      buffer_ += L"There is an enchantment. There is a bonus of ";
+      buffer_ += enchantmentPc;
+      buffer_ += L"% when\nUsing this item as weapon or armour.\n";
     }
-
-    return buffer_.c_str();
+  } else {
+    buffer_ += burnCharge->describeCharges();
   }
 
-  virtual itemHolder& holder() const {
-    auto &map = itemHolderMap::instance();
-    // sanity check to avoid null reference:
-    if (map.beforeFirstAdd(*this))
-      throw std::wstring(name()) + L" not yet in any holder";
-    return map.forItem(*this);
-  }
+  return buffer_.c_str();
+}
 
-  // what is the object made of?
-  virtual materialType material() const {
-    return type_.material();
-  }
-  // hom much does it weigh?
-  virtual double weight() const {
-    // basic: just return the base weight
-    return type_.baseWeight();
-  }
-  virtual damageType weaponDamage() const {
-    return damageType::bashing;
-  }
-  virtual int damageOfType(const damageType &type) const {
-    auto i = damageTrack_.find(type);
-    if (i == damageTrack_.end()) return 0;
-    return i->second;
-  }
-  // list of all adjectives applicable to type
-  virtual std::vector<std::wstring> adjectives() const {
-    std::vector<std::wstring> rtn;
-    if (isUnidentified())
-      return rtn;
-    if (type_ == itemTypeRepo::instance()[itemTypeKey::spring_water])
-      rtn.push_back(L"natural");
-    if (isBlessed()) rtn.push_back(L"blessed");
-    if (isCursed()) rtn.push_back(L"cursed");
-    auto &dr = damageRepo::instance();
-    auto m = type_.material();
-    for (auto dt : allDamageTypes) {
-      if (isProof(dt)) {
-	// adjective for being (this material) being proof to this damage type:
-	auto ptr = dr[dt].proofAdj(m);
-	if (ptr != nullptr)
-	  rtn.push_back(std::wstring(ptr));
-	continue;
-      }
-      int d = damageOfType(dt);
-      if (d == 0) continue;
-      auto adj = dr[dt].damageAdj(m);
-      if (d == 1) rtn.push_back(std::wstring(L"a little ") + adj);
-      if (d == 2) rtn.push_back(std::wstring(adj));
-      if (d == 3) rtn.push_back(std::wstring(L"very ") + adj);
-      if (d >= 4) rtn.push_back(std::wstring(L"thoroughly ") + adj);
-    }
+itemHolder& basicItem::holder() const {
+  auto &map = itemHolderMap::instance();
+  // sanity check to avoid null reference:
+  if (map.beforeFirstAdd(*this))
+    throw std::wstring(name()) + L" not yet in any holder";
+  return map.forItem(*this);
+}
+
+// what is the object made of?
+materialType basicItem::material() const {
+  return type_.material();
+}
+// hom much does it weigh?
+double basicItem::weight() const {
+  // basic: just return the base weight
+  return type_.baseWeight();
+}
+damageType basicItem::weaponDamage() const {
+  return damageType::bashing;
+}
+int basicItem::damageOfType(const damageType &type) const {
+  auto i = damageTrack_.find(type);
+  if (i == damageTrack_.end()) return 0;
+  return i->second;
+}
+// list of all adjectives applicable to type
+std::vector<std::wstring> basicItem::adjectives() const {
+  std::vector<std::wstring> rtn;
+  if (isUnidentified())
     return rtn;
+  if (type_ == itemTypeRepo::instance()[itemTypeKey::spring_water])
+    rtn.push_back(L"natural");
+  if (isBlessed()) rtn.push_back(L"blessed");
+  if (isCursed()) rtn.push_back(L"cursed");
+  auto &dr = damageRepo::instance();
+  auto m = type_.material();
+  for (auto dt : allDamageTypes) {
+    if (isProof(dt)) {
+      // adjective for being (this material) being proof to this damage type:
+      auto ptr = dr[dt].proofAdj(m);
+      if (ptr != nullptr)
+	rtn.push_back(std::wstring(ptr));
+      continue;
+    }
+    int d = damageOfType(dt);
+    if (d == 0) continue;
+    auto adj = dr[dt].damageAdj(m);
+    if (d == 1) rtn.push_back(std::wstring(L"a little ") + adj);
+    if (d == 2) rtn.push_back(std::wstring(adj));
+    if (d == 3) rtn.push_back(std::wstring(L"very ") + adj);
+    if (d >= 4) rtn.push_back(std::wstring(L"thoroughly ") + adj);
   }
+  return rtn;
+}
 
-  // damage the item in some way (return false only if no effect)
-  virtual bool strike(const damageType &type) {
-    if (isProof(type)) return false;
-    auto i = damageTrack_.find(type);
-    if (i == damageTrack_.end()) return false;
-    ++(i->second); // TODO: many items should be destroyed if they get too damaged. Do it here or transmute won't work.
-    return true;
-  }
-  // repair previous damage (return false only if no effect, eg undamaged)
-  virtual bool repair(const damageType &type) {
-    // don't check proof in case a subclass provides for another way of damaging
-    auto i = damageTrack_.find(type);
-    if (i == damageTrack_.end()) return false;
-    if (i->second == 0) return false;
-    --(i->second);
-    return true;
-  }
-  // proof against dagage type  (return false only if no more effect possible, eg already proofed or n/a for material type)
-  virtual bool proof(const damageType &type) {
-    auto i = proof_.find(type);
-    if (i == proof_.end())
-	proof_.insert(type);
-    return true;
-  }
-  // are we fooproof?
-  virtual bool isProof(const damageType &type) const {
-    auto i = proof_.find(type);
-    return i != proof_.end();
-  }
+// damage the item in some way (return false only if no effect)
+bool basicItem::strike(const damageType &type) {
+  if (isProof(type)) return false;
+  auto i = damageTrack_.find(type);
+  if (i == damageTrack_.end()) return false;
+  ++(i->second); // TODO: many items should be destroyed if they get too damaged. Do it here or transmute won't work.
+  return true;
+}
 
-  // access flags:
-  virtual bool isBlessed() const {
-    return flags_[blessed];
-  }
-  virtual void bless(bool b) {
-    flags_[blessed] = b;
-  }
-  virtual bool isCursed() const {
-    return flags_[cursed];
-  }
-  virtual void curse(bool c) {
-    flags_[cursed] = c;
-  }
-  virtual bool isSexy() const {
-    return flags_[sexy];
-  }
-  virtual void sexUp(bool s) {
-    flags_[sexy] = s;
-  }
-  virtual bool isUnidentified() const {
-    return flags_[unidentified];
-  }
-  virtual void unidentify(bool forget) {
-    flags_[unidentified] = forget;
-  }
+// repair previous damage (return false only if no effect, eg undamaged)
+bool basicItem::repair(const damageType &type) {
+  // don't check proof in case a subclass provides for another way of damaging
+  auto i = damageTrack_.find(type);
+  if (i == damageTrack_.end()) return false;
+  if (i->second == 0) return false;
+  --(i->second);
+  return true;
+}
+// proof against dagage type  (return false only if no more effect possible, eg already proofed or n/a for material type)
+bool basicItem::proof(const damageType &type) {
+  auto i = proof_.find(type);
+  if (i == proof_.end())
+    proof_.insert(type);
+  return true;
+}
+// are we fooproof?
+bool basicItem::isProof(const damageType &type) const {
+  auto i = proof_.find(type);
+  return i != proof_.end();
+}
 
-  // enchantment is some +/- modifier for the item; adds to attack when wielded
-  // If positive, may also be the number of charges remaining in a limited-use item
-  virtual int enchantment() const {
-    return enchantment_;
-  }
-  virtual void enchant(int enchantment) {
-    // TODO: We need to signal to recalculate the bonus if this item is equipped
-    enchantment_ += enchantment;
-  }
+// access flags:
+bool basicItem::isBlessed() const {
+  return flags_[blessed];
+}
+void basicItem::bless(bool b) {
+  flags_[blessed] = b;
+}
+bool basicItem::isCursed() const {
+  return flags_[cursed];
+}
+void basicItem::curse(bool c) {
+  flags_[cursed] = c;
+}
+bool basicItem::isSexy() const {
+  return flags_[sexy];
+}
+void basicItem::sexUp(bool s) {
+  flags_[sexy] = s;
+}
+bool basicItem::isUnidentified() const {
+  return flags_[unidentified];
+}
+void basicItem::unidentify(bool forget) {
+  flags_[unidentified] = forget;
+}
 
-  virtual bool equip(monster &owner) {
-    return false; // can't equip this item type by default
-  }
-  virtual equipType equippable() const { 
-    return equipType::none; 
-  }
-  // destroy an item in inventory
-  virtual void destroy() {
-    if (holder().contains(*this) )
-      holder().destroyItem(*this);
-    else
-      throw L"Item not in supplied container"; // should not fall through if procondition met
-  }
+// enchantment is some +/- modifier for the item; adds to attack when wielded
+// If positive, may also be the number of charges remaining in a limited-use item
+int basicItem::enchantment() const {
+  return enchantment_;
+}
+void basicItem::enchant(int enchantment) {
+  // TODO: We need to signal to recalculate the bonus if this item is equipped
+  enchantment_ += enchantment;
+}
 
-  // try to use the object
-  virtual bool use () {
-    return false; // no effect by default
-  }
+bool basicItem::equip(monster &owner) {
+  return false; // can't equip this item type by default
+}
+basicItem::equipType basicItem::equippable() const { 
+  return equipType::none; 
+}
+// destroy an item in inventory
+void basicItem::destroy() {
+  if (holder().contains(*this) )
+    holder().destroyItem(*this);
+  else
+    throw L"Item not in supplied container"; // should not fall through if procondition met
+}
 
-  virtual std::set<slotType>slots() {
-    std::set<slotType> empty;
-    return empty;
-  }
+// try to use the object
+bool basicItem::use () {
+  return false; // no effect by default
+}
 
-  virtual long modDamage(long pc, const damage & type) const {
-    return pc;
-  }
+std::set<slotType> basicItem::slots() {
+  std::set<slotType> empty;
+  return empty;
+}
 
-};
+long basicItem::modDamage(long pc, const damage & type) const {
+  return pc;
+}
+
 
 
 /*
@@ -1102,6 +1084,13 @@ public:
   }
 };
 
+class basicTransport : public basicItem, public transport {
+public:
+  basicTransport(const itemType &type, const terrainType &activate, const terrainType &allow) :
+    basicItem(type),
+    transport(activate, allow) {}
+  virtual ~basicTransport() {}
+};
 
 // create an item of the given type. io may be used later by that item, eg for prompts when using.
 // TODO: Randomness for flavour: enchantment, flags, etc.
@@ -1299,6 +1288,9 @@ item& createItem(const itemTypeKey & t) {
     rtn = new instrument(action, r[t]);
     break;
   }
+  case itemTypeKey::bridge:
+    rtn = new basicTransport(r[t], terrainType::WATER, terrainType::GROUND);
+    break;
   default:
     throw t; // unknown type
   }

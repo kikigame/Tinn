@@ -14,6 +14,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <bitset>
 #include <set>
 
 class monster;
@@ -108,6 +109,58 @@ public:
   // this base implementation simply returns the supplied value.
   virtual long modDamage(long pc, const damage & type) const = 0;
 
+};
+
+// class for items with no especial behaviour:
+class basicItem : public item {
+private:
+  enum { blessed, cursed, unidentified, sexy, NUM_FLAGS } flags;
+  std::map<damageType, int> damageTrack_;
+  // what are we *explicitly* proof against?
+  // something may be proof against a material even with no damage track; this may
+  // become useful in later development (eg transferring proofs between objects or
+  // polymorping the type and/or material of the object). Generally the existance
+  // of a damage track should be checked first.
+  std::set<damageType> proof_;
+  std::bitset<NUM_FLAGS> flags_;
+  int enchantment_;
+protected:
+  mutable std::wstring buffer_; // for transient returns.
+  const itemType& type_;
+public:
+  basicItem(const itemType& type);
+  basicItem(const basicItem &other) = delete;
+  virtual ~basicItem();
+  virtual const wchar_t render() const;
+  virtual const wchar_t * const simpleName() const;
+  virtual const wchar_t * const name() const;
+  virtual const wchar_t * const description() const;
+  virtual itemHolder& holder() const;
+  virtual materialType material() const;
+  virtual double weight() const;
+  virtual damageType weaponDamage() const;
+  virtual int damageOfType(const damageType &type) const;
+  virtual std::vector<std::wstring> adjectives() const;
+  virtual bool strike(const damageType &type);
+  virtual bool repair(const damageType &type);
+  virtual bool proof(const damageType &type);
+  virtual bool isProof(const damageType &type) const;
+  virtual bool isBlessed() const;
+  virtual void bless(bool b);
+  virtual bool isCursed() const;
+  virtual void curse(bool c);
+  virtual bool isSexy() const;
+  virtual void sexUp(bool s);
+  virtual bool isUnidentified() const;
+  virtual void unidentify(bool forget);
+  virtual int enchantment() const;
+  virtual void enchant(int enchantment);
+  virtual bool equip(monster &owner);
+  virtual equipType equippable() const;
+  virtual void destroy();
+  virtual bool use ();
+  virtual std::set<slotType> slots();
+  virtual long modDamage(long pc, const damage & type) const;
 };
 
 // create an item of the given type. io may be used later by that item, eg for prompts when using.

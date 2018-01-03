@@ -145,6 +145,12 @@ enum class itemTypeKey {
     lyre, // teleport_away
     pianoforte, // attack_ray_med_bashing
 
+
+  ////
+  // Vehicle (generally unique symbols)
+  ////
+
+    bridge,
 };
 
 
