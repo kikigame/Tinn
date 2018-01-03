@@ -131,9 +131,10 @@ public:
     bool rtn = false;
     for (; distance >= 0; --distance) {
       if (target.abilities().entrapped()) return false;
+      coord cc = tPos;
       tPos = tPos.towards(sPos);
       if (tPos == sPos) return true;
-      if (tLevel.movable(tPos, target, false, false)) {
+      if (tLevel.movable(cc,tPos, target, false, false)) {
 	tLevel.moveTo(target, tPos);
 	rtn = true;
       }
@@ -205,7 +206,7 @@ public:
     for (int x=0; x < level::MAX_WIDTH; ++x)
       for (int y=0; y < level::MAX_HEIGHT; ++y) {
 	coord pos(x,y);
-	if (!level.movable(pos, target, true, true)) continue;
+	if (!level.movable(pos, pos, target, true, true)) continue;
 	int dist = std::abs(tPos.first-pos.first)
 	         + std::abs(tPos.second-pos.second);
 	if (dist > maxDist) {
@@ -255,8 +256,9 @@ public:
     coord pos = tPos;
     if (maxDist == 0) return false;
     for (int i=0; i < maxDist; ++i) {
+      coord cc = tPos;
       pos = tPos.away(sPos);
-      if (!tLevel.movable(pos,target,blessed,blessed))
+      if (!tLevel.movable(cc,pos,target,blessed,blessed))
 	break;
       else tPos = pos;
     }

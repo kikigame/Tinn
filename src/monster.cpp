@@ -434,7 +434,7 @@ public:
 	if (pos.first < 0 || pos.second < 0 ||
 	    pos.first >= level::MAX_WIDTH || pos.second >= level::MAX_HEIGHT)
 	  continue; // off the map; here be monsters...
-	if (level_.movable(pos, mon_, avoidTraps, avoidHiddenTraps)) 
+	if (level_.movable(pos, pos, mon_, avoidTraps, avoidHiddenTraps)) 
 	  rtn.emplace(pos);
       }	
     return rtn;

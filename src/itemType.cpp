@@ -581,6 +581,15 @@ L"This is a wooden bridge over water. It is usually too heavy to carry, but\n"
 "allows either water-based or land animals to occupy this space.",
 L"High outdoor shelf."
 			     ));
+
+    emplace(itemTypeKey::ship,
+	    // 10 metric tonnes for transport; we *can* lift them, but don't want to encourage it...
+	    new itemTypeImpl(98066.500286389, materialType::woody, L'⍽', L"ship", // Nethack has the "quit while already on Sharon's boat" message when polymorphing back into a genocided monster type, but no boats. The Pirate Patch includes a level in which a wrecked ship is built with normal walls & floor.
+L"A galleon is a wooden tall-ship, complete with rudder, anchors, oar, masts,\n"
+"keel, hull and sails. It is usually to heavy to carry, but will convey a\n"
+"normally land-based creature on the open seas.",
+L"Scaled-up curio."
+			     ));
 }
 
 void itemTypeRepo::emplace(itemTypeKey k, itemTypeImpl* impl) {

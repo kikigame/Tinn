@@ -150,7 +150,8 @@ enum class itemTypeKey {
   // Vehicle (generally unique symbols)
   ////
 
-    bridge,
+    bridge, // immobile tranport, allows ground creatures on water
+    ship, // mobile transport, allows ground creatures on water. L'⍽' (shouldered open box), which I think looks better than the more usual L'␣' (&blank;/open box)
 };
 
 

@@ -1086,9 +1086,12 @@ public:
 
 class basicTransport : public basicItem, public transport {
 public:
-  basicTransport(const itemType &type, const terrainType &activate, const terrainType &allow) :
+  basicTransport(const itemType &type, 
+		 const terrainType &activate, 
+		 const terrainType &allow, 
+		 const movementType &movement) :
     basicItem(type),
-    transport(activate, allow) {}
+    transport(activate, allow, movement) {}
   virtual ~basicTransport() {}
 };
 
@@ -1289,7 +1292,12 @@ item& createItem(const itemTypeKey & t) {
     break;
   }
   case itemTypeKey::bridge:
-    rtn = new basicTransport(r[t], terrainType::WATER, terrainType::GROUND);
+    rtn = new basicTransport(r[t], terrainType::WATER, terrainType::GROUND, 
+			     movementType({speed::slow3, goTo::none, goBy::avoid, 0}));
+    break;
+  case itemTypeKey::ship:
+    rtn = new basicTransport(r[t], terrainType::WATER, terrainType::GROUND, 
+			     movementType({speed::slow3, goTo::player, goBy::avoid, 0}));
     break;
   default:
     throw t; // unknown type
@@ -1363,6 +1371,9 @@ item &createRndItem(const int depth, bool allowLiquids) {
     if (type->first == itemTypeKey::iou) continue;
     // don't autogenerate napsacks of consumption; they're for Dungeoneers:
     if (type->first == itemTypeKey::napsack_of_consumption) continue;
+    // don't autogenerate water transport:
+    if (type->first == itemTypeKey::bridge) continue;
+    if (type->first == itemTypeKey::ship) continue;
     // general case: call createItem():
     return createItem(type->first); // already enrolled
   }

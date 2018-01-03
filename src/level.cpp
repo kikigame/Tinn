@@ -291,6 +291,8 @@ public:
       addShrine();
     }
 
+    pub_.holder(coord(1,4)).addItem(createItem(itemTypeKey::ship));
+
     // monsters. Let's start with 5 kelpie and 2 sirens, then half a dozen merfolk:
     for (int i=0; i < 5; ++i)
       addMonster(monsterTypeKey::kelpie);
@@ -430,6 +432,10 @@ public:
     return *(terrain_.at(pos));
   }
 
+  terrain &terrainAt(const coord & c) const {
+    return *terrain_.at(c);
+  }
+
   coord findTerrain(const terrainType type) const {
     using namespace std;
     for (coord c : coordRectIterator(0,0,level::MAX_WIDTH-1, level::MAX_HEIGHT - 1))
@@ -487,9 +493,10 @@ public:
   // NB: Moving of non-player monsters doesn't use cardinals
   void north(monster &m) {
     coord c = posOf(m);
+    coord cc=c;
     if (c.second == 0) return; // can't move above top of map
     c.second--;
-    if (!movable(c, m, true, false)) return; // can't move into terrain
+    if (!movable(cc,c, m, true, false)) return; // can't move into terrain
     auto mn = monsters_.find(c);
     while (mn != monsters_.end()) {
       attack(m, *(mn->second)); // can't move into monster
@@ -500,9 +507,10 @@ public:
   }
   void south(monster &m) {
     coord c = posOf(m);
+    coord cc=c;
     c.second++;
     if (c.second == level::MAX_HEIGHT) return; // can't move below bottom of map
-    if (!movable(c, m, true, false)) return; // can't move into terrain
+    if (!movable(cc,c, m, true, false)) return; // can't move into terrain
     auto mn = monsters_.find(c);
     if (mn != monsters_.end()) {
       attack(m, *(mn->second)); // can't move into monster
@@ -512,9 +520,10 @@ public:
   }
   void east(monster &m) {
     coord c = posOf(m);
+    coord cc=c;
     c.first++;
     if (c.first == level::MAX_WIDTH) return; // can't move after right of map
-    if (!movable(c, m, true, false)) return; // can't move into terrain
+    if (!movable(cc,c, m, true, false)) return; // can't move into terrain
     auto mn = monsters_.find(c);
     if (mn != monsters_.end()) {
       attack(m, *(mn->second)); // can't move into monster
@@ -524,9 +533,10 @@ public:
   }
   void west(monster &m) {
     coord c = posOf(m);
+    coord cc=c;
     if (c.first == 0) return; // can't move before left of map
     c.first--;
-    if (!movable(c, m, true, false)) return; // can't move into terrain
+    if (!movable(cc,c, m, true, false)) return; // can't move into terrain
     auto mn = monsters_.find(c);
     if (mn != monsters_.end()) {
       attack(m, *(mn->second)); // can't move into monster
@@ -628,8 +638,9 @@ public:
       break;
     }
     do {
+      coord cc=pos;
       pos = pos.towards(towards);
-      if (!from.curLevel().movable(pos, from, false, false))
+      if (!from.curLevel().movable(cc,pos, from, false, false))
 	return optionalRef<monster>();
       auto mAt = monstersAt(pos);
       if (mAt.first != mAt.second)
@@ -725,20 +736,43 @@ public:
   }
 
   
-  bool movable(const coord &pos, const monster &m, bool avoidTraps, bool avoidHiddenTraps) {
+  bool movable(const coord &oldPos, const coord &pos, const monster &m, bool avoidTraps, bool avoidHiddenTraps) {
     auto t = terrain_[pos];
-    auto &h = holder(pos);
-    if (vehicleMovable(h, m, *t)) return true;
+    auto v = vehicleMovable(pos, m, *t); // moving on to a vehicle
+    if (!v) v = vehicleTransportable(oldPos, *t, m);  // moving by vehicle
+    if (v) {
+      dynamic_cast<transport&>(v.value()).onMonsterMove(oldPos, holder(pos), pos, *t);
+      return true;
+    }
     if (!t->movable(m)) return false;
     if (avoidTraps && t->entraps(m, false)) return false;
     if (avoidHiddenTraps && t->entraps(m, true)) return false;
+    vehicleLeaving(oldPos, pos, *t);
     return true;
   }
 private:
-  bool vehicleMovable(itemHolder &h, const monster &m, const terrain &t) const {
+  // determine any vehicles we're moving on to
+  optionalRef<item> vehicleMovable(const coord &pos, const monster &m, const terrain &t) {
+    auto &h = holder(pos);
     return h.firstItem([&m, &t](item &i) { // returns true if finds any item
 	auto pV = dynamic_cast<transport *>(&i);
 	return pV && pV->terrainFor(t).movable(m); // returns item if movable
+      });
+  }
+  // determine any vehicles that are moving us
+  optionalRef<item> vehicleTransportable(const coord &oldPos, const terrain &t, const monster &m) {
+    auto &h = holder(oldPos);
+    return h.firstItem([&m, &t](item &i) { // returns true if finds any item
+	auto pV = dynamic_cast<transport *>(&i);
+	return pV && pV->moveOnto(t) && pV->terrainFor(t).movable(m);
+      });
+  }
+  // determine any vehicles that we're stepping off of
+  void vehicleLeaving(const coord &oldPos, const coord &pos, const terrain &t) {
+    auto &h = holder(oldPos);
+    h.forEachItem([&oldPos, &pos, &t, this](item &i, std::wstring) { // returns true if finds any item
+	auto pV = dynamic_cast<transport *>(&i);
+	if(pV) pV->onMonsterMove(oldPos, holder(pos), pos, t);
       });
   }
 public:
@@ -746,12 +780,13 @@ public:
   // move a monster by direction, with optional safety
   void move(monster &m, const std::pair<char,char> dir, const bool avoidTraps) {
     coord pos = coord(posOf(m));
+    coord cc=pos;
     pos.first += dir.first; // -1, 0, or +1
     pos.second += dir.second; // -1, 0, or +1
     
     sanitiseCoords(pos);
 
-    if (!movable(pos, m, true, false) || // monster can't pass this way
+    if (!movable(cc,pos, m, true, false) || // monster can't pass this way
 	monsters_.find(pos) != monsters_.end()) { // monsters can't *generally* move into each other.
       // can't move this way.
       return;
@@ -1020,7 +1055,7 @@ void levelGen::addMonster(std::shared_ptr<monster> mon, const coord &m, const st
     for (int x = coords.first.first; x < coords.second.first; ++x) {
       coord c = coord(x,y);
       if (c == m) continue;
-      if (!level_->terrain_[c]->movable(mon)) continue; // roaming monster can't go on this terrain
+      if (!level_->movable(c,c,*mon, false,true)) continue; // roaming monster can't go on this terrain
       addMonster(mon, c);
 
       return;
@@ -1136,6 +1171,10 @@ drawIter level::drawEnd() const {
   return pImpl_->drawEnd();
 }
 
+terrain &level::terrainAt(const coord & c) const {
+  return pImpl_->terrainAt(c);
+}
+
 coord level::findTerrain(const terrainType type) const {
   return pImpl_->findTerrain(type);
 }
@@ -1182,8 +1221,8 @@ void level::moveTo(monster &monster, coord targetPos) {
 void level:: move(monster &m, const std::pair<char,char> dir, const bool avoidTraps) {
   pImpl_->move(m, dir, avoidTraps);
 }
-bool level::movable(const coord &pos, const monster &m, bool avoidTraps, bool avoidHiddenTraps) const {
-  return pImpl_->movable(pos, m, avoidTraps, avoidHiddenTraps);
+bool level::movable(const coord &oldPos, const coord &pos, const monster &m, bool avoidTraps, bool avoidHiddenTraps) const {
+  return pImpl_->movable(oldPos, pos, m, avoidTraps, avoidHiddenTraps);
 }
 void level::addMonster(std::shared_ptr<monster> monster, coord targetPos) {
   pImpl_->addMonster(monster, targetPos);

@@ -16,7 +16,7 @@ enum class speed {
 enum class goTo {
   none, // does not move; speed is ignored for movement
   wander, // move in a random direction
-  player, // seek out the player
+  player, // seek out the player. For transport, this means it's controlled by the monster using it.
   up, // find an up ramp and sit on it
   down, // find a down ramp and sit on it
 };

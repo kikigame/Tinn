@@ -53,6 +53,11 @@ public:
   drawIter drawBegin() const;
   drawIter drawEnd() const;
   /*
+   * Return the terrain at the given coordinates.
+   * NB: You probably don't want to use this unless you're thinking carefully about transport.
+   */
+  terrain &terrainAt(const coord & c) const;
+  /*
    * Find any coordinate (probably deterministicly)
    * with the given terrain type. not a "posOf" as it may not be unique.
    */
@@ -132,7 +137,8 @@ public:
   dungeon & dung();
 
   // determine if a given position is passible or not to the given monster
-  bool movable(const coord &pos, const monster &m, bool avoidTraps, bool avoidHiddenTraps) const;
+  // oldPos - needed in case a transport at the old pos can be used. Pass "pos" for teleporting or creating monsters.
+  bool movable(const coord &oldPos, const coord &pos, const monster &m, bool avoidTraps, bool avoidHiddenTraps) const;
 
   // prevent copying
   level operator =(level &other) = delete;

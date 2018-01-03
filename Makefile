@@ -60,13 +60,13 @@ src/encyclopedia.o : src/encyclopedia.cpp src/action.hpp src/bonus.hpp src/chara
 src/itemholder.o : src/itemholder.cpp src/action.hpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/encyclopedia.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/level.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/movement.hpp src/optionalRef.hpp src/output.hpp src/random.hpp src/renderable.hpp src/shop.hpp src/slots.hpp src/time.hpp src/zone.hpp 
 	$(CXX) src/itemholder.cpp -c -Wall -g -std=c++11 -o src/itemholder.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/items.o : src/items.cpp src/action.hpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/dungeon.hpp src/encyclopedia.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/level.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/movement.hpp src/optionalRef.hpp src/output.hpp src/player.hpp src/random.hpp src/religion.hpp src/renderable.hpp src/shop.hpp src/slots.hpp src/time.hpp src/zone.hpp 
+src/items.o : src/items.cpp src/action.hpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/dungeon.hpp src/encyclopedia.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/level.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/movement.hpp src/optionalRef.hpp src/output.hpp src/player.hpp src/random.hpp src/religion.hpp src/renderable.hpp src/shop.hpp src/slots.hpp src/terrain.hpp src/time.hpp src/transport.hpp src/zone.hpp 
 	$(CXX) src/items.cpp -c -Wall -g -std=c++11 -o src/items.o -finput-charset=utf8 -fexec-charset=utf8
 
 src/itemType.o : src/itemType.cpp src/damage.hpp src/itemTypes.hpp src/materialType.hpp src/random.hpp src/renderable.hpp 
 	$(CXX) src/itemType.cpp -c -Wall -g -std=c++11 -o src/itemType.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/level.o : src/level.cpp src/action.hpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/dungeon.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/labyrinth.hpp src/level.hpp src/levelGen.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/movement.hpp src/optionalRef.hpp src/output.hpp src/player.hpp src/random.hpp src/religion.hpp src/renderable.hpp src/role.hpp src/shrine.hpp src/slots.hpp src/terrain.hpp src/time.hpp src/zone.hpp 
+src/level.o : src/level.cpp src/action.hpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/dungeon.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/labyrinth.hpp src/level.hpp src/levelGen.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/movement.hpp src/optionalRef.hpp src/output.hpp src/player.hpp src/random.hpp src/religion.hpp src/renderable.hpp src/role.hpp src/shrine.hpp src/slots.hpp src/terrain.hpp src/time.hpp src/transport.hpp src/zone.hpp 
 	$(CXX) src/level.cpp -c -Wall -g -std=c++11 -o src/level.o -finput-charset=utf8 -fexec-charset=utf8
 
 src/main.o : src/main.cpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/dungeon.hpp src/itemTypes.hpp src/itemholder.hpp src/iterable.hpp src/level.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/movement.hpp src/optionalRef.hpp src/output.hpp src/player.hpp src/religion.hpp src/renderable.hpp src/role.hpp src/slots.hpp src/time.hpp src/xo.hpp src/zone.hpp 
@@ -120,6 +120,6 @@ src/terrain.o : src/terrain.cpp src/bonus.hpp src/characteristic.hpp src/coord.h
 src/time.o : src/time.cpp src/time.hpp 
 	$(CXX) src/time.cpp -c -Wall -g -std=c++11 -o src/time.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/transport.o : src/transport.cpp src/action.hpp src/bonus.hpp src/damage.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/materialType.hpp src/optionalRef.hpp src/renderable.hpp src/slots.hpp src/terrain.hpp src/transport.hpp 
+src/transport.o : src/transport.cpp src/action.hpp src/bonus.hpp src/coord.hpp src/damage.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/materialType.hpp src/movement.hpp src/optionalRef.hpp src/renderable.hpp src/slots.hpp src/terrain.hpp src/transport.hpp 
 	$(CXX) src/transport.cpp -c -Wall -g -std=c++11 -o src/transport.o -finput-charset=utf8 -fexec-charset=utf8
 
