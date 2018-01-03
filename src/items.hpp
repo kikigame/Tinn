@@ -89,9 +89,6 @@ public:
   // try to use the object
   virtual bool use() = 0;
 
-  // try to use the object with another (eg put object into container; put candles on candlestick)
-  //virtual bool use(std::shared_ptr<item> other) = 0;
-
   // try to equip an item. Precondition: item must be available for monster to equip.
   // returns true if successful, false otherwise (ie no suitable slots)
   virtual bool equip(monster &owner) = 0;

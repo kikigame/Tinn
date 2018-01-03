@@ -710,12 +710,6 @@ public:
     ::invokeGuide(isBlessed());
     return true;
   }
-  /*
-  virtual bool use(std::shared_ptr<item> other) {
-    if (isCursed()) return false; // seems a bit harsh, but I don't have a better idea yet
-    ::invokeGuide(ios(), isBlessed(), other);
-    return true;
-    }*/
 };
 
 class holyBook : public readableItem {
