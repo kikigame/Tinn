@@ -6,8 +6,8 @@
 transport::transport(terrainType activate, 
 		     terrainType allow,
 		     const movementType &move) :
-  terrainToActivate_(*tFactory.get(activate)),
-  terrainToAllow_(*tFactory.get(allow)),
+  terrainToActivate_(tFactory.get(activate)),
+  terrainToAllow_(tFactory.get(allow)),
   movement_(move),
   active_(false) {}
 

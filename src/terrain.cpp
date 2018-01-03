@@ -85,10 +85,17 @@ bool terrain::entraps(const monster &m, bool includeHidden) const {
   }
 }
 
+bool terrain::operator ==(const terrain &other) const {
+  return type_ == other.type();
+}
+bool terrain::operator !=(const terrain &other) const {
+  return !(*this == other);
+}
+
 
 class terrainFactoryImpl {
 private:
-  ::std::map<terrainType, ::std::shared_ptr<terrain>> store_;
+  ::std::map<terrainType, ::std::unique_ptr<terrain>> store_;
 public:
   terrainFactoryImpl() {
     // TODO: Yes I know altars and idols aren't the same thing; I want to keep it vague until I've figured out what, if anything, they do.
@@ -106,12 +113,12 @@ public:
     // Nethack uses '~' rather than U+2240 (wreath product).
     store(new terrain(L'≀', L"Fire", L"Fire; most creatures avoid this due to the risk of burning.", terrainType::FIRE));
   }
-  ::std::shared_ptr<terrain> get(terrainType type) const {
-    return store_.at(type);
+  const terrain &get(terrainType type) const {
+    return *(store_.at(type).get());
   }
 private:
   void store(terrain * t) {
-    store_.insert(::std::pair<terrainType, ::std::shared_ptr<terrain>>(t->type(), ::std::shared_ptr<terrain>(t)));
+    store_[t->type()] = std::unique_ptr<terrain>(t);
   }
 };
 
@@ -122,7 +129,6 @@ terrainFactory::terrainFactory() :
 terrainFactory::~terrainFactory() {
 }
 
-std::shared_ptr<terrain> terrainFactory::get(terrainType type) const {
+const terrain &terrainFactory::get(terrainType type) const {
   return pImpl_->get(type);
 }
-

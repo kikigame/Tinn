@@ -1,6 +1,6 @@
 /* License and copyright go here*/
 
-// Places where items are
+// Holds a refernce to an object. May be empty.
 
 #ifndef OPTIONAL_REF__
 #define OPTIONAL_REF__

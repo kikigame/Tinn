@@ -13,6 +13,7 @@
 #include "religion.hpp"
 #include "role.hpp"
 #include "transport.hpp"
+#include "ref.hpp"
 
 #include <algorithm> // max/min
 #include <random>
@@ -367,6 +368,15 @@ std::wstring nth(const int i) {
   return rtn.str();
 }
 
+class terrainRef : public ref<const terrain> {
+public:
+  terrainRef() :
+    ref<const terrain>(tFactory.get(terrainType::GROUND)) {}
+  terrainRef(const terrain &other) :
+    ref<const terrain>(other) {}
+  terrainType type() const { return value().type(); }
+};
+
 // implementation of level class 
 class levelImpl : public renderByCoord {
 public:
@@ -379,7 +389,7 @@ public:
   // map of coordinate to all monsters at that location
   ::std::multimap<coord, ::std::shared_ptr<monster> > monsters_;
   // terrain type by coordinate
-  ::std::map<coord, ::std::shared_ptr<terrain> > terrain_;
+  ::std::map<coord, terrainRef> terrain_;
   // what special zones are in this level?
   std::vector<std::shared_ptr<zoneArea<item> > > itemZones_;
   std::vector<std::shared_ptr<zoneArea<monster> > > monsterZones_;
@@ -429,23 +439,22 @@ public:
       }
     }
     // show terrain if nothing else:
-    return *(terrain_.at(pos));
+    return terrain_.at(pos).value();
   }
 
-  terrain &terrainAt(const coord & c) const {
-    return *terrain_.at(c);
+  const terrain &terrainAt(const coord & c) const {
+    return terrain_.at(c).value();
   }
 
   coord findTerrain(const terrainType type) const {
     using namespace std;
     for (coord c : coordRectIterator(0,0,level::MAX_WIDTH-1, level::MAX_HEIGHT - 1))
-      if (terrain_.at(c)->type() == type) 
+      if (terrain_.at(c).type() == type) 
 	return c;
     throw wstring(L"Terrain type ") + to_string(type) + wstring(L" not found on level ") + to_wstring(depth_);
   }
 
   coord findTerrain(const terrainType t, const int width, const int height) const {
-    auto rock = tFactory.get(t);
     bool found = false;
     int xPos, yPos;
     for (int triesLeft=100; triesLeft>0 && !found; --triesLeft) {
@@ -457,7 +466,7 @@ public:
 	  
       found = true;
       for (coord c : coordRectIterator(xPos, yPos, width + xPos-1, height + yPos - 1))
-	if (terrain_.at(c) != rock) {
+	if (terrain_.at(c).type() != t) {
 	  found = false;
 	  break;
 	}
@@ -550,7 +559,7 @@ public:
       ioFactory::instance().message(L"Leaving the dungeon isn't implemented yet.");
       return;
     }
-    switch (terrain_[c]->type()) {
+    switch (terrain_.at(c).type()) {
     case terrainType::UP:
       removeMonster(m);
       if (m.isPlayer())
@@ -567,7 +576,7 @@ public:
       ioFactory::instance().message(L"You are already at the bottom of the game.");
       return;
     }
-    switch (terrain_[c]->type()) {
+    switch (terrain_.at(c).type()) {
     case terrainType::DOWN:
       removeMonster(m);
       if (m.isPlayer())
@@ -616,10 +625,10 @@ public:
       return optionalRef<monster>();
     }
     case '>': {// down: find any burrowing monsters on the current square
-      auto rock = tFactory.get(terrainType::ROCK);
+      auto &rock = tFactory.get(terrainType::ROCK);
       auto mAt = monstersAt(pos);
       for (auto i = mAt.first ; i != mAt.second; ++i) {
-	if (i->second->abilities().move(*rock))
+	if (i->second->abilities().move(rock))
 	  return optionalRef<monster>(*(i->second));
       }
       return optionalRef<monster>();
@@ -692,11 +701,11 @@ public:
       }
       ++i;
     }
-    if(m.onMove(dest, *(terrain_[dest]))) {
+    if(m.onMove(dest, terrain_.at(dest).value())) {
       monsters_.erase(i);
       addMonster(pM, dest);
       // reveal any pits:
-      if (!m.abilities().fly() && terrain_[dest]->type() == terrainType::PIT_HIDDEN)
+      if (!m.abilities().fly() && terrain_.at(dest).type() == terrainType::PIT_HIDDEN)
 	terrain_[dest] = tFactory.get(terrainType::PIT);
       if (m.isPlayer())
 	describePlayerLoc(m, dest);
@@ -737,17 +746,17 @@ public:
 
   
   bool movable(const coord &oldPos, const coord &pos, const monster &m, bool avoidTraps, bool avoidHiddenTraps) {
-    auto t = terrain_[pos];
-    auto v = vehicleMovable(pos, m, *t); // moving on to a vehicle
-    if (!v) v = vehicleTransportable(oldPos, *t, m);  // moving by vehicle
+    auto &t = terrainAt(pos);
+    auto v = vehicleMovable(pos, m, t); // moving on to a vehicle
+    if (!v) v = vehicleTransportable(oldPos, t, m);  // moving by vehicle
     if (v) {
-      dynamic_cast<transport&>(v.value()).onMonsterMove(oldPos, holder(pos), pos, *t);
+      dynamic_cast<transport&>(v.value()).onMonsterMove(oldPos, holder(pos), pos, t);
       return true;
     }
-    if (!t->movable(m)) return false;
-    if (avoidTraps && t->entraps(m, false)) return false;
-    if (avoidHiddenTraps && t->entraps(m, true)) return false;
-    vehicleLeaving(oldPos, pos, *t);
+    if (!t.movable(m)) return false;
+    if (avoidTraps && t.entraps(m, false)) return false;
+    if (avoidHiddenTraps && t.entraps(m, true)) return false;
+    vehicleLeaving(oldPos, pos, t);
     return true;
   }
 private:
@@ -791,7 +800,7 @@ public:
       // can't move this way.
       return;
     }
-    if (!avoidTraps || !terrain_[pos]->entraps(m, false)) // avoid traps if we should & can see them
+    if (!avoidTraps || !terrainAt(pos).entraps(m, false)) // avoid traps if we should & can see them
       moveTo(m, pos); // moveTo handles entrapped()
     // TODO: monster items and inventory- collect the new stuff?
   }
@@ -830,7 +839,7 @@ public:
       coord i;
       for (i.first = std::max(0, c.first - 2); i.first < maxX; ++i.first)
 	for (i.second = std::max(0, c.second - 2); i.second < maxY; ++i.second) {
-	  if (! terrain_[i]->movable(mon)) continue;
+	  if (! movable(i,i,*mon, true, true)) continue;
 	  auto mni = monsters_.equal_range(i);
 	  if (mni.first == mni.second) {
 	    // free nearby passible space
@@ -919,8 +928,7 @@ public:
     COORDLOOPDONE:
       if (found) {
 	coord mid(c.first+1, c.second+1);
-	auto ground = tFactory.get(terrainType::GROUND);
-	terrain_.at(mid) = ground;
+	terrain_.at(mid) = tFactory.get(terrainType::GROUND);
 	return mid;
       }
     }
@@ -937,7 +945,7 @@ std::pair<coord,coord> levelGen::addRoom() {
   std::uniform_int_distribution<int> yPosD(1,level::MAX_HEIGHT - height - 2);
   int xPos = xPosD(generator), yPos = yPosD(generator);
 
-  auto ground = tFactory.get(terrainType::GROUND);
+  auto &ground = tFactory.get(terrainType::GROUND);
   for (int y=0; y < height; ++y) {
     for (int x=0; x < width; ++x) {
       coord c(x + xPos,y + yPos);
@@ -980,7 +988,7 @@ void levelGen::addShrine(const coord &topLeft, const coord &btmRight, optionalRe
     std::make_shared<shrine>(topLeft, btmRight);
   int xPos = topLeft.first, yPos = topLeft.second;
 
-  auto ground = tFactory.get(terrainType::GROUND);
+  auto &ground = tFactory.get(terrainType::GROUND);
   for (int y=0; y < height-1; ++y) {
     for (int x=0; x < width-1; ++x) {
       coord c(x + xPos,y + yPos);
@@ -1010,17 +1018,17 @@ void levelGen::addMonster(std::shared_ptr<monster> m, const coord &c) {
 
   // in the case of Kelpies, nice to give them some water:
   if (m->type().type() == monsterTypeKey::kelpie) {
-    auto water = tFactory.get(terrainType::WATER);
+    auto &water = tFactory.get(terrainType::WATER);
     // look for any other non-water monsters on same square:
     bool found = false;
     auto ms = level_->monstersAt(c);
     for (auto m = ms.first; m != ms.second; ++m)
-      if (!water->movable(m->second)) {
+      if (!water.movable(m->second)) {
 	found = true; 
 	break;
       }
     // otherwise make it watery
-    if (!found && level_->terrain_[c]->type() == terrainType::GROUND)
+    if (!found && level_->terrainAt(c).type() == terrainType::GROUND)
       level_->terrain_[c] = tFactory.get(terrainType::WATER);
   }
 }
@@ -1078,7 +1086,7 @@ void levelGen::addTraps(const std::pair<coord,coord> &coords) {
       std::uniform_int_distribution<int> dx(coords.first.first+1, coords.second.first - 2);
       std::uniform_int_distribution<int> dy(coords.first.second+1, coords.second.second - 2);
       const coord c(dx(generator), dy(generator)); // coords=(0,0)-(2,1) but c=gibberish
-      if (level_->terrain_.at(c)->type() == terrainType::GROUND)
+      if (level_->terrain_.at(c).type() == terrainType::GROUND)
 	level_->terrain_.at(c) = tFactory.get(terrainType::PIT_HIDDEN);
     }
   }
@@ -1096,8 +1104,9 @@ void levelGen::addItems(const std::pair<coord,coord> &coords) {
 }
 
 void levelGen::changeTerrain(coord c, terrainType from, terrainType to) {
-  if (level_->terrain_[c] == tFactory.get(from))
-    level_->terrain_[c] = tFactory.get(to);
+  auto pT = level_->terrain_.find(c);
+  if (pT->second == tFactory.get(from))
+    pT->second = tFactory.get(to);
 }
 
 coord levelGen::addCorridor(const coord from, const coord to) {
@@ -1133,8 +1142,8 @@ void levelGen::place(const iter & begin,
  		    const iter & end,
 		    terrainType type) {
   for (auto i=begin; i != end; ++i) {
-    if (level_->terrain_[mid(*i)]->type() == terrainType::GROUND) {
-      level_->terrain_[mid(*i)]= tFactory.get(type);
+    if (level_->terrainAt(mid(*i)).type() == terrainType::GROUND) {
+      level_->terrain_[mid(*i)] = tFactory.get(type);
       return;
     }
   }
@@ -1145,11 +1154,11 @@ void levelGen::place(const iter & begin,
 }
 
 void levelGen::place(const coord &c, terrainType type) {
-  level_->terrain_[c]= tFactory.get(type);  
+  level_->terrain_[c] = tFactory.get(type);  
 }
 
 terrainType levelGen::at(const coord &c) const {
-  return level_->terrain_.at(c)->type();
+  return level_->terrain_.at(c).type();
 }
 
 
@@ -1171,7 +1180,7 @@ drawIter level::drawEnd() const {
   return pImpl_->drawEnd();
 }
 
-terrain &level::terrainAt(const coord & c) const {
+const terrain &level::terrainAt(const coord & c) const {
   return pImpl_->terrainAt(c);
 }
 

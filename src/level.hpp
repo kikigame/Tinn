@@ -56,7 +56,7 @@ public:
    * Return the terrain at the given coordinates.
    * NB: You probably don't want to use this unless you're thinking carefully about transport.
    */
-  terrain &terrainAt(const coord & c) const;
+  const terrain &terrainAt(const coord & c) const;
   /*
    * Find any coordinate (probably deterministicly)
    * with the given terrain type. not a "posOf" as it may not be unique.

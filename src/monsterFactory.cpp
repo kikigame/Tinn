@@ -271,7 +271,7 @@ public:
     intrinsics().see(true);
     intrinsics().hear(true);
     intrinsics().swim(true);
-    intrinsics().move(*(tFactory.get(terrainType::WATER).get()), true);
+    intrinsics().move(tFactory.get(terrainType::WATER), true);
   }
   virtual ~kelpie() {}
   virtual void shapeShift() {

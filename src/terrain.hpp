@@ -36,6 +36,8 @@ private:
   const terrainType type_;
   terrain(const wchar_t render, const wchar_t* const name,const wchar_t * const description, const terrainType type);
 public:
+  terrain(const terrain &other) = delete;
+  terrain(terrain &&other) = delete;
   virtual ~terrain();
   virtual const wchar_t render() const;
   virtual const wchar_t * const name() const;
@@ -50,6 +52,9 @@ public:
 
   // does the monster not want to move onte a square of this terrain type?
   bool entraps(const monster &m, bool includeHidden) const;
+
+  bool operator ==(const terrain &other) const;
+  bool operator !=(const terrain &other) const;
 };
 
 class terrainFactoryImpl;
@@ -59,7 +64,7 @@ private:
 public:
   terrainFactory();
   ~terrainFactory();
-  std::shared_ptr<terrain> get(terrainType type) const;
+  const terrain &get(terrainType type) const;
 };
 
 static terrainFactory tFactory;
