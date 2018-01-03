@@ -117,7 +117,7 @@ const attackResult monster::attack(monster &target) {
   if (weap == equipment_.end()) weap = equipment_.find(slotBy(slotType::secondary_weapon));
   optionalRef<item> weapon;
   if (weap != equipment_.end()) weapon = weap->second;
-  damageType type = (weapon) ? weapon.value().weaponDamage() : unarmedDamageType();
+  damageType type = (weapon) ? weapon.value().weaponDamage(true) : unarmedDamageType();
   auto dt = damageRepo::instance()[type];
 
   // Now to see how much damage we did...

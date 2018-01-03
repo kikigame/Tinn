@@ -113,6 +113,56 @@ L"A type XIIa sword in the Oakeshott classification. Unlike many swords, this\n"
 "opponent. Its massive weight requires both hands to wield.",
 L"Heavy long bit of metal with a big handle."
 			     ));
+    emplace(itemTypeKey::flamethrower,
+	    // https://en.wikipedia.org/wiki/Flamethrower,_Portable,_No_2 weighed 64lb
+	    new itemTypeImpl(284.686184208058, materialType::metallic, L'!', L"Flamethrower",
+L"A flamethrower projects a deadly jet of flame a short distance. It needs\n"
+"refuelling or enchanting before use. This one is a Portable, No 2; it uses a\n"
+"coordite igniter to ignite the fuel, and pressurised nitrogen gas to propel\n"
+"it. As the nitrogen tank seems empty, the range is more limied.\n",
+L"Donut with injection nozzle."
+			     ));
+    emplace(itemTypeKey::nitrogen_tank,
+	    // http://www.answers.com/Q/Weight_of_a_tank_of_liquid_nitrogen says 34.5lb for 10l (full)
+	    new itemTypeImpl(153.463646174656, materialType::metallic, L'!', L"Liquid Nitrogen Tank",
+L"N₂(l) is a cheap supercooled liquid. It is mostly used for scientific\n"
+"experiments, such as for cooling superconductive materials. It reaches a low\n"
+"temperature of around 63K, which is sufficient to do significant damage.\n"
+"This item can be recharged from an approved chemical supplier, or by enchantment.\n",
+L"Some kind of fire extinguisher."
+			     ));
+    emplace(itemTypeKey::bubble_gun,
+		 // guessing at weight, ~200g
+new itemTypeImpl(1.96, materialType::glassy, L'!', L"Bubble gun", // ref: Earthworm Jim (game)
+L"Not the most effective of weapons, this bubble gun fires a constant supply\n"
+"bubbles at one's enemies. This one has been souped up to do some damage to\n"
+"most targets.",
+L"Vape."
+			     ));
+    emplace(itemTypeKey::sonic_cannon,
+		 // guessing at weight, ~1200g. Ref: Dr Who (Ice Warriors' weapon)
+new itemTypeImpl(11.76, materialType::metallic, L'!', L"Sonic Cannon",
+L"Designed as a non-leathel weapon to disable one's enemies with sound waves,"
+"this device proved to work far too well.  It's not light, and needs recharging,\n"
+"or at least enchanting, to be useful.",
+L"Some sort of dry bubble gun. Probably a toy."
+			     ));
+    emplace(itemTypeKey::maser,
+		 // guessing at weight, ~1200g.
+new itemTypeImpl(11.76, materialType::metallic, L'!', L"Maser",
+L"A maser gun works by amplifying the ambient radiation into a consistent\n"
+"beam of high power. It makes a formidable weapon that can age and even\n"
+"disintegrate your opponents and their armour.",
+L"Some sort of very dry bubble gun. Probably a toy."
+			     ));
+    emplace(itemTypeKey::taser,
+		 // guessing at weight, ~1200g.
+new itemTypeImpl(11.76, materialType::metallic, L'!', L"Taser",
+L"A Conducted Electrical Weapon (CEW) fires a short-range electric charge.\n"
+"This is intended as a non-leathal device, but remember to stop as soon as\n"
+"you have disabled your opponent.",
+L"Portable cigarette lighter."
+			     ));
     emplace(itemTypeKey::rock,
 	    new itemTypeImpl(8, materialType::stony, L'¬', L"rock",
 L"Not the fundamental building blocks, but the building blocks of the\n"

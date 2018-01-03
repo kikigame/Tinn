@@ -53,7 +53,8 @@ public:
   // hom much does it weigh?
   virtual double weight() const = 0;
   // if wielded, what damage does this weapon do?
-  virtual damageType weaponDamage() const = 0;
+  // if use == true, consume any weapon charges or any other on-hit actions (called on successful hit)
+  virtual damageType weaponDamage(bool use) = 0;
   // how much damage has this item taken?
   virtual int damageOfType(const damageType &type) const = 0; 
   // list of all adjectives applicable to type
@@ -135,7 +136,8 @@ public:
   virtual itemHolder& holder() const;
   virtual materialType material() const;
   virtual double weight() const;
-  virtual damageType weaponDamage() const;
+  // use - if true, causes charges to be consumed if needed.
+  virtual damageType weaponDamage(bool use);
   virtual int damageOfType(const damageType &type) const;
   virtual std::vector<std::wstring> adjectives() const;
   virtual bool strike(const damageType &type);

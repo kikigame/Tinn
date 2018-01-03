@@ -26,7 +26,7 @@ protected:
   bool hasCharge() const {
     return shared_from_this()->enchantment() > 0;
   }
-  void useCharge() {
+  virtual void useCharge() {
     shared_from_this()->enchant(-1);
   }
 public:
@@ -152,7 +152,7 @@ double basicItem::weight() const {
   // basic: just return the base weight
   return type_.baseWeight();
 }
-damageType basicItem::weaponDamage() const {
+damageType basicItem::weaponDamage(bool) {
   return damageType::bashing;
 }
 int basicItem::damageOfType(const damageType &type) const {
@@ -399,11 +399,40 @@ public:
     basicEquip(type, slotType::primary_weapon, slotType::secondary_weapon),
     damageType_(damage) {}
   virtual ~basicWeapon() {}
-  virtual damageType weaponDamage() const {
+  virtual damageType weaponDamage(bool) {
     return damageType_;
   }
   virtual equipType equippable() const {
     return equipType::wielded;
+  }
+};
+
+template <class B>
+class chargeWeapon : public B, public burnChargeMixin {
+private:
+  damageType damageType_;
+  const wchar_t * const message_;
+public:
+  chargeWeapon(const itemType &type, const damageType damage, const wchar_t * const message) :
+    B(type, damageType::bashing),
+    damageType_(damage),
+    message_(message) {
+    B::enchant(10);
+  }
+  virtual ~chargeWeapon() {}
+  virtual damageType weaponDamage(bool use) {
+    if (!use) return damageType_;
+    if (!hasCharge()) return B::weaponDamage(use);
+    if (B::isCursed()) {
+      useCharge(); if (dPc() < B::isBlessed() ? 75 : 50) return damageType_;
+      return B::weaponDamage(use);
+    }
+    if (!B::isBlessed() || dPc() < 50) useCharge();
+    return damageType_;
+  }
+  virtual void useCharge() {
+    burnChargeMixin::useCharge();
+    ioFactory::instance().message(message_);
   }
 };
 
@@ -449,7 +478,7 @@ public:
 	     std::make_pair(slotType::primary_weapon, slotType::secondary_weapon)
 	     ), damageType_(damage) {};
   virtual ~twoHandedWeapon() {}
-  virtual damageType weaponDamage() const {
+  virtual damageType weaponDamage(bool) {
     return damageType_;
   }
 };
@@ -809,7 +838,7 @@ public:
     buffer_ += whom_ + L")";
     return buffer_.c_str();
   }
-  virtual damageType weaponDamage() {
+  virtual damageType weaponDamage(bool) {
     return damageType::electric; // ref: nethack has a ball-and-chain punishment, which makes a reasonable weapon...
   }
   virtual bool use() {
@@ -1154,6 +1183,24 @@ item& createItem(const itemTypeKey & t) {
     break;
   case itemTypeKey::two_sword:
     rtn = new twoHandedWeapon(r[t], damageType::edged); // we specifically chose a historical 2-handed cutting sword to annoy the reenactment purists :)
+    break;
+  case itemTypeKey::flamethrower:
+    rtn = new chargeWeapon<twoHandedWeapon>(r[t], damageType::hot, L"A burst of flames leaps forth");
+    break;
+  case itemTypeKey::nitrogen_tank:
+    rtn = new chargeWeapon<twoHandedWeapon>(r[t], damageType::cold, L"A jet of super-cooled liquid fires forth");
+    break;
+  case itemTypeKey::bubble_gun:
+    rtn = new basicWeapon(r[t], damageType::wet);
+    break;
+  case itemTypeKey::sonic_cannon:
+    rtn = new chargeWeapon<basicWeapon>(r[t], damageType::sonic, L"Air vibrations shudder forth");
+    break;
+  case itemTypeKey::maser:
+    rtn = new chargeWeapon<basicWeapon>(r[t], damageType::disintegration, L"Radiation fires forth");
+    break;
+  case itemTypeKey::taser:
+    rtn = new chargeWeapon<basicWeapon>(r[t], damageType::electric, L"Spark fly forth");
     break;
   case itemTypeKey::rock:
     rtn = new basicThrown(r[t], damageType::bashing);

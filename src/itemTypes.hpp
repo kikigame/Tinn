@@ -42,6 +42,15 @@ enum class itemTypeKey {
   // club,
     mace, // a basic bashing weapon, but also the stuff of myths.
     two_sword, // 2-handed sword of cutting type
+    flamethrower, // 2-handed heat weapon, runs on charges
+    nitrogen_tank, // 2-handed cold weapon, runs on charges
+    bubble_gun, //does minor wet damage
+    sonic_cannon, //sound damage. Ref: Dr Who (Ice Warriors' weapon)
+    maser, // amplifies ambient radiation into a weapon; disintegration/time (bit of artistic license here)
+    //starvation/flora - I can't think of any just now
+    taser, //electric damage
+  // fulgurator - Jules' Verne missile
+  // death_ray, // Tesla's unsuccessful invention; electric missile
   //flail, 
 
   ////
