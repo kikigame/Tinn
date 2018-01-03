@@ -26,15 +26,15 @@ public:
 
   // called whenever entering the zone
   // NB: For an item, this can also be by being dropped
-  virtual bool onEnter(std::shared_ptr<T>, itemHolder &prev); // impremented for monsters & items
+  virtual bool onEnter(T &, itemHolder &prev); // impremented for monsters & items
   // called whenever leaving the zone
   // NB: For an item, this can also be by being taken
-  virtual bool onExit(std::shared_ptr<T>, itemHolder &next); // implemented for monsters
+  virtual bool onExit(T &, itemHolder &next); // implemented for monsters
   // Called whenever a monster in the zone attacks another monster or item
   // (currently, zones affect whether you can attack, not whether you can be attacked)
   virtual bool onAttack(monster&, T&); // implemented for monsters
   // called whenever moving between two squares in the zone
-  virtual bool onMoveWithin(std::shared_ptr<T>); // implemented for monsters
+  virtual bool onMoveWithin(T &); // implemented for monsters
   // called whenever the location is a coord within the zone and a tick passes
   // TODO: Not sure how best to implement yet
   //  virtual bool onStandWithin(std::shared_ptr<T>) = 0;  

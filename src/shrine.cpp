@@ -46,17 +46,17 @@ std::wstring shrine::name() const {
 }
 
 // handles limitations on entering the zone
-bool shrine::onEnter(std::shared_ptr<monster> monster, itemHolder &pev) {
+bool shrine::onEnter(monster  &monster, itemHolder &pev) {
   auto &ios = ioFactory::instance();
-  auto coalign = align_.coalignment(monster->align());
-  auto p = std::dynamic_pointer_cast<player>(monster);
+  auto coalign = align_.coalignment(monster.align());
+  auto p = monster.isPlayer();
   if (coalign == 0) {
     if (p) ios.message(L"You are prevented from entering the " + name() + L" by a mysterious barrier");
     return false; // opposed. You can't normally enter by your own power.
   }
   if (coalign == 1) {
     auto roll = dPc();
-    bool success = roll < monster->strength().cur();
+    bool success = roll < monster.strength().cur();
     if (p) {
       // monster is a player
       ios.message(success ?
@@ -67,16 +67,16 @@ bool shrine::onEnter(std::shared_ptr<monster> monster, itemHolder &pev) {
   }
   if (p) {
     ios.message(L"You enter the " + name());
-    if (align_ == monster->align()) ios.message(L"You feel very safe here.");
+    if (align_ == monster.align()) ios.message(L"You feel very safe here.");
   }
   return true;
 }
 
 // handles dropping food from the zone
-bool shrine::onEnter(std::shared_ptr<item> item, itemHolder &prev) {
+bool shrine::onEnter(item &item, itemHolder &prev) {
   auto p = dynamic_cast<monster*>(&prev);
   if (!p) return true; // okay, but not an offering as not from a monster
-  if (item->render() != L'%') // okay, but not an offering as most creatures can't eat it
+  if (item.render() != L'%') // okay, but not an offering as most creatures can't eat it
     return true;
   // TODO: Should dropping bottles of water count as an offering?
   // TODO: alignment counters
@@ -86,10 +86,10 @@ bool shrine::onEnter(std::shared_ptr<item> item, itemHolder &prev) {
 }
 
 // handles taking food from the zone
-bool shrine::onExit(std::shared_ptr<item> item, itemHolder &prev) {
+bool shrine::onExit(item &item, itemHolder &prev) {
   auto p = dynamic_cast<monster*>(&prev);
   if (!p) return true; // okay; no penalty for non-monsters
-  if (item->render() != L'%') // okay, not an offering as most creatures can't eat it
+  if (item.render() != L'%') // okay, not an offering as most creatures can't eat it
     return true;
   // TODO: alignment counters
   auto &ios = ioFactory::instance();

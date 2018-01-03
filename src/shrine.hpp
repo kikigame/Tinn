@@ -43,12 +43,12 @@ public:
 
   // called whenever entering the zone
 // handles limitations on entering the zone
-  virtual bool onEnter(std::shared_ptr<monster>, itemHolder &pev);
+  virtual bool onEnter(monster &, itemHolder &pev);
 // handles dropping food from the zone
-  virtual bool onEnter(std::shared_ptr<item>, itemHolder &pev);
+  virtual bool onEnter(item &, itemHolder &pev);
 
 // handles taking food from the zone
-  virtual bool onExit(std::shared_ptr<item>, itemHolder &prev);
+  virtual bool onExit(item &, itemHolder &prev);
 
   // player can't attack in any sanctuary
   // monsters won't attack player in their sanctuary

@@ -28,21 +28,21 @@ class levelImpl;
 
 
 // instantiate abstract methods. Note that these are still declarations,
-// no must come before their use.
+// must come before their use.
 template<>
-bool zoneArea<monster>::onExit(std::shared_ptr<monster>, itemHolder&) { return true; }
+bool zoneArea<monster>::onExit(monster &, itemHolder&) { return true; }
 template<>
-bool zoneArea<monster>::onEnter(std::shared_ptr<monster>, itemHolder&) { return true; }
+bool zoneArea<monster>::onEnter(monster &, itemHolder&) { return true; }
 template<>
-bool zoneArea<monster>::onMoveWithin(std::shared_ptr<monster>) { return true; }
+bool zoneArea<monster>::onMoveWithin(monster &) { return true; }
 template<>
 bool zoneArea<monster>::onAttack(monster&, monster&) { return true; }
 template<>
-bool zoneArea<item>::onMoveWithin(std::shared_ptr<item>) {return true; }
+bool zoneArea<item>::onMoveWithin(item &) {return true; }
 template<>
-bool zoneArea<item>::onEnter(std::shared_ptr<item>, itemHolder&) { return true; }
+bool zoneArea<item>::onEnter(item &, itemHolder&) { return true; }
 template<>
-bool zoneArea<item>::onExit(std::shared_ptr<item>, itemHolder&) { return true; }
+bool zoneArea<item>::onExit(item &, itemHolder&) { return true; }
 template<>
 bool zoneArea<item>::onAttack(monster&, item&) { return true; }
 
@@ -690,11 +690,11 @@ public:
 	pM = i->second;
 	zoneActions<monster> zones(zonesAt(i->first, true), zonesAt(dest, true));
 	for (auto z : zones.same())
-	  if (!z->onMoveWithin(pM)) return;
+	  if (!z->onMoveWithin(*pM)) return;
 	for (auto z : zones.leaving())
-	  if (!z->onExit(pM, holder(dest))) return;
+	  if (!z->onExit(*pM, holder(dest))) return;
 	for (auto z : zones.entering())
-	  if (!z->onEnter(pM, holder(i->first))) return;
+	  if (!z->onEnter(*pM, holder(i->first))) return;
 	break;
       }
       ++i;
@@ -1266,7 +1266,7 @@ bool itemHolderLevel::addItem(item &item) {
   auto &map = itemHolderMap::instance();
   if (!map.beforeFirstAdd(item)) {
     for (auto z : level_.zonesAt(coord_))
-      if (!z->onEnter(item.shared_from_this(), item.holder())) return false;
+      if (!z->onEnter(item, item.holder())) return false;
   }
   itemHolder::addItem(item);
   level_.addItem(item, coord_);
@@ -1275,7 +1275,7 @@ bool itemHolderLevel::addItem(item &item) {
 bool itemHolderLevel::removeItemForMove(item &item, itemHolder &next) {
   auto pos = level_.posOf(item);
   for (auto z : level_.zonesAt(coord_))
-    if (!z->onExit(item.shared_from_this(), next)) return false;
+    if (!z->onExit(item, next)) return false;
   level_.removeItem(coord_, item);
   return true;
 }
