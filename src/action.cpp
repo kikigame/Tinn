@@ -351,171 +351,171 @@ template<>
 class actionFactory<monster, monster> {
 public:
   typedef sharedAction<monster, monster> action;
-  static action &get(const typename action::key k) {
-    static std::map<action::key, std::shared_ptr<action> > m{
-      std::make_pair(action::key::steal_small, std::shared_ptr<action>(new steal(L"pickpocketing",
+  static std::map<action::key, std::unique_ptr<action> > makeMap() {
+    std::map<action::key, std::unique_ptr<action> > rtn;
+    rtn[action::key::steal_small] = std::unique_ptr<action>(new steal(L"pickpocketing",
 L"Pickpocketing is an act of petty larceny.\n"
 "It does not require actual pockets; indeed, objects placed in containers may\n"
 "evade the scope of this activity, as are those which are too large - say,\n"
 "bigger than an apple.",
-[](item &i) { return i.weight() <= 1; }))),
-      std::make_pair(action::key::steal_shiny, std::shared_ptr<action>(new steal(L"petty larcony",
+[](item &i) { return i.weight() <= 1; }));
+      rtn[action::key::steal_shiny] = std::unique_ptr<action>(new steal(L"petty larcony",
 L"Larcony - or theft - is the act of taking items from another for personal\n"
 "gain. This applies to jewellery and other valuables.",
-[](item &i) { return i.render() == L'*' || i.render() == L'$'; }))),
-	std::make_pair(action::key::attack_ray_small_edged, std::shared_ptr<action>(new attackRay<5>(L"cutting jet",
+[](item &i) { return i.render() == L'*' || i.render() == L'$'; }));
+	rtn[action::key::attack_ray_small_edged] = std::unique_ptr<action>(new attackRay<5>(L"cutting jet",
 L"A cutting jet will cause many small lacerations on its target.\n",
-damageType::edged))),
-	std::make_pair(action::key::attack_ray_small_bashing, std::shared_ptr<action>(new attackRay<5>(L"clobber jet",
+damageType::edged));
+	rtn[action::key::attack_ray_small_bashing] = std::unique_ptr<action>(new attackRay<5>(L"clobber jet",
 L"A clobber jet will pummel a target with small stones.\n",
-damageType::bashing))),
-	std::make_pair(action::key::attack_ray_small_hot, std::shared_ptr<action>(new attackRay<5>(L"heat ray",
+damageType::bashing));
+	rtn[action::key::attack_ray_small_hot] = std::unique_ptr<action>(new attackRay<5>(L"heat ray",
 L"A heat ray will burn a target with a directed plasma burn.\n",
-damageType::hot))),
-	std::make_pair(action::key::attack_ray_small_cold, std::shared_ptr<action>(new attackRay<5>(L"freeze ray", //ref: Despicable Me (film)
+damageType::hot));
+	rtn[action::key::attack_ray_small_cold] = std::unique_ptr<action>(new attackRay<5>(L"freeze ray", //ref: Despicable Me (film)
 L"A freeze ray will remove some of the heat enercy from the target.\n",
-damageType::cold))),
-	std::make_pair(action::key::attack_ray_small_water, std::shared_ptr<action>(new attackRay<5>(L"water jet",
+damageType::cold));
+	rtn[action::key::attack_ray_small_water] = std::unique_ptr<action>(new attackRay<5>(L"water jet",
 L"A water jet will squirt a target with a small amount of water.\n",
-damageType::wet))),
-	std::make_pair(action::key::attack_ray_small_sonic, std::shared_ptr<action>(new attackRay<5>(L"sonic ray",
+damageType::wet));
+	rtn[action::key::attack_ray_small_sonic] = std::unique_ptr<action>(new attackRay<5>(L"sonic ray",
 L"A sound ray can vibrate the bodily structure of your opponent.\n"
 "This is not a screwdriver", // ref: Doctor Who (Sonic Screwdriver)
-damageType::sonic))),
-	std::make_pair(action::key::attack_ray_small_disintegration, std::shared_ptr<action>(new attackRay<5>(L"disintegration ray",
+damageType::sonic));
+	rtn[action::key::attack_ray_small_disintegration] = std::unique_ptr<action>(new attackRay<5>(L"disintegration ray",
 L"A disintegration ray will age a small part of its target, often with\n"
 "damaging effect.\n",
-damageType::disintegration))),
-	std::make_pair(action::key::attack_ray_small_starvation, std::shared_ptr<action>(new attackRay<5>(L"starvation ray",
+damageType::disintegration));
+	rtn[action::key::attack_ray_small_starvation] = std::unique_ptr<action>(new attackRay<5>(L"starvation ray",
 L"A starvation ray saps the goodness out of the food powering your target.\n",
-damageType::starvation))),
-	std::make_pair(action::key::attack_ray_small_electric, std::shared_ptr<action>(new attackRay<5>(L"zapper",
+damageType::starvation));
+	rtn[action::key::attack_ray_small_electric] = std::unique_ptr<action>(new attackRay<5>(L"zapper",
 L"A zapper fires small lightning bolts at your victim.\n",
-damageType::electric))),
+damageType::electric));
 
-	std::make_pair(action::key::attack_ray_med_edged, std::shared_ptr<action>(new attackRay<20>(L"cutting beam",
+	rtn[action::key::attack_ray_med_edged] = std::unique_ptr<action>(new attackRay<20>(L"cutting beam",
 L"A cutting beam will cause many lacerations on its target.\n",
-damageType::edged))),
-	std::make_pair(action::key::attack_ray_med_bashing, std::shared_ptr<action>(new attackRay<20>(L"clobber beam",
+damageType::edged));
+	rtn[action::key::attack_ray_med_bashing] = std::unique_ptr<action>(new attackRay<20>(L"clobber beam",
 L"A clobber beam will pummel a target with stones.\n",
-damageType::bashing))),
-	std::make_pair(action::key::attack_ray_med_hot, std::shared_ptr<action>(new attackRay<20>(L"heat beam",
+damageType::bashing));
+	rtn[action::key::attack_ray_med_hot] = std::unique_ptr<action>(new attackRay<20>(L"heat beam",
 L"A heat beam will burn a target with a directed plasma blast.\n",
-damageType::hot))),
-	std::make_pair(action::key::attack_ray_med_cold, std::shared_ptr<action>(new attackRay<20>(L"ice beam", 
+damageType::hot));
+	rtn[action::key::attack_ray_med_cold] = std::unique_ptr<action>(new attackRay<20>(L"ice beam", 
 L"An ice beam will remove much of the heat enercy from the target.\n",
-damageType::cold))),
-	std::make_pair(action::key::attack_ray_med_water, std::shared_ptr<action>(new attackRay<20>(L"water power-jet",
+damageType::cold));
+	rtn[action::key::attack_ray_med_water] = std::unique_ptr<action>(new attackRay<20>(L"water power-jet",
 L"A water jet will squirt a target with water.\n",
-damageType::wet))),
-	std::make_pair(action::key::attack_ray_med_sonic, std::shared_ptr<action>(new attackRay<20>(L"sonic beam",
+damageType::wet));
+	rtn[action::key::attack_ray_med_sonic] = std::unique_ptr<action>(new attackRay<20>(L"sonic beam",
 L"A sound ray can rattle the bodily structure of your opponent.\n"
 "This is not a screwdriver", // ref: Doctor Who (Sonic Screwdriver)
-damageType::sonic))),
-	std::make_pair(action::key::attack_ray_med_disintegration, std::shared_ptr<action>(new attackRay<20>(L"disintegration beam",
+damageType::sonic));
+	rtn[action::key::attack_ray_med_disintegration] = std::unique_ptr<action>(new attackRay<20>(L"disintegration beam",
 L"A disintegration beam will age a part of its target, often with very\n"
 "damaging effect.\n",
-damageType::disintegration))),
-	std::make_pair(action::key::attack_ray_med_starvation, std::shared_ptr<action>(new attackRay<20>(L"starvation beam",
+damageType::disintegration));
+	rtn[action::key::attack_ray_med_starvation] = std::unique_ptr<action>(new attackRay<20>(L"starvation beam",
 L"A starvation beam saps food powering your target.\n",
-damageType::starvation))),
-	std::make_pair(action::key::attack_ray_med_electric, std::shared_ptr<action>(new attackRay<20>(L"zappier",
+damageType::starvation));
+	rtn[action::key::attack_ray_med_electric] = std::unique_ptr<action>(new attackRay<20>(L"zappier",
 L"A zappier fires lightning bolts at your victim.\n",
-damageType::electric))),
+damageType::electric));
 
-	std::make_pair(action::key::death_ray_edged, std::shared_ptr<action>(new attackRay<100>(L"cutting death ray",
+	rtn[action::key::death_ray_edged] = std::unique_ptr<action>(new attackRay<100>(L"cutting death ray",
 L"A cutting death ray achieves mortal damage by lacerations.\n",
-damageType::edged))),
-	std::make_pair(action::key::death_ray_bashing, std::shared_ptr<action>(new attackRay<100>(L"clobbering death ray",
+damageType::edged));
+	rtn[action::key::death_ray_bashing] = std::unique_ptr<action>(new attackRay<100>(L"clobbering death ray",
 L"A form of death ray involving mortally beating one's target.\n",
-damageType::bashing))),
-	std::make_pair(action::key::death_ray_hot, std::shared_ptr<action>(new attackRay<100>(L"ray of consuming fire",
+damageType::bashing));
+	rtn[action::key::death_ray_hot] = std::unique_ptr<action>(new attackRay<100>(L"ray of consuming fire",
 L"A mortal directed plasma blast.\n",
-damageType::hot))),
-	std::make_pair(action::key::death_ray_cold, std::shared_ptr<action>(new attackRay<100>(L"death by absolution of void", 
+damageType::hot));
+	rtn[action::key::death_ray_cold] = std::unique_ptr<action>(new attackRay<100>(L"death by absolution of void", 
 L"Removes all heat enercy from the target, vital for most forms of life.\n",
-damageType::cold))),
-	std::make_pair(action::key::death_ray_water, std::shared_ptr<action>(new attackRay<100>(L"drowning jet",
+damageType::cold));
+	rtn[action::key::death_ray_water] = std::unique_ptr<action>(new attackRay<100>(L"drowning jet",
 L"A drowning jet will wholly envelop a target with water.\n",
-damageType::wet))),
-	std::make_pair(action::key::death_ray_sonic, std::shared_ptr<action>(new attackRay<100>(L"sonic death ray",
+damageType::wet));
+	rtn[action::key::death_ray_sonic] = std::unique_ptr<action>(new attackRay<100>(L"sonic death ray",
 L"A sound ray to rattle apart the bodily structure of your opponent.\n"
 "This is not a screwdriver", // ref: Doctor Who (Sonic Screwdriver)
-damageType::sonic))),
-	std::make_pair(action::key::death_ray_disintegration, std::shared_ptr<action>(new attackRay<100>(L"time-eater ray",
+damageType::sonic));
+	rtn[action::key::death_ray_disintegration] = std::unique_ptr<action>(new attackRay<100>(L"time-eater ray",
 L"A time-eater ray will age its target beyond its mortal life-span.\n",
-damageType::disintegration))),
-	std::make_pair(action::key::death_ray_starvation, std::shared_ptr<action>(new attackRay<100>(L"starvation death ray",
+damageType::disintegration));
+	rtn[action::key::death_ray_starvation] = std::unique_ptr<action>(new attackRay<100>(L"starvation death ray",
 L"A starvation beam saps all food powering your target.\n",
-damageType::starvation))),
-	std::make_pair(action::key::death_ray_electric, std::shared_ptr<action>(new attackRay<100>(L"lightning of the mortal storm",
+damageType::starvation));
+	rtn[action::key::death_ray_electric] = std::unique_ptr<action>(new attackRay<100>(L"lightning of the mortal storm",
 L"Few, if any, can survive the lightning of a storm.\n",
-damageType::electric))),
+damageType::electric));
 
-	std::make_pair(action::key::exchange_ray, std::shared_ptr<action>(new exchangeAction(L"exchange ray",
+	rtn[action::key::exchange_ray] = std::unique_ptr<action>(new exchangeAction(L"exchange ray",
 L"Useful for getting out of a scrape, especially when trapped.\n"
 "The effect of an exchange ray is to swap places with everyone and everything\n"
-"at the target's location."))),
-	std::make_pair(action::key::attract, std::shared_ptr<action>(new attractAction(L"monster attraction",
-L"To somman another creature towards you along a line of movement."))),
-	std::make_pair(action::key::heal_ray_veggie, std::shared_ptr<action>(new forceHealAction(L"Vegan food ray",
-L"Force-feeds a few sprouts. This can be a life-saver, but is also unpleasant."))),
-	/*	std::make_pair(action::key::comedy, std::shared_ptr<action>(new comedyAction(L"comedy",
+"at the target's location."));
+	rtn[action::key::attract] = std::unique_ptr<action>(new attractAction(L"monster attraction",
+L"To somman another creature towards you along a line of movement."));
+	rtn[action::key::heal_ray_veggie] = std::unique_ptr<action>(new forceHealAction(L"Vegan food ray",
+L"Force-feeds a few sprouts. This can be a life-saver, but is also unpleasant."));
+	/*	rtn[action::key::comedy] = std::unique_ptr<action>(new comedyAction(L"comedy",
 L"Comedy and Tragedy are two sides of the same coin. Neither is predictable,\n"
-"but like all social commentary, both can be effective when used carefully."))),
-	std::make_pair(action::key::comedy, std::shared_ptr<action>(new tragedyAction(L"tragedy",
+"but like all social commentary, both can be effective when used carefully."));
+	rtn[action::key::comedy] = std::unique_ptr<action>(new tragedyAction(L"tragedy",
 L"Comedy and Tragedy are two sides of the same coin. Neither is predictable,\n"
-"but like all social commentary, both can be effective when used carefully."))),
+"but like all social commentary, both can be effective when used carefully."));
 	*/
-	std::make_pair(action::key::teleport_away, std::shared_ptr<action>(new teleportAwayAction(L"teleport away",
+	rtn[action::key::teleport_away] = std::unique_ptr<action>(new teleportAwayAction(L"teleport away",
 L"Sometimes you just need to put some distance between yourself and an\n"
 "adversary. Teleport Away causes the target to move as far away from you as\n"
-"possible (but in a line)."))),
-	std::make_pair(action::key::lock_away, std::shared_ptr<action>(new teleportAwayAction(L"lock away",
+"possible (but in a line)."));
+	rtn[action::key::lock_away] = std::unique_ptr<action>(new teleportAwayAction(L"lock away",
 L"Designed for use against criminals, locking a monster away is a very safe\n"
 "escape plan. It works less well on those creatures that are at home within\n"
-"the earth"))),
-	std::make_pair(action::key::repulsion, std::shared_ptr<action>(new teleportAwayAction(L"repulsion",
+"the earth"));
+	rtn[action::key::repulsion] = std::unique_ptr<action>(new teleportAwayAction(L"repulsion",
 L"Some magical effects move the enemy away from you. Repulsion usually just\n"
 "buys you a little time, but it can be used to good effect if you time it\n"
-"right and get your enemy where they don't want to be."))),
+"right and get your enemy where they don't want to be."));
 
-	std::make_pair(action::key::curse_item, std::shared_ptr<action>(new monsterItemAction(L"curse",
+	rtn[action::key::curse_item] = std::unique_ptr<action>(new monsterItemAction(L"curse",
 L"A curse can prevent items from being dropped as well as reducing their effectiveness.",
-[](const item &i) {return !i.isCursed();}, [](item &i) {i.curse(true);}))),
-	std::make_pair(action::key::uncurse_item, std::shared_ptr<action>(new monsterItemAction(L"remove curse",
+[](const item &i) {return !i.isCursed();}, [](item &i) {i.curse(true);}));
+	rtn[action::key::uncurse_item] = std::unique_ptr<action>(new monsterItemAction(L"remove curse",
 L"Curses on items can be difficult to remove, but a specialist tool can sometimes be effective.",
-[](const item &i) {return i.isCursed();}, [](item &i) {i.curse(false);}))),
-	std::make_pair(action::key::bless_item, std::shared_ptr<action>(new monsterItemAction(L"bless",
+[](const item &i) {return i.isCursed();}, [](item &i) {i.curse(false);}));
+	rtn[action::key::bless_item] = std::unique_ptr<action>(new monsterItemAction(L"bless",
 L"A blessing can increase the effectiveness or utility of an item.",
-[](const item &i) {return !i.isBlessed();}, [](item &i) {i.bless(true);}))),
-	std::make_pair(action::key::unbless_item, std::shared_ptr<action>(new monsterItemAction(L"remove blessing",
+[](const item &i) {return !i.isBlessed();}, [](item &i) {i.bless(true);}));
+	rtn[action::key::unbless_item] = std::unique_ptr<action>(new monsterItemAction(L"remove blessing",
 L"Blessings on items can be difficult to remove, but a specialist tool can sometimes be effective.",
-[](const item &i) {return i.isBlessed();}, [](item &i) {i.bless(false);}))),
-	std::make_pair(action::key::enchant_item, std::shared_ptr<action>(new monsterItemAction(L"enchantment",
+[](const item &i) {return i.isBlessed();}, [](item &i) {i.bless(false);}));
+	rtn[action::key::enchant_item] = std::unique_ptr<action>(new monsterItemAction(L"enchantment",
 L"An active item can be enchanted to reveal or recover its effect.\n" 
 "A weapon or armour can be enchanted to increase its effectiveness.",
-[](const item &i) {return true;}, [](item &i) {i.enchant(dPc() / 20);}))), //TODO: should this match shop's blessed/cursed rules?
-	std::make_pair(action::key::disenchant_item, std::shared_ptr<action>(new monsterItemAction(L"disenchantment",
+[](const item &i) {return true;}, [](item &i) {i.enchant(dPc() / 20);})); //TODO: should this match shop's blessed/cursed rules?
+	rtn[action::key::disenchant_item] = std::unique_ptr<action>(new monsterItemAction(L"disenchantment",
 L"An active item can be disenchanted to hide or limit its effect.\n"
 "A weapon or armour can be disenchanted to reduce its effectiveness.",
-[](const item &i) {return i.enchantment() > 0;}, [](item &i) {i.enchant(-dPc() / 20);}))),
-	std::make_pair(action::key::sex_up_item, std::shared_ptr<action>(new monsterItemAction(L"sexiness",
+[](const item &i) {return i.enchantment() > 0;}, [](item &i) {i.enchant(-dPc() / 20);}));
+	rtn[action::key::sex_up_item] = std::unique_ptr<action>(new monsterItemAction(L"sexiness",
 L"Sexy items will increase your physical appearance when visibly worn.\n",
-[](const item &i) {return !i.isSexy() && i.equippable() == item::equipType::worn;}, [](item &i) {i.sexUp(true);}))),
-	std::make_pair(action::key::sex_down_item, std::shared_ptr<action>(new monsterItemAction(L"chastity",
+[](const item &i) {return !i.isSexy() && i.equippable() == item::equipType::worn;}, [](item &i) {i.sexUp(true);}));
+	rtn[action::key::sex_down_item] = std::unique_ptr<action>(new monsterItemAction(L"chastity",
 L"Unsexy items do nothing for your physical appearance, meaning you can wear\n"
 "them without affecting your appearance percentage.",
-[](const item &i) {return i.isSexy();}, [](item &i) {i.sexUp(false);}))),
-	std::make_pair(action::key::nudity, std::shared_ptr<action>(new monsterItemAction(L"nudity",
+[](const item &i) {return i.isSexy();}, [](item &i) {i.sexUp(false);}));
+	rtn[action::key::nudity] = std::unique_ptr<action>(new monsterItemAction(L"nudity",
 L"Clothing and armour can provide a number of benifits, to defensibility and\n"
 "also to outward appearance. Some can also provide less helpful effects.\n"
 "The main tenet of nudism; however, suggests that nothing can compare to the\n"
 "simple effect of feeling the forces of the world directly on your bare skin.",
 [](const item &i) {return i.equippable() == item::equipType::worn && 
                    dynamic_cast<monster&>(i.holder()).slotsOf(i)[0] != nullptr;}, 
-[](item &i) {return dynamic_cast<monster&>(i.holder()).unequip(i);}))),
-	std::make_pair(action::key::disarm, std::shared_ptr<action>(new monsterItemAction(L"disarm",
+[](item &i) {return dynamic_cast<monster&>(i.holder()).unequip(i);}));
+	rtn[action::key::disarm] = std::unique_ptr<action>(new monsterItemAction(L"disarm",
 L"Weapons can be used to intimidate, attack, harm or destroy an opponent.\n"
 "Sometimes; however, a more inclusive, open-handed (open-clawed,\n"
 "open-beaked) approach can be effective.\n"
@@ -523,18 +523,21 @@ L"Weapons can be used to intimidate, attack, harm or destroy an opponent.\n"
 "weapon.",
 [](const item &i) {return i.equippable() == item::equipType::wielded && 
                    dynamic_cast<monster&>(i.holder()).slotsOf(i)[0] != nullptr;}, 
-[](item &i) {return dynamic_cast<monster&>(i.holder()).unequip(i);}))),
-	std::make_pair(action::key::popup_shop, std::shared_ptr<action>(new popupShopAction(L"shopping",
-L"A pop-up shop is a small retail event lasting for a short length of time."))),
-	std::make_pair(action::key::petrify, std::shared_ptr<action>(new petrifyAction(L"petrify",
+[](item &i) {return dynamic_cast<monster&>(i.holder()).unequip(i);}));
+	rtn[action::key::popup_shop] = std::unique_ptr<action>(new popupShopAction(L"shopping",
+L"A pop-up shop is a small retail event lasting for a short length of time."));
+	rtn[action::key::petrify] = std::unique_ptr<action>(new petrifyAction(L"petrify",
 L"The action of petrification is to cause someone to become stiff or like\n"
 "stone, to deaden in fear. Some monsters are unaffected by fear, and some\n"
-"will be affected for longer than others."))),
-	std::make_pair(action::key::charm, std::shared_ptr<action>(new charmAction(L"charm",
+"will be affected for longer than others."));
+	rtn[action::key::charm] = std::unique_ptr<action>(new charmAction(L"charm",
 L"Charming a monster will make it less inclined to attack you, and more\n"
 "inclined to approach. The effectiveness of the charm depends on the charmer's\n"
-"physical beauty."))),
-	};
+"physical beauty."));
+	return rtn;
+  }
+  static action &get(const typename action::key k) {
+    static std::map<action::key, std::unique_ptr<action> > m = makeMap(); 
     auto &rtn = m[k];
     return *rtn;
   };
