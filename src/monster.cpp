@@ -594,16 +594,15 @@ void monsterAttacks(monster &mon) {
 	if (&en == &mon) continue; // monsters don't usually fight themselves
 	if (en.align().coalignment(malign) >= 3) continue; // monsters don't usually fight other creautures of the same alignment
 	if (en.type() == mon.type()) continue; // monsters don't usually fight other creatures of the same class
-	auto result = mon.attack(en);
-
 	std::wstringstream msg;
 	msg << (mon.isPlayer() ? L"You" : mon.name())
 	    << myPos
 	    << L" attacks "
 	    << (en.isPlayer() ? L"you" : en.name())
 	    << pos
-	    << L": "
-	    << result.text_;
+	    << L": ";
+	auto result = mon.attack(en); // may invalidate refernec mon.
+	msg << result.text_;
 
 	auto m = msg.str();
 

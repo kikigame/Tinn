@@ -552,12 +552,17 @@ public:
     basicItem(type) {}
   bottle(const bottle &) = delete;
   virtual ~bottle() {}
+  bool isShipInBottle() const {
+    optionalRef<const item> c = content();
+    auto cName = c.value().name();
+    return (cName == std::wstring(L"ship"));
+  }
   virtual const wchar_t * const name() const {
     optionalRef<const item> c = content();
     basicItem::name(); // sets buffer();
     if (c) {
       auto cName = c.value().name();
-      if (cName == std::wstring(L"ship")) {
+      if (isShipInBottle()) {
 	buffer_ = cName + std::wstring(L" in a ") + buffer_;
       } else {
 	buffer_ += L" of ";
@@ -569,13 +574,21 @@ public:
     return buffer_.c_str();
   }
   virtual double weight() const {
-    double baseWeight = basicItem::weight();
+    optionalRef<const item> c = content();
+    if (c) {
+      double baseWeight;
+      if (isShipInBottle() && !isCursed())
+	baseWeight = basicItem::weight(); // ships in bottles don't use their real weight, unless cursed.
+      else
+	baseWeight = c.value().weight();
     /* items in bottle are in miniature. So you get an item reduced to 2% of its weight (1:50 scale) for a normal bottle, 1% for blessed, 200% for cursed.*/
-    double multiplicand;
-    if (isCursed()) multiplicand = 2 * (1 + std::abs(enchantment()));
-    else if (isBlessed()) multiplicand = 0.01 - (0.005 * enchantment());
-    else multiplicand = 0.02;
-    return baseWeight * multiplicand;
+      double multiplicand;
+      if (isCursed()) multiplicand = 2 * (1 + std::abs(enchantment()));
+      else if (isBlessed()) multiplicand = 0.01 - (0.005 * enchantment());
+      else multiplicand = 0.02;
+      return baseWeight * multiplicand;
+    }
+    return basicItem::weight();
   }
   virtual bool strike(const damageType &type) {
     bool rtn = basicItem::strike(type);
@@ -591,24 +604,61 @@ public:
     } else if (c.value().material() == materialType::liquid) {
       ios.message(std::wstring(name()) + L" smashes; there's fluid everywhere");
       itemHolder::destroyItem(c.value());
+    } else if (isShipInBottle() && whereToLaunch()) {
+      auto &pos = whereToLaunch().value();
+      auto cname = c.value().name();
+      if (pos.addItem(c.value())) {
+	auto &align = dynamic_cast<monster&>(holder()).align();
+	if (align.nonaligned()) {
+	  ios.message(L"With thanks to the shipwrights.");
+	} else {
+	  std::wstring deity = align.name();
+	  ios.message(deity + L" bless this " + std::wstring(cname) + L" and all who sail in her.");
+	}
+      } else {
+	itemHolder::destroyItem(c.value());
+	ios.message(std::wstring(name()) + L" smashes; you lose the " + cname);
+      }
     } else {
       auto cname = c.value().name();
-      // TODO: if it's a ship, and if we're at a dock, we should launch it itstead
       if (holder().addItem(c.value())) {
 	ios.message(std::wstring(name()) + L" smashes; you now have a " + cname);
       } else {
-      itemHolder::destroyItem(c.value());
+	itemHolder::destroyItem(c.value());
 	ios.message(std::wstring(name()) + L" smashes; you lose the " + cname);
       }
     }
     if (content()) throw L"Destroying bottle without losing its contents!";
     basicItem::destroy();
   }
+private:
+// if we were a ship in a bottle, on which square must we launch it?
+// player must use the bottle while adjacent to water to launch.
+  optionalRef<itemHolder> whereToLaunch() {
+    optionalRef<itemHolder> rtn;
+    auto &h = holder();
+    auto m = dynamic_cast<monster*>(&h);
+    if (!m) // ship must be in main inventory to 
+      return rtn;
+    auto &l = m->curLevel();
+    coord s = l.posOf(*m);
+    for (coord c : coordRectIterator(s.first-1, s.second-1, s.first+1, s.second+1)) {
+      if (c == s || c.first < 0 || c.second < 0 || c.first >= level::MAX_WIDTH || c.second >= level::MAX_HEIGHT)
+	continue;
+      if (l.terrainAt(c).type() == terrainType::WATER)
+	return l.holder(c);
+    }
+    return rtn;
+  }
+public:
   virtual bool use() {
     if (content()) {
       auto *pc = dynamic_cast<monster*>(&holder());
       auto &ios = ioFactory::instance();
-      if (pc == 0 || !pc->isPlayer() || ios.ynPrompt(L"Smash the " + std::wstring(name()) + L"?"))
+      bool ship = isShipInBottle();
+      if (pc == 0 || !pc->isPlayer() || 
+	  (ship && ios.ynPrompt(L"Launch the " + std::wstring(name()) + L"?")) ||
+	  (!ship && ios.ynPrompt(L"Smash the " + std::wstring(name()) + L"?")))
 	destroy();
     }
     return true;
