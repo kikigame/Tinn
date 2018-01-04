@@ -471,7 +471,8 @@ void moveMonster(monster &mon) {
     if (mon.charmedBegin() != mon.charmedEnd()) {
       auto pM = rndPick(mon.charmedBegin(), mon.charmedEnd());
       if (dPc() < (*pM)->appearance().cur()) {
-	auto myPos = level.posOf(**pM);
+	auto myPos = level.posOf(mon);
+	targetPos = level.posOf(**pM);
 	dir.first = myPos.first < targetPos.first ? 1 : myPos.first == targetPos.first ? 0 : -1;
 	dir.second = myPos.second < targetPos.second ? 1 : myPos.second == targetPos.second ? 0 : -1;
 	charmed = true;
