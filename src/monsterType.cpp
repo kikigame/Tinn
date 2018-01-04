@@ -486,7 +486,7 @@ L"Merfolk do not like to stray outside the sea, and mermen less so. Having the\n
 	    .material(materialType::fleshy)
 	    .align(dr.getExact(Element::air, Domination::concentration, Outlook::cruel))
 	    .align(dr.getExact(Element::water, Domination::concentration, Outlook::cruel))
-	    .movement({speed::turn3, goTo::none, goBy::smart, 10})
+	    .movement({speed::perturn, goTo::none, goBy::smart, 10}) // slow for a bird, but works better as we are likely to be charmed.
 	    .eats(materialType::fleshy)
 	    .encyclopedium(
 L"Of all the birds of the sea, the sirens are the most beautiful and the most\n"
