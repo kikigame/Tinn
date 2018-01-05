@@ -41,7 +41,7 @@ public:
   // delegate to itemType by default
   virtual const wchar_t render() const = 0;
   // built up of itemType and adjectives etc.
-  virtual const wchar_t * const name() const = 0;
+  virtual std::wstring name() const = 0;
   // built up of all visible properties.
   virtual const wchar_t * const description() const = 0;
 
@@ -130,8 +130,8 @@ public:
   basicItem(const basicItem &other) = delete;
   virtual ~basicItem();
   virtual const wchar_t render() const;
-  virtual const wchar_t * const simpleName() const;
-  virtual const wchar_t * const name() const;
+  virtual std::wstring simpleName() const;
+  virtual std::wstring name() const;
   virtual const wchar_t * const description() const;
   virtual itemHolder& holder() const;
   virtual materialType material() const;

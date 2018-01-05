@@ -33,7 +33,7 @@ const wchar_t terrain::render() const {
   return render_;
 }
 
-const wchar_t * const terrain::name() const {
+std::wstring terrain::name() const {
   return name_;
 }
 

@@ -40,7 +40,7 @@ public:
   terrain(terrain &&other) = delete;
   virtual ~terrain();
   virtual const wchar_t render() const;
-  virtual const wchar_t * const name() const;
+  virtual std::wstring name() const;
   virtual const wchar_t * const description() const;  
 
   // the type constant of the terrain

@@ -68,7 +68,7 @@ const wchar_t monster::render() const { // delegate to type by default
   return type_.renderChar();
 }
 
-const wchar_t * const monster::name() const {
+std::wstring monster::name() const {
   auto damage = damage_.max();
   return type_.name(damage);
 }
@@ -693,7 +693,7 @@ void monster::eat() {
   auto isEdible = [this](item &i) {
     if (!type().eats(i.material())) return false;
     if (isPlayer())
-      return ioFactory::instance().ynPrompt(std::wstring(L"Eat ") + i.name() + L"?");
+      return ioFactory::instance().ynPrompt(L"Eat " + i.name() + L"?");
     return true; // monsters eat whatever
   };
   // is there anything to eat in the current location?

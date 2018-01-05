@@ -22,27 +22,27 @@ public:
       auto &item = pitem.value();
       if (source.addItem(item)) {
 	if (source.isPlayer())
-	  io.message(std::wstring(L"You take the ") + item.name() + L" from " + target.name());
+	  io.message(L"You take the " + item.name() + L" from " + target.name());
 	else if (target.isPlayer())
-	  io.message(source.name() + std::wstring(L" now has your ") + item.name());
+	  io.message(source.name() + L" now has your " + item.name());
 	else
-	  io.message(std::wstring(L"Something passes from ") + target.name() + L" to " + source.name());
+	  io.message(L"Something passes from " + target.name() + L" to " + source.name());
 	return true;
       } else {
 	if (source.isPlayer())
-	  io.message(std::wstring(L"You can't take the ") + item.name() + L" from " + target.name());
+	  io.message(L"You can't take the " + item.name() + L" from " + target.name());
 	else if (target.isPlayer())
-	  io.message(source.name() + std::wstring(L" can't get your ") + item.name());
+	  io.message(source.name() + L" can't get your " + item.name());
 	else
-	  io.message(std::wstring(L"Something doesn't pass from ") + target.name() + L" to " + source.name());
+	  io.message(L"Something doesn't pass from " + target.name() + L" to " + source.name());
       }
     } else {
       if (source.isPlayer())
-	io.message(std::wstring(L"You can't take anything from ") + target.name());
+	io.message(L"You can't take anything from " + target.name());
       else if (target.isPlayer())
-	io.message(source.name() + std::wstring(L" can't get anything of yours!"));
+	io.message(source.name() + L" can't get anything of yours!");
       else
-	io.message(std::wstring(L"Nothing passes from ") + target.name() + L" to " + source.name());
+	io.message(L"Nothing passes from " + target.name() + L" to " + source.name());
     }
     return false;
   }
@@ -59,14 +59,14 @@ public:
   virtual ~attackRay() {};
   bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
     auto &d = damageRepo::instance()[damageType_];
-    auto name = std::wstring(target.name());
+    auto name = target.name();
     int damage = target.wound(damagePc, d);
     auto &io = ioFactory::instance();
     bool rtn = damage > 0;
     if (!rtn)
-      io.message(std::wstring(L"The " + std::wstring(d.name()) + L" ray fires harmlessly as " + name));
+      io.message(L"The " + std::wstring(d.name()) + L" ray fires harmlessly at " + name);
     else 
-      io.message(name + L" takes " + d.name() + L" damage.");
+      io.message(name + L" takes " + std::wstring(d.name()) + L" damage.");
     return rtn;
   }
 };
@@ -322,7 +322,7 @@ public:
     if (target.abilities().fearless() == bonus(false)) turns *= 2;
     if (blessed) turns += (turns / 2);
     if (cursed) turns /=2;
-    ioFactory::instance().message(target.name() + std::wstring(L" is scared stiff!"));
+    ioFactory::instance().message(target.name() + L" is scared stiff!");
     a.entrap(turns);
     return true; // even cursed is always 1 turn
   }
@@ -340,9 +340,9 @@ public:
     }
     if (!target.setCharmedBy(source)) return false;
     else if (source.isPlayer())
-      ioFactory::instance().message(L"You charm the " + std::wstring(target.name()));
+      ioFactory::instance().message(L"You charm the " + target.name());
     else if (target.isPlayer())
-      ioFactory::instance().message(L"You find the " + std::wstring(source.name()) + L" quite charming.");
+      ioFactory::instance().message(L"You find the " + source.name() + L" quite charming.");
     return true;
   }
 };
@@ -571,14 +571,14 @@ bool foocubusAction<incubus>::operator () (bool blessed, bool cursed, monster &s
     auto &ios = ioFactory::instance();
     if (isProtected) {
       if (source.isPlayer()) ios.message(L"You aren't in the mood.");
-      else ios.message(source.name() + std::wstring(L" doesn't seem to be in the mood."));
+      else ios.message(source.name() + L" doesn't seem to be in the mood.");
       return false;
     }
     if (isCompatible && dPc() < target.appearance().cur()) {
       // good outcome; consent happened.
-      ios.message(target.isPlayer() ? L"You consent to the advances of the " + std::wstring(source.name())
-		  : source.isPlayer() ? L"The " + std::wstring(target.name()) + L" consents to your advances..."
-		  : L"The " + std::wstring(target.name()) + L" consents to the advances of the " + source.name() + L"..."
+      ios.message(target.isPlayer() ? L"You consent to the advances of the " + source.name()
+		  : source.isPlayer() ? L"The " + target.name() + L" consents to your advances..."
+		  : L"The " + target.name() + L" consents to the advances of the " + source.name() + L"..."
 		  );
       // target receives a good outcome; source receives a moderatly good outcome
       target.strength() += 5; target.dodge() += 5;
@@ -590,9 +590,9 @@ bool foocubusAction<incubus>::operator () (bool blessed, bool cursed, monster &s
 	(act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::enchant_item))(false, false, source, target);
     } else {
       // bad outcome
-      ios.message(target.isPlayer() ? L"You are violated by the "  + std::wstring(source.name()) + L'!'
-		  : source.isPlayer() ? L"You feel bad about violating the " + std::wstring(target.name()) + L"..."
-		  : L"The " + std::wstring(target.name()) + L" does not consent to the advances of the " + source.name() + L"..."
+      ios.message(target.isPlayer() ? L"You are violated by the "  + source.name() + L'!'
+		  : source.isPlayer() ? L"You feel bad about violating the " + target.name() + L"..."
+		  : L"The " + target.name() + L" does not consent to the advances of the " + source.name() + L"..."
 		  );
       // target receives a bad outcome; source receives a good outcome
       source.strength() += 5;

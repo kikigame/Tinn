@@ -76,7 +76,7 @@ public:
    */
   void eachTick(const std::function<void()> &callback);
   virtual const wchar_t render() const; // delegate to type by default
-  virtual const wchar_t * const name() const; // delegate to type depending on level by default;
+  virtual std::wstring name() const; // delegate to type depending on level by default;
   virtual const wchar_t * const description() const; // delegate to type by default
   // create monster by type
   monster(level * onLvl, const monsterType &type);

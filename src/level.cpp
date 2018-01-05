@@ -715,7 +715,7 @@ public:
     auto monsters = monsters_.equal_range(pcLoc);
     for (auto i = monsters.first; i != monsters.second; ++i)
       if (*(i->second) != m)
-	msg.emplace_back(std::wstring(L"live ") + i->second->name());
+	msg.emplace_back(L"live " + i->second->name());
     auto items = items_.equal_range(pcLoc);
     for (auto i = items.first; i != items.second; ++i)
       msg.emplace_back(i->second.lock()->name());

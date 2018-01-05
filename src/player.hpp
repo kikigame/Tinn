@@ -22,7 +22,7 @@ public:
   player(playerBuilder &builder);
   virtual ~player();
   virtual const wchar_t render() const ;
-  virtual const wchar_t * const name() const ;
+  virtual std::wstring name() const ;
   virtual const wchar_t * const description() const ;
   virtual bool highlight() const { return true; };
 

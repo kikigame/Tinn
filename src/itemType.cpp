@@ -45,7 +45,7 @@ itemType::itemType(itemTypeImpl *impl) :
 const wchar_t itemType::render() const {
   return pImpl_->render();
 }
-const wchar_t * const itemType::name() const {
+std::wstring itemType::name() const {
   return pImpl_->name();
 }
 const wchar_t * const itemType::description() const {

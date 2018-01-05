@@ -85,7 +85,7 @@ public:
   }
   virtual ~ncurse() {
     ::clear();
-    longMsg(std::wstring(L"See you next time.")); // sort-of pun on "Be seeing you" Nethack end; itself a quote from the Prisoner TV series
+    longMsg(L"See you next time."); // sort-of pun on "Be seeing you" Nethack end; itself a quote from the Prisoner TV series
   }
 
   // called when moving from one screen to another.
@@ -357,7 +357,7 @@ private:
       if (toShow != 0) {
 	mvaddwstr(0,0,L"[wasdq] ");
 	if (toShow->highlight()) attron(A_STANDOUT);
-	addwstr(toShow->name());
+	addwstr(toShow->name().c_str());
 	if (toShow->highlight()) attroff(A_STANDOUT);
 	//	flushLastMsg(toShow->name(), toShow->highlight());
 	//message(toShow->description());

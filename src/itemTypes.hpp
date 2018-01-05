@@ -18,7 +18,7 @@ private:
 public:
   itemType(itemTypeImpl*);
   const wchar_t render() const;
-  const wchar_t * const name() const;
+  std::wstring name() const;
   const wchar_t * const description() const;
   // used if unidentified:
   const wchar_t * const vagueDescription() const;

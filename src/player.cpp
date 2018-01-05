@@ -94,7 +94,7 @@ const wchar_t player::render() const {
   return L'@';
 }
 
-const wchar_t* const player::name() const {
+std::wstring player::name() const {
   return name_.c_str();
 }
 
@@ -161,8 +161,8 @@ void player::equip() {
 	auto rtn = i.equip(*this);
 	if (rtn) return true;
 	else if (weap)
-	  ios.message(std::wstring(L"This ") + i.name() + L" won't be your weapon");
-	else ios.message(std::wstring(L"This ") + i.name() + L" doesn't fit anywhere");
+	  ios.message(L"This " + i.name() + L" won't be your weapon");
+	else ios.message(L"This " + i.name() + L" doesn't fit anywhere");
       }
       return false;
     });
@@ -175,9 +175,9 @@ void player::drop(level &lvl) {
   std::function<void(item&, std::wstring)> f = 
     [this, &lvl, &c](item& i, std::wstring name){
     auto &ios = ioFactory::instance();
-    if (ios.ynPrompt(std::wstring(L"Drop ") + name + L"?"))
+    if (ios.ynPrompt(L"Drop " + name + L"?"))
       if (!monster::drop(i, c))
-	ios.message(std::wstring(L"You cannot drop the ") + i.name());
+	ios.message(L"You cannot drop the " + i.name());
   };
   forEachItem(f);
 }
@@ -186,7 +186,7 @@ void player::use() {
   std::function<void(item&, std::wstring)> f = [this](item &i, std::wstring name){
     if (&(i.holder()) != this) return; // item has moved out of this container by a previously used item
     auto &ios = ioFactory::instance();
-    if (ios.ynPrompt(std::wstring(L"Use ") + name + L"?"))
+    if (ios.ynPrompt(L"Use " + name + L"?"))
       if (!i.use())
 	ios.message(L"That doesn't seem to work.");
   };

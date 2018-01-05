@@ -69,12 +69,12 @@ const wchar_t basicItem::render() const {
   return type_.render();
 }
 // return the simple name for this item type; overridden in corpse.
-const wchar_t * const basicItem::simpleName() const {
+std::wstring basicItem::simpleName() const {
   return type_.name();
 }
 
 // built up of itemType and adjectives etc.
-const wchar_t * const basicItem::name() const {
+std::wstring basicItem::name() const {
   buffer_ = L"";
   if (enchantment_ < 0) buffer_ += std::to_wstring(enchantment_) + L' ';
   if (enchantment_ > 0) buffer_ += L'+' + std::to_wstring(enchantment_) + L' ';
@@ -139,7 +139,7 @@ itemHolder& basicItem::holder() const {
   auto &map = itemHolderMap::instance();
   // sanity check to avoid null reference:
   if (map.beforeFirstAdd(*this))
-    throw std::wstring(name()) + L" not yet in any holder";
+    throw name() + L" not yet in any holder";
   return map.forItem(*this);
 }
 
@@ -324,7 +324,7 @@ public:
   actionMonsterMixin(renderedAction<monster, monster> &action) :
     action_(action) {}
   virtual ~actionMonsterMixin(){}
-  virtual const wchar_t *const actionName() const { return action_.name(); }
+  virtual std::wstring actionName() const { return action_.name(); }
   virtual bool fire() {
     auto holder = &(shared_from_this()->holder());
     monster *m;
@@ -586,19 +586,19 @@ public:
     auto cName = c.value().name();
     return (cName == std::wstring(L"ship"));
   }
-  virtual const wchar_t * const name() const {
+  virtual std::wstring name() const {
     optionalRef<const item> c = content();
     basicItem::name(); // sets buffer();
     if (c) {
-      auto cName = c.value().name();
+      std::wstring cName = c.value().name();
       if (isShipInBottle()) {
-	buffer_ = cName + std::wstring(L" in a ") + buffer_;
+	buffer_ = cName + L" in a " + buffer_;
       } else {
 	buffer_ += L" of ";
 	buffer_ += cName;
       }
     } else {
-      buffer_ = std::wstring(L"empty ") + buffer_;
+      buffer_ = L"empty " + buffer_;
     }
     return buffer_.c_str();
   }
@@ -629,9 +629,9 @@ public:
     optionalRef<item> c = content();
     auto &ios =ioFactory::instance();
     if (!c) {
-      ios.message(std::wstring(name()) + L" smashes, and the emptiness gets out"); // Hmmm; spawn a vacuum monster?
+      ios.message(name() + L" smashes, and the emptiness gets out"); // Hmmm; spawn a vacuum monster?
     } else if (c.value().material() == materialType::liquid) {
-      ios.message(std::wstring(name()) + L" smashes; there's fluid everywhere");
+      ios.message(name() + L" smashes; there's fluid everywhere");
       itemHolder::destroyItem(c.value());
     } else if (isShipInBottle() && whereToLaunch()) {
       auto &pos = whereToLaunch().value();
@@ -642,19 +642,19 @@ public:
 	  ios.message(L"With thanks to the shipwrights.");
 	} else {
 	  std::wstring deity = align.name();
-	  ios.message(deity + L" bless this " + std::wstring(cname) + L" and all who sail in her.");
+	  ios.message(deity + L" bless this " + cname + L" and all who sail in her.");
 	}
       } else {
 	itemHolder::destroyItem(c.value());
-	ios.message(std::wstring(name()) + L" smashes; you lose the " + cname);
+	ios.message(name() + L" smashes; you lose the " + cname);
       }
     } else {
       auto cname = c.value().name();
       if (holder().addItem(c.value())) {
-	ios.message(std::wstring(name()) + L" smashes; you now have a " + cname);
+	ios.message(name() + L" smashes; you now have a " + cname);
       } else {
 	itemHolder::destroyItem(c.value());
-	ios.message(std::wstring(name()) + L" smashes; you lose the " + cname);
+	ios.message(name() + L" smashes; you lose the " + cname);
       }
     }
     if (content()) throw L"Destroying bottle without losing its contents!";
@@ -686,8 +686,8 @@ public:
       auto &ios = ioFactory::instance();
       bool ship = isShipInBottle();
       if (pc == 0 || !pc->isPlayer() || 
-	  (ship && ios.ynPrompt(L"Launch the " + std::wstring(name()) + L"?")) ||
-	  (!ship && ios.ynPrompt(L"Smash the " + std::wstring(name()) + L"?")))
+	  (ship && ios.ynPrompt(L"Launch the " + name() + L"?")) ||
+	  (!ship && ios.ynPrompt(L"Smash the " + name() + L"?")))
 	destroy();
     }
     return true;
@@ -802,11 +802,11 @@ public:
     readableItem(itemTypeRepo::instance()[itemTypeKey::holy_book]),
     align_(align) {}
   virtual ~holyBook() {}
-  virtual const wchar_t * const name() const {
+  virtual std::wstring name() const {
     if (align_.nonaligned())
       // ref: Russell's Teapot, a phylosophical analogy used to place the buden of proof on the preacher.
       return L"Book of the Teapot";
-    buffer_ = L"holy book of " + std::wstring(align_.name());
+    buffer_ = L"holy book of " + align_.name();
     return buffer_.c_str();
   }
   virtual bool use() {
@@ -815,7 +815,7 @@ public:
       ios.message(L"The pages are stuck together.");
       return false;
     }
-    ios.message(L"You turn the pages of the " + std::wstring(name()));
+    ios.message(L"You turn the pages of the " + name());
     ios.longMsg(align_.description());
     return true;
   }
@@ -833,7 +833,7 @@ public:
     curse(true);
   }
   virtual ~iou() {};
-  virtual const wchar_t * const name() {
+  virtual std::wstring name() {
     buffer_ = L"I.O.U. (";
     buffer_ += whom_ + L")";
     return buffer_.c_str();
@@ -886,14 +886,14 @@ public:
     bool rtn = false;
     try {
       rtn = m.eat(other, false);
-      if (rtn && p) ioFactory::instance().message(L"The " + std::wstring(other.name()) + L" is consumed.");
-      if (!rtn && p) ioFactory::instance().message(L"The " + std::wstring(name()) + L" partially consumes the " + other.name());
+      if (rtn && p) ioFactory::instance().message(L"The " + other.name() + L" is consumed.");
+      if (!rtn && p) ioFactory::instance().message(L"The " + name() + L" partially consumes the " + other.name());
     } catch (monster::inedibleException e) {
-      if (!rtn && p) ioFactory::instance().message(L"The " + std::wstring(name()) + L" can't consume the " + other.name());      
+      if (!rtn && p) ioFactory::instance().message(L"The " + name() + L" can't consume the " + other.name());      
     } catch (monster::notHungryException e) {
       rtn = other.holder().destroyItem(other);
-      if (rtn && p) ioFactory::instance().message(L"The " + std::wstring(other.name()) + L" is consumed.");
-      if (!rtn && p) ioFactory::instance().message(L"The " + std::wstring(name()) + L" can't consume the " + other.name());      
+      if (rtn && p) ioFactory::instance().message(L"The " + other.name() + L" is consumed.");
+      if (!rtn && p) ioFactory::instance().message(L"The " + name() + L" can't consume the " + other.name());      
     }
     return rtn;
   };
@@ -953,12 +953,12 @@ public:
       ios.message(L"You'll need a bottle in your inventory to do that.");
       return false;
     }
-    ios.message(std::wstring(L"You try the ") + bot.value().name());
+    ios.message(L"You try the " + bot.value().name());
     bottle &b = dynamic_cast<bottle&>(bot.value());
     auto found = pc.firstItem([&b, this, &ios](item &i) {
 	if (&i == this) return false; // can't bottle a bottling kit with itself
 	if (&i == &b) return false; // can't bottle a bottle into itself
-	if (ios.ynPrompt(std::wstring(L"Bottle ") + i.name() + L"?")) {
+	if (ios.ynPrompt(L"Bottle " + i.name() + L"?")) {
 	  if (b.addItem(i))
 	    return true;
 	  else ios.message(L"It didn't fit."); // just in case
@@ -1011,7 +1011,7 @@ public:
     adjectives.insert(adjectives.end(), baseAdjectives.begin(), baseAdjectives.end());
     return adjectives;
   }
-  virtual const wchar_t * const simpleName() const {
+  virtual std::wstring simpleName() const {
     return type_.name(maxDamage_); // overridden to change type_ from itemType to monsterType.
   }
   virtual bool use() {
@@ -1070,10 +1070,10 @@ public:
     enchant(numCharges);
   }
   virtual ~wand() {};
-  virtual const wchar_t *const simpleName() const {
+  virtual std::wstring simpleName() const {
     return hasCharge() ? L"wand" : basicItem::simpleName();
   }
-  virtual const wchar_t *const name() const {
+  virtual std::wstring name() const {
     basicItem::name(); // sets buffer_
     if (hasCharge()) {
       buffer_ += L" of ";
@@ -1117,7 +1117,7 @@ public:
     */
   }
   virtual ~instrument() {}
-  virtual const wchar_t *const name() const {
+  virtual std::wstring name() const {
     basicItem::name(); // sets buffer_
     if (hasCharge()) {
       buffer_ += L" of ";
@@ -1137,9 +1137,9 @@ public:
     if (!hasCharge()) {
       if (dynamic_cast<monster&>(holder()).curLevel().dung().pc()->abilities().hear()) {
 	if (type_ == itemTypeRepo::instance()[itemTypeKey::bagpipes])
-	  ioFactory::instance().message(L"The beautiful sound of " + std::wstring(name()) + L" fills the air");
+	  ioFactory::instance().message(L"The beautiful sound of " + name() + L" fills the air");
 	else
-	  ioFactory::instance().message(L"The beautiful sound of a " + std::wstring(name()) + L" fills the air");
+	  ioFactory::instance().message(L"The beautiful sound of a " + name() + L" fills the air");
       }
       return true;
     }

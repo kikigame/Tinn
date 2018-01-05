@@ -215,7 +215,7 @@ private:
       ioFactory::instance().message(L"This shop is empty. Please try again later.");
       return;
     }
-    std::vector<std::pair<int, const wchar_t*>> choices;
+    std::vector<std::pair<int, std::wstring>> choices;
     // position 0 is usually the enchantment:
     int i=0;
     auto proofName = std::wstring(L"Resistance against ") + damage_.name();
@@ -236,10 +236,10 @@ private:
     if (i == 0) ++i; // start at 1
     for (auto it : forSale_)
       choices.emplace_back(i++, it->name());
-    int idx = ioFactory::instance().choice((const wchar_t*)L"What would you like to buy?",
-			 (const wchar_t*)L"Choose the item you want to add to your shopping basket",
+    int idx = ioFactory::instance().choice(L"What would you like to buy?",
+			 L"Choose the item you want to add to your shopping basket",
 			 choices,
-			 (const wchar_t*)L"per-item help is TODO.");
+			 L"per-item help is TODO.");
     i=0;
     auto &ios = ioFactory::instance();
     for (auto s : services_) {
@@ -362,7 +362,7 @@ private:
     int choice;
     do {
       auto offer = L"Your offer:\n" + toList(barter);
-      std::vector<std::pair<int, const wchar_t*> > choices = {
+      std::vector<std::pair<int, std::wstring> > choices = {
 	{1, L"Clear list and start again"},
 	{2, L"Remove an item from your offer"},
 	{3, L"Offer more things"},
@@ -375,7 +375,7 @@ private:
 	break;
       case 2:  // remove item
 	if (!barter.empty()) {
-	std::vector<std::pair<std::shared_ptr<item>, const wchar_t*> > c;
+	  std::vector<std::pair<std::shared_ptr<item>, std::wstring> > c;
 	for (auto i : barter)
 	  c.emplace_back(i, i->name());
 	auto &ios = ioFactory::instance();
@@ -450,7 +450,7 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
 		 const std::wstring & extraHelp,
 		 const std::function<bool(const item &)> f = [](const item &){return true;}) const {
     // TODO: filter out foo-proof and/or foo-undamaged items as appropriate
-    std::vector<std::pair<int, const wchar_t*>> choices;
+    std::vector<std::pair<int, std::wstring>> choices;
     std::vector<item *> res;
     int i=0;
     inventory_.forEachItem([&choices, &i, &res, f](item &it, std::wstring name) {
@@ -488,11 +488,11 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
 
     auto &ios = ioFactory::instance();
     if (de > 0)
-      ios.message(std::wstring(L"Magical enenergy flows into your ") + item.name());
+      ios.message(L"Magical enenergy flows into your " + item.name());
     else // let's see if the user's paying attention...
-      ios.message(std::wstring(L"Magical enenergy flows through your ") + item.name());
+      ios.message(L"Magical enenergy flows through your " + item.name());
 
-    servicesBought_.emplace(std::wstring(L"Enchantment to ") + item.name(),
+    servicesBought_.emplace(L"Enchantment to " + item.name(),
 			    appraise(inventory_, item));
   }
 
@@ -508,11 +508,11 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
     auto &ios = ioFactory::instance();
     if (item.proof(damage_.type()))
       ios.message((std::wstring(L"The ") + damage_.mendName()) + 
-		 L" of your " + std::wstring(item.name()) +
+		 L" of your " + item.name() +
 		 L" seems just as complete as it can be.");
     else
       ios.message((std::wstring(L"The ") + damage_.mendName()) + 
-		 L" of your " + std::wstring(item.name()) +
+		 L" of your " + item.name() +
 		 L" could use a little more work");
 
     servicesBought_.emplace(std::wstring(damage_.mendName()) + L" protection unto " + item.name(),
@@ -545,7 +545,7 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
 const wchar_t shop::render() const {
   return L'£';
 };
-const wchar_t * const shop::name() const {
+std::wstring shop::name() const {
   return pImpl_->name();
 };
 const wchar_t * const shop::description() const {
@@ -656,7 +656,7 @@ void goShopping(monster &inventory) {
   // how to choose the number of shops?
   // When you need a magic number, and don't have any other criteria, turn to ref:Pratchett's Discworld.
   shoppingCentre shops(inventory);
-  std::vector<std::pair<int,const wchar_t*> > choices;
+  std::vector<std::pair<int,std::wstring> > choices;
   for (int c=0; c < 8; ++c) {
     choices.emplace_back(c, shops[c].name());
   }

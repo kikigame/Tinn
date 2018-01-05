@@ -134,7 +134,7 @@ renderedAction(const wchar_t * const name, const wchar_t * const description) :
   sharedAction<T...>(), name_(name), description_(description) {}
   virtual bool operator()(bool, bool, T &...) = 0;
   virtual const wchar_t render() const { return L'☇'; } // lightning bolt for magic
-  virtual const wchar_t * const name() const { return name_; };
+  virtual std::wstring name() const { return name_; };
   const wchar_t * const description() const { return description_; };
 };
 

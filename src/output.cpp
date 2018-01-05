@@ -14,7 +14,7 @@ io::~io(){}
 
 template <typename T>
 size_t choicePrompt(const io &ios, const std::wstring &prompt, const std::wstring &help, 
-		    const std::vector<std::pair<T, const wchar_t*> > &choices,
+		    const std::vector<std::pair<T, std::wstring> > &choices,
 		    const std::wstring &extraHelp, size_t offset) {
   unsigned int res, i;
   size_t numChoices = choices.size() - offset;
@@ -45,7 +45,7 @@ size_t choicePrompt(const io &ios, const std::wstring &prompt, const std::wstrin
 // may have to rethink this, but currently only support terminal-type I/O, so this can go here safely.
 template <typename T>
 T io::choice(const std::wstring &prompt, const std::wstring &help, 
-	     const std::vector<std::pair<T, const wchar_t*> > &choices,
+	     const std::vector<std::pair<T, std::wstring> > &choices,
 	     const std::wstring &extraHelp) const {
   size_t offset=0, choice, res;
   do {
@@ -61,7 +61,7 @@ T io::choice(const std::wstring &prompt, const std::wstring &help,
 // this is a full specialisation of io::choice() which allows selecting based on keystrokes
 template<>
 wchar_t io::choice<wchar_t>(const std::wstring &prompt, const std::wstring &help, 
-	     const std::vector<std::pair<wchar_t, const wchar_t*>> &choices,
+			    const std::vector<std::pair<wchar_t, std::wstring>> &choices,
 	     const std::wstring &extraHelp) const {
   // we want to use the values in the choices.*.first, provided they are keys on the keyboard.
   // we want to be case-insensitive.

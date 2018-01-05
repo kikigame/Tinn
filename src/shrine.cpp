@@ -60,8 +60,8 @@ bool shrine::onEnter(monster  &monster, itemHolder &pev) {
     if (p) {
       // monster is a player
       ios.message(success ?
-		  std::wstring(L"You force your way through a mysterious barrier\nWelcome to the ") + name() : 
-		  std::wstring(L"You are prevented from entering the " + name() + L" by a mysterious barrier"));
+		  L"You force your way through a mysterious barrier\nWelcome to the " + name() : 
+		  L"You are prevented from entering the " + name() + L" by a mysterious barrier");
     }
     return success;
   }
@@ -96,7 +96,7 @@ bool shrine::onExit(item &item, itemHolder &prev) {
   if (p->injury().pc() > 10)
     ios.message(L"You take an offering intended for the needy...");
   else
-    ios.message(std::wstring(L"You accept the charity of ") + align_.name());
+    ios.message(L"You accept the charity of " + align_.name());
   return true;
 }
 
@@ -107,18 +107,18 @@ bool shrine::onAttack(monster &aggressor, monster &target) {
   auto &ios = ioFactory::instance();
   if (p) {
     if (align_.domination() == Domination::aggression)
-      ios.message(std::wstring(L"Even ") + align_.name() + L" needs a place to rest.");
+      ios.message(L"Even " + align_.name() + L" needs a place to rest.");
     else
-      ios.message(std::wstring(align_.name()) + L" hath decreed this sanctuary as a place of rest."); 
+      ios.message(align_.name() + L" hath decreed this sanctuary as a place of rest."); 
     return false;
   }
   auto coalign = align_.coalignment(target.align());
   auto pl = dynamic_cast<player*>(&target);
     if (coalign == 3) {
       if (pl)
-	ios.message(std::wstring(aggressor.name()) + L" seems unwilling to attack you in the house of " + align_.house());
+	ios.message(aggressor.name() + L" seems unwilling to attack you in the house of " + align_.house());
       else
-	ios.message(std::wstring(aggressor.name()) + L" seems unwilling to attack "+ target.name() +L" in the house of " + align_.house());	  
+	ios.message(aggressor.name() + L" seems unwilling to attack "+ target.name() +L" in the house of " + align_.house());	  
       return false;
     }
   return true;

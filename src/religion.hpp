@@ -57,7 +57,7 @@ private:
   Domination domination() const;
   Outlook outlook() const;
   virtual const wchar_t render() const;
-  virtual const wchar_t * const name() const;
+  virtual std::wstring name() const;
   virtual const wchar_t * const description() const;
   const wchar_t * const house() const;
 

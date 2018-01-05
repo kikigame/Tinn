@@ -80,17 +80,17 @@ private:
     std::wstring prompt;
     bool freeSearch = allowFreeSearch_ && (category_ == L'/' || category_ == '\0');
     if (!freeSearch) prompt = std::wstring(L"You have selected \"") + category_ + std::wstring(L"\". ");
-    prompt += std::wstring(L"Search for ? ");
+    prompt += L"Search for ? ";
     std::wstring needle;
     auto &ios = ioFactory::instance();
     while (needle.length() == 0)
       needle =
-	ios.linePrompt(prompt, std::wstring(L"Powered by Grail")); // Ref:The quest for the grail; hard to find.
+	ios.linePrompt(prompt, L"Powered by Grail"); // Ref:The quest for the grail; hard to find.
     std::basic_string<wint_t> needleLc;
     for (unsigned int i=0; i < needle.length(); ++i)
       needleLc += std::towlower(needle[i]);
     for (auto e : renderables_) {
-      if ((freeSearch || category_ == e->render()) && match(e->name(), needleLc)) {
+      if ((freeSearch || category_ == e->render()) && match(e->name().c_str(), needleLc)) {
 	show(*e);
 	return;
       }
@@ -109,12 +109,12 @@ private:
   }
   
   // return the available keys for pickCategory()
-  const std::vector<std::pair<wchar_t, const wchar_t*>> choiceKeys() const {
+  const std::vector<std::pair<wchar_t, std::wstring>> choiceKeys() const {
     std::set<wchar_t> choiceChars;
     for (auto e : renderables_)
       choiceChars.insert(e->render());
 
-    std::vector<std::pair<wchar_t, const wchar_t*>> choiceKeys;
+    std::vector<std::pair<wchar_t, std::wstring>> choiceKeys;
     opts_.clear();
     int i=0;
     for (auto choice : choiceChars) {
@@ -133,7 +133,7 @@ private:
   wchar_t pickCategory() const {
     return 
       ioFactory::instance().choice<wchar_t>
-      (std::wstring(L"Welcome to the Guide. Choose your category"),
+      (L"Welcome to the Guide. Choose your category",
        L"Choosing a category will assist us in processing your enquiry",//REF:every call centre ever
        choiceKeys());
   }

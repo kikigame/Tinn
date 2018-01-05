@@ -280,9 +280,9 @@ public:
     if (&level == &level.dung().cur_level()) {
       auto &ios = ioFactory::instance();
       if (equineForm_)
-	ios.message(L"The " + std::wstring(name()) + L" now looks to be a horse.");
+	ios.message(L"The " + name() + L" now looks to be a horse.");
       else
-	ios.message(L"The " + std::wstring(name()) + L" now looks to be a human.");
+	ios.message(L"The " + name() + L" now looks to be a human.");
     }
     if (equineForm_) {
       strength().bonus(20);
@@ -296,7 +296,7 @@ public:
     if (!monster::onMove(pos, terrain)) return false;
     if (terrain.type() == terrainType::WATER && equineForm_ && (&curLevel() == &curLevel().dung().cur_level())
 	&& curLevel().dung().pc()->abilities().hear())
-      ioFactory::instance().message(L"You hear the sound of thunder as the " + std::wstring(name()) + L"'s tail hits the water");
+      ioFactory::instance().message(L"You hear the sound of thunder as the " + name() + L"'s tail hits the water");
     if (dPc() <= 11) // ~3%
       shapeShift();
     return true;
@@ -326,7 +326,7 @@ public:
     auto &l = curLevel();
     if (&(l.dung().cur_level()) != &l) return; // don't waste our voice if no Dungeoneer is around
     if (l.dung().pc()->abilities().hear()) {
-      ioFactory::instance().message(L"The " + std::wstring(name()) + L" sings an attractive song");
+      ioFactory::instance().message(L"The " + name() + L" sings an attractive song");
     }
     l.forEachMonster([this,&act](monster &t){
 	if (t.type().type() != monsterTypeKey::siren &&
@@ -351,7 +351,7 @@ public:
     addItem(createItem(itemTypeKey::conch));
   }
   virtual ~merfolk() {}
-  virtual const wchar_t * const name() const {
+  virtual std::wstring name() const {
     if (isFemale()) return L"Mermaid";
     if (isMale()) return L"Merman";
     return monster::name();
@@ -361,7 +361,7 @@ public:
     auto &l = curLevel();
     if (&(l.dung().cur_level()) != &l) return; // don't waste our voice if no Dungeoneer is around
     if (l.dung().pc()->abilities().see()) {
-      ioFactory::instance().message(L"The " + std::wstring(name()) + L" seems very beguiling");
+      ioFactory::instance().message(L"The " + name() + L" seems very beguiling");
     }
     l.forEachMonster([this,&act](monster &t){
 	if (t.type().type() != monsterTypeKey::merfolk) 

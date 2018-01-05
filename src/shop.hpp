@@ -50,7 +50,7 @@ public:
   shop & operator = (const shop &) = delete;
 
   virtual const wchar_t render() const;
-  virtual const wchar_t * const name() const;
+  virtual std::wstring name() const;
   virtual const wchar_t * const description() const;
 
   itemIter begin() const;
