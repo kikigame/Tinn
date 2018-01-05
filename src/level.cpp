@@ -296,22 +296,23 @@ public:
 
     // monsters. Let's start with 5 kelpie and 2 sirens, then half a dozen merfolk:
     for (int i=0; i < 5; ++i)
-      addMonster(monsterTypeKey::kelpie);
+      addMonster<monsterTypeKey::kelpie>();
     for (int i=0; i < 2; ++i)
-      addMonster(monsterTypeKey::siren);
+      addMonster<monsterTypeKey::siren>();
     for (int i=0; i < 6; ++i)
-      addMonster(monsterTypeKey::merfolk);
+      addMonster<monsterTypeKey::merfolk>();
     addEnchantedItem(itemTypeKey::conch);
   }
 
 private:
-  void addMonster(monsterTypeKey mtk) {
+  template<monsterTypeKey T>
+  void addMonster() {
     coord c;
     do {
       c.first = rndPickI(1, level::MAX_WIDTH-1);
       c.second = rndPickI(1, level::MAX_HEIGHT-1);
     } while (at(c) != terrainType::WATER);
-    levelGen::addMonster(mtk, c);
+    levelGen::addMonster(T, c);
   }
   void addEnchantedItem(itemTypeKey itk) {
     coord c;
@@ -1036,7 +1037,7 @@ void levelGen::addMonster(std::shared_ptr<monster> m, const coord &c) {
 
 void levelGen::addMonster(monsterTypeKey m, const coord &c) {
   auto &mt = monsterTypeRepo::instance()[m];
-  addMonster(ofType(mt, pub_), c);
+  addMonster(mt.spawn(pub_), c);
 }
 
 void levelGen::addMonsters(std::vector<std::pair<coord,coord>> coords /*by value*/) {
@@ -1052,7 +1053,8 @@ void levelGen::addMonsters(std::vector<std::pair<coord,coord>> coords /*by value
 
     for (unsigned int c=0; c < i.first; ++c) {
       auto &mt = *(i.second);
-      auto m = ofType(mt, pub_);
+      //auto m = ofType<mt>(pub_);
+      auto m = mt.spawn(pub_);
       addMonster(m, midPoint, *room);
     }
     coords.erase(room); // don't use the same room twice; tend to avoid the packs of monsters starting together

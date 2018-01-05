@@ -80,6 +80,7 @@ class monster;
 class monsterTypeBuilder;
 class deity;
 class monsterTypeRepoImpl;
+class level;
 
 // types of monster
 class monsterType {
@@ -179,6 +180,8 @@ public:
   const genderAssignType gen() const;
 
   bool operator == (const monsterType & rhs) const;
+
+  std::shared_ptr<monster> spawn(level &) const;
 };
 
 /* singleton repository for monster types */

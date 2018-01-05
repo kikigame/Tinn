@@ -528,11 +528,110 @@ void equipMonster(const monsterTypeKey &type, level &level, monster &m) {
   }
 }
 
-std::shared_ptr<monster> ofType(const monsterType &type, level & level) {
+class goblin : public targetActionMonster {
+public:
+  goblin(monsterBuilder &b) :
+    targetActionMonster(b, targetActionMonster::key::steal_shiny) {
+    intrinsics().see(true);
+    intrinsics().hear(true);
+  }
+  virtual ~goblin() {};
+};
+
+class dungeoneer : public trivialMonster {
+public:
+  dungeoneer(monsterBuilder &b) :
+    trivialMonster(b) {
+    intrinsics().hear(true); // can't see
+  }
+  virtual ~dungeoneer() {};
+};
+
+class incubus : public targetActionRefMonster {
+public:
+  incubus(monsterBuilder &b) :
+    targetActionRefMonster(b, incubusAction()) {
+    intrinsics().see(true);
+    intrinsics().hear(true);
+    intrinsics().swim(true);
+  }
+  virtual ~incubus() {};
+};
+
+class succubus : public targetActionRefMonster {
+public:
+  succubus(monsterBuilder &b) :
+    targetActionRefMonster(b, succubusAction()) {
+    intrinsics().see(true);
+    intrinsics().hear(true);
+    intrinsics().swim(true);
+  }
+  virtual ~succubus() {};
+};
+
+class bird : public trivialMonster {
+public:
+  bird(monsterBuilder &b) :
+    trivialMonster(b) {
+  }
+  virtual ~bird() {
+    intrinsics().see(true);
+    intrinsics().hear(true);
+    intrinsics().fly(true);
+  };
+};
+
+template <monsterTypeKey T>
+struct monsterTypeTraits {
+  typedef bird type; // default
+};
+template<> struct monsterTypeTraits<monsterTypeKey::dungeoneer> { typedef dungeoneer type; };
+template<> struct monsterTypeTraits<monsterTypeKey::ferret> { typedef ferret type; };
+template<> struct monsterTypeTraits<monsterTypeKey::goblin> { typedef goblin type; };
+template<> struct monsterTypeTraits<monsterTypeKey::hound> { typedef hound type; };
+template<> struct monsterTypeTraits<monsterTypeKey::incubus> { typedef incubus type; };
+template<> struct monsterTypeTraits<monsterTypeKey::kelpie> { typedef kelpie type; };
+template<> struct monsterTypeTraits<monsterTypeKey::merfolk> { typedef merfolk type; };
+template<> struct monsterTypeTraits<monsterTypeKey::siren> { typedef siren type; };
+template<> struct monsterTypeTraits<monsterTypeKey::succubus> { typedef succubus type; };
+template<> struct monsterTypeTraits<monsterTypeKey::zombie> { typedef zombie type; };
+template<> struct monsterTypeTraits<monsterTypeKey::dragon> { typedef dragon type; };
+template<> struct monsterTypeTraits<monsterTypeKey::bird> { typedef bird type; };
+template<> struct monsterTypeTraits<monsterTypeKey::birdOfPrey> { typedef bird type; };
+
+template<monsterTypeKey T>
+std::shared_ptr<monster> ofType(level & level);
+
+// this lookup makes allocating dynamic monsters of randomly chosen type posible.
+// while also ensuring all implementations of ofType<> actually get compiled in.
+std::shared_ptr<monster> monsterType::spawn(level & level) const {
+  switch (type()) {
+  case monsterTypeKey::bird: return ofType<monsterTypeKey::bird>(level);
+  case monsterTypeKey::birdOfPrey: return ofType<monsterTypeKey::birdOfPrey>(level);
+  case monsterTypeKey::dragon: return ofType<monsterTypeKey::dragon>(level);
+  case monsterTypeKey::dungeoneer: return ofType<monsterTypeKey::dungeoneer>(level); 
+  case monsterTypeKey::ferret: return ofType<monsterTypeKey::ferret>(level);
+  case monsterTypeKey::goblin: return ofType<monsterTypeKey::goblin>(level);
+  case monsterTypeKey::hound: return ofType<monsterTypeKey::hound>(level);
+  case monsterTypeKey::human: return ofType<monsterTypeKey::human>(level); 
+  case monsterTypeKey::incubus: return ofType<monsterTypeKey::incubus>(level); 
+  case monsterTypeKey::kelpie: return ofType<monsterTypeKey::kelpie>(level); 
+  case monsterTypeKey::merfolk: return ofType<monsterTypeKey::merfolk>(level);
+  case monsterTypeKey::siren: return ofType<monsterTypeKey::siren>(level); 
+  case monsterTypeKey::succubus: return ofType<monsterTypeKey::succubus>(level); 
+  case monsterTypeKey::troll: return ofType<monsterTypeKey::troll>(level); 
+  case monsterTypeKey::venusTrap: return ofType<monsterTypeKey::venusTrap>(level);
+  case monsterTypeKey::zombie: return ofType<monsterTypeKey::zombie>(level);
+  default: throw type();
+  }
+}
+
+template<monsterTypeKey T>
+std::shared_ptr<monster> ofType(level & level) {
   monsterBuilder b(true);
   b.startOn(level);
   // stats, alignment etc are also set when type is set:
-  //  b.type(monsterTypeRepo::instance()[type]);
+  auto &type = monsterTypeRepo::instance()[T];
   b.type(type);
 
   const int levelFactor = type.getLevelFactor();
@@ -540,28 +639,22 @@ std::shared_ptr<monster> ofType(const monsterType &type, level & level) {
   b.progress(std::min(1, level.depth() - levelOffset) * levelFactor);
 
   // invoke move() every move, even when the player is helpless:
-  std::shared_ptr<monster> ptr;
-  switch (type.type()) {
+  std::shared_ptr<monster> ptr = std::make_shared<typename monsterTypeTraits<T>::type>(b);
+  /*  switch (type.type()) {
   case monsterTypeKey::dungeoneer:
-    ptr = std::make_shared<trivialMonster>(b);
-    ptr->intrinsics().hear(true); // can't see
+    ptr = std::make_shared<dungeoneer>(b);
     break;
   case monsterTypeKey::ferret:
     ptr = std::make_shared<ferret>(b);
     break;
   case monsterTypeKey::goblin:
-    ptr = std::make_shared<targetActionMonster>(b, targetActionMonster::key::steal_shiny);
-    ptr->intrinsics().see(true);
-    ptr->intrinsics().hear(true);
+    ptr = std::make_shared<goblin>(b);
     break;
   case monsterTypeKey::hound:
     ptr = std::make_shared<hound>(b);
     break;
   case monsterTypeKey::incubus:
-    ptr = std::make_shared<targetActionRefMonster>(b, incubusAction());
-    ptr->intrinsics().see(true);
-    ptr->intrinsics().hear(true);
-    ptr->intrinsics().swim(true);
+    ptr = std::make_shared<incubus>(b);
     break;
   case monsterTypeKey::kelpie:
     ptr = std::make_shared<kelpie>(b);
@@ -573,10 +666,7 @@ std::shared_ptr<monster> ofType(const monsterType &type, level & level) {
     ptr = std::make_shared<siren>(b);
     break;
   case monsterTypeKey::succubus:
-    ptr = std::make_shared<targetActionRefMonster>(b, succubusAction());
-    ptr->intrinsics().see(true);
-    ptr->intrinsics().hear(true);
-    ptr->intrinsics().swim(true);
+    ptr = std::make_shared<succubus>(b);
     break;
   case monsterTypeKey::zombie:
     ptr = std::make_shared<zombie>(b);
@@ -587,11 +677,8 @@ std::shared_ptr<monster> ofType(const monsterType &type, level & level) {
   case monsterTypeKey::bird:
   case monsterTypeKey::birdOfPrey:
   default:
-    ptr = std::make_shared<trivialMonster>(b);
-    ptr->intrinsics().see(true);
-    ptr->intrinsics().hear(true);
-    ptr->intrinsics().fly(true);
-  }
+    ptr = std::make_shared<bird>(b);
+    }*/
   // pass by value works, but creates an extra 2 persistent refs, causing a memory leak as the ref-count never hits 0.
   // pass by reference causes a SIGSEGV; not sure why.
   // you can't create a second shared_ptr on the same pointer.
