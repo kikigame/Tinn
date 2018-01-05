@@ -8,6 +8,15 @@
 #include <utility> // for pair
 #include <ostream> // for ostream
 
+
+class dir : public std::pair<signed char, signed char> {
+public:
+  dir() : std::pair<signed char, signed char>(0,0) {}
+  dir(int x, int y) :
+    std::pair<signed char, signed char>(x < 0 ? -1 : x > 0 ? +1 : 0,
+					y < 0 ? -1 : y > 0 ? +1 : 0) {}
+};
+
 /*
  * first  = x coordinate (right from left on screen)
  * secord = y coordinate (down from top of screen)
@@ -33,7 +42,7 @@ public:
    * and then = (5,7)
    * would return (8,11) (each move being +3,+4)
    */
-  coord next(const coord &then) {
+  coord next(const coord &then) const {
     coord rtn;
     rtn.first = then.first + then.first - first;
     rtn.second = then.second + then.second - second;
@@ -47,7 +56,7 @@ public:
    * eg if this = (2,3) and toward = (2,7)
    * would return (2,4).
    */
-  coord towards(const coord &toward) {
+  coord towards(const coord &toward) const {
     coord rtn;
     rtn.first = 
       toward.first > first ? first+1 :
@@ -65,7 +74,7 @@ public:
    * eg if this = (2,3) and toward = (2,7)
    * would return (2,2).
    */
-  coord away(const coord &toward) {
+  coord away(const coord &toward) const {
     coord rtn;
     rtn.first = 
       toward.first > first ? first-1 :
@@ -73,6 +82,18 @@ public:
     rtn.second = 
       toward.second > second ? second-1 :
       toward.second == second ? second : second + 1;
+    return rtn;
+  }
+  dir dirTo(const coord &other) const {
+    return dir(other.first - first, other.second - second);
+  }
+  dir dirFrom(const coord &other) const {
+    return dir(first - other.first, second - other.second);
+  }
+  coord inDir(const dir &d) const {
+    coord rtn = *this;
+    rtn.first += d.first;
+    rtn.second += d.second;
     return rtn;
   }
   // abitrarily sort on x then y
@@ -90,9 +111,11 @@ public:
   }
 };
 
+// output coordinates
 std::ostream & operator << (std::ostream & out, const coord & c);
 std::wostream & operator << (std::wostream & out, const coord & c);
 
+// iterate over rectangular coordinates
 class coordRectIterator {
 private:
   coord tl_, br_, cur_;
@@ -110,5 +133,6 @@ public:
   bool operator == (const coordRectIterator &o) { return o.cur_ == cur_ && o.tl_ == tl_ && o.br_ == br_; }
   bool operator != (const coordRectIterator &o) { return o.cur_ != cur_ || o.tl_ != tl_ || o.br_ != br_; }
 };
+
 
 #endif // ndef COORD

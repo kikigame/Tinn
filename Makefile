@@ -9,14 +9,14 @@ CXXLINK ?= -lncursesw
 WINCXXLINK = -lncursesw -lpsapi -static
 
 tinn : Makefile ofiles 
-ofiles : src/action.o src/adjectives.o src/appraise.o src/bonus.o src/characteristic.o src/chargen.o src/coord.o src/damage.o src/dungeon.o src/encyclopedia.o src/itemholder.o src/items.o src/itemType.o src/level.o src/main.o src/monster.o src/monsterFactory.o src/monsterIntrinsics.o src/monsterType.o src/output.o src/output_curses.o src/output_term.o src/player.o src/religion.o src/role.o src/shop.o src/shopkeeper.o src/shrine.o src/slots.o src/terrain.o src/time.o src/transport.o 
+ofiles : src/action.o src/adjectives.o src/appraise.o src/bonus.o src/characteristic.o src/chargen.o src/coord.o src/damage.o src/dungeon.o src/encyclopedia.o src/geometry.o src/itemholder.o src/items.o src/itemType.o src/level.o src/levelFactory.o src/main.o src/monster.o src/monsterFactory.o src/monsterIntrinsics.o src/monsterType.o src/output.o src/output_curses.o src/output_term.o src/player.o src/religion.o src/role.o src/shop.o src/shopkeeper.o src/shrine.o src/slots.o src/spaceZone.o src/terrain.o src/time.o src/transport.o 
 
-	$(CXX)  src/action.o src/adjectives.o src/appraise.o src/bonus.o src/characteristic.o src/chargen.o src/coord.o src/damage.o src/dungeon.o src/encyclopedia.o src/itemholder.o src/items.o src/itemType.o src/level.o src/main.o src/monster.o src/monsterFactory.o src/monsterIntrinsics.o src/monsterType.o src/output.o src/output_curses.o src/output_term.o src/player.o src/religion.o src/role.o src/shop.o src/shopkeeper.o src/shrine.o src/slots.o src/terrain.o src/time.o src/transport.o  -Wall -g -std=c++11 $(CXXLINK) -o tinn
+	$(CXX)  src/action.o src/adjectives.o src/appraise.o src/bonus.o src/characteristic.o src/chargen.o src/coord.o src/damage.o src/dungeon.o src/encyclopedia.o src/geometry.o src/itemholder.o src/items.o src/itemType.o src/level.o src/levelFactory.o src/main.o src/monster.o src/monsterFactory.o src/monsterIntrinsics.o src/monsterType.o src/output.o src/output_curses.o src/output_term.o src/player.o src/religion.o src/role.o src/shop.o src/shopkeeper.o src/shrine.o src/slots.o src/spaceZone.o src/terrain.o src/time.o src/transport.o  -Wall -g -std=c++11 $(CXXLINK) -o tinn
 
 # Windown port 
 tinn.exe : Makefile clean 
 	CXX="$(WINCXX)" make -k ofiles && \
-	$(WINCXX)  src/action.o src/adjectives.o src/appraise.o src/bonus.o src/characteristic.o src/chargen.o src/coord.o src/damage.o src/dungeon.o src/encyclopedia.o src/itemholder.o src/items.o src/itemType.o src/level.o src/main.o src/monster.o src/monsterFactory.o src/monsterIntrinsics.o src/monsterType.o src/output.o src/output_curses.o src/output_term.o src/player.o src/religion.o src/role.o src/shop.o src/shopkeeper.o src/shrine.o src/slots.o src/terrain.o src/time.o src/transport.o  -Wall -g -std=c++11 $(CXXLINK) -o tinn.exe
+	$(WINCXX)  src/action.o src/adjectives.o src/appraise.o src/bonus.o src/characteristic.o src/chargen.o src/coord.o src/damage.o src/dungeon.o src/encyclopedia.o src/geometry.o src/itemholder.o src/items.o src/itemType.o src/level.o src/levelFactory.o src/main.o src/monster.o src/monsterFactory.o src/monsterIntrinsics.o src/monsterType.o src/output.o src/output_curses.o src/output_term.o src/player.o src/religion.o src/role.o src/shop.o src/shopkeeper.o src/shrine.o src/slots.o src/spaceZone.o src/terrain.o src/time.o src/transport.o  -Wall -g -std=c++11 $(CXXLINK) -o tinn.exe
 
 Makefile: build.pl
 	./build.pl > Makefile
@@ -25,7 +25,7 @@ lint:
 	cppcheck --enable=performance --enable=warning --enable=portability src
 
 clean:
-	rm -f   src/action.o src/adjectives.o src/appraise.o src/bonus.o src/characteristic.o src/chargen.o src/coord.o src/damage.o src/dungeon.o src/encyclopedia.o src/itemholder.o src/items.o src/itemType.o src/level.o src/main.o src/monster.o src/monsterFactory.o src/monsterIntrinsics.o src/monsterType.o src/output.o src/output_curses.o src/output_term.o src/player.o src/religion.o src/role.o src/shop.o src/shopkeeper.o src/shrine.o src/slots.o src/terrain.o src/time.o src/transport.o 
+	rm -f   src/action.o src/adjectives.o src/appraise.o src/bonus.o src/characteristic.o src/chargen.o src/coord.o src/damage.o src/dungeon.o src/encyclopedia.o src/geometry.o src/itemholder.o src/items.o src/itemType.o src/level.o src/levelFactory.o src/main.o src/monster.o src/monsterFactory.o src/monsterIntrinsics.o src/monsterType.o src/output.o src/output_curses.o src/output_term.o src/player.o src/religion.o src/role.o src/shop.o src/shopkeeper.o src/shrine.o src/slots.o src/spaceZone.o src/terrain.o src/time.o src/transport.o 
 
 src/action.o : src/action.cpp src/action.hpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/level.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/movement.hpp src/optionalRef.hpp src/output.hpp src/random.hpp src/ref.hpp src/renderable.hpp src/slots.hpp src/time.hpp src/zone.hpp 
 	$(CXX) src/action.cpp -c -Wall -g -std=c++11 -o src/action.o -finput-charset=utf8 -fexec-charset=utf8
@@ -57,6 +57,9 @@ src/dungeon.o : src/dungeon.cpp src/action.hpp src/appraise.hpp src/bonus.hpp sr
 src/encyclopedia.o : src/encyclopedia.cpp src/action.hpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/encyclopedia.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/level.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/movement.hpp src/optionalRef.hpp src/output.hpp src/ref.hpp src/religion.hpp src/renderable.hpp src/slots.hpp src/time.hpp src/zone.hpp 
 	$(CXX) src/encyclopedia.cpp -c -Wall -g -std=c++11 -o src/encyclopedia.o -finput-charset=utf8 -fexec-charset=utf8
 
+src/geometry.o : src/geometry.cpp src/coord.hpp src/geometry.hpp 
+	$(CXX) src/geometry.cpp -c -Wall -g -std=c++11 -o src/geometry.o -finput-charset=utf8 -fexec-charset=utf8
+
 src/itemholder.o : src/itemholder.cpp src/action.hpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/encyclopedia.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/level.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/movement.hpp src/optionalRef.hpp src/output.hpp src/random.hpp src/ref.hpp src/renderable.hpp src/shop.hpp src/slots.hpp src/time.hpp src/zone.hpp 
 	$(CXX) src/itemholder.cpp -c -Wall -g -std=c++11 -o src/itemholder.o -finput-charset=utf8 -fexec-charset=utf8
 
@@ -66,8 +69,11 @@ src/items.o : src/items.cpp src/action.hpp src/bonus.hpp src/characteristic.hpp 
 src/itemType.o : src/itemType.cpp src/damage.hpp src/itemTypes.hpp src/materialType.hpp src/random.hpp src/renderable.hpp 
 	$(CXX) src/itemType.cpp -c -Wall -g -std=c++11 -o src/itemType.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/level.o : src/level.cpp src/action.hpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/dungeon.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/labyrinth.hpp src/level.hpp src/levelGen.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/movement.hpp src/optionalRef.hpp src/output.hpp src/player.hpp src/random.hpp src/ref.hpp src/religion.hpp src/renderable.hpp src/role.hpp src/shrine.hpp src/slots.hpp src/terrain.hpp src/time.hpp src/transport.hpp src/zone.hpp 
+src/level.o : src/level.cpp src/action.hpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/dungeon.hpp src/geometry.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/labyrinth.hpp src/level.hpp src/levelFactory.hpp src/levelGen.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/movement.hpp src/optionalRef.hpp src/output.hpp src/player.hpp src/random.hpp src/ref.hpp src/religion.hpp src/renderable.hpp src/role.hpp src/shrine.hpp src/slots.hpp src/terrain.hpp src/time.hpp src/transport.hpp src/zone.hpp 
 	$(CXX) src/level.cpp -c -Wall -g -std=c++11 -o src/level.o -finput-charset=utf8 -fexec-charset=utf8
+
+src/levelFactory.o : src/levelFactory.cpp src/action.hpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/geometry.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/level.hpp src/levelFactory.hpp src/levelGen.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/movement.hpp src/optionalRef.hpp src/random.hpp src/ref.hpp src/religion.hpp src/renderable.hpp src/slots.hpp src/spaceZone.hpp src/terrain.hpp src/time.hpp src/zone.hpp 
+	$(CXX) src/levelFactory.cpp -c -Wall -g -std=c++11 -o src/levelFactory.o -finput-charset=utf8 -fexec-charset=utf8
 
 src/main.o : src/main.cpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/dungeon.hpp src/itemTypes.hpp src/itemholder.hpp src/iterable.hpp src/level.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/movement.hpp src/optionalRef.hpp src/output.hpp src/player.hpp src/ref.hpp src/religion.hpp src/renderable.hpp src/role.hpp src/slots.hpp src/time.hpp src/xo.hpp src/zone.hpp 
 	$(CXX) src/main.cpp -c -Wall -g -std=c++11 -o src/main.o -finput-charset=utf8 -fexec-charset=utf8
@@ -108,13 +114,16 @@ src/shop.o : src/shop.cpp src/action.hpp src/appraise.hpp src/bonus.hpp src/char
 src/shopkeeper.o : src/shopkeeper.cpp 
 	$(CXX) src/shopkeeper.cpp -c -Wall -g -std=c++11 -o src/shopkeeper.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/shrine.o : src/shrine.cpp src/action.hpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/level.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/movement.hpp src/optionalRef.hpp src/output.hpp src/player.hpp src/random.hpp src/ref.hpp src/religion.hpp src/renderable.hpp src/shrine.hpp src/slots.hpp src/time.hpp src/zone.hpp 
+src/shrine.o : src/shrine.cpp src/action.hpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/geometry.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/level.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/movement.hpp src/optionalRef.hpp src/output.hpp src/player.hpp src/random.hpp src/ref.hpp src/religion.hpp src/renderable.hpp src/shrine.hpp src/slots.hpp src/time.hpp src/zone.hpp 
 	$(CXX) src/shrine.cpp -c -Wall -g -std=c++11 -o src/shrine.o -finput-charset=utf8 -fexec-charset=utf8
 
 src/slots.o : src/slots.cpp src/materialType.hpp src/monsterType.hpp src/movement.hpp src/slots.hpp 
 	$(CXX) src/slots.cpp -c -Wall -g -std=c++11 -o src/slots.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/terrain.o : src/terrain.cpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/itemholder.hpp src/iterable.hpp src/level.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/movement.hpp src/optionalRef.hpp src/ref.hpp src/renderable.hpp src/slots.hpp src/terrain.hpp src/time.hpp src/zone.hpp 
+src/spaceZone.o : src/spaceZone.cpp src/action.hpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/geometry.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/level.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/movement.hpp src/optionalRef.hpp src/ref.hpp src/renderable.hpp src/slots.hpp src/spaceZone.hpp src/terrain.hpp src/time.hpp src/zone.hpp 
+	$(CXX) src/spaceZone.cpp -c -Wall -g -std=c++11 -o src/spaceZone.o -finput-charset=utf8 -fexec-charset=utf8
+
+src/terrain.o : src/terrain.cpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/itemholder.hpp src/iterable.hpp src/level.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/movement.hpp src/optionalRef.hpp src/random.hpp src/ref.hpp src/renderable.hpp src/slots.hpp src/terrain.hpp src/time.hpp src/zone.hpp 
 	$(CXX) src/terrain.cpp -c -Wall -g -std=c++11 -o src/terrain.o -finput-charset=utf8 -fexec-charset=utf8
 
 src/time.o : src/time.cpp src/time.hpp 

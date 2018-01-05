@@ -3,6 +3,7 @@
 #include <map>
 #include "terrain.hpp"
 #include "monster.hpp"
+#include "random.hpp"
 
 // terrain bits
 
@@ -16,6 +17,9 @@ const wchar_t * const to_string(const terrainType & t) {
   case terrainType::PIT: return L"PIT";
   case terrainType::FIRE: return L"FIRE";
   case terrainType::WATER: return L"WATER";
+  case terrainType::SPACE: return L"SPACE";
+  case terrainType::BULKHEAD: return L"BULKHEAD";
+  case terrainType::DECK: return L"DECK";
   default: throw t;
   }
 }
@@ -30,6 +34,11 @@ terrain::terrain(const wchar_t render, const wchar_t* const name,const wchar_t *
 terrain::~terrain() {}
 
 const wchar_t terrain::render() const {
+  if (type_ == terrainType::SPACE) {
+    static std::wstring spacechars(L"∙*·o★☆");
+    if (dPc() < 5) // 0.81%
+      return *rndPick(spacechars.begin(), spacechars.end());
+  }
   return render_;
 }
 
@@ -60,6 +69,12 @@ bool terrain::movable(const monster &m) const {
     return false;
   case terrainType::WATER:
     return m.abilities().swim();
+  case terrainType::SPACE:
+    return true; // although it may not be a good idea...
+  case terrainType::BULKHEAD:
+    return false;
+  case terrainType::DECK:
+    return true;
   default:
     throw type_; // missing type from enum
   }
@@ -79,6 +94,10 @@ bool terrain::entraps(const monster &m, bool includeHidden) const {
     return includeHidden && !(m.abilities().fly());
   case terrainType::FIRE:
   case terrainType::WATER:
+  case terrainType::SPACE:
+  case terrainType::BULKHEAD:
+  case terrainType::DECK:
+    return false;
     return false;
   default:
     throw type_; // missing type from enum
@@ -112,6 +131,9 @@ public:
     store(new terrain(L'≈', L"Water", L"Water; most creatures avoid this due to the risk of drowning.", terrainType::WATER));
     // Nethack uses '~' rather than U+2240 (wreath product).
     store(new terrain(L'≀', L"Fire", L"Fire; most creatures avoid this due to the risk of burning.", terrainType::FIRE));
+    store(new terrain(L' ', L"Deep Space", L"Distance can be an illusion. Bring your own oxygen and propulsion.", terrainType::SPACE));
+    store(new terrain(L'□', L"Bulkhead", L"Bulkheads are partitions or walls forming the structural integrity of an\nembankment, ship, aircraft or spacecraft.", terrainType::BULKHEAD));
+     store(new terrain(L'.', L"Deck", L"Artificial platform for standing upon.", terrainType::DECK));
   }
   const terrain &get(terrainType type) const {
     return *(store_.at(type).get());

@@ -6,6 +6,7 @@
 #define SHRINE_HPP__
 
 #include "zone.hpp"
+#include "geometry.hpp"
 
 class deity;
 class monster;
@@ -20,8 +21,7 @@ class item;
  */
 class shrine : public zoneArea<monster>, public zoneArea<item> {
 private:
-  const coord ul_;
-  const coord lr_;
+  const std::unique_ptr<geometry> area_;
   const deity &align_;
 public:
   // construct a new shrine with the given rectangular coordinates

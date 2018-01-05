@@ -233,7 +233,6 @@ L"Sometimes a human ventures into a Dungeon upon a quest. This is usually ill-\n
 	    .name(L"ferret kit")
 	    .name(L"ferret")
 	    .name(L"hunting ferret")
-	    .name(L"space ferret")
 	    .className(L"small hunting mammels")
 	    .levelFactor(1)
 	    .levelOffset(-1)

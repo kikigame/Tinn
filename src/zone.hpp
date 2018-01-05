@@ -33,8 +33,8 @@ public:
   // Called whenever a monster in the zone attacks another monster or item
   // (currently, zones affect whether you can attack, not whether you can be attacked)
   virtual bool onAttack(monster&, T&); // implemented for monsters
-  // called whenever moving between two squares in the zone
-  virtual bool onMoveWithin(T &); // implemented for monsters
+  // called before moving between two squares in the zone; dest is the destination square
+  virtual bool onMoveWithin(T &, const coord &dest); // implemented for monsters
   // called whenever the location is a coord within the zone and a tick passes
   // TODO: Not sure how best to implement yet
   //  virtual bool onStandWithin(std::shared_ptr<T>) = 0;  

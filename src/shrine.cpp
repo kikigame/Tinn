@@ -11,7 +11,7 @@
 #include "religion.hpp"
 
 shrine::shrine(const coord &ul, const coord &lr, const deity &align) :
-  ul_(ul), lr_(lr), align_(align) {};
+  area_(rectarea::create(ul, lr)), align_(align) {};
 
 deity &rndAlign() {
   auto start = deityRepo::instance().begin();
@@ -21,15 +21,14 @@ deity &rndAlign() {
 }
 
 shrine::shrine(const coord &ul, const coord &lr) :
-  ul_(ul), lr_(lr), align_(rndAlign()) {
+  area_(rectarea::create(ul, lr)), align_(rndAlign()) {
 };
 
 shrine::~shrine() {}
 
 // determine if a given square contains this zone
 bool shrine::contains(coord a) {
-  return a.first >= ul_.first && a.first <= lr_.first &&
-    a.second >= ul_.second && a.second <= lr_.second;
+  return area_->contains(a);
 }
 
 /*

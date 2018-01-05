@@ -2,6 +2,7 @@
 
 #include "level.hpp"
 #include "levelGen.hpp"
+#include "levelFactory.hpp"
 #include "items.hpp"
 #include "monster.hpp"
 #include "terrain.hpp"
@@ -34,11 +35,11 @@ bool zoneArea<monster>::onExit(monster &, itemHolder&) { return true; }
 template<>
 bool zoneArea<monster>::onEnter(monster &, itemHolder&) { return true; }
 template<>
-bool zoneArea<monster>::onMoveWithin(monster &) { return true; }
+bool zoneArea<monster>::onMoveWithin(monster &, const coord &) { return true; }
 template<>
 bool zoneArea<monster>::onAttack(monster&, monster&) { return true; }
 template<>
-bool zoneArea<item>::onMoveWithin(item &) {return true; }
+bool zoneArea<item>::onMoveWithin(item &, const coord &) {return true; }
 template<>
 bool zoneArea<item>::onEnter(item &, itemHolder&) { return true; }
 template<>
@@ -235,109 +236,6 @@ public:
   }
 };
 
-class waterLevelGen : public levelGen {
-private:
-  const bool addDownRamp_; // do we need a downwards exit?
-  coord downRampPos_; // if set
-public:
-  waterLevelGen(levelImpl* const level, ::level& pub, bool addDownRamp) :
-    levelGen(level, pub),
-    addDownRamp_(addDownRamp),
-    downRampPos_(-1,-1) {}
-  virtual ~waterLevelGen() {}
-  virtual void negotiateRamps(optionalRef<levelGen> next) {
-    /*
-    if (addDownRamp_ && next) {
-      downRampPos_ = next.value().upRampPos();
-      if (downRampPos_.first >= 0)
-	place(downRampPos_, terrainType::DOWN);
-	}*/
-  }
-  virtual void build() {
-    for (coord c : coordRectIterator(0,1,level::MAX_WIDTH-1,level::MAX_HEIGHT-1))
-      if (at(c) == terrainType::ROCK)
-	place(c, terrainType::WATER);
-
-    for (coord c : coordRectIterator(1,1,3,3))
-      place(c, terrainType::GROUND);
-    place(coord(0,2), terrainType::UP);
-
-    for (coord c : coordRectIterator(3,level::MAX_HEIGHT-4,6,level::MAX_HEIGHT-1))
-      place(c, terrainType::GROUND);
-    place(coord(2,level::MAX_HEIGHT-2), terrainType::DOWN);
-
-    for (int d=0; d < 4; ++d)
-      for (coord c : coordRectIterator(3+10*d,3+d,3+10*(d+1),4+d))
-	place(c, terrainType::GROUND);
-
-    for (coord c : coordRectIterator(40,8,50,10))
-      place(c, terrainType::GROUND);
-
-    for (coord c : coordRectIterator(45,11,45,18))
-      pub_.holder(c).addItem(createItem(itemTypeKey::bridge));
-
-    for (coord c : coordRectIterator(35,18,55,19))
-      place(c, terrainType::GROUND);
-
-    for (coord c : coordRectIterator(4,19,60,19))
-      place(c, terrainType::GROUND);
-
-    for (coord c : coordRectIterator(15,18,22,18))
-      place(c, terrainType::GROUND);
-    place(coord(17,17), terrainType::GROUND);
-
-    setName(L"The perilous seaside");
-
-    if (dPc() < 50) { // add a watery shrine:
-      addShrine();
-    }
-
-    pub_.holder(coord(1,4)).addItem(createItem(itemTypeKey::ship));
-
-    // monsters. Let's start with 5 kelpie and 2 sirens, then half a dozen merfolk:
-    for (int i=0; i < 5; ++i)
-      addMonster<monsterTypeKey::kelpie>();
-    for (int i=0; i < 2; ++i)
-      addMonster<monsterTypeKey::siren>();
-    for (int i=0; i < 6; ++i)
-      addMonster<monsterTypeKey::merfolk>();
-    addEnchantedItem(itemTypeKey::conch);
-  }
-
-private:
-  template<monsterTypeKey T>
-  void addMonster() {
-    coord c;
-    do {
-      c.first = rndPickI(1, level::MAX_WIDTH-1);
-      c.second = rndPickI(1, level::MAX_HEIGHT-1);
-    } while (at(c) != terrainType::WATER);
-    levelGen::addMonster(T, c);
-  }
-  void addEnchantedItem(itemTypeKey itk) {
-    coord c;
-    do {
-      c.first = rndPickI(1, level::MAX_WIDTH-1);
-      c.second = rndPickI(1, level::MAX_HEIGHT-1);
-    } while (at(c) != terrainType::GROUND);
-    auto &it = createItem(itk);
-    it.bless(true);
-    it.enchant(1 + dPc() / 25);
-    pub_.holder(c).addItem(it);
-  }
-  void addShrine() {
-    optionalRef<deity> d;
-    auto &dr = deityRepo::instance();
-    do {
-      d = optionalRef<deity>(*rndPick(dr.begin(), dr.end()));
-    } while (d.value().element() != Element::water);
-    
-    levelGen::addShrine(coord(51,7),coord(57,12), d);
-    place(coord(56,9), terrainType::ALTAR);
-    place(coord(56,7), terrainType::WATER); // round the corners
-    place(coord(56,11), terrainType::WATER); // round the corners
-  }
-};
 
 // manages the items in a given cell by adapting levelImpl to the itemHolder interface
 // at specified coords
@@ -691,16 +589,29 @@ public:
 	pM = i->second;
 	zoneActions<monster> zones(zonesAt(i->first, true), zonesAt(dest, true));
 	for (auto z : zones.same())
-	  if (!z->onMoveWithin(*pM)) return;
+	  if (!z->onMoveWithin(*pM, dest)) return;
 	for (auto z : zones.leaving())
 	  if (!z->onExit(*pM, holder(dest))) return;
 	for (auto z : zones.entering())
 	  if (!z->onEnter(*pM, holder(i->first))) return;
+	teleportTo(m, dest, i);
 	break;
       }
       ++i;
     }
+  }
+  void teleportTo(monster &m, const coord &dest) {
+    std::shared_ptr<monster> pM;
+    auto i = monsters_.begin();
+    while (i != monsters_.end())
+      if (*(i->second) == m) {
+	teleportTo(m, dest, i);
+	return;
+      } else ++i;
+  }
+  void teleportTo(monster &m, const coord &dest,::std::multimap<coord, ::std::shared_ptr<monster> >::iterator i) {
     if(m.onMove(dest, terrain_.at(dest).value())) {
+      auto pM = i->second;
       monsters_.erase(i);
       addMonster(pM, dest);
       // reveal any pits:
@@ -743,6 +654,9 @@ public:
     if (pos.second >= level::MAX_HEIGHT) pos.second = level::MAX_HEIGHT;
   }
 
+  void changeTerrain(const coord &c, terrainType t) {
+    terrain_[c] = tFactory.get(t);
+  }
   
   bool movable(const coord &oldPos, const coord &pos, const monster &m, bool avoidTraps, bool avoidHiddenTraps) {
     auto &t = terrainAt(pos);
@@ -997,8 +911,8 @@ void levelGen::addShrine(const coord &topLeft, const coord &btmRight, optionalRe
       level_->terrain_.at(c) = ground;
     }
   }
-  level_->itemZones_.push_back(shr);
-  level_->monsterZones_.push_back(shr);
+  itemZone(shr);
+  monsterZone(shr);
   level_->holder(coord(xPos+2,yPos+2)).addItem(createHolyBook(shr->align()));
   if (shr->align().element() == Element::plant &&
       shr->align().domination() == Domination::aggression &&
@@ -1008,6 +922,14 @@ void levelGen::addShrine(const coord &topLeft, const coord &btmRight, optionalRe
     addMonster(monsterTypeKey::venusTrap, coord(xPos+3,yPos+1));
     addMonster(monsterTypeKey::venusTrap, coord(xPos+3,yPos+3));
   }
+}
+
+void levelGen::itemZone(std::shared_ptr<zoneArea<item>> z) {
+  level_->itemZones_.push_back(z);
+}
+
+void levelGen::monsterZone(std::shared_ptr<zoneArea<monster>> z) {
+  level_->monsterZones_.push_back(z);
 }
 
 void levelGen::setName(const std::wstring &name) {
@@ -1156,6 +1078,13 @@ void levelGen::place(const iter & begin,
   place(c,type);
 }
 
+template<class iter>
+void levelGen::place(iter it,
+		    terrainType type) {
+  for (coord c : it)
+    level_->terrain_[c] = tFactory.get(type);
+}
+
 void levelGen::place(const coord &c, terrainType type) {
   level_->terrain_[c] = tFactory.get(type);  
 }
@@ -1163,6 +1092,16 @@ void levelGen::place(const coord &c, terrainType type) {
 terrainType levelGen::at(const coord &c) const {
   return level_->terrain_.at(c).type();
 }
+
+coord levelGen::findRndTerrain(terrainType t) const {
+  coord c;
+  do {
+    c.first = rndPickI(1, level::MAX_WIDTH-1);
+    c.second = rndPickI(1, level::MAX_HEIGHT-1);
+  } while (at(c) != t);
+  return c;
+}
+
 
 
 // the pImpl (pointer-to-implementation) pattern keeps the structure of the class out of the header file:
@@ -1230,11 +1169,17 @@ void level:: moveTo(const terrainType terrain) {
 void level::moveTo(monster &monster, coord targetPos) {
   pImpl_->moveTo(monster, targetPos);
 }
+void level::teleportTo(monster &monster, coord targetPos) {
+  pImpl_->teleportTo(monster, targetPos);
+}
 void level:: move(monster &m, const std::pair<char,char> dir, const bool avoidTraps) {
   pImpl_->move(m, dir, avoidTraps);
 }
 bool level::movable(const coord &oldPos, const coord &pos, const monster &m, bool avoidTraps, bool avoidHiddenTraps) const {
   return pImpl_->movable(oldPos, pos, m, avoidTraps, avoidHiddenTraps);
+}
+void level::changeTerrain(const coord &c, terrainType t) {
+  pImpl_->changeTerrain(c, t);
 }
 void level::addMonster(std::shared_ptr<monster> monster, coord targetPos) {
   pImpl_->addMonster(monster, targetPos);
@@ -1354,8 +1299,14 @@ private:
     if (depth == numLevels_)
       return role_.newQuestLevelGen(*l, *level);
     bool addDownRamp = depth < numLevels_;
-    if (depth == 10)
-      return new waterLevelGen(l, *level, addDownRamp);
+    switch (depth) {
+    case 10:
+      return newGen(specialLevelKey::WATER, l, level, addDownRamp);
+    case 20:
+      return newGen(specialLevelKey::SPACE, l, level, addDownRamp);
+    default:
+      ;// fall through
+    }
     if (dPc() < depth)
       switch (depth / 10) {
       case 0:

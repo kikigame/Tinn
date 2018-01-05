@@ -510,6 +510,26 @@ private:
   }
 };
 
+template <typename T>
+class spaceMonster : public T {
+private:
+  std::shared_ptr<monster> delegate_;
+public:
+  template<typename ...A>
+  spaceMonster(A... a) : T(a...) {};
+  virtual ~spaceMonster() {};
+  virtual std::wstring name() const {
+    return L"space " + T::name();
+  }
+  virtual const wchar_t * const description() const {
+    return 
+      L"Space creatures are much like their gravity-bound counterparts, except that\n"
+      "they seem to have developed a knack for flying, and seem quite at home in\n"
+      "the inhospitable wasteland of space.";
+  }
+};
+
+
 void equipMonster(const monsterTypeKey &type, level &level, monster &m) {
   switch (type) {
   case monsterTypeKey::dungeoneer: {
@@ -600,9 +620,9 @@ template<> struct monsterTypeTraits<monsterTypeKey::bird> { typedef bird type; }
 template<> struct monsterTypeTraits<monsterTypeKey::birdOfPrey> { typedef bird type; };
 
 template<monsterTypeKey T>
-std::shared_ptr<monster> ofType(level & level);
+std::shared_ptr<monster> ofSpaceType(level & level);
 
-// this lookup makes allocating dynamic monsters of randomly chosen type posible.
+// these lookup makes allocating dynamic monsters of randomly chosen type posible.
 // while also ensuring all implementations of ofType<> actually get compiled in.
 std::shared_ptr<monster> monsterType::spawn(level & level) const {
   switch (type()) {
@@ -625,8 +645,29 @@ std::shared_ptr<monster> monsterType::spawn(level & level) const {
   default: throw type();
   }
 }
+std::shared_ptr<monster> monsterType::spawnSpace(level & level) const {
+  switch (type()) {
+  case monsterTypeKey::bird: return ofSpaceType<monsterTypeKey::bird>(level);
+  case monsterTypeKey::birdOfPrey: return ofSpaceType<monsterTypeKey::birdOfPrey>(level);
+  case monsterTypeKey::dragon: return ofSpaceType<monsterTypeKey::dragon>(level);
+  case monsterTypeKey::dungeoneer: return ofSpaceType<monsterTypeKey::dungeoneer>(level); 
+  case monsterTypeKey::ferret: return ofSpaceType<monsterTypeKey::ferret>(level);
+  case monsterTypeKey::goblin: return ofSpaceType<monsterTypeKey::goblin>(level);
+  case monsterTypeKey::hound: return ofSpaceType<monsterTypeKey::hound>(level);
+  case monsterTypeKey::human: return ofSpaceType<monsterTypeKey::human>(level); 
+  case monsterTypeKey::incubus: return ofSpaceType<monsterTypeKey::incubus>(level); 
+  case monsterTypeKey::kelpie: return ofSpaceType<monsterTypeKey::kelpie>(level); 
+  case monsterTypeKey::merfolk: return ofSpaceType<monsterTypeKey::merfolk>(level);
+  case monsterTypeKey::siren: return ofSpaceType<monsterTypeKey::siren>(level); 
+  case monsterTypeKey::succubus: return ofSpaceType<monsterTypeKey::succubus>(level); 
+  case monsterTypeKey::troll: return ofSpaceType<monsterTypeKey::troll>(level); 
+  case monsterTypeKey::venusTrap: return ofSpaceType<monsterTypeKey::venusTrap>(level);
+  case monsterTypeKey::zombie: return ofSpaceType<monsterTypeKey::zombie>(level);
+  default: throw type();
+  }
+}
 
-template<monsterTypeKey T>
+template<monsterTypeKey T, class M>
 std::shared_ptr<monster> ofType(level & level) {
   monsterBuilder b(true);
   b.startOn(level);
@@ -639,46 +680,7 @@ std::shared_ptr<monster> ofType(level & level) {
   b.progress(std::min(1, level.depth() - levelOffset) * levelFactor);
 
   // invoke move() every move, even when the player is helpless:
-  std::shared_ptr<monster> ptr = std::make_shared<typename monsterTypeTraits<T>::type>(b);
-  /*  switch (type.type()) {
-  case monsterTypeKey::dungeoneer:
-    ptr = std::make_shared<dungeoneer>(b);
-    break;
-  case monsterTypeKey::ferret:
-    ptr = std::make_shared<ferret>(b);
-    break;
-  case monsterTypeKey::goblin:
-    ptr = std::make_shared<goblin>(b);
-    break;
-  case monsterTypeKey::hound:
-    ptr = std::make_shared<hound>(b);
-    break;
-  case monsterTypeKey::incubus:
-    ptr = std::make_shared<incubus>(b);
-    break;
-  case monsterTypeKey::kelpie:
-    ptr = std::make_shared<kelpie>(b);
-    break;
-  case monsterTypeKey::merfolk:
-    ptr = std::make_shared<merfolk>(b);
-    break;
-  case monsterTypeKey::siren:
-    ptr = std::make_shared<siren>(b);
-    break;
-  case monsterTypeKey::succubus:
-    ptr = std::make_shared<succubus>(b);
-    break;
-  case monsterTypeKey::zombie:
-    ptr = std::make_shared<zombie>(b);
-    break;
-  case monsterTypeKey::dragon:
-    ptr = std::make_shared<dragon>(b);
-    break;
-  case monsterTypeKey::bird:
-  case monsterTypeKey::birdOfPrey:
-  default:
-    ptr = std::make_shared<bird>(b);
-    }*/
+  std::shared_ptr<monster> ptr = std::make_shared<M>(b);
   // pass by value works, but creates an extra 2 persistent refs, causing a memory leak as the ref-count never hits 0.
   // pass by reference causes a SIGSEGV; not sure why.
   // you can't create a second shared_ptr on the same pointer.
@@ -687,6 +689,16 @@ std::shared_ptr<monster> ofType(level & level) {
   ptr->eachTick([&m]() {monsterAttacks(m);} );
   equipMonster(type.type(), level, *ptr);
   return ptr;
+}
+
+template<monsterTypeKey T>
+std::shared_ptr<monster> ofType(level & level) {
+  return ofType<T,typename monsterTypeTraits<T>::type>(level);
+}
+
+template<monsterTypeKey T>
+std::shared_ptr<monster> ofSpaceType(level &level) {
+  return ofType<T,typename monsterTypeTraits<T>::type>(level);
 }
 
 std::vector<std::pair<unsigned int, monsterType*>> spawnMonsters(int depth, int rooms) {

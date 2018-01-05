@@ -103,7 +103,16 @@ public:
    * false - move into traps regardless (like the old computer game Zombies)
    */
   void move(monster &monster, const std::pair<char,char> dir, const bool avoidTraps);
+  /*
+   * move to given coordinates, applying zone effects & traps
+   */
   void moveTo(monster &monster, const coord targetPos);
+  /*
+   * move to given coordinates, ignoring zone restrictions & applying traps.
+   * Use carefully; should probably only be used in zones.
+   * May still be skipped if the monster refuses the move.
+   */
+  void teleportTo(monster &monster, const coord targetPos);
   void addMonster(std::shared_ptr<monster> monster, const coord targetPos);
   void removeDeadMonster(monster & m); // called by monster so can't get the shared_ptr.
 
@@ -139,6 +148,9 @@ public:
   // determine if a given position is passible or not to the given monster
   // oldPos - needed in case a transport at the old pos can be used. Pass "pos" for teleporting or creating monsters.
   bool movable(const coord &oldPos, const coord &pos, const monster &m, bool avoidTraps, bool avoidHiddenTraps) const;
+
+  // dangerous method; it does not do anything with any monsters on this square. Use sparingly.
+  void changeTerrain(const coord &c, terrainType t);
 
   // prevent copying
   level operator =(level &other) = delete;

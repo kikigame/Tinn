@@ -7,6 +7,7 @@
 
 #include "materialType.hpp"
 #include "movement.hpp"
+#include <memory>
 #include <vector>
 #include <string>
 #include <bitset>
@@ -181,7 +182,10 @@ public:
 
   bool operator == (const monsterType & rhs) const;
 
+  // spawn the usual monster type:
   std::shared_ptr<monster> spawn(level &) const;
+  // spawn a space version of the monster:
+  std::shared_ptr<monster> spawnSpace(level &) const;
 };
 
 /* singleton repository for monster types */

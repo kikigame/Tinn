@@ -22,7 +22,10 @@ enum class terrainType {
   // Falling into a pit instakills Zombies, else deals dPc()/10 bashing damage.
   PIT,
   FIRE, // fires of a campfire, fire-maze etc.
-  WATER // stream, river, moat, lake, sea
+  WATER, // stream, river, moat, lake, sea
+  SPACE, // vacuum, used with space zone. Chance of displaying as a L'*' for twinkling effect
+  BULKHEAD,// outer hull of a ship or space station
+  DECK
 };
 
 const wchar_t * const to_string(const terrainType &);

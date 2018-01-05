@@ -5,6 +5,7 @@
 #ifndef LEVELGEN_HPP__
 #define LEVELGEN_HPP__
 
+#include "monsterType.hpp"
 #include "coord.hpp"
 #include "terrain.hpp"
 #include "optionalRef.hpp"
@@ -24,7 +25,10 @@ protected:
 
 public:
   levelGen(levelImpl* const level, ::level& pub) :
-    level_(level), pub_(pub) {}
+    level_(level), pub_(pub) {
+    // ensure the method is created by the compiler:
+    place(coordRectIterator(0,0,0,0), terrainType::GROUND);
+  }
   virtual ~levelGen() {}
 
 protected:
@@ -41,6 +45,10 @@ protected:
   // place a shrine at given position (pass empty d for random)
   // NB: Does not place an altar, as its placement depends on the access direction
   void addShrine(const coord &tl, const coord &br, optionalRef<deity> d = optionalRef<deity>());
+
+  // register zones:
+  void itemZone(std::shared_ptr<zoneArea<item> >);
+  void monsterZone(std::shared_ptr<zoneArea<monster> >);
 
   // possibly entrap a room:
   void addTraps(const std::pair<coord,coord> &coords);
@@ -75,9 +83,17 @@ protected:
  	     const iter & end,
 	     terrainType terrainType);
 
+  template<class iter>
+  void place(iter it,
+	     terrainType terrainType);
+
   void place(const coord &c, terrainType terrainType);
 
   terrainType at(const coord &c) const;
+
+  // as level::findTerrain, but returning any square, not the first.
+  // very inefficient for small number of available squares.
+  coord findRndTerrain(terrainType t) const;
 
 private:
   void changeTerrain(coord pos, terrainType from, terrainType to);
