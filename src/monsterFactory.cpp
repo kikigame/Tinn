@@ -698,7 +698,7 @@ std::shared_ptr<monster> ofType(level & level) {
 
 template<monsterTypeKey T>
 std::shared_ptr<monster> ofSpaceType(level &level) {
-  return ofType<T,typename monsterTypeTraits<T>::type>(level);
+  return ofType<T,spaceMonster<typename monsterTypeTraits<T>::type> >(level);
 }
 
 std::vector<std::pair<unsigned int, monsterType*>> spawnMonsters(int depth, int rooms) {
