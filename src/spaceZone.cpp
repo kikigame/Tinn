@@ -69,6 +69,8 @@ coord wraparound(coord p) {
 }
 
 bool spaceZone::moveInSpace(monster &mon, const coord &dest) {
+  if (!mon.isPlayer() && mon.name().find(L"space ") == 0)
+    return true; // space monsters can move freely in space.
   std::map<monster*, dir>::const_iterator it = mdir_.find(&mon);
   if (it == mdir_.end()) {
     mdir_[&mon] = lvl_.posOf(mon).dirTo(dest);
