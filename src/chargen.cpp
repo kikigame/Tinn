@@ -16,13 +16,13 @@
 playerBuilder chargen() {
   playerBuilder b;
   const io &ios = ioFactory::instance();
-  if (true) {
+  /*if (true) {
     b.name(L"ki");
     b.align(deityRepo::instance().nonaligned());
     b.type(monsterTypeRepo::instance()[monsterTypeKey::troll]);
     b.job(roleRepo::instance()[roleType::warrior]);
     return b;
-    }
+    }*/
   std::wstring name;
   do {
     name = ios.linePrompt
