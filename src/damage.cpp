@@ -183,10 +183,10 @@ damageRepo::damageRepo() {
 	}
       },{
 	// starvation doesn't apply to material objects
-	damageType::starvation, L"hungry", L"feeding",
+	damageType::starvation, L"hunger", L"feeding",
 	  {},{}
       },{
-      damageType::electric, L"electric", L"chakra-alignment",
+      damageType::electric, L"electricity", L"chakra-alignment",
 	{
 	  { materialType::fleshy, L"precooked" },
 	  { materialType::veggy, L"precooked" },

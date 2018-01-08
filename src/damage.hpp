@@ -44,7 +44,7 @@ private:
   // adjective for something being damageproof (or null where not-applicable)
   const std::map<const materialType,const wchar_t* const>  proof_;
   // adjective for something being damaged (or null where not-applicable)
-  // may be prefixed by "a little ", "very ", "thoroughly " as applicable
+  // may be prefixed by "slightly ", "very ", "thoroughly " as applicable
   const std::map<const materialType,const wchar_t* const>  damaged_;
   damage(const damageType type, const wchar_t* const name, const wchar_t* const mendName,
 	 const std::map<const materialType,const wchar_t* const> &proof,
@@ -53,6 +53,7 @@ public:
   // can we damage the given material?
   bool canDamage(const materialType type) const;
   damageType type() const;
+  // name() + L" damage" or L"%s couldn't handle the " + name() 
   const wchar_t * const name() const;
   const wchar_t * const mendName() const;
   const wchar_t * const proofAdj(const materialType type) const;

@@ -20,6 +20,12 @@ unsigned char dPc() {
   return static_cast<unsigned char>(d51() + d51() - 2);
 }
 
+// used to find outermost slots for armour/weapons:
+class coverSearch : public graphSearch<const slot*, optionalRef<item> > {
+  virtual std::vector<const slot*> deeper(const slot* const & sl) {
+    return sl->covered();
+  }
+};
 
 monster::monster(monsterBuilder & b) :
   level_(b.iLevel()),
@@ -109,16 +115,20 @@ const attackResult monster::attack(monster &target) {
   
   if (dHit > f) return attackResult(injury(), L"miss");
 
-  // Now to see if the opponent dodged it...
-  unsigned char d = target.dodge().cur();
-  if (dHit < d) return attackResult(injury(), L"evaded");
-
+  // find the weapon:
   auto weap = equipment_.find(slotBy(slotType::primary_weapon));
   if (weap == equipment_.end()) weap = equipment_.find(slotBy(slotType::secondary_weapon));
   optionalRef<item> weapon;
   if (weap != equipment_.end()) weapon = weap->second;
   damageType type = (weapon) ? weapon.value().weaponDamage(true) : unarmedDamageType();
   auto dt = damageRepo::instance()[type];
+
+  // Now to see if the opponent dodged it...
+  unsigned char d = target.dodge().cur();
+  if (dHit < d) {
+    target.damageArmour(dt); // always damage armour on unsuccessful attack, unless proofed.
+    return attackResult(injury(), L"evaded");
+  }
 
   // Now to see how much damage we did...
   auto max = target.injury().max();
@@ -144,6 +154,33 @@ int monster::wound(unsigned char reductionPc, const damage & type) {
   damage_ += static_cast<unsigned char>(damage);
   if (damage_.cur() == damage_.max()) death();
   return damage;
+}
+
+bool monster::damageArmour(const damage &d) {
+  std::vector<item *> outerArmour;
+  auto wp = weaponSlots();
+  auto wpe = wp.end();
+  coverSearch cs;
+  for (auto i : equipment_)
+    if (wp.find(i.first) == wpe) {
+      // considering non-weapon slots
+      // non-weapon item in slot i.first is i.second
+      // we don't consider enchantments of armour in slots that are covered
+      
+      if (i.second // is it occupied?
+	  && !cs.isCovered(equipment_, i.first)) {// is it covered?
+	auto &item = i.second;
+	outerArmour.emplace_back(&item.value());
+      }
+    }
+  if (outerArmour.empty()) return false; // nothing to damage, so fail
+  auto item = *rndPick(outerArmour.begin(), outerArmour.end());
+  bool rtn = item->strike(d.type());
+  if (rtn && item->damageOfType(d.type()) > 4) {
+    if (isPlayer()) ioFactory::instance().message(L"Your " + item->name() + L" couldn't survive the " + d.name() );
+    destroyItem(*item);
+  }
+  return rtn;
 }
 
 long monster::modDamage(/*by value*/long pc, const damage & type) const {
@@ -208,12 +245,6 @@ int calcDodBonus(const std::map<const slot*, optionalRef<item> > &eq) {
     }
   return rtn;
 }
-
-class coverSearch : public graphSearch<const slot*, optionalRef<item> > {
-  virtual std::vector<const slot*> deeper(const slot* const & sl) {
-    return sl->covered();
-  }
-};
 
 // calculate the current appearance bonus from equipment
 int calcAppBonus(const std::map<const slot*, optionalRef<item> > &eq) {

@@ -182,7 +182,7 @@ std::vector<std::wstring> basicItem::adjectives() const {
     int d = damageOfType(dt);
     if (d == 0) continue;
     auto adj = dr[dt].damageAdj(m);
-    if (d == 1) rtn.push_back(std::wstring(L"a little ") + adj);
+    if (d == 1) rtn.push_back(std::wstring(L"barely ") + adj);
     if (d == 2) rtn.push_back(std::wstring(adj));
     if (d == 3) rtn.push_back(std::wstring(L"very ") + adj);
     if (d >= 4) rtn.push_back(std::wstring(L"thoroughly ") + adj);

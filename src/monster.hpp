@@ -126,6 +126,9 @@ public:
 
   // ... and other injuries... (returns the lossed score)
   int wound(unsigned char reductionPc, const damage & dt);
+
+  // damage armour (called automatically by wound())
+  bool damageArmour(const damage &d);
   
   // what kind of damage does this monster do?
   virtual damageType unarmedDamageType() const;
