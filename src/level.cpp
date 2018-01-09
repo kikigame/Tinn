@@ -705,7 +705,7 @@ public:
     
     sanitiseCoords(pos);
 
-    if (!movable(cc,pos, m, true, false) || // monster can't pass this way
+    if (!movable(cc,pos, m, avoidTraps, false) || // monster can't pass this way
 	monsters_.find(pos) != monsters_.end()) { // monsters can't *generally* move into each other.
       // can't move this way.
       return;
