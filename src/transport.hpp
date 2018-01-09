@@ -28,6 +28,7 @@ public:
   // create a transport that is usable on the "activate" terrain, allowing movement based on "allow"
   // if move.goTo == none, this trasport does not move
   // if move.goTo == player, this transport is under player control.
+  // currently, "unaligned" and "coaligned" work the same as player.
   transport(terrainType activate, terrainType allow, const movementType &move);
   transport(const transport &other) = delete;
   transport(transport &&other) = delete;

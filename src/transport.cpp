@@ -45,6 +45,8 @@ void transport::activate() {
   case goTo::wander:
     // TODO: wander
     return;
+  case goTo::coaligned:
+  case goTo::unaligned:
   case goTo::player:
     // player control; nothing to do here (handled by onPlayerMove())
     return;

@@ -481,6 +481,8 @@ const movementType & monster::movement() const {
 
 void moveMonster(monster &mon) {
   level & level = mon.curLevel();
+  auto pcPos = level.pcPos();
+  if (pcPos.first < 0) return; // only bother moving if player is on the level.
   const movementType &type = mon.movement();
 
   auto fastness = mon.intrinsics().adjust(type.speed_);
@@ -518,11 +520,39 @@ void moveMonster(monster &mon) {
       {
 	const std::vector<char> dirs({-1, 0, +1 }); // could use boost::counting_iterator here, but I don't want the dependency
 	dir.first = *rndPick(dirs.begin(), dirs.end());
-	dir.first = *rndPick(dirs.begin(), dirs.end());
+	dir.second = *rndPick(dirs.begin(), dirs.end());
       }
       break;
+    case goTo::coaligned:
+      if (pcPos.first < 0 ||
+	  level.dung().pc()->align().coalignment(mon.align()) >= 3) {
+	mon.curLevel().forEachMonster([&mon, &dir, &level, &targetPos, pcPos](monster &m){
+	    if (m.align().coalignment(mon.align()) >= 3) {
+	      targetPos = pcPos; if (targetPos.first < 0) return; // player is not on this level; skip
+	      auto myPos = level.posOf(mon);
+	      dir.first = myPos.first < targetPos.first ? 1 : myPos.first == targetPos.first ? 0 : -1;
+	      dir.second = myPos.second < targetPos.second ? 1 : myPos.second == targetPos.second ? 0 : -1;
+	    }
+	  });
+	// TODO: Would be nice to move to coaligned zone if no monster exists
+	break;
+      } // else fall right through to player
+    case goTo::unaligned:
+      if (type.goTo_ == goTo::unaligned && (
+	  pcPos.first < 0 ||
+	  level.dung().pc()->align().coalignment(mon.align()) < 3)) {
+	mon.curLevel().forEachMonster([&mon, &dir, &level, &targetPos, pcPos](monster &m){
+	    if (m.align().coalignment(mon.align()) >= 3) {
+	      targetPos = pcPos; if (targetPos.first < 0) return; // player is not on this level; skip
+	      auto myPos = level.posOf(mon);
+	      dir.first = myPos.first < targetPos.first ? 1 : myPos.first == targetPos.first ? 0 : -1;
+	      dir.second = myPos.second < targetPos.second ? 1 : myPos.second == targetPos.second ? 0 : -1;
+	    }
+	  });
+      break;
+      } // else fall through to goTo::player
     case goTo::player:
-      targetPos = level.pcPos(); if (targetPos.first < 0) return; // player is not on this level; skip
+      targetPos = pcPos; if (targetPos.first < 0) return; // player is not on this level; skip
       {auto myPos = level.posOf(mon);
       dir.first = myPos.first < targetPos.first ? 1 : myPos.first == targetPos.first ? 0 : -1;
       dir.second = myPos.second < targetPos.second ? 1 : myPos.second == targetPos.second ? 0 : -1;

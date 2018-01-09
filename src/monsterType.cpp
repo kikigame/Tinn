@@ -327,7 +327,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .align(dr.getExact(Element::earth, Domination::aggression, Outlook::none))
 	    .eats(materialType::fleshy)
 	    .saying(L"(howl)") // todo: woof for puppies & dogs
-	    .movement({speed::turn2, goTo::player, goBy::smart, 50})
+	    .movement({speed::turn2, goTo::unaligned, goBy::smart, 50})
 	    .encyclopedium(L"Canines are furry, with four legs and a tail. They are easily excited, always\n"
 "hungry and pack hunters. They enjoy bones and some are known to bark or howl."));
 
@@ -384,7 +384,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .gen(genderAssignType::m)
 	    .material(materialType::liquid) // prevent player from taking corpse easily
 	    .align(dr.begin(), dr.end())
-	    .movement({speed::turn3, goTo::player, goBy::smart, 10})
+	    .movement({speed::turn3, goTo::unaligned, goBy::smart, 10})
 	    .eats(materialType::clothy) // ripping clothes off with its teeth...
     //ref: http://www.chesterfieldparanormalresearch.com/incubus---sucubbus-demon.html; wikipedia; http://mythicalcreatureslist.com/mythical-creature/Succubus; others
 	    .encyclopedium(L"The word incubus comes from the Latin /incubāre/ (to lay\n"
@@ -421,7 +421,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .material(materialType::liquid) // breaks down into a black slush, according to https://folkrealmstudies.weebly.com/-scottish-legends-the-each-uisge.html
 	    .align(dr.getExact(Element::water, Domination::concentration, Outlook::cruel))
 	    .align(dr.getExact(Element::water, Domination::aggression, Outlook::cruel))
-	    .movement({speed::perturn, goTo::player, goBy::smart, 20})
+	    .movement({speed::perturn, goTo::unaligned, goBy::smart, 20})
 	    .eats(materialType::fleshy)
 	    .encyclopedium(
 L"Kelpies live in rivers and streams, while the stronger Each-uisge prefers\n"
@@ -554,7 +554,7 @@ L"Of all the birds of the sea, the sirens are the most beautiful and the most\n"
 	    .gen(genderAssignType::mfn) //TODO
 	    .material(materialType::stony)
 	    .align(dr.getExact(Element::earth, Domination::none, Outlook::cruel))
-	    .movement({speed::slow3, goTo::player, goBy::beeline, 25})
+	    .movement({speed::slow3, goTo::unaligned, goBy::beeline, 25})
 	    .eats(materialType::stony)
 	    // Mostly based on http://www.mysticfiles.com/trolls-from-ancient-to-modern/
 	    .encyclopedium(L"Dim-witted creatures of Norse and Scandinavian origin. Big and ugly, trolls\n"
@@ -751,4 +751,4 @@ void monsterTypeRepo::close() {
   instance_.reset(NULL);
 }
 
-movementType stationary { speed::slow3, goTo::none, goBy::avoid, 0 };
+
