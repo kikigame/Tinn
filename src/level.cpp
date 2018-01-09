@@ -1224,6 +1224,7 @@ bool itemHolderLevel::removeItemForMove(item &item, itemHolder &next) {
   for (auto z : level_.zonesAt(coord_))
     if (!z->onExit(item, next)) return false;
   level_.removeItem(coord_, item);
+  itemHolder::removeItemForMove(item, next);
   return true;
 }
 bool itemHolderLevel::destroyItem(item &item) {
