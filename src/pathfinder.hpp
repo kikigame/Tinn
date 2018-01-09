@@ -20,8 +20,7 @@
  */
 template<int maxDistance>
 class pathfinder {
-  typedef std::pair<char, char> dir;
-private:
+ private:
   std::function<std::set<coord>(const coord&)> nextMoves_;
   std::set<coord> visited_;
 public:

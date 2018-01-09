@@ -410,8 +410,7 @@ public:
       attack(m, *(mn->second)); // can't move into monster
       return;
     }
-    move(m, std::make_pair<char,char>(0,-1), true);
-    //      pcPos_ = c;
+    move(m, dir(0,-1), true);
   }
   void south(monster &m) {
     coord c = posOf(m);
@@ -424,7 +423,7 @@ public:
       attack(m, *(mn->second)); // can't move into monster
       return;
     }
-    move(m, std::make_pair<char,char>(0,+1), true);
+    move(m, dir(0,+1), true);
   }
   void east(monster &m) {
     coord c = posOf(m);
@@ -437,7 +436,7 @@ public:
       attack(m, *(mn->second)); // can't move into monster
       return;
     }
-    move(m, std::make_pair<char,char>(+1,0), true);
+    move(m, dir(+1,0), true);
   }
   void west(monster &m) {
     coord c = posOf(m);
@@ -450,7 +449,7 @@ public:
       attack(m, *(mn->second)); // can't move into monster
       return;
     }
-    move(m, std::make_pair<char,char>(-1,0), true);
+    move(m, dir(-1,0), true);
   }
   void up(monster &m) {
     coord c = posOf(m);
@@ -700,11 +699,9 @@ private:
 public:
 
   // move a monster by direction, with optional safety
-  void move(monster &m, const std::pair<char,char> dir, const bool avoidTraps) {
-    coord pos = coord(posOf(m));
-    coord cc=pos;
-    pos.first += dir.first; // -1, 0, or +1
-    pos.second += dir.second; // -1, 0, or +1
+  void move(monster &m, const ::dir dir, const bool avoidTraps) {
+    coord cc=coord(posOf(m));
+    coord pos = cc.inDir(dir);
     
     sanitiseCoords(pos);
 
@@ -1172,7 +1169,7 @@ void level::moveTo(monster &monster, coord targetPos) {
 void level::teleportTo(monster &monster, coord targetPos) {
   pImpl_->teleportTo(monster, targetPos);
 }
-void level:: move(monster &m, const std::pair<char,char> dir, const bool avoidTraps) {
+void level:: move(monster &m, const ::dir dir, const bool avoidTraps) {
   pImpl_->move(m, dir, avoidTraps);
 }
 bool level::movable(const coord &oldPos, const coord &pos, const monster &m, bool avoidTraps, bool avoidHiddenTraps) const {

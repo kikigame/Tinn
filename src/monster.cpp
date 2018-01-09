@@ -498,7 +498,7 @@ void moveMonster(monster &mon) {
   default: throw type.speed_;
   }
   for (int counter = 0; counter < loopMax; ++counter) {
-    std::pair<char,char> dir(0,0);
+    ::dir dir(0,0);
     coord targetPos;
 
     bool charmed = false;

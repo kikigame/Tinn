@@ -102,7 +102,7 @@ public:
    * true - do not move into traps or walls
    * false - move into traps regardless (like the old computer game Zombies)
    */
-  void move(monster &monster, const std::pair<char,char> dir, const bool avoidTraps);
+  void move(monster &monster, const ::dir dir, const bool avoidTraps);
   /*
    * move to given coordinates, applying zone effects & traps
    */
