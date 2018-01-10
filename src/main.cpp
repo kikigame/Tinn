@@ -89,6 +89,7 @@ const wchar_t * help() {
   return L"Help on game keys:\n"
     "q) Quit the game\n"
     "wasd) Cardinally move around the map, or attack a monster in that direction\n"
+    "       (use Alt/meta to deliberately move into traps)\n"
     "/) Interrogate the map\n"
     "<>) Climb up or down a ramp, pit, stair or ladder\n"
     ",p) Collect (pick up) items\n"
@@ -124,20 +125,36 @@ void processInput(dungeon & d, const std::wstring &c, const std::shared_ptr<io> 
   case L'q':
     d.quit();
     return; // don't count quit as a move
-  case L'w': case L'W':
-    d.cur_level().north(*(d.pc()));
+  case L'w': case L'W': // north
+    d.cur_level().moveOrFight(*(d.pc()), ::dir(0,-1), true);
     doTick(d);
     break;
-  case L'a': case L'A':
-    d.cur_level().west(*(d.pc()));
+  case L'a': case L'A': // west
+    d.cur_level().moveOrFight(*(d.pc()), ::dir(-1,0), true);
     doTick(d);
     break;
-  case L's': case L'S':
-    d.cur_level().south(*(d.pc()));
+  case L's': case L'S': // south
+    d.cur_level().moveOrFight(*(d.pc()), ::dir(0,+1), true);
     doTick(d);
     break;
-  case L'd': case L'D':
-    d.cur_level().east(*(d.pc()));
+  case L'd': case L'D': // east
+    d.cur_level().moveOrFight(*(d.pc()), ::dir(+1,0), true);
+    doTick(d);
+    break;
+  case 256+L'w': case 256+L'W': // north
+    d.cur_level().moveOrFight(*(d.pc()), ::dir(0,-1), false);
+    doTick(d);
+    break;
+  case 256+L'a': case 256+L'A': // west
+    d.cur_level().moveOrFight(*(d.pc()), ::dir(-1,0), false);
+    doTick(d);
+    break;
+  case 256+L's': case 256+L'S': // south
+    d.cur_level().moveOrFight(*(d.pc()), ::dir(0,+1), false);
+    doTick(d);
+    break;
+  case 256+L'd': case 256+L'D': // east
+    d.cur_level().moveOrFight(*(d.pc()), ::dir(+1,0), false);
     doTick(d);
     break;
   case L'/':

@@ -398,58 +398,18 @@ public:
     else ioFactory::instance().message(rtn);
   }
 
-  // NB: Moving of non-player monsters doesn't use cardinals
-  void north(monster &m) {
+  void moveOrFight(monster &m, const ::dir &dir, bool avoidTraps) {
     coord c = posOf(m);
-    coord cc=c;
-    if (c.second == 0) return; // can't move above top of map
-    c.second--;
-    if (!movable(cc,c, m, true, false)) return; // can't move into terrain
-    auto mn = monsters_.find(c);
+    coord cc = c.inDir(dir);
+    if (cc.first < 0 || cc.second < 0 || cc.first == level::MAX_WIDTH || cc.second == level::MAX_HEIGHT)
+      return; // can't move above top of map
+    if (!movable(c,cc,m,avoidTraps, false)) return; // can't move into terrain
+    auto mn = monsters_.find(cc);
     while (mn != monsters_.end()) {
       attack(m, *(mn->second)); // can't move into monster
       return;
     }
-    move(m, dir(0,-1), true);
-  }
-  void south(monster &m) {
-    coord c = posOf(m);
-    coord cc=c;
-    c.second++;
-    if (c.second == level::MAX_HEIGHT) return; // can't move below bottom of map
-    if (!movable(cc,c, m, true, false)) return; // can't move into terrain
-    auto mn = monsters_.find(c);
-    if (mn != monsters_.end()) {
-      attack(m, *(mn->second)); // can't move into monster
-      return;
-    }
-    move(m, dir(0,+1), true);
-  }
-  void east(monster &m) {
-    coord c = posOf(m);
-    coord cc=c;
-    c.first++;
-    if (c.first == level::MAX_WIDTH) return; // can't move after right of map
-    if (!movable(cc,c, m, true, false)) return; // can't move into terrain
-    auto mn = monsters_.find(c);
-    if (mn != monsters_.end()) {
-      attack(m, *(mn->second)); // can't move into monster
-      return;
-    }
-    move(m, dir(+1,0), true);
-  }
-  void west(monster &m) {
-    coord c = posOf(m);
-    coord cc=c;
-    if (c.first == 0) return; // can't move before left of map
-    c.first--;
-    if (!movable(cc,c, m, true, false)) return; // can't move into terrain
-    auto mn = monsters_.find(c);
-    if (mn != monsters_.end()) {
-      attack(m, *(mn->second)); // can't move into monster
-      return;
-    }
-    move(m, dir(-1,0), true);
+    move(m, dir, avoidTraps);
   }
   void up(monster &m) {
     coord c = posOf(m);
@@ -1129,17 +1089,8 @@ coord level::findTerrain(const terrainType type) const {
   return pImpl_->findTerrain(type);
 }
 
-void level::north(monster &m) {
-  return pImpl_->north(m);
-}
-void level::south(monster &m) {
-  return pImpl_->south(m);
-}
-void level::east(monster &m) {
-  return pImpl_->east(m);
-}
-void level::west(monster &m) {
-  return pImpl_->west(m);
+void level::moveOrFight(monster &m, const ::dir &dir, bool at) {
+  return pImpl_->moveOrFight(m, dir, at);
 }
 void level::up(monster &m) {
   return pImpl_->up(m);

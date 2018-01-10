@@ -90,10 +90,7 @@ public:
   int depth() const;
 
   // request specific movement of monsters:
-  void north(monster & m);
-  void south(monster & m);
-  void east(monster & m);
-  void west(monster & m);
+  void moveOrFight(monster &m, const ::dir &d, bool avoidTraps);
   void up(monster & m);
   void down(monster & m);
   void moveTo(terrainType terrain); // teleport the player to somewhere with the given terrain (must exist)

@@ -408,12 +408,18 @@ private:
       else rtn += c;
     }
   }
+
   /*
-   * reimplemtation of getch(); plan is for unicode stuff to go here maybe?
+   * reimplemtation of getch(); adds 256 to chars to indicate Alt/Meta key
    */
   wchar_t getwch() const {
     ::refresh();
-    return getch();
+    auto key = getch();
+
+    if (key == 27) // Alt modifier
+      key = 256 + getch();
+
+    return key;
   }
 
   // read and return a wide key, non-blocking
