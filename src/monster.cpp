@@ -417,9 +417,10 @@ bool monster::onMove(const coord &pos, const terrain &terrain) {
     const auto message = fall(dPc() / 10);
     const auto climb = abilities().climb();
     const int count=climb == bonus(false) ? 6 : climb == bonus() ? 4 : 2;
+    auto rtn = !intrinsics_.entrapped();
     intrinsics_.entrap(count);
     if (isPlayer()) ioFactory::instance().message(message);
-    return false;
+    return rtn;
   }
   default:
     return true;
