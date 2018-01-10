@@ -92,7 +92,6 @@ public:
   virtual void clear() const {
     flushLastMsg(L"");
     ::clear();
-    refresh();
   }
 
   // print a 1-line message to the user:
@@ -135,8 +134,7 @@ public:
     else lastMsg = lastMsg + L"\n" + msg;
     mvaddwstr(0,0, lastMsg.c_str());
     printw(" -- MORE --"); // ascii...
-    refresh();
-    getch();
+    getwch();
     lastMsg = L"";
 /*
     scr_dump()
@@ -164,7 +162,6 @@ public:
   virtual bool ynPrompt(std::wstring msg) const {
     message(msg + L" (Y/N) >");
     flushLastMsg(L"");
-    refresh();
     rawTerm noCook; // this function will not block input.
     while(true) {
       wchar_t rtn = getwch();
@@ -178,7 +175,6 @@ public:
   virtual wchar_t dirPrompt() const {
     message(L"(wsad<>.) >");
     flushLastMsg(L"");
-    refresh();
     const auto mask = std::wstring(L"WASD<>.wasd");
     wchar_t rtn;
     do {
@@ -222,14 +218,12 @@ public:
       ;
     //std::wcerr << fmt.str().c_str() << std::endl;
     addwstr(fmt.str().c_str());
-    //    refresh();
   }
   virtual void draw(const dungeon & d) const {
     ::clear();
     draw(d.cur_level());
     draw(*(d.pc()));
     // don't flushLastMsg here; that'll be taken care of by the key prompt.
-    refresh();
   }
 
   virtual std::pair<unsigned char, unsigned char> 
@@ -297,7 +291,6 @@ private:
       blankToEol();
       if (!msg.empty())
 	addwstr(L" -- MORE --"); // ascii...
-      refresh();
       if (!msg.empty())
 	getwch();
     }
@@ -330,7 +323,6 @@ private:
     ::clear();
     mvaddwstr(3,0,help.c_str());
     mvaddwstr(0,0,msg.c_str());
-    refresh();
   }
 
   /*
@@ -420,6 +412,7 @@ private:
    * reimplemtation of getch(); plan is for unicode stuff to go here maybe?
    */
   wchar_t getwch() const {
+    ::refresh();
     return getch();
   }
 
