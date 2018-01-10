@@ -114,6 +114,7 @@ public:
 
   // retrieve the current level; needed by moveMonster() function as monsters can switch levels.
   level & curLevel(); 
+  const level & curLevel() const; 
 
   // Spiritual alignment
   const deity& align() const;

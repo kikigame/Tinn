@@ -795,6 +795,8 @@ public:
 
   dungeon & dung() { return dungeon_; }
 
+  const dungeon & dung() const { return dungeon_; }
+
   itemHolder &holder(const coord c) {
     auto rtn = holders_.find(c);
     if (rtn == holders_.end()) 
@@ -1200,6 +1202,9 @@ itemHolder &level::holder(const coord c) {
   return pImpl_->holder(c);
 }
 dungeon & level::dung() {
+  return pImpl_->dung();
+}
+const dungeon & level::dung() const {
   return pImpl_->dung();
 }
 

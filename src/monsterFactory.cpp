@@ -11,6 +11,7 @@
 #include "religion.hpp"
 #include "itemTypes.hpp"
 #include "items.hpp"
+#include "role.hpp"
 
 // defined in monster.cpp
 void moveMonster(monster &mon);
@@ -563,6 +564,9 @@ public:
   dungeoneer(monsterBuilder &b) :
     trivialMonster(b) {
     intrinsics().hear(true); // can't see
+  }
+  virtual bool highlight() const {
+    return curLevel().dung().pc()->job().type() == roleType::shopkeeper;
   }
   virtual ~dungeoneer() {};
 };

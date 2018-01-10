@@ -50,6 +50,10 @@ levelGen * role::newQuestLevelGen(levelImpl & li, level &l) const {
   return pImpl_->newQuestLevelGen(li,l);
 }
 
+roleType role::type() const {
+  return pImpl_->type();
+}
+
 // ref: Many, many slay-the-dragon myths. St George arguably, although
 // he was a real Turkish Christian who never slew a dragon (martyred
 // in 303AD for refusing to convert to the Roman religion).

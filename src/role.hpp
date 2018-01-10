@@ -29,6 +29,7 @@ public:
   const wchar_t * const startGameMessage() const;
   // per-role quest level:
   levelGen * newQuestLevelGen(levelImpl &, level &) const; // returns new instance
+  roleType type() const;
 };
 
 class roleRepoImpl;

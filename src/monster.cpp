@@ -387,6 +387,10 @@ level & monster::curLevel() {
   return *level_;
 }
 
+const level & monster::curLevel() const {
+  return *level_;
+}
+
 bool monster::onMove(const coord &pos, const terrain &terrain) {
   if (intrinsics_.entrapped()) {
     intrinsics_.entrap(-1);

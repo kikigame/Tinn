@@ -144,6 +144,7 @@ public:
 
   // get a reference to the dungeon
   dungeon & dung();
+  const dungeon & dung() const;
 
   // determine if a given position is passible or not to the given monster
   // oldPos - needed in case a transport at the old pos can be used. Pass "pos" for teleporting or creating monsters.
