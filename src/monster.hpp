@@ -44,6 +44,7 @@ struct attackResult {
 class monster : public renderable, public itemHolder {
 private:
   level *level_; // raw pointer to avoid cyclic reference; level owns its monsters
+  bool highlight_;
   characteristic strength_;
   characteristic appearance_;
   characteristic fighting_;
@@ -77,6 +78,7 @@ public:
   void eachTick(const std::function<void()> &callback);
   virtual const wchar_t render() const; // delegate to type by default
   virtual std::wstring name() const; // delegate to type depending on level by default;
+  virtual bool highlight() const;
   virtual const wchar_t * const description() const; // delegate to type by default
   // create monster by type
   monster(level * onLvl, const monsterType &type);
@@ -234,6 +236,7 @@ private:
 class monsterBuilder {
   friend class monster;
   level *level_;
+  bool highlight_;
   const deity *align_;
   unsigned char strength_;
   unsigned char appearance_;
@@ -262,6 +265,7 @@ public:
   void female(unsigned char f);
   void align(const deity & d);
   void type(const monsterType & t);
+  void highlight();
   level * iLevel();
   const deity & align();
   unsigned char strength();
@@ -274,11 +278,12 @@ public:
   unsigned char female();
   const monsterType & type();
   void progress(int progress);
+  bool isHighlight();
 };
 
 // create a reaming monster initially on the given level:
 template<monsterTypeKey T>
-std::shared_ptr<monster> ofType(level & level);
+std::shared_ptr<monster> ofType(level & level, monsterBuilder &b = monsterBuilder(true));
 
 std::vector<std::pair<unsigned int, monsterType*>> spawnMonsters(int depth, int rooms);
 

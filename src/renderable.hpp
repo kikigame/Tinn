@@ -31,7 +31,7 @@ public:
   virtual std::wstring name() const = 0;
   // encyclopedium of the thingy:
   virtual const wchar_t * const description() const = 0;
-  // true to highlight thingies. Only the player, pets and very special items should be highlighted:
+  // true to highlight thingies. Only the player, quest-relevant monsters and very special items should be highlighted:
   virtual bool highlight() const { return false; }
 };
 

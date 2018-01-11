@@ -78,6 +78,7 @@ enum class monsterTypeKey {
 };
 
 class monster;
+class monsterBuilder;
 class monsterTypeBuilder;
 class deity;
 class monsterTypeRepoImpl;
@@ -182,10 +183,13 @@ public:
 
   bool operator == (const monsterType & rhs) const;
 
+  // actually defined in monsterFactory.cpp:
+  std::unique_ptr<monsterBuilder> builder(bool allowRandom = true) const;
   // spawn the usual monster type:
+  std::shared_ptr<monster> spawn(level &, monsterBuilder &b) const;
   std::shared_ptr<monster> spawn(level &) const;
   // spawn a space version of the monster:
-  std::shared_ptr<monster> spawnSpace(level &) const;
+  std::shared_ptr<monster> spawnSpace(level &, monsterBuilder &b) const;
 };
 
 /* singleton repository for monster types */

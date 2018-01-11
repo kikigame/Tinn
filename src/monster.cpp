@@ -29,6 +29,7 @@ class coverSearch : public graphSearch<const slot*, optionalRef<item> > {
 
 monster::monster(monsterBuilder & b) :
   level_(b.iLevel()),
+  highlight_(b.isHighlight()),
   strength_(b.strength()),
   appearance_(b.appearance()),
   fighting_(b.fighting()),
@@ -48,6 +49,7 @@ monster::monster(monsterBuilder & b) :
 
 monster::monster(monsterBuilder & b, std::vector<const slot *>slots) :
   level_(b.iLevel()),
+  highlight_(b.isHighlight()),
   strength_(b.strength()),
   appearance_(b.appearance()),
   fighting_(b.fighting()),
@@ -77,6 +79,10 @@ const wchar_t monster::render() const { // delegate to type by default
 std::wstring monster::name() const {
   auto damage = damage_.max();
   return type_.name(damage);
+}
+
+bool monster::highlight() const {
+  return highlight_;
 }
 
 const wchar_t * const monster::description() const {
