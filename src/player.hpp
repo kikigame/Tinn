@@ -34,8 +34,6 @@ public:
   void drop(level &lvl);
   void use();
 
-  // overridden to inform the user:
-  virtual const wchar_t* const fall(unsigned char reductionPc);
   const role &job() const { return role_; }
 
 protected:

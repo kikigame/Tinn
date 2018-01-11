@@ -415,29 +415,40 @@ bool monster::onMove(const coord &pos, const terrain &terrain) {
       ioFactory::instance().message(L"It's a (pit) trap!"); // ref: Admiral Ackbar, Star Wars film Episode VI: Return of the Jedi.
     return true; // you can move into a hidden pit
   case terrainType::PIT: {
-    bool flying(abilities().fly());
-    if (flying) {
-      if (isPlayer()) ioFactory::instance().message(L"You are now over a pit.");
-      return true;
-    }
-    const auto message = fall(dPc() / 10);
+    fall(dPc() / 10);
     const auto climb = abilities().climb();
     const int count=climb == bonus(false) ? 6 : climb == bonus() ? 4 : 2;
     auto rtn = !intrinsics_.entrapped();
     intrinsics_.entrap(count);
-    if (isPlayer()) ioFactory::instance().message(message);
     return rtn;
   }
   default:
     return true;
   }
 }
+void monster::postMove(const coord &pos, const terrain &terrain) {
+  switch (terrain.type()) {
+  case terrainType::PIT: {
+    bool flying(abilities().fly());
+    if (flying) {
+      if (isPlayer()) ioFactory::instance().message(L"You are now over a pit.");
+    } else {
+      if (isPlayer()) ioFactory::instance().message(L"You are now in a pit.");
+    }
+  }
+  default:
+    return;
+  }
+  
+}
 
-const wchar_t * const monster::fall(unsigned char reductionPc) {
+void monster::fall(unsigned char reductionPc) {
   auto damage = wound(dPc() / 10, damageRepo::instance()[damageType::bashing]);
-  return (damage == 0 ?
-	  L"You adjust to the sudden change in altitude." L" You are now in a pit." :
-	  L"Gravity hurts sometimes." L" You are now in a pit.");
+  if (isPlayer()) ioFactory::instance().message
+		    (damage == 0 ?
+		     L"You adjust to the sudden change in altitude." :
+		     L"Gravity hurts sometimes.");
+  return;
 }
 
 void monster::onLevel(level * lvl) {

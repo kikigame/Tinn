@@ -125,7 +125,7 @@ public:
   const attackResult attack(monster &target);
 
   // falling...
-  virtual const wchar_t* const fall(unsigned char reductionPc);
+  void fall(unsigned char reductionPc);
 
   // ... and other injuries... (returns the lossed score)
   int wound(unsigned char reductionPc, const damage & dt);
@@ -168,6 +168,8 @@ public:
   // NB: At this stage, traps have already been revealed. Trap effects generally applied here.
   // May return false to prevent movement
   virtual bool onMove(const coord &pos, const terrain &terrain);
+  // called after moving. Fatal traps applied here to get the corpse in the right square.
+  virtual void postMove(const coord &pos, const terrain &terrain);
 
   // called when the monster moves level
   virtual void onLevel(level * lvl);

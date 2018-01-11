@@ -541,22 +541,34 @@ public:
   // teleport a monster. NB: This will move the monster regardless of any traps, items or other things in the way
   // UNLESS zone effects do not allow it
   void moveTo(monster &m, const coord &dest) {
-    std::shared_ptr<monster> pM;
-    auto i = monsters_.begin();
-    while (i != monsters_.end()) {
-      if (*(i->second) == m) {
-	pM = i->second;
-	zoneActions<monster> zones(zonesAt(i->first, true), zonesAt(dest, true));
+    // NB: This repeats the loop each time in case any callback removes or moves the monster.
+    zoneActions<monster> zones;
+    for (auto i = monsters_.begin(); i != monsters_.end(); ++i) {
+      auto pM = i->second;
+      if (*pM == m) {
+	zones = zoneActions<monster>(zonesAt(i->first, true), zonesAt(dest, true));
 	for (auto z : zones.same())
 	  if (!z->onMoveWithin(*pM, dest)) return;
+      }
+    }
+    for (auto i = monsters_.begin(); i != monsters_.end(); ++i) {
+      auto pM = i->second;
+      if (*pM == m)
 	for (auto z : zones.leaving())
 	  if (!z->onExit(*pM, holder(dest))) return;
+    }
+    for (auto i = monsters_.begin(); i != monsters_.end(); ++i) {
+      auto pM = i->second;
+      if (*pM == m)
 	for (auto z : zones.entering())
 	  if (!z->onEnter(*pM, holder(i->first))) return;
-	teleportTo(m, dest, i);
-	break;
+    }
+    for (auto i = monsters_.begin(); i != monsters_.end(); ++i) {
+      auto pM = i->second;
+      if (*pM == m) {
+	teleportTo(i, dest);
+	return;
       }
-      ++i;
     }
   }
   void teleportTo(monster &m, const coord &dest) {
@@ -564,20 +576,23 @@ public:
     auto i = monsters_.begin();
     while (i != monsters_.end())
       if (*(i->second) == m) {
-	teleportTo(m, dest, i);
+	teleportTo(i, dest); //invalidates i
 	return;
       } else ++i;
   }
-  void teleportTo(monster &m, const coord &dest,::std::multimap<coord, ::std::shared_ptr<monster> >::iterator i) {
-    if(m.onMove(dest, terrain_.at(dest).value())) {
-      auto pM = i->second;
-      monsters_.erase(i);
-      addMonster(pM, dest);
+  void teleportTo(::std::multimap<coord, ::std::shared_ptr<monster> >::iterator i, const coord &dest) {
+    auto pM = i->second;
+    if(pM->onMove(dest, terrain_.at(dest).value())) {
+      if (posOf(*pM).first >= 0) { // in case monster has died/left the level in onMove()
+	monsters_.erase(i);
+	addMonster(pM, dest);
+      }
       // reveal any pits:
-      if (!m.abilities().fly() && terrain_.at(dest).type() == terrainType::PIT_HIDDEN)
+      if (!pM->abilities().fly() && terrain_.at(dest).type() == terrainType::PIT_HIDDEN)
 	terrain_[dest] = tFactory.get(terrainType::PIT);
-      if (m.isPlayer())
-	describePlayerLoc(m, dest);
+      if (pM->isPlayer())
+	describePlayerLoc(*pM, dest);
+      pM->postMove(dest, terrain_.at(dest).value());
     }
   }
 

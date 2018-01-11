@@ -193,12 +193,6 @@ void player::use() {
   forEachItem(f);
 }
 
-const wchar_t* const player::fall(unsigned char reductionPc) {
-  auto rtn = monster::fall(reductionPc);
-  ioFactory::instance().message(rtn);
-  return rtn;
-};
-
 void player::death() {
   curLevel().dung().playerDeath();
   monster::death();

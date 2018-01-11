@@ -48,6 +48,8 @@ private:
   typedef std::vector<std::shared_ptr<zoneArea<T> > > unsorted_type;
   unsorted_type intersection_, entering_, leaving_;
 public:
+  zoneActions() :
+    intersection_(), entering_(), leaving_() {}
   zoneActions(filteredIterable<std::shared_ptr<zoneArea<T> >,std::vector<std::shared_ptr<zoneArea<T> > > > before,
 	      filteredIterable<std::shared_ptr<zoneArea<T> >,std::vector<std::shared_ptr<zoneArea<T> > > > after) {
     sorted_type pre, post;

@@ -233,11 +233,10 @@ public:
   zombie(monsterBuilder &b) :
     monster(b) {}
   virtual ~zombie() {}
-  bool onMove(const coord &pos, const terrain &terrain) {
-    auto rtn = monster::onMove(pos, terrain);
+  virtual void postMove(const coord &pos, const terrain &terrain) {
+    monster::postMove(pos, terrain);
     if (terrain.type() == terrainType::PIT)
       death();
-    return rtn;
   }
 };
 
