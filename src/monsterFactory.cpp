@@ -66,7 +66,7 @@ unsigned char monsterBuilder::maxDamage() { calcFinalStats(); return maxDamage_;
 unsigned char monsterBuilder::male() { calcFinalStats(); return male_; }
 unsigned char monsterBuilder::female() { calcFinalStats(); return female_; }
 const deity & monsterBuilder::align() { calcFinalStats(); return *align_; }
-const monsterType & monsterBuilder::type() { calcFinalStats(); return *type_; }
+const monsterType & monsterBuilder::type() { return *type_; }
 void monsterBuilder::highlight() { highlight_ = true; }
 bool monsterBuilder::isHighlight() { return highlight_; }
 
@@ -637,7 +637,9 @@ std::shared_ptr<monster> ofSpaceType(level &level, monsterBuilder &b) {
 }
 
 std::unique_ptr<monsterBuilder> monsterType::builder(bool allowRandom) const {
-  return std::unique_ptr<monsterBuilder>(new monsterBuilder(allowRandom));
+  auto rtn = std::unique_ptr<monsterBuilder>(new monsterBuilder(allowRandom));
+  rtn->type(*this);
+  return rtn;
 }
 
 std::shared_ptr<monster> monsterType::spawn(level & level) const {

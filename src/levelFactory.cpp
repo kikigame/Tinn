@@ -142,8 +142,8 @@ public:
     place(coord(alpha,10), terrainType::UP);
     place(coord(beta,10), terrainType::DOWN);
 
-    auto &mt = monsterTypeRepo::instance();
-    levelGen::addMonster(mt[monsterTypeKey::ferret].spawnSpace(pub_), findRndTerrain(terrainType::SPACE));
+    auto &ft = monsterTypeRepo::instance()[monsterTypeKey::ferret];
+    levelGen::addMonster(ft.spawnSpace(pub_, *ft.builder()), findRndTerrain(terrainType::SPACE));
 
     // hide an item in the starfield:
     pub_.holder(findRndTerrain(terrainType::SPACE))

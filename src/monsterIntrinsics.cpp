@@ -17,7 +17,8 @@ enum class bonusType {
     flying,
     swimming, // TODO (need water too)
     climbing, // fast at escaping pits
-    fearless // affected by petrify (or other fear) actions
+    fearless, // affected by petrify (or other fear) actions
+    END
     };
 
 class monsterIntrinsicsImpl {

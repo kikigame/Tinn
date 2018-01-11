@@ -933,7 +933,14 @@ void levelGen::addMonster(std::shared_ptr<monster> m, const coord &c) {
 
 void levelGen::addMonster(monsterTypeKey m, const coord &c) {
   auto &mt = monsterTypeRepo::instance()[m];
-  addMonster(mt.spawn(pub_), c);
+  auto mon = mt.spawn(pub_);
+  addMonster(mon, c);
+}
+
+void levelGen::addMonster(monsterBuilder &b, const coord &c) {
+  auto &mt = monsterTypeRepo::instance()[b.type().type()];
+  auto mon = mt.spawn(pub_, b);
+  addMonster(mon, c);
 }
 
 void levelGen::addMonsters(std::vector<std::pair<coord,coord>> coords /*by value*/) {
