@@ -67,6 +67,7 @@ private:
   monsterIntrinsics intrinsics_;
   // which monsters have charmed this one?
   std::list<monster*> charmedBy_;
+  std::vector<std::function<void()>> onDeath_;
 protected:
   // create monster by builder, with specific weapon slots (used internally by dragons)
   monster(monsterBuilder & b, std::vector<const slot *>slots);
@@ -253,6 +254,7 @@ class monsterBuilder {
   bool finalStatsDone_ = false;
   void calcFinalStats(); // TODO: Initial XP for monsters
   int progress_; // >=1, based on depth of monster
+  std::vector<std::function<void()>> onDeath_;
 public:
   monsterBuilder(bool allowRandom = true);
   void startOn(level &l);
@@ -268,6 +270,7 @@ public:
   void align(const deity & d);
   void type(const monsterType & t);
   void highlight();
+  void onDeath(std::function<void()>);
   level * iLevel();
   const deity & align();
   unsigned char strength();
@@ -281,6 +284,7 @@ public:
   const monsterType & type();
   void progress(int progress);
   bool isHighlight();
+  std::vector<std::function<void()>> &onDeath();
 };
 
 // create a reaming monster initially on the given level:

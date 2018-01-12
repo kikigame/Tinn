@@ -414,7 +414,12 @@ public:
   void up(monster &m) {
     coord c = posOf(m);
     if (depth_ <= 1) {
-      ioFactory::instance().message(L"Leaving the dungeon isn't implemented yet.");
+      auto &role = dung().pc()->job();
+      for (auto pQ = role.questsBegin(); pQ != role.questsEnd(); ++pQ) {
+	if (!pQ->isSuccessful() && !ioFactory::instance().ynPrompt(pQ->incompletePrompt()))
+	  return;
+	endGame();
+      }
       return;
     }
     switch (terrain_.at(c).type()) {
@@ -824,6 +829,19 @@ public:
     }
     throw std::wstring(L"Too many rocky things to create a prison!");
   }
+
+private:
+  void endGame() {
+    auto &ios = ioFactory::instance();
+    auto &role = dung().pc()->job();
+    ios.clear();
+    ios.message(L"You have left the dungeon.");
+    for (auto pQ = role.questsBegin(); pQ != role.questsEnd(); ++pQ)
+      if (pQ->isSuccessful()) 
+	ios.message(pQ->completeMsg());
+    ios.message(L"You have survived.");
+    dung().quit();
+  }
 };
 
 std::pair<coord,coord> levelGen::addRoom() {
@@ -931,16 +949,18 @@ void levelGen::addMonster(std::shared_ptr<monster> m, const coord &c) {
   }
 }
 
-void levelGen::addMonster(monsterTypeKey m, const coord &c) {
+monster &levelGen::addMonster(monsterTypeKey m, const coord &c) {
   auto &mt = monsterTypeRepo::instance()[m];
   auto mon = mt.spawn(pub_);
   addMonster(mon, c);
+  return *mon;
 }
 
-void levelGen::addMonster(monsterBuilder &b, const coord &c) {
+monster &levelGen::addMonster(monsterBuilder &b, const coord &c) {
   auto &mt = monsterTypeRepo::instance()[b.type().type()];
   auto mon = mt.spawn(pub_, b);
   addMonster(mon, c);
+  return *mon;
 }
 
 void levelGen::addMonsters(std::vector<std::pair<coord,coord>> coords /*by value*/) {
@@ -1272,8 +1292,9 @@ public:
   }
 private:
   levelGen *createGen(int depth, levelImpl *l, level *level) {
-    if (depth == numLevels_)
-      return role_.newQuestLevelGen(*l, *level);
+    for (auto qI = role_.questsBegin(); qI != role_.questsEnd(); ++qI)
+      if (qI->isQuestLevel(depth))
+	return qI->newQuestLevelGen(*l, *level);
     bool addDownRamp = depth < numLevels_;
     switch (depth) {
     case 10:

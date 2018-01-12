@@ -6,17 +6,15 @@
 #ifndef __ROLE_HPP
 #define __ROLE_HPP
 
+#include "quest.hpp"
 #include <memory>
-
-enum class roleType {
-  warrior,
-  shopkeeper
-};
 
 class level;
 class levelImpl;
 class levelGen;
 class roleImpl;
+
+// roleType enum defined in quest.hpp to avoid cyclic dependency
 
 class role {
 private:
@@ -27,8 +25,11 @@ public:
   const wchar_t * const name() const;  
   // message to user when starting the game
   const wchar_t * const startGameMessage() const;
-  // per-role quest level:
-  levelGen * newQuestLevelGen(levelImpl &, level &) const; // returns new instance
+  // per-role quest levels:
+  std::vector<quest>::iterator questsBegin();
+  std::vector<quest>::const_iterator questsBegin() const;
+  std::vector<quest>::iterator questsEnd();
+  std::vector<quest>::const_iterator questsEnd() const;
   roleType type() const;
 };
 

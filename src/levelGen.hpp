@@ -63,10 +63,10 @@ protected:
   void addMonster(std::shared_ptr<monster> mon, const coord &c, const std::pair<coord,coord> &);
 
   // add a monster at c:
-  void addMonster(monsterTypeKey mon, const coord &c);
+  monster &addMonster(monsterTypeKey mon, const coord &c);
 
   // add a monster at c:
-  void addMonster(monsterBuilder &b, const coord &c);
+  monster &addMonster(monsterBuilder &b, const coord &c);
 
   // add a monster at c: (others eventually call this):
   void addMonster(std::shared_ptr<monster> mon, const coord &c);

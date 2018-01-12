@@ -41,7 +41,8 @@ monster::monster(monsterBuilder & b) :
   type_(*b.type_),
   align_(b.align_),
   equipment_(),
-  intrinsics_() {
+  intrinsics_(),
+  onDeath_(b.onDeath()) {
   // create all slots as empty initially
   for (auto slot : slotsFor(type_.category()))
     equipment_.emplace(slot, optionalRef<item>());
@@ -61,7 +62,8 @@ monster::monster(monsterBuilder & b, std::vector<const slot *>slots) :
   type_(*b.type_),
   align_(b.align_),
   equipment_(),
-  intrinsics_() {
+  intrinsics_(),
+  onDeath_(b.onDeath()) {
   // create all slots as empty initially
   for (auto slot : slots)
     equipment_.emplace(slot, optionalRef<item>());
@@ -203,6 +205,7 @@ long monster::modDamage(/*by value*/long pc, const damage & type) const {
 
 // called upon death...
 void monster::death() {
+  for (auto f : onDeath_) f();
   level_->removeDeadMonster(*this);
 }
 

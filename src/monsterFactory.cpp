@@ -32,7 +32,8 @@ monsterBuilder::monsterBuilder(bool allowRandom) :
   female_(0),
   type_(NULL),
   allowRandom_(allowRandom),
-  progress_(1) {}
+  progress_(1),
+  onDeath_() {}
 
 void monsterBuilder::startOn(level &l) { level_ = &l; }
 void monsterBuilder::strength(unsigned char s) { strength_ = s; }
@@ -55,6 +56,9 @@ void monsterBuilder::type(const monsterType &t) {
   if (maxDamage_ == 0) maxDamage_ = type_->iMaxDamage();
 }
 void monsterBuilder::progress(const int p) { progress_ = p; }
+void monsterBuilder::onDeath(std::function<void()> f) {
+  onDeath_.push_back(f);
+}
 
 level * monsterBuilder::iLevel() { calcFinalStats(); return level_; }
 unsigned char monsterBuilder::strength() { calcFinalStats(); return strength_; }
@@ -69,6 +73,7 @@ const deity & monsterBuilder::align() { calcFinalStats(); return *align_; }
 const monsterType & monsterBuilder::type() { return *type_; }
 void monsterBuilder::highlight() { highlight_ = true; }
 bool monsterBuilder::isHighlight() { return highlight_; }
+std::vector<std::function<void()>> &monsterBuilder::onDeath() { return onDeath_; }
 
 /*
  * Currently it should'nt be possible to generate characters with negative stats.
