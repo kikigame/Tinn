@@ -145,7 +145,7 @@ std::vector<quest> questsForRole(roleType t) {
        L"While there are many dragons in the dungeon, your nemesis lies in the deep.",
        L"The gretest dragon remains unslain. Are you sure?",
        L"You slew the greatest dragon!",
-       4,
+       100,
        [](questImpl &qI, levelImpl &li, level &l) { return new warriorQuestLevelGen(qI, li,l); }
        ));
     break;
