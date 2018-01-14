@@ -198,11 +198,12 @@ private:
     const level &pub_;
     // functions take exact X coord and open/close door in that space:
     std::function<void(int)> openDoor_, closeDoor_;
-    state state_ = state::CLOSED;
+    state state_;
   public:
     airlock(unsigned char x, unsigned char y, const level &pub,
 	    std::function<void(int)> openDoor, std::function<void(int)> closeDoor) :
-      x_(x), y_(y), pub_(pub), openDoor_(openDoor), closeDoor_(closeDoor) {}
+      x_(x), y_(y), pub_(pub), openDoor_(openDoor), closeDoor_(closeDoor),
+      state_(state::CLOSED) {}
     virtual ~airlock() {}
     virtual bool contains(coord area) {
       return (area.second == y_ &&

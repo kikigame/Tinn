@@ -73,7 +73,7 @@ protected:
 
   // adds a corridor starting at from and ending at to. Very basic for now.
   // returns first square adjacent to "from"
-  coord addCorridor(const coord from, const coord to);
+  coord addCorridor(const coord &from, const coord &to);
 
   // average two coords and return their midpoint.
   coord mid(const std::pair<coord,coord> &p) const {

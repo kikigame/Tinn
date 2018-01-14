@@ -103,14 +103,14 @@ public:
   /*
    * move to given coordinates, applying zone effects & traps
    */
-  void moveTo(monster &monster, const coord targetPos);
+  void moveTo(monster &monster, const coord &targetPos);
   /*
    * move to given coordinates, ignoring zone restrictions & applying traps.
    * Use carefully; should probably only be used in zones.
    * May still be skipped if the monster refuses the move.
    */
-  void teleportTo(monster &monster, const coord targetPos);
-  void addMonster(std::shared_ptr<monster> monster, const coord targetPos);
+  void teleportTo(monster &monster, const coord &targetPos);
+  void addMonster(std::shared_ptr<monster> monster, const coord &targetPos);
   void removeDeadMonster(monster & m); // called by monster so can't get the shared_ptr.
 
   /*
@@ -133,7 +133,7 @@ public:
   itemHolder& holder(const item &item);
 
   // return a mutable holder for items in the given square
-  itemHolder& holder(const coord c);
+  itemHolder& holder(const coord &c);
 
   // create a prison in an empty portion of the map.
   // throws std::wstring if no part of the map could be found (after 100 tries)

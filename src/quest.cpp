@@ -156,7 +156,7 @@ std::vector<quest> questsForRole(roleType t) {
        "most",
        L"Do you really want to lose the chance of making the greatest sale?",
        L"You sold the TODO to the Dungeoneer.",
-       100,
+       4,
        [](questImpl &qI, levelImpl &li, level &l) { return new shopQuestLevelGen(qI, li,l); }
        ));
     break;

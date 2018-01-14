@@ -142,8 +142,8 @@ public:
   bool equip(item &item, const slot *slot);
   bool equip(item &item, const slotType slot);
   // equip a 2-handed weapon, or a pair of something:
-  bool equip(item &item, const std::pair<slotType, slotType> slots);
-  bool equip(item &item, const std::array<const slot *, 2> slots);
+  bool equip(item &item, const std::pair<slotType, slotType> &slots);
+  bool equip(item &item, const std::array<const slot *, 2> &slots);
   // try to unequip an item. Returns true on success, false if not equipped or cursed
   bool unequip(item &item);
   // returns true if this monster has this equipment slot and it is empty

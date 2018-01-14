@@ -280,12 +280,12 @@ int calcAppBonus(const std::map<const slot*, optionalRef<item> > &eq) {
   return rtn;
 }
 
-bool monster::equip(item &item, const std::pair<slotType, slotType> slots) {
+bool monster::equip(item &item, const std::pair<slotType, slotType> &slots) {
   std::array<const slot *, 2> sl{ slotBy(slots.first), slotBy(slots.second) };
   return equip(item, sl);
 }
 
-bool monster::equip(item &item, const std::array<const slot *,2> slots) {
+bool monster::equip(item &item, const std::array<const slot *,2> &slots) {
 
   for (auto s : slots) {
     auto i = equipment_.find(s);

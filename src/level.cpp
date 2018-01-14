@@ -1035,7 +1035,7 @@ void levelGen::changeTerrain(coord c, terrainType from, terrainType to) {
     pT->second = tFactory.get(to);
 }
 
-coord levelGen::addCorridor(const coord from, const coord to) {
+coord levelGen::addCorridor(const coord &from, const coord &to) {
   coord rtn;
   int delta;
   switch(corridorDir()) {
@@ -1158,10 +1158,10 @@ int level::depth() const {
 void level:: moveTo(const terrainType terrain) {
   pImpl_->moveTo(terrain);
 }
-void level::moveTo(monster &monster, coord targetPos) {
+void level::moveTo(monster &monster, const coord &targetPos) {
   pImpl_->moveTo(monster, targetPos);
 }
-void level::teleportTo(monster &monster, coord targetPos) {
+void level::teleportTo(monster &monster, const coord &targetPos) {
   pImpl_->teleportTo(monster, targetPos);
 }
 void level:: move(monster &m, const ::dir dir, const bool avoidTraps) {
@@ -1173,7 +1173,7 @@ bool level::movable(const coord &oldPos, const coord &pos, const monster &m, boo
 void level::changeTerrain(const coord &c, terrainType t) {
   pImpl_->changeTerrain(c, t);
 }
-void level::addMonster(std::shared_ptr<monster> monster, coord targetPos) {
+void level::addMonster(std::shared_ptr<monster> monster, const coord &targetPos) {
   pImpl_->addMonster(monster, targetPos);
 }
 void level::removeDeadMonster(monster &m) {
@@ -1191,7 +1191,7 @@ void level::forEachMonster(std::function<void(monster &)> f) {
 itemHolder &level::holder(const item& item) {
   return holder(posOf(item)); // no need to bother pImpl for a simple wrapper
 }
-itemHolder &level::holder(const coord c) {
+itemHolder &level::holder(const coord &c) {
   return pImpl_->holder(c);
 }
 dungeon & level::dung() {
