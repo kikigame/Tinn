@@ -46,7 +46,7 @@ std::wstring terrain::name() const {
   return name_;
 }
 
-const wchar_t * const terrain::description() const {
+std::wstring terrain::description() const {
   return description_;
 }
 

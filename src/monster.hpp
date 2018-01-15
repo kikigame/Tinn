@@ -80,7 +80,7 @@ public:
   virtual const wchar_t render() const; // delegate to type by default
   virtual std::wstring name() const; // delegate to type depending on level by default;
   virtual bool highlight() const;
-  virtual const wchar_t * const description() const; // delegate to type by default
+  virtual std::wstring description() const; // delegate to type by default
   // create monster by type
   monster(level * onLvl, const monsterType &type);
   // create monster by builder

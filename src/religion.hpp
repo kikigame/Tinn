@@ -58,7 +58,7 @@ private:
   Outlook outlook() const;
   virtual const wchar_t render() const;
   virtual std::wstring name() const;
-  virtual const wchar_t * const description() const;
+  virtual std::wstring description() const;
   const wchar_t * const house() const;
 
   /*

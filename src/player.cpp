@@ -98,7 +98,7 @@ std::wstring player::name() const {
   return name_.c_str();
 }
 
-const wchar_t* const player::description() const {
+std::wstring player::description() const {
   return L"A bold and dangerous hero, quosting for adventure";
 }
 

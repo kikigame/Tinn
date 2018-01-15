@@ -43,7 +43,7 @@ public:
   // built up of itemType and adjectives etc.
   virtual std::wstring name() const = 0;
   // built up of all visible properties.
-  virtual const wchar_t * const description() const = 0;
+  virtual std::wstring description() const = 0;
 
   // where is it?
   virtual itemHolder& holder() const = 0;
@@ -132,7 +132,7 @@ public:
   virtual const wchar_t render() const;
   virtual std::wstring simpleName() const;
   virtual std::wstring name() const;
-  virtual const wchar_t * const description() const;
+  virtual std::wstring description() const;
   virtual itemHolder& holder() const;
   virtual materialType material() const;
   virtual double weight() const;

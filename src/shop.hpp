@@ -51,7 +51,7 @@ public:
 
   virtual const wchar_t render() const;
   virtual std::wstring name() const;
-  virtual const wchar_t * const description() const;
+  virtual std::wstring description() const;
 
   itemIter begin() const;
   itemIter end() const;

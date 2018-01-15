@@ -102,7 +102,7 @@ Outlook deity::outlook() const { return pImpl_->outlook(); }
 // deity::retrieve a reference to the nonaligned deity:
 const wchar_t deity::render() const { return pImpl_->render(); }
 std::wstring deity::name() const { return pImpl_->name(); }
-const wchar_t * const deity::description() const { return pImpl_->description(); }
+std::wstring deity::description() const { return pImpl_->description(); }
 const wchar_t * const deity::house() const { return pImpl_->house(); }
 
 

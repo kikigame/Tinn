@@ -548,7 +548,7 @@ const wchar_t shop::render() const {
 std::wstring shop::name() const {
   return pImpl_->name();
 };
-const wchar_t * const shop::description() const {
+std::wstring shop::description() const {
   return pImpl_->description();
 };
 

@@ -354,7 +354,7 @@ private:
 	//	flushLastMsg(toShow->name(), toShow->highlight());
 	//message(toShow->description());
 	mvaddwstr(1,0, std::wstring(L" ", 80).c_str()); // 80 bytes of ascii...
-	mvaddwstr(1,0, toShow->description());
+	mvaddwstr(1,0, toShow->description().c_str());
       } else {
 	mvaddwstr(0,0, L"Nothing here...");
       }

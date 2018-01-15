@@ -87,7 +87,7 @@ bool monster::highlight() const {
   return highlight_;
 }
 
-const wchar_t * const monster::description() const {
+std::wstring monster::description() const {
   return type_.encyclopedium();
 }
 

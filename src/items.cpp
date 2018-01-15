@@ -84,7 +84,7 @@ std::wstring basicItem::name() const {
   return buffer_.c_str();
 }
 // built up of all visible properties.
-const wchar_t * const basicItem::description() const {
+std::wstring basicItem::description() const {
   name(); // sets buffer_
   const std::size_t len = buffer_.length();
   buffer_ += L"\n";

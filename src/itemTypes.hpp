@@ -19,7 +19,7 @@ public:
   itemType(itemTypeImpl*);
   const wchar_t render() const;
   std::wstring name() const;
-  const wchar_t * const description() const;
+  std::wstring description() const;
   // used if unidentified:
   const wchar_t * const vagueDescription() const;
   const double baseWeight() const;

@@ -530,7 +530,7 @@ public:
   virtual std::wstring name() const {
     return L"space " + T::name();
   }
-  virtual const wchar_t * const description() const {
+  virtual std::wstring description() const {
     return 
       L"Space creatures are much like their gravity-bound counterparts, except that\n"
       "they seem to have developed a knack for flying, and seem quite at home in\n"

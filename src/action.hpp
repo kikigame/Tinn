@@ -135,7 +135,7 @@ renderedAction(const wchar_t * const name, const wchar_t * const description) :
   virtual bool operator()(bool, bool, T &...) = 0;
   virtual const wchar_t render() const { return L'☇'; } // lightning bolt for magic
   virtual std::wstring name() const { return name_; };
-  const wchar_t * const description() const { return description_; };
+  virtual std::wstring description() const { return description_; };
 };
 
 template<class ...T>

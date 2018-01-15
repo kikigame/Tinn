@@ -23,7 +23,7 @@ public:
   virtual ~player();
   virtual const wchar_t render() const ;
   virtual std::wstring name() const ;
-  virtual const wchar_t * const description() const ;
+  virtual std::wstring description() const ;
   virtual bool highlight() const { return true; };
 
   // is this monster computer-controlled?
