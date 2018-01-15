@@ -83,14 +83,6 @@ player::player(playerBuilder &b) :
   auto end = job().questsEnd();
   for (auto pQ = begin; pQ != end; ++pQ)
     pQ->setupPlayer(*this);
-  // But for now, we'll just let them go shopping:
-  addItem(createItem(itemTypeKey::shop_card));
-  /*
-  auto &item = createItem(itemTypeKey::hitch_guide);
-  item.bless(true);
-  addItem(item);
-  addItem(createWand(sharedAction<monster,monster>::key::popup_shop));
-  */
 }
 
 player::~player() {}

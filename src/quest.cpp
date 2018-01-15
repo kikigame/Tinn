@@ -20,6 +20,7 @@ private:
   bool isComplete_;
   const std::function<levelGen*(questImpl &, levelImpl &, level &)> lg_;
   const std::function<void(questImpl &, levelGen &, level &, int)> ls_;
+  const std::function<void(player &)> ps_;
 public:
   questImpl(const wchar_t* const name,
 	    const wchar_t* const questData,
@@ -27,10 +28,11 @@ public:
 	    const wchar_t* const completeMsg,
 	    int questLevel,
 	    const std::function<levelGen*(questImpl &, levelImpl &, level &)> lg,
-	    const std::function<void(questImpl &, levelGen &, level &, int)> ls)
+	    const std::function<void(questImpl &, levelGen &, level &, int)> ls,
+	    const std::function<void(player &)> ps)
     : name_(name), questData_(questData), incompletePrompt_(incompletePrompt),
       completeMsg_(completeMsg),
-      questLevel_(questLevel), isComplete_(false), lg_(lg), ls_(ls) {}
+      questLevel_(questLevel), isComplete_(false), lg_(lg), ls_(ls), ps_(ps) {}
   questImpl(const questImpl &) = delete;
   questImpl(questImpl &&) = delete;
   const wchar_t * const name() const {
@@ -52,7 +54,7 @@ public:
     return lg_(*this, li, l);
   }
   void setupLevel(levelGen &lg, level &l, int depth) { ls_(*this,lg,l,depth); }
-  void setupPlayer(player &p) {}
+  void setupPlayer(player &p) { ps_(p); }
   bool isSuccessful() const {
     return isComplete_;
   }
@@ -121,13 +123,12 @@ public:
 	place(coord(x,y), terrainType::GROUND);
     place(upRampPos(), terrainType::UP);
     //    place(coord(30,10), terrainType::DOWN);
-    // TODO: This should be a difficult monster to trade with somehow.
     auto tb = monsterTypeRepo::instance()[monsterTypeKey::troll].builder();
     tb->highlight();
     tb->onDeath([]{
 	ioFactory::instance().message(L"This looks like useful loot...\nI wonder to whom it might be sold?");
       });
-    // TODO: Trophy to sell
+    // Trophy to sell
     auto &wand = createWand(sharedAction<monster,monster>::key::popup_shop);
     wand.bless(true);
     auto &grail=createQuestItem<questItemType::grail>();
@@ -150,7 +151,16 @@ std::vector<quest> questsForRole(roleType t) {
        L"You slew the greatest dragon!",
        100,
        [](questImpl &qI, levelImpl &li, level &l) { return new warriorQuestLevelGen(qI, li,l); },
-       [](questImpl &qI, levelGen &lg, level &l, int depth) {}
+       [](questImpl &qI, levelGen &lg, level &l, int depth) {},
+       [](player &p) {
+	 for (auto k : std::array<itemTypeKey, 5>{{
+	       itemTypeKey::mace, itemTypeKey::jerkin, itemTypeKey::underpants,
+		 itemTypeKey::boots, itemTypeKey::shirt}}) {
+	   auto &it = createItem(k);
+	   p.addItem(it);
+	   it.equip(p);
+	 }
+       }
        ));
     break;
   case roleType::shopkeeper:
@@ -175,6 +185,15 @@ std::vector<quest> questsForRole(roleType t) {
 		     });
 		 });
 	   });
+       },
+       [](player &p) {
+	 p.addItem(createItem(itemTypeKey::apple));
+	 p.addItem(createItem(itemTypeKey::shop_card));
+	 p.addItem(createItem(itemTypeKey::hitch_guide));
+	 auto &bow = createItem(itemTypeKey::bow);
+	 bow.sexUp(true);
+	 p.addItem(bow);
+	 bow.equip(p);
        }
        ));
     break;
