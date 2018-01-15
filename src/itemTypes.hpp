@@ -12,14 +12,14 @@
 
 class itemTypeImpl;
 
-class itemType : public renderable {
+class itemType {
 private:
   std::unique_ptr<itemTypeImpl> pImpl_;
 public:
   itemType(itemTypeImpl*);
   const wchar_t render() const;
   std::wstring name() const;
-  std::wstring description() const;
+  const wchar_t * const description() const;
   // used if unidentified:
   const wchar_t * const vagueDescription() const;
   const double baseWeight() const;
@@ -161,6 +161,15 @@ enum class itemTypeKey {
 
     bridge, // immobile tranport, allows ground creatures on water
     ship, // mobile transport, allows ground creatures on water. L'⍽' (shouldered open box), which I think looks better than the more usual L'␣' (&blank;/open box)
+};
+
+
+/*
+ * These are special items that can only be created by the createQuestItem() method.
+ * They do not have types in the itemtype repository.
+ */
+enum class questItemType {
+  grail, // shop quest item
 };
 
 

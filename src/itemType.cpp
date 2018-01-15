@@ -48,7 +48,7 @@ const wchar_t itemType::render() const {
 std::wstring itemType::name() const {
   return pImpl_->name();
 }
-std::wstring itemType::description() const {
+const wchar_t * const itemType::description() const {
   return pImpl_->description();
 }
 const wchar_t * const itemType::vagueDescription() const {

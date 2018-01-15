@@ -37,16 +37,18 @@ class item : public renderable, public virtual shared_item {
 public:
   item () = default;
   item (const item &) = delete;
-  item (const item &&) = delete;
+  item (item &&) = delete;
   // delegate to itemType by default
   virtual const wchar_t render() const = 0;
   // built up of itemType and adjectives etc.
   virtual std::wstring name() const = 0;
   // built up of all visible properties.
-  virtual std::wstring description() const = 0;
+  virtual std::wstring description() const;
+  // per-type description:
+  virtual std::wstring typeDescription() const = 0;
 
   // where is it?
-  virtual itemHolder& holder() const = 0;
+  itemHolder& holder() const;
 
   // what is the object made of?
   virtual materialType material() const = 0;
@@ -85,20 +87,20 @@ public:
   virtual void enchant(int enchantment) = 0; // may be negative
 
   // destroy an item
-  virtual void destroy() = 0;
+  virtual void destroy();
 
   // try to use the object
-  virtual bool use() = 0;
+  virtual bool use();
 
   // try to equip an item. Precondition: item must be available for monster to equip.
   // returns true if successful, false otherwise (ie no suitable slots)
-  virtual bool equip(monster &owner) = 0;
+  virtual bool equip(monster &owner);
 
   // in which slots can this item be equipped?
   // empty set if none
   //virtual std::set<slotType> slots() = 0;
   enum equipType { wielded, worn, none } type;
-  virtual equipType equippable() const = 0;
+  virtual equipType equippable() const;
 
   // given a damage figue of damage of a given type,
   // return the total damage taken (which may be negative!)
@@ -132,8 +134,8 @@ public:
   virtual const wchar_t render() const;
   virtual std::wstring simpleName() const;
   virtual std::wstring name() const;
-  virtual std::wstring description() const;
-  virtual itemHolder& holder() const;
+  virtual std::wstring typeDescription() const;
+
   virtual materialType material() const;
   virtual double weight() const;
   // use - if true, causes charges to be consumed if needed.
@@ -154,10 +156,6 @@ public:
   virtual void unidentify(bool forget);
   virtual int enchantment() const;
   virtual void enchant(int enchantment);
-  virtual bool equip(monster &owner);
-  virtual equipType equippable() const;
-  virtual void destroy();
-  virtual bool use ();
   virtual std::set<slotType> slots();
   virtual long modDamage(long pc, const damage & type) const;
 };
@@ -166,6 +164,10 @@ public:
 // NB: if "it" is a water type, then it should normally only be placed in a fluid container (eg bottle).
 // TODO: Type system should enforce fluidity somehow.
 item & createItem(const itemTypeKey & it);
+
+// craete a quest item:
+template<questItemType it>
+item & createQuestItem();
 
 class deity;
 // create a holy book with specific alignment

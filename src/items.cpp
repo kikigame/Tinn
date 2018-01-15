@@ -20,6 +20,46 @@
 
 extern std::vector<damageType> allDamageTypes;
 
+
+
+// built up of all visible properties.
+std::wstring item::description() const {
+  std::wstring buffer = name();
+  const std::size_t len = buffer.length();
+  buffer += L"\n";
+  buffer += std::wstring(len, L'=');
+  buffer += typeDescription();
+  return buffer;
+}
+
+itemHolder& item::holder() const {
+  auto &map = itemHolderMap::instance();
+  // sanity check to avoid null reference:
+  if (map.beforeFirstAdd(*this))
+    throw name() + L" not yet in any holder";
+  return map.forItem(*this);
+}
+
+bool item::equip(monster &owner) {
+  return false; // can't equip this item type by default
+}
+item::equipType item::equippable() const { 
+  return equipType::none; 
+}
+// destroy an item in inventory
+void item::destroy() {
+  if (holder().contains(*this) )
+    holder().destroyItem(*this);
+  else
+    throw L"Item not in supplied container"; // should not fall through if procondition met
+}
+
+// try to use the object
+bool item::use () {
+  return false; // no effect by default
+}
+
+
 // mixin class for things which burn charges; see basicItem below.
 class burnChargeMixin : virtual public shared_item {
 protected:
@@ -83,65 +123,55 @@ std::wstring basicItem::name() const {
   buffer_ += simpleName();
   return buffer_.c_str();
 }
-// built up of all visible properties.
-std::wstring basicItem::description() const {
-  name(); // sets buffer_
-  const std::size_t len = buffer_.length();
-  buffer_ += L"\n";
-  buffer_ += std::wstring(len, L'=');
+
+std::wstring basicItem::typeDescription() const {
+  std::wstring buffer;
   if (isUnidentified()) {
-    buffer_ += type_.vagueDescription();
-    return buffer_.c_str();
+    buffer += type_.vagueDescription();
+    return buffer.c_str();
   }
-  buffer_ += L"\n\nDescription:\n";
-  buffer_ += type_.description();
-  buffer_ += + L"\n\nWeight: ";
-  buffer_ += std::to_wstring(weight());
-  buffer_ += L"N\n";
+  buffer += L"\n\nDescription:\n";
+  buffer += type_.description();
+  buffer += + L"\n\nWeight: ";
+  buffer += std::to_wstring(weight());
+  buffer += L"N\n";
 
   const bool blessed = isBlessed(), cursed = isCursed();
   if (blessed && !cursed)
-    buffer_ += L"This is blessed. Most blessed items provide 1.5 times the\n"
+    buffer += L"This is blessed. Most blessed items provide 1.5 times the\n"
       "effect of a similar non-blessed, non-cursed items.\n";
   else if (cursed && !blessed)
-    buffer_ += L"This is cursed. Most cursed items provide half the effect\n"
+    buffer += L"This is cursed. Most cursed items provide half the effect\n"
       "of a similar non-blessed, non-cursed items. They cannot be removed\n"
       "if worn/wielded until the curse is removed.\n";
   else if (blessed && cursed)
-    buffer_ += L"This is both blessed and cursed. The blessing removes some\n"
+    buffer += L"This is both blessed and cursed. The blessing removes some\n"
       "effects of the curse, but does not void it. Cursed items cannot be\n"
       "removed if worn/wielded until the curse is removed.\n";
   else
-    buffer_ += L"This would be more effective if blessed.\n";
+    buffer += L"This would be more effective if blessed.\n";
 
   const int enchantmentPc = 5 * enchantment();
   auto *burnCharge = dynamic_cast<const burnChargeMixin*>(this);
   if (!burnCharge) {
     if (enchantmentPc < 0) {
-      buffer_ += L"There is a negative enchantment. There is a penalty of ";
-      buffer_ += enchantmentPc;
-      buffer_ += L"% when\nusing this item as weapon or armour.\n";
+      buffer += L"There is a negative enchantment. There is a penalty of ";
+      buffer += enchantmentPc;
+      buffer += L"% when\nusing this item as weapon or armour.\n";
     } else if (enchantmentPc == 0) {
-      buffer_ += L"There is no magical enchantment on this item.\n";
+      buffer += L"There is no magical enchantment on this item.\n";
     } else {
-      buffer_ += L"There is an enchantment. There is a bonus of ";
-      buffer_ += enchantmentPc;
-      buffer_ += L"% when\nUsing this item as weapon or armour.\n";
+      buffer += L"There is an enchantment. There is a bonus of ";
+      buffer += enchantmentPc;
+      buffer += L"% when\nUsing this item as weapon or armour.\n";
     }
   } else {
-    buffer_ += burnCharge->describeCharges();
+    buffer += burnCharge->describeCharges();
   }
 
-  return buffer_.c_str();
+  return buffer;
 }
 
-itemHolder& basicItem::holder() const {
-  auto &map = itemHolderMap::instance();
-  // sanity check to avoid null reference:
-  if (map.beforeFirstAdd(*this))
-    throw name() + L" not yet in any holder";
-  return map.forItem(*this);
-}
 
 // what is the object made of?
 materialType basicItem::material() const {
@@ -257,24 +287,6 @@ void basicItem::enchant(int enchantment) {
   enchantment_ += enchantment;
 }
 
-bool basicItem::equip(monster &owner) {
-  return false; // can't equip this item type by default
-}
-basicItem::equipType basicItem::equippable() const { 
-  return equipType::none; 
-}
-// destroy an item in inventory
-void basicItem::destroy() {
-  if (holder().contains(*this) )
-    holder().destroyItem(*this);
-  else
-    throw L"Item not in supplied container"; // should not fall through if procondition met
-}
-
-// try to use the object
-bool basicItem::use () {
-  return false; // no effect by default
-}
 
 std::set<slotType> basicItem::slots() {
   std::set<slotType> empty;
@@ -1168,6 +1180,7 @@ public:
   virtual ~basicTransport() {}
 };
 
+
 // create an item of the given type. io may be used later by that item, eg for prompts when using.
 // TODO: Randomness for flavour: enchantment, flags, etc.
 item& createItem(const itemTypeKey & t) {
@@ -1395,6 +1408,84 @@ item& createItem(const itemTypeKey & t) {
   }
   itemHolderMap::instance().enroll(*rtn); // takes ownership
   return *rtn; // now safe to take reference
+}
+
+template<questItemType it>
+struct questItemTypeTraits{};
+
+template<questItemType it>
+class basicQuestItem : public item, virtual public shared_item {
+private:
+  typedef questItemTypeTraits<it> traits;
+public:
+  basicQuestItem() {}
+  basicQuestItem(const basicQuestItem &) = delete;
+  basicQuestItem(basicQuestItem &&) = delete;
+  //quest items should be highlighted:
+  virtual bool highlight() const { return true; }
+  virtual const wchar_t render() const {
+    return traits::render_;
+  }
+  virtual std::wstring name() const {
+    return traits::name_;
+  }
+  virtual std::wstring typeDescription() const {
+    return traits::desc_;
+  }
+  virtual materialType material() const {
+    return traits::mat_;
+  }
+  virtual double weight() const {
+    return traits::weight_;
+  }
+  virtual damageType weaponDamage(bool use) {
+    return traits::weaponDamage_;
+  }
+  virtual std::vector<std::wstring> adjectives() const {
+    return std::vector<std::wstring>(); // by default
+  }
+  // indestructibility:
+  virtual bool strike(const damageType &) { return false; }
+  virtual bool repair(const damageType &) { return true; }
+  virtual bool proof(const damageType &) { return true; }
+  virtual bool isProof(const damageType &) const { return true; }
+  virtual bool isBlessed() const { return true; }
+  virtual bool isCursed() const { return false; }
+  virtual void bless(bool b) { }
+  virtual void curse(bool b) { }
+  virtual bool isUnidentified() const { return false; }
+  virtual void unidentify(bool b) { }
+  virtual bool isSexy() const { return true; }
+  virtual void sexUp(bool b) { }
+  virtual int enchantment() const { return 5; };
+  virtual void enchant(int) { }
+  virtual int damageOfType(const damageType &) const { return 0; }
+  virtual long modDamage(long pc, const damage &) const {
+    return pc; // per default
+  }
+};
+
+template<>
+struct questItemTypeTraits<questItemType::grail>{
+  typedef basicQuestItem<questItemType::grail> type;
+  static constexpr const wchar_t render_ = L'('; // utility
+  static constexpr const wchar_t * const name_ = L"Holy Grail";
+  static constexpr const wchar_t * const desc_ = L"";
+  static constexpr const materialType mat_ = materialType::stony;
+  static constexpr const double weight_ = 100; // TODO
+  static constexpr const damageType weaponDamage_ = damageType::bashing;
+};
+
+template<questItemType it>
+item & createQuestItem() {
+  auto rtn = new typename questItemTypeTraits<it>::type;
+  itemHolderMap::instance().enroll(*rtn);
+  return *rtn;
+}
+
+// ensure object templates are created:
+void dummy() {
+  createQuestItem<questItemType::grail>();
 }
 
 item & createHolyBook(const deity &align) {
