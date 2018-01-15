@@ -1469,7 +1469,7 @@ template<>
 struct questItemTypeTraits<questItemType::grail>{
   typedef basicQuestItem<questItemType::grail> type;
   static constexpr const wchar_t render_ = L'('; // utility
-  static constexpr const wchar_t * const name_ = L"Holy Grail";
+  static constexpr const wchar_t * const name_ = L"Holy Grail"; // must contain "Grail" (shop quest)
   static constexpr const wchar_t * const desc_ = L"";
   static constexpr const materialType mat_ = materialType::stony;
   static constexpr const double weight_ = 100; // TODO

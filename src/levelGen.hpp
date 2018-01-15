@@ -31,7 +31,6 @@ public:
   }
   virtual ~levelGen() {}
 
-protected:
   // name the level (optional; default is based on depth)
   void setName(const std::wstring & name);
 

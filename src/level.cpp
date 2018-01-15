@@ -1281,8 +1281,15 @@ public:
     for (auto i = begin; i != end; ++i)
       (*i)->negotiateRamps(
 	 i == end || i+1 == end ? optionalRef<levelGen>() : optionalRef<levelGen>(**(i+1)));
-    for (auto i = begin; i != end; ++i)
+    int depth=0;
+    role &r = const_cast<role &>(role_); // TODO: fixme
+    auto l = levelPubs_.begin();
+    for (auto i = begin; i != end; ++i) {
       (*i)->build();
+      for (std::vector<quest>::iterator pQ = r.questsBegin(); pQ != r.questsEnd(); ++pQ)
+	pQ->setupLevel(**i, **l, depth);
+      ++depth, ++l;
+    }
   }
   std::vector<level*>::iterator begin() {
     return levelPubs_.begin();

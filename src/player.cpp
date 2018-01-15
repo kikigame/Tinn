@@ -80,7 +80,6 @@ player::player(playerBuilder &b) :
   // on their class and race.
   // But for now, we'll just let them go shopping:
   addItem(createItem(itemTypeKey::shop_card));
-  addItem(createQuestItem<questItemType::grail>());
   /*
   auto &item = createItem(itemTypeKey::hitch_guide);
   item.bless(true);

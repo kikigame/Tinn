@@ -576,6 +576,13 @@ public:
   virtual bool highlight() const {
     return curLevel().dung().pc()->job().type() == roleType::shopkeeper;
   }
+  virtual const wchar_t * say() const {
+    auto &role = curLevel().dung().pc()->job();
+    if (role.type() == roleType::shopkeeper &&
+	role.questsBegin()->isSuccessful())
+      return L"My quest is complete! I'm out of here!";
+    else return monster::say();
+  }
   virtual ~dungeoneer() {};
 };
 

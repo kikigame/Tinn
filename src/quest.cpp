@@ -19,16 +19,18 @@ private:
   const int questLevel_;
   bool isComplete_;
   const std::function<levelGen*(questImpl &, levelImpl &, level &)> lg_;
+  const std::function<void(questImpl &, levelGen &, level &, int)> ls_;
 public:
   questImpl(const wchar_t* const name,
 	    const wchar_t* const questData,
 	    const wchar_t* const incompletePrompt,
 	    const wchar_t* const completeMsg,
 	    int questLevel,
-	    const std::function<levelGen*(questImpl &, levelImpl &, level &)> lg)
+	    const std::function<levelGen*(questImpl &, levelImpl &, level &)> lg,
+	    const std::function<void(questImpl &, levelGen &, level &, int)> ls)
     : name_(name), questData_(questData), incompletePrompt_(incompletePrompt),
       completeMsg_(completeMsg),
-      questLevel_(questLevel), isComplete_(false), lg_(lg) {}
+      questLevel_(questLevel), isComplete_(false), lg_(lg), ls_(ls) {}
   questImpl(const questImpl &) = delete;
   questImpl(questImpl &&) = delete;
   const wchar_t * const name() const {
@@ -50,7 +52,7 @@ public:
     // TODO: Review the need for const_cast here. If this method is non-const, we need a non-const role. Is that okay?
     return lg_(const_cast<questImpl&>(*this), li, l);
   }
-  void setupLevel(levelGen &lg, level &l, int depth) {}
+  void setupLevel(levelGen &lg, level &l, int depth) { ls_(*this,lg,l,depth); }
   void setupPlayer(player &p) {}
   bool isSuccessful() const {
     return isComplete_;
@@ -129,8 +131,10 @@ public:
     // TODO: Trophy to sell
     auto &wand = createWand(sharedAction<monster,monster>::key::popup_shop);
     wand.bless(true);
+    auto &grail=createQuestItem<questItemType::grail>();
     auto &mon = addMonster(*tb, coord(level::MAX_WIDTH-2, 10));
     mon.addItem(wand);
+    mon.addItem(grail);
     setName(L"The Shopping Arena");
   }
 };
@@ -146,7 +150,8 @@ std::vector<quest> questsForRole(roleType t) {
        L"The gretest dragon remains unslain. Are you sure?",
        L"You slew the greatest dragon!",
        100,
-       [](questImpl &qI, levelImpl &li, level &l) { return new warriorQuestLevelGen(qI, li,l); }
+       [](questImpl &qI, levelImpl &li, level &l) { return new warriorQuestLevelGen(qI, li,l); },
+       [](questImpl &qI, levelGen &lg, level &l, int depth) {}
        ));
     break;
   case roleType::shopkeeper:
@@ -155,9 +160,23 @@ std::vector<quest> questsForRole(roleType t) {
        L"Find the greatest treasure in the deep, then sell it to the one who needs it\n"
        "most",
        L"Do you really want to lose the chance of making the greatest sale?",
-       L"You sold the TODO to the Dungeoneer.",
-       4,
-       [](questImpl &qI, levelImpl &li, level &l) { return new shopQuestLevelGen(qI, li,l); }
+       L"You sold the grail to the Dungeoneer.",
+       100,
+       [](questImpl &qI, levelImpl &li, level &l) { return new shopQuestLevelGen(qI, li,l); },
+       [](questImpl &qI, levelGen &lg, level &l, int depth) {
+	 // make sure there's at least one dungeoneer to get the quest item:
+	 if (depth == 1) {lg.addMonster(monsterTypeKey::dungeoneer, l.findTerrain(terrainType::DOWN)); }
+	 // any dungeoneer can receive the quest item:
+	 l.forEachMonster([&qI](monster &m) {
+	     if (m.type().type() == monsterTypeKey::dungeoneer)
+	       m.eachTick([&qI,&m]{
+		   m.forEachItem([&qI](const item &i, std::wstring) {
+		       if (!qI.isSuccessful() && i.highlight() && i.name().find(L"Grail",0) >= 0)
+			 qI.complete();
+		     });
+		 });
+	   });
+       }
        ));
     break;
   default: throw t;
