@@ -199,6 +199,7 @@ std::vector<std::wstring> basicItem::adjectives() const {
     rtn.push_back(L"natural");
   if (isBlessed()) rtn.push_back(L"blessed");
   if (isCursed()) rtn.push_back(L"cursed");
+  if (isSexy()) rtn.push_back(L"sexy");
   auto &dr = damageRepo::instance();
   auto m = type_.material();
   for (auto dt : allDamageTypes) {
