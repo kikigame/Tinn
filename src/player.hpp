@@ -17,7 +17,7 @@ class role;
 class player : public monster {
 private:
   const std::wstring name_;
-  const role &role_;
+  role &role_;
 public:
   player(playerBuilder &builder);
   virtual ~player();
@@ -35,6 +35,7 @@ public:
   void use();
 
   const role &job() const { return role_; }
+  role &job() { return role_; }
 
 protected:
   virtual void death();
@@ -49,12 +50,13 @@ class playerBuilder : public monsterBuilder {
   friend class player;
 private:
   std::wstring name_;
-  const role * role_;
+  role * role_;
 public:
   playerBuilder();
   virtual ~playerBuilder();
   void name(const std::wstring &n);
-  void job(const role & r);
+  void job(role & r);
+  role & job();
   const role & job() const;
 };
 

@@ -70,7 +70,7 @@ public:
   void emplace(roleImpl *r) {
     repo_.emplace(r->type(), r);
   }
-  const role & get(const roleType &r) const {
+  role & get(const roleType &r) {
     return repo_.at(r);
   }
 };
@@ -82,7 +82,7 @@ roleRepo::roleRepo()
   : pImpl_(new roleRepoImpl()) {};
 
   
-const role & roleRepo::operator[](const roleType &r) const {
+role & roleRepo::operator[](const roleType &r) {
   return pImpl_->get(r);
 }
 

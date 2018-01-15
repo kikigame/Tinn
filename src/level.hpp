@@ -25,7 +25,7 @@ enum class monsterTypeKey;
 class levelImpl;
 class dungeon;
 class drawIter;
-class playerBuilder;
+class role;
 
 class renderByCoord;
 
@@ -35,7 +35,7 @@ class levelFactory {
 private:
   std::shared_ptr<levelFactoryImpl> pImpl_;
 public:
-  levelFactory(dungeon &dungeon, const int numLevels, const playerBuilder &pb);
+  levelFactory(dungeon &dungeon, const int numLevels, role &);
   std::vector<level*>::iterator begin();
   std::vector<level*>::iterator end();
 };

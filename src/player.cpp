@@ -8,6 +8,7 @@
 #include "output.hpp"
 #include "items.hpp"
 #include "religion.hpp"
+#include "role.hpp"
 
 #include <sstream>
 #include <set>
@@ -78,6 +79,10 @@ player::player(playerBuilder &b) :
   // starting inventory:
   // I feel a player should start with a deterministic inventory, perhaps based
   // on their class and race.
+  auto begin = job().questsBegin();
+  auto end = job().questsEnd();
+  for (auto pQ = begin; pQ != end; ++pQ)
+    pQ->setupPlayer(*this);
   // But for now, we'll just let them go shopping:
   addItem(createItem(itemTypeKey::shop_card));
   /*
@@ -206,6 +211,7 @@ playerBuilder::~playerBuilder() {}
 
 void playerBuilder::name(const std::wstring &c) { name_ = c; }
 
-void playerBuilder::job(const role &r) { role_  = &r; }
+void playerBuilder::job(role &r) { role_  = &r; }
 const role & playerBuilder::job() const { return *role_; }
+role & playerBuilder::job() { return *role_; }
 

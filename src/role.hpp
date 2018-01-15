@@ -41,7 +41,7 @@ private:
   static std::unique_ptr<roleRepo> instance_;
   roleRepo();
 public:
-  const role & operator[](const roleType &) const;
+  role & operator[](const roleType &);
   static roleRepo& instance();
   static void close();
 };

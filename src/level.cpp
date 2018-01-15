@@ -1262,11 +1262,11 @@ private:
   std::vector<levelImpl*> levels_;
   std::vector<level*> levelPubs_;
   std::vector<std::unique_ptr<levelGen> > levelGen_;
-  const role &role_;
+  role &role_;
 public:
-  levelFactoryImpl(dungeon &dungeon, const int numLevels, const playerBuilder &pb) : 
+  levelFactoryImpl(dungeon &dungeon, const int numLevels, role &role) : 
     numLevels_(numLevels),
-    role_(pb.job()) {
+    role_(role) {
     for (int i=0; i <= numLevels; ++i) {
       levelImpl *l = new levelImpl(dungeon, i);
       levels_.push_back(l);
@@ -1282,11 +1282,10 @@ public:
       (*i)->negotiateRamps(
 	 i == end || i+1 == end ? optionalRef<levelGen>() : optionalRef<levelGen>(**(i+1)));
     int depth=0;
-    role &r = const_cast<role &>(role_); // TODO: fixme
     auto l = levelPubs_.begin();
     for (auto i = begin; i != end; ++i) {
       (*i)->build();
-      for (std::vector<quest>::iterator pQ = r.questsBegin(); pQ != r.questsEnd(); ++pQ)
+      for (std::vector<quest>::iterator pQ = role_.questsBegin(); pQ != role_.questsEnd(); ++pQ)
 	pQ->setupLevel(**i, **l, depth);
       ++depth, ++l;
     }
@@ -1338,8 +1337,8 @@ private:
   }
 };
 
-levelFactory::levelFactory(dungeon &dungeon, const int numLevels, const playerBuilder &pb) :
-  pImpl_(new levelFactoryImpl(dungeon, numLevels, pb)) {
+levelFactory::levelFactory(dungeon &dungeon, const int numLevels, role &job) :
+  pImpl_(new levelFactoryImpl(dungeon, numLevels, job)) {
   pImpl_->build();
 }
 

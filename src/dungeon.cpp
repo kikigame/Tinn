@@ -26,7 +26,7 @@ dungeon::dungeon()
   // TODO: should level be passed separately to monsterbuilder for further decoupling?
   playerBuilder pb = chargen();
 
-  levelFactory factory(*this, NUM_LEVELS, pb);
+  levelFactory factory(*this, NUM_LEVELS, pb.job());
   for (auto l : factory)
     level_.emplace_back(l);
 

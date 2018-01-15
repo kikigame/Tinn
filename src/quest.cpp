@@ -48,9 +48,8 @@ public:
   bool isQuestLevel(int depth) const {
     return depth == questLevel_;
   }
-  levelGen * newQuestLevelGen(levelImpl & li, level &l) const {
-    // TODO: Review the need for const_cast here. If this method is non-const, we need a non-const role. Is that okay?
-    return lg_(const_cast<questImpl&>(*this), li, l);
+  levelGen * newQuestLevelGen(levelImpl & li, level &l) {
+    return lg_(*this, li, l);
   }
   void setupLevel(levelGen &lg, level &l, int depth) { ls_(*this,lg,l,depth); }
   void setupPlayer(player &p) {}
