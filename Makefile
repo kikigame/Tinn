@@ -27,7 +27,7 @@ lint:
 clean:
 	rm -f   src/action.o src/adjectives.o src/appraise.o src/bonus.o src/characteristic.o src/chargen.o src/coord.o src/damage.o src/dungeon.o src/encyclopedia.o src/geometry.o src/itemholder.o src/items.o src/itemType.o src/level.o src/levelFactory.o src/main.o src/monster.o src/monsterFactory.o src/monsterIntrinsics.o src/monsterType.o src/output.o src/output_curses.o src/output_term.o src/player.o src/quest.o src/religion.o src/role.o src/shop.o src/shopkeeper.o src/shrine.o src/slots.o src/spaceZone.o src/terrain.o src/time.o src/transport.o 
 
-src/action.o : src/action.cpp src/action.hpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/level.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/movement.hpp src/optionalRef.hpp src/output.hpp src/random.hpp src/ref.hpp src/renderable.hpp src/slots.hpp src/time.hpp src/zone.hpp 
+src/action.o : src/action.cpp src/action.hpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/level.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/movement.hpp src/optionalRef.hpp src/output.hpp src/random.hpp src/ref.hpp src/renderable.hpp src/slots.hpp src/terrain.hpp src/time.hpp src/zone.hpp 
 	$(CXX) src/action.cpp -c -Wall -g -std=c++11 -o src/action.o -finput-charset=utf8 -fexec-charset=utf8
 
 src/adjectives.o : src/adjectives.cpp 

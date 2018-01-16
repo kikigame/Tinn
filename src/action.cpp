@@ -5,6 +5,7 @@
 #include "items.hpp"
 #include "output.hpp"
 #include "random.hpp"
+#include "terrain.hpp"
 #include <map>
 
 // source steals an item from target
@@ -543,8 +544,428 @@ L"Charming a monster will make it less inclined to attack you, and more\n"
   };
 };
 
+
+class proofAction : public renderedAction<item, monster> {
+private:
+  const damageType dt_;
+public:
+  proofAction(damageType dt, const wchar_t * const name, const wchar_t * const description) :
+    renderedAction(name, description), dt_(dt) {}
+  virtual ~proofAction() {}
+  bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
+    target.abilities().proof(damageRepo::instance()[dt_], true);
+    return true;
+  }
+  virtual bool undo(bool blessed, bool cursed, item &source, monster &target) {
+    // TODO: check for other items with the same abilitiy first.
+    target.abilities().proof(damageRepo::instance()[dt_], false);
+    return true;
+  }
+};
+
+class resistAction : public renderedAction<item, monster> {
+private:
+  const int amount_;
+  const damageType dt_;
+public:
+  resistAction(int amount, damageType dt, const wchar_t * const name, const wchar_t * const description) :
+    renderedAction(name, description), amount_(amount), dt_(dt) {}
+  virtual ~resistAction() {}
+  bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
+    target.abilities().resist(&damageRepo::instance()[dt_], amount_);
+    return true;
+  }
+  virtual bool undo(bool blessed, bool cursed, item &source, monster &target) {
+    // TODO: check for other items with the same abilitiy first.
+    target.abilities().resist(&damageRepo::instance()[dt_], amount_);
+    return true;
+  }
+};
+
+
+class extraDamageAction : public renderedAction<item, monster> {
+private:
+  const int amount_;
+  const damageType dt_;
+public:
+  extraDamageAction(int amount, damageType dt, const wchar_t * const name, const wchar_t * const description) :
+    renderedAction(name, description), amount_(amount), dt_(dt) {}
+  virtual ~extraDamageAction() {}
+  bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
+    target.abilities().extraDamage(&damageRepo::instance()[dt_], amount_);
+    return true;
+  }
+  virtual bool undo(bool blessed, bool cursed, item &source, monster &target) {
+    // TODO: check for other items with the same abilitiy first.
+    target.abilities().extraDamage(&damageRepo::instance()[dt_], amount_);
+    return true;
+  }
+};
+
+class intrinsicsBonusAction : public renderedAction<item, monster> {
+  typedef void (monsterAbilities::*methodType)(const bonus &);
+private:
+  const methodType method_;
+  const bonus set_;
+  const bonus clear_;
+public:
+  intrinsicsBonusAction(methodType method,
+			const bonus &set, const bonus &clear,
+			const wchar_t * const name, const wchar_t * const description) :
+    renderedAction(name, description),
+    method_(method), set_(set), clear_(clear) {}
+  virtual ~intrinsicsBonusAction() {}
+  bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
+    auto &able = target.abilities();
+    (able.*method_)(set_);
+    return true;
+  }
+  bool undo(bool blessed, bool cursed, item &source, monster &target) {
+    // TODO: check for other items with the same abilitiy first.
+    auto &able = target.abilities();
+    (able.*method_)(clear_);
+    return true;
+  }
+};
+
+class intrinsicsBoolAction : public renderedAction<item, monster> {
+  typedef void (monsterAbilities::*methodType)(const bool);
+private:
+  const methodType method_;
+  const bool set_;
+public:
+  intrinsicsBoolAction(methodType method,
+			const bool &set,
+			const wchar_t * const name, const wchar_t * const description) :
+    renderedAction(name, description),
+    method_(method), set_(set) {}
+  virtual ~intrinsicsBoolAction() {}
+  bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
+    auto &able = target.abilities();
+    (able.*method_)(set_);
+    return true;
+  }
+  bool undo(bool blessed, bool cursed, item &source, monster &target) {
+    // TODO: check for other items with the same abilitiy first.
+    auto &able = target.abilities();
+    (able.*method_)(!set_);
+    return true;
+  }
+};
+
+class tesseractAction : public renderedAction<item, monster> {
+public:
+  tesseractAction(const wchar_t * const name, const wchar_t * const description) :
+    renderedAction(name, description) {}
+  virtual ~tesseractAction() {}
+  bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
+    target.abilities().move(tFactory.get(terrainType::ALTAR), true);
+    target.abilities().move(tFactory.get(terrainType::GROUND), true);
+    target.abilities().move(tFactory.get(terrainType::BULKHEAD), true);
+    return true;
+  }
+  bool undo(bool blessed, bool cursed, item &source, monster &target) {
+    // TODO: check for other items with the same abilitiy first.
+    target.abilities().move(tFactory.get(terrainType::ALTAR), false);
+    target.abilities().move(tFactory.get(terrainType::GROUND), false);
+    target.abilities().move(tFactory.get(terrainType::BULKHEAD), false);
+    return true;
+  }
+};
+
+
+class fireWalkerAction : public renderedAction<item, monster> {
+public:
+  fireWalkerAction(const wchar_t * const name, const wchar_t * const description) :
+    fireWalkerAction(name, description) {}
+  virtual ~fireWalkerAction() {}
+  bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
+    target.abilities().move(tFactory.get(terrainType::FIRE), true);
+    return true;
+  }
+  bool undo(bool blessed, bool cursed, item &source, monster &target) {
+    // TODO: check for other items with the same abilitiy first.
+    target.abilities().move(tFactory.get(terrainType::FIRE), false);
+    return true;
+  }
+};
+
+template<>
+class actionFactory<item,monster> {
+public:
+  typedef sharedAction<item, monster> action;
+  static action & get(const typename sharedAction<item, monster>::key k) {
+    static std::map<action::key, std::unique_ptr<action> > m = makeMap();
+    auto &rtn = m[k];
+    return *rtn;
+  };
+    
+  static std::map<action::key, std::unique_ptr<action> > makeMap() {
+    std::map<action::key, std::unique_ptr<action> > rtn;
+
+    rtn[action::key::resist_all_damage_edged] = std::unique_ptr<action>
+      (new proofAction(damageType::edged, L"impervious to cuts",
+L"When something with this property is equipped, you will never be harmed by an edged\n"
+"weapon."));
+    rtn[action::key::resist_all_damage_bashing] = std::unique_ptr<action>
+      (new proofAction(damageType::bashing, L"impervious to blunt trauma", 
+L"When something with this property is equipped, you will never be harmed by\n"
+"a blunt force" ));
+    rtn[action::key::resist_all_damage_hot] = std::unique_ptr<action>
+      (new proofAction(damageType::hot, L"perpetual cool", 
+L"When something with this property is equipped, you will never be harmed by excessive\n"
+"heat" ));
+    rtn[action::key::resist_all_damage_cold] = std::unique_ptr<action>
+      (new proofAction(damageType::cold, L"perpetual warmth",
+L"When something with this property is equipped, you will never be harmed by excessive\n"
+"cold" ));
+    rtn[action::key::resist_all_damage_wet] = std::unique_ptr<action>
+      (new proofAction(damageType::wet, L"impervious to water damage",
+L"When something with this property is equipped, you will never be harmed by water" ));
+    rtn[action::key::resist_all_damage_sonic] = std::unique_ptr<action>
+      (new proofAction(damageType::sonic, L"impervious to sonic damage",
+L"When something with this property is equipped, you will never be harmed by sound" ));
+    rtn[action::key::resist_all_damage_disintegration] = std::unique_ptr<action>
+      (new proofAction(damageType::disintegration, L"impervious to disintegration",
+L"When something with this property is equipped, you will never become incohesive" ));    
+    rtn[action::key::resist_all_damage_starvation] = std::unique_ptr<action>
+      (new proofAction(damageType::starvation, L"fullness",
+L"When something with this property is equipped, you will never want for food.\n"
+"This does not prevent other forms of damage that may be healed by eating." ));
+    rtn[action::key::resist_all_damage_electric] = std::unique_ptr<action>
+      (new proofAction(damageType::electric, L"impervious to electricity",
+L"When something with this property is equipped, you will never be harmed by electricity" ));
+
+    rtn[action::key::resist_damage_edged] = std::unique_ptr<action>
+      (new resistAction(5, damageType::edged, L"protection from cuts",
+L"When something with this property is equipped, you will be less harmed by edged\n"
+"weapons."));
+    rtn[action::key::resist_damage_bashing] = std::unique_ptr<action>
+      (new resistAction(5, damageType::bashing, L"protection from blunt trauma", 
+L"When something with this property is equipped, you will be less harmed by\n"
+"a blunt force" ));
+    rtn[action::key::resist_damage_hot] = std::unique_ptr<action>
+      (new resistAction(5, damageType::hot, L"comfortable cool", 
+L"When something with this property is equipped, you will be less harmed by excessive\n"
+"heat" ));
+    rtn[action::key::resist_damage_cold] = std::unique_ptr<action>
+      (new resistAction(5, damageType::cold, L"comfortable warmth",
+L"When something with this property is equipped, you will be less harmed by excessive\n"
+"cold" ));
+    rtn[action::key::resist_damage_wet] = std::unique_ptr<action>
+      (new resistAction(5, damageType::wet, L"partial drying",
+L"When something with this property is equipped, you will be less harmed by water" ));
+    rtn[action::key::resist_damage_sonic] = std::unique_ptr<action>
+      (new resistAction(5, damageType::sonic, L"sonic mufflers",
+L"When something with this property is equipped, you will be less harmed by sound" ));
+    rtn[action::key::resist_damage_disintegration] = std::unique_ptr<action>
+      (new resistAction(5, damageType::disintegration, L"protection from disintegration",
+L"When something with this property is equipped, you will become less incohesive" ));
+    rtn[action::key::resist_damage_starvation] = std::unique_ptr<action>
+      (new resistAction(5, damageType::starvation, L"improved constitution",
+L"When something with this property is equipped, you will want less for food.\n"
+"This does not prevent other forms of damage that may be healed by eating." ));
+    rtn[action::key::resist_damage_electric] = std::unique_ptr<action>
+      (new resistAction(5, damageType::electric, L"protection from electricity",
+L"When something with this property is equipped, you will be less harmed by\n"
+"electricity" ));
+
+    rtn[action::key::resist_more_damage_edged] = std::unique_ptr<action>
+      (new resistAction(20, damageType::edged, L"major protection from cuts",
+L"When something with this property is equipped, you will be much less harmed by\n"
+"edged weapons."));
+    rtn[action::key::resist_more_damage_bashing] = std::unique_ptr<action>
+      (new resistAction(20, damageType::bashing, L"major protection from blunt trauma", 
+L"When something with this property is equipped, you will be much less harmed by\n"
+"a blunt force" ));
+    rtn[action::key::resist_more_damage_hot] = std::unique_ptr<action>
+      (new resistAction(20, damageType::hot, L"awesome cool", 
+L"When something with this property is equipped, you will be much less harmed by\n"
+"excessive heat" ));
+    rtn[action::key::resist_more_damage_cold] = std::unique_ptr<action>
+      (new resistAction(20, damageType::cold, L"awesome warmth",
+L"When something with this property is equipped, you will be much less harmed by\n"
+"excessive cold" ));
+    rtn[action::key::resist_more_damage_wet] = std::unique_ptr<action>
+      (new resistAction(20, damageType::wet, L"effective drying",
+L"When something with this property is equipped, you will be much less harmed by water" ));
+    rtn[action::key::resist_more_damage_sonic] = std::unique_ptr<action>
+      (new resistAction(20, damageType::sonic, L"effective sonic dampening",
+L"When something with this property is equipped, you will be much less harmed by\n"
+"sound" ));
+    rtn[action::key::resist_more_damage_disintegration] = std::unique_ptr<action>
+      (new resistAction(20, damageType::disintegration, L"active protection from disintegration",
+L"When something with this property is equipped, you will become much less incohesive" ));
+    rtn[action::key::resist_more_damage_starvation] = std::unique_ptr<action>
+      (new resistAction(20, damageType::starvation, L"awesome constitution",
+L"When something with this property is equipped, you will rarely want for food.\n"
+"This does not prevent other forms of damage that may be healed by eating." ));
+    rtn[action::key::resist_more_damage_electric] = std::unique_ptr<action>
+      (new resistAction(20, damageType::electric, L"major protection from electricity",
+L"When something with this property is equipped, you will be much less harmed by\n"
+"electricity" ));
+
+    rtn[action::key::eat_veggie_bonus] = std::unique_ptr<action>
+      (new intrinsicsBonusAction(&monsterAbilities::eatVeggie, bonus(true), bonus(),
+				 L"Vegetarianism", 
+L"When something with this property is equipped, you will gain a bonus to health\n"
+"restored from vegetarian food."));
+    rtn[action::key::eat_veggie_penalty] = std::unique_ptr<action>
+      (new intrinsicsBonusAction(&monsterAbilities::eatVeggie, bonus(false), bonus(),
+				 L"floraphobia",  //There is no opposite of vegetarianism...
+L"When something with this property is equipped, you will gain less health\n"
+"restored from vegetarian food."));
+    rtn[action::key::double_attacks] = std::unique_ptr<action>
+(new intrinsicsBonusAction(&monsterAbilities::dblAttack, bonus(true), bonus(),
+			   L"Double attacks",
+L"When something with this property is equipped, you will get twice as many\n"
+"attacks against your enemies.\n"
+"This property is not cumulative."));
+    rtn[action::key::half_attacks] = std::unique_ptr<action>
+(new intrinsicsBonusAction(&monsterAbilities::dblAttack, bonus(false), bonus(),
+			   L"Half attacks",
+L"When something with this property is equipped, you will get half as many\n"
+"attacks against your enemies.\n"
+"This property is not cumulative."));
+
+    rtn[action::key::extra_damage_edged] = std::unique_ptr<action>
+      (new extraDamageAction(5, damageType::edged, L"sharpness",
+L"When something with this property is equipped, you will deal extra damage\n"
+"with edged weapons."));
+    rtn[action::key::extra_damage_bashing] = std::unique_ptr<action>
+      (new extraDamageAction(5, damageType::bashing, L"blunt might", 
+L"When something with this property is equipped, you will deal extra damage\n"
+"when wielding blunt force" ));
+    rtn[action::key::extra_damage_hot] = std::unique_ptr<action>
+      (new extraDamageAction(5, damageType::hot, L"frostbite", 
+L"When something with this property is equipped, you will deal extra damage\n"
+"when using cold attacks" ));
+    rtn[action::key::extra_damage_cold] = std::unique_ptr<action>
+      (new extraDamageAction(5, damageType::cold, L"burning",
+L"When something with this property is equipped, you will deal extra damage\n"
+"when using heat attacks" ));
+    rtn[action::key::extra_damage_wet] = std::unique_ptr<action>
+      (new extraDamageAction(5, damageType::wet, L"moisture",
+L"When something with this property is equipped, you will deal extra damage\n"
+"when using water attacks" ));
+    rtn[action::key::extra_damage_sonic] = std::unique_ptr<action>
+      (new extraDamageAction(5, damageType::sonic, L"acoustic volume",
+L"When something with this property is equipped, you will deal extra damage\n"
+"when using sonic attacks" ));
+    rtn[action::key::extra_damage_disintegration] = std::unique_ptr<action>
+      (new extraDamageAction(5, damageType::disintegration, L"crumbling",
+L"When something with this property is equipped, you will deal extra damage\n"
+"when using disintegration attacks" ));
+    rtn[action::key::extra_damage_starvation] = std::unique_ptr<action>
+      (new extraDamageAction(5, damageType::starvation, L"tapeworms",
+L"When something with this property is equipped, you will deal extra damage\n"
+"when using starvation attacks" ));
+    rtn[action::key::extra_damage_electric] = std::unique_ptr<action>
+      (new extraDamageAction(5, damageType::electric, L"capacitive charge",
+L"When something with this property is equipped, you will deal extra damage\n"
+"when using electrical attacks" ));
+
+
+    rtn[action::key::extra_damage_major_edged] = std::unique_ptr<action>
+      (new extraDamageAction(20, damageType::edged, L"extreme sharpness",
+L"When something with this property is equipped, you will deal extra damage\n"
+"extra damage with edged weapons."));
+    rtn[action::key::extra_damage_major_bashing] = std::unique_ptr<action>
+      (new extraDamageAction(20, damageType::bashing, L"hefty blunt might", 
+L"When something with this property is equipped, you will deal extra damage\n"
+"extra damage when wielding blunt force" ));
+    rtn[action::key::extra_damage_major_hot] = std::unique_ptr<action>
+      (new extraDamageAction(20, damageType::hot, L"fourth degree frostbite", 
+L"When something with this property is equipped, you will deal extra damage\n"
+"extra damage when using cold attacks" ));
+    rtn[action::key::extra_damage_major_cold] = std::unique_ptr<action>
+      (new extraDamageAction(20, damageType::cold, L"consuming inferno",
+L"When something with this property is equipped, you will deal extra damage\n"
+"extra damage when using heat attacks" ));
+    rtn[action::key::extra_damage_major_wet] = std::unique_ptr<action>
+      (new extraDamageAction(20, damageType::wet, L"extreme wetness",
+L"When something with this property is equipped, you will deal extra damage\n"
+"extra damage when using water attacks" ));
+    rtn[action::key::extra_damage_major_sonic] = std::unique_ptr<action>
+      (new extraDamageAction(20, damageType::sonic, L"extreme acoustic volume",
+L"When something with this property is equipped, you will deal extra damage\n"
+"extra damage when using sonic attacks" ));
+    rtn[action::key::extra_damage_major_disintegration] = std::unique_ptr<action>
+      (new extraDamageAction(20, damageType::disintegration, L"extreme disintegration",
+L"When something with this property is equipped, you will deal extra damage\n"
+"extra damage when using disintegration attacks" ));
+    rtn[action::key::extra_damage_major_starvation] = std::unique_ptr<action>
+      (new extraDamageAction(20, damageType::starvation, L"starvation",
+L"When something with this property is equipped, you will deal extra damage\n"
+"extra damage when using starvation attacks" ));
+    rtn[action::key::extra_damage_major_electric] = std::unique_ptr<action>
+      (new extraDamageAction(20, damageType::electric, L"lightning charge",
+L"When something with this property is equipped, you will deal extra damage\n"
+"extra damage when using electrical attacks" ));
+
+    rtn[action::key::move_through_solid] = std::unique_ptr<action>
+      (new tesseractAction(L"tesseraction",
+L"Bestows the ability to move effortlessly through solid objects.\n"
+"Be careful where you lose this ability, or you could become stuck."));
+    rtn[action::key::move_through_fire] = std::unique_ptr<action>
+      (new fireWalkerAction(L"fire-walking",
+L"Bestows the ability to walk through fire.\n"
+"Passive fiery terrain will not hurt you."));
+    rtn[action::key::hearing] = std::unique_ptr<action>
+      (new intrinsicsBoolAction(&monsterAbilities::hear, true,
+			   L"Hearing",
+L"Bestows the ability to detect airborne vibrations, often conveying\n"
+"information"));
+    rtn[action::key::sight] = std::unique_ptr<action>
+      (new intrinsicsBoolAction(&monsterAbilities::see, true,
+			   L"Sight",
+L"Bestows the ability to detect waves or particles of electromagnetic\n"
+"radiation, often conveying information"));
+    rtn[action::key::swim] = std::unique_ptr<action>
+      (new intrinsicsBoolAction(&monsterAbilities::swim, true,
+			   L"Swimming",
+L"Bestows the ability to move through water."));
+    rtn[action::key::flight] = std::unique_ptr<action>
+      (new intrinsicsBoolAction(&monsterAbilities::fly, true,
+			   L"Flying",
+L"Bestows the ability to move through the air, ignoring unexpected changes in\n"
+"floor level."));
+    rtn[action::key::fearless] = std::unique_ptr<action>
+      (new intrinsicsBonusAction(&monsterAbilities::fearless, bonus(true), bonus(),
+			   L"fearlessness",
+L"Bestows the confidence to ignore the effects of petrifying terror."));
+    rtn[action::key::fearful] = std::unique_ptr<action>
+      (new intrinsicsBonusAction(&monsterAbilities::fearless, bonus(false), bonus(),
+			   L"fearfulness",
+L"When something with this property is equipped, you will suffer more greatly\n"
+"from effects of petrifying terror."));
+    rtn[action::key::fast_climb] = std::unique_ptr<action>
+      (new intrinsicsBonusAction(&monsterAbilities::climb, bonus(true), bonus(),
+			   L"fast climbing",
+L"When something with this property is equipped, you will be able to climb, say\n"
+"out of a pit, twice as fast as normal."));
+    rtn[action::key::slow_climb] = std::unique_ptr<action>
+      (new intrinsicsBonusAction(&monsterAbilities::climb, bonus(false), bonus(),
+			   L"slow climbing",
+L"When something with this property is equipped, you will be able to climb, say\n"
+"out of a pit, half as fast as normal."));
+    rtn[action::key::speed] = std::unique_ptr<action>
+      (new intrinsicsBonusAction(&monsterAbilities::speedy, bonus(true), bonus(),
+			   L"speed",
+L"When something with this property is equipped, you will be able to move twice\n"
+				 "as fast as normal."));
+    rtn[action::key::slow] = std::unique_ptr<action>
+      (new intrinsicsBonusAction(&monsterAbilities::speedy, bonus(false), bonus(),
+			   L"sloth",
+L"When something with this property is equipped, you will be able to move half\n"
+"as fast as normal."));
+    return rtn;
+  }
+};
+
 void ignored() {
   actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::END);
+  actionFactory<item,monster>::get(sharedAction<item,monster>::key::END);
 }
 
 

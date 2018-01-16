@@ -123,6 +123,83 @@ class sharedAction<monster, item>{
   };
 };
 
+// effects by an equippable item on a monster:
+template<>
+class sharedAction<item, monster>{
+ public:  
+  virtual bool operator ()(bool blessed, bool cursed, item &source, monster &target) = 0;
+  virtual bool undo(bool blessed, bool cursed, item &source, monster &target) = 0;
+  enum class key {
+    resist_all_damage_edged,
+      resist_all_damage_bashing,
+      resist_all_damage_hot,
+      resist_all_damage_cold,
+      resist_all_damage_wet,
+      resist_all_damage_sonic,
+      resist_all_damage_disintegration,
+      resist_all_damage_starvation,
+      resist_all_damage_electric,
+    // 5% resistance
+      resist_damage_edged,
+      resist_damage_bashing,
+      resist_damage_hot,
+      resist_damage_cold,
+      resist_damage_wet,
+      resist_damage_sonic,
+      resist_damage_disintegration,
+      resist_damage_starvation,
+      resist_damage_electric,
+    // 20% resistance
+    resist_more_damage_edged,
+      resist_more_damage_bashing,
+      resist_more_damage_hot,
+      resist_more_damage_cold,
+      resist_more_damage_wet,
+      resist_more_damage_sonic,
+      resist_more_damage_disintegration,
+      resist_more_damage_starvation,
+      resist_more_damage_electric,
+      eat_veggie_bonus,
+      eat_veggie_penalty,
+      double_attacks,
+      half_attacks,
+    // 5% extra:
+      extra_damage_edged,
+      extra_damage_bashing,
+      extra_damage_hot,
+      extra_damage_cold,
+      extra_damage_wet,
+      extra_damage_sonic,
+      extra_damage_disintegration,
+      extra_damage_starvation,
+      extra_damage_electric,
+    // 20% extra:
+      extra_damage_major_edged,
+      extra_damage_major_bashing,
+      extra_damage_major_hot,
+      extra_damage_major_cold,
+      extra_damage_major_wet,
+      extra_damage_major_sonic,
+      extra_damage_major_disintegration,
+      extra_damage_major_starvation,
+      extra_damage_major_electric,
+      move_through_solid, // altar,rock,bulkhead
+      move_through_fire,
+      hearing,
+      sight,
+      swim,
+      flight,
+      fearless,
+      fearful,
+      fast_climb,
+      slow_climb,
+      speed,
+      slow,
+    END
+  };
+};
+
+
 
 template<class ...T>
 class renderedAction : public sharedAction<T...>, public renderable {
