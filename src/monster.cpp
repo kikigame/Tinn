@@ -42,6 +42,7 @@ monster::monster(monsterBuilder & b) :
   align_(b.align_),
   equipment_(),
   intrinsics_(),
+  abilities_(intrinsics_),
   onDeath_(b.onDeath()) {
   // create all slots as empty initially
   for (auto slot : slotsFor(type_.category()))
@@ -63,6 +64,7 @@ monster::monster(monsterBuilder & b, std::vector<const slot *>slots) :
   align_(b.align_),
   equipment_(),
   intrinsics_(),
+  abilities_(intrinsics_),
   onDeath_(b.onDeath()) {
   // create all slots as empty initially
   for (auto slot : slots)
@@ -463,10 +465,10 @@ const wchar_t * monster::say() const {
 }
 
 monsterAbilities& monster::abilities() {
-  return intrinsics_; // TODO: extrinsics
+  return abilities_;
 }
 const monsterAbilities& monster::abilities() const {
-  return intrinsics_; // TODO: extrinsics
+  return abilities_;
 }
 
 monster::~monster() {}

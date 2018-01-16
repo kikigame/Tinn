@@ -65,6 +65,7 @@ private:
   // cursed tail bow).
   std::map<const slot*, optionalRef<item> > equipment_;
   monsterIntrinsics intrinsics_;
+  monsterAbilityMods abilities_;
   // which monsters have charmed this one?
   std::list<monster*> charmedBy_;
   std::vector<std::function<void()>> onDeath_;
