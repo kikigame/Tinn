@@ -16,7 +16,7 @@ public:
   steal(const wchar_t * const name, const wchar_t * const description, std::function<bool(item &)> f) : 
     renderedAction(name, description), f_(f) {};
   virtual ~steal() {};
-  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
     auto &io = ioFactory::instance();
     auto pitem = target.firstItem(f_);
     if (pitem) {
@@ -58,7 +58,7 @@ public:
   attackRay(const wchar_t * const name, const wchar_t * const description, damageType type) :
     renderedAction(name, description), damageType_(type) {};
   virtual ~attackRay() {};
-  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
     auto &d = damageRepo::instance()[damageType_];
     auto name = target.name();
     int damage = target.wound(damagePc, d);
@@ -78,7 +78,7 @@ public:
   exchangeAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description) {};
   virtual ~exchangeAction() {}
-  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
     auto &sLevel = source.curLevel();
     auto sPos = sLevel.posOf(source);
 
@@ -118,7 +118,7 @@ public:
   attractAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description) {};
   virtual ~attractAction() {}
-  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
     char distance = 5;
     if (blessed) distance *= 2;
     if (cursed) distance /= 3;
@@ -150,7 +150,7 @@ public:
   forceHealAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description) {};
   virtual ~forceHealAction() {}
-  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
     auto &sprouts = createItem(itemTypeKey::apple);
     source.addItem(sprouts);
     return target.eat(sprouts, true);
@@ -163,7 +163,7 @@ public:
   comedyAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description) {};
   virtual ~comedyAction() {}
-  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
     // perform the first applicable effect:
     // - trousers fall down (deequip & become dropped)
     // - primary weapon turns to flowers (50% chance sexy, not normally equippable)
@@ -182,7 +182,7 @@ public:
   tragedyAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description) {};
   virtual ~tragedyAction() {}
-  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
     // monster becomes sad.
     // - reduce attack by 20% of current value (rounded down)
     // + reduce movement rate by 1 slot
@@ -197,7 +197,7 @@ public:
   teleportAwayAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description) {};
   virtual ~teleportAwayAction() {}
-  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
     auto sPos = source.curLevel().posOf(source);
     auto &level = target.curLevel();
     auto tPos = level.posOf(target);
@@ -227,7 +227,7 @@ public:
   lockAwayAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description) {};
   virtual ~lockAwayAction() {}
-  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
     // Look for a 3x3 solid ground
     try {
       auto &l = target.curLevel();
@@ -247,7 +247,7 @@ public:
   repulsionAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description) {};
   virtual ~repulsionAction() {}
-  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
     auto &tLevel = target.curLevel();
     auto tSpeed = target.movement().speed_;
     const int maxDist = (cursed ? 0 : 1) + static_cast<int>(tSpeed);
@@ -272,7 +272,7 @@ template <bool incubus>
 class foocubusAction : public sharedAction<monster, monster> {
 public:
   virtual ~foocubusAction() {}
-  bool operator ()(bool blessed, bool cursed, monster &source, monster &target);
+  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target);
 };
 
 
@@ -287,7 +287,7 @@ public:
     renderedAction(name, description),
     filter_(filter), apply_(apply) {}
   virtual ~monsterItemAction() {}
-  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
     auto t = target.firstItem(filter_);
     if (!t) return false;
     apply_(t.value());
@@ -303,7 +303,7 @@ public:
   popupShopAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description) {}
   virtual ~popupShopAction() {}
-  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
     if (!source.isPlayer()) return false; // TODO: Monsters demand to shop with the player!
     popUpShop(source,target);
     return true;
@@ -315,7 +315,7 @@ public:
   petrifyAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description) {}
   virtual ~petrifyAction() {}
-  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
     auto &a = target.abilities();
     if (a.fearless() == bonus(true))
       return false; // monster is not susceptible
@@ -334,7 +334,7 @@ public:
   charmAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description) {}
   virtual ~charmAction() {}
-  bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
     if (source.isPlayer() && target.isPlayer()) {
       ioFactory::instance().message(L"Charming!");
       return true;
@@ -552,7 +552,7 @@ public:
   proofAction(damageType dt, const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description), dt_(dt) {}
   virtual ~proofAction() {}
-  bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
+  virtual bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
     target.abilities().proof(damageRepo::instance()[dt_], true);
     return true;
   }
@@ -571,7 +571,7 @@ public:
   resistAction(int amount, damageType dt, const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description), amount_(amount), dt_(dt) {}
   virtual ~resistAction() {}
-  bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
+  virtual bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
     target.abilities().resist(&damageRepo::instance()[dt_], amount_);
     return true;
   }
@@ -591,7 +591,7 @@ public:
   extraDamageAction(int amount, damageType dt, const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description), amount_(amount), dt_(dt) {}
   virtual ~extraDamageAction() {}
-  bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
+  virtual bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
     target.abilities().extraDamage(&damageRepo::instance()[dt_], amount_);
     return true;
   }
@@ -615,7 +615,7 @@ public:
     renderedAction(name, description),
     method_(method), set_(set), clear_(clear) {}
   virtual ~intrinsicsBonusAction() {}
-  bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
+  virtual bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
     auto &able = target.abilities();
     (able.*method_)(set_);
     return true;
@@ -640,7 +640,7 @@ public:
     renderedAction(name, description),
     method_(method), set_(set) {}
   virtual ~intrinsicsBoolAction() {}
-  bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
+  virtual bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
     auto &able = target.abilities();
     (able.*method_)(set_);
     return true;
@@ -658,7 +658,7 @@ public:
   tesseractAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description) {}
   virtual ~tesseractAction() {}
-  bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
+  virtual bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
     target.abilities().move(tFactory.get(terrainType::ALTAR), true);
     target.abilities().move(tFactory.get(terrainType::GROUND), true);
     target.abilities().move(tFactory.get(terrainType::BULKHEAD), true);
@@ -677,9 +677,9 @@ public:
 class fireWalkerAction : public renderedAction<item, monster> {
 public:
   fireWalkerAction(const wchar_t * const name, const wchar_t * const description) :
-    fireWalkerAction(name, description) {}
+    renderedAction(name, description) {}
   virtual ~fireWalkerAction() {}
-  bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
+  virtual bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
     target.abilities().move(tFactory.get(terrainType::FIRE), true);
     return true;
   }

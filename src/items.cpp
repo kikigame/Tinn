@@ -40,8 +40,11 @@ itemHolder& item::holder() const {
   return map.forItem(*this);
 }
 
-bool item::equip(monster &owner) {
+bool item::equip(monster &) {
   return false; // can't equip this item type by default
+}
+void item::onUnequip(monster &) {
+  // do nothing by default
 }
 item::equipType item::equippable() const { 
   return equipType::none; 
@@ -58,6 +61,28 @@ void item::destroy() {
 bool item::use () {
   return false; // no effect by default
 }
+
+// mixin class for things that apply  an action when equipped / unequipped
+// everything where you can equip an item should extend this
+class onEquipMixin : virtual public shared_item {
+private:
+  std::vector<sharedAction<item, monster> *> onEquip_;
+public:
+  void equipAction(sharedAction<item, monster> &act) {
+    onEquip_.push_back(&act);
+  }
+protected:
+  void onEquip(monster &m) {
+    auto t = shared_from_this();
+    for (auto i : onEquip_) (*i)(t->isBlessed(), t->isCursed(), *t, m);
+  }
+  void onUnequipImpl(monster &m) {
+    // TODO: check if any action exists in other equipped value
+    auto t = shared_from_this();
+    for (auto i : onEquip_) i->undo(t->isBlessed(), t->isCursed(), *t, m);
+  }
+  
+};
 
 
 // mixin class for things which burn charges; see basicItem below.
@@ -382,7 +407,7 @@ public:
  * Except for 2-slot items; these use twoEquip
  */
 template<int equipTyp>
-class basicEquip : public basicItem {
+class basicEquip : public basicItem, public onEquipMixin {
 private:
   // slots in which this may be equipped, in preference order
   std::set<slotType> supportedSlots_;
@@ -395,9 +420,14 @@ public:
   virtual ~basicEquip() {}
   virtual bool equip(monster &owner) {
     for (slotType s : supportedSlots_)
-      if (owner.equip(*this, s))
+      if (owner.equip(*this, s)) {
+	onEquipMixin::onEquip(owner);
 	return true;
+      }
     return false;
+  }
+  virtual void onUnequip(monster &m) {
+    onEquipMixin::onUnequipImpl(m);
   }
   virtual equipType equippable() const {
     return static_cast<equipType>(equipTyp);
@@ -459,7 +489,7 @@ public:
 
 // as basicEquip, but requiring 2 slots
 template<int equipTyp>
-class twoEquip : public basicItem {
+class twoEquip : public basicItem, public onEquipMixin {
 private:
   // slots in which this may be equipped, in preference order
   std::set<std::pair<slotType, slotType>> supportedSlots_;
@@ -472,9 +502,14 @@ public:
   virtual ~twoEquip() {}
   virtual bool equip(monster &owner) {
     for (std::pair<slotType, slotType> s : supportedSlots_)
-      if (owner.equip(*this, s))
+      if (owner.equip(*this, s)) {
+	onEquipMixin::onEquip(owner);
 	return true;
+      }
     return false;
+  }
+  virtual void onUnequip(monster &m) {
+    onEquipMixin::onUnequipImpl(m);
   }
   virtual equipType equippable() const {
     return static_cast<equipType>(equipTyp);
@@ -1520,6 +1555,14 @@ item & createWand(sharedAction<monster,monster>::key of) {
   auto rtn = new wand(dPc() / 20, action);
   itemHolderMap::instance().enroll(*rtn); // takes ownership
   return *rtn;
+}
+
+item & createEquippable(const itemTypeKey &type, sharedAction<item,monster>::key of) {
+  auto &action = actionFactory<item, monster>::get(of);
+  auto &rtn = createItem(type); // takes ownership
+  auto &mixin = dynamic_cast<onEquipMixin&>(rtn);
+  mixin.equipAction(action);
+  return rtn;
 }
 
 item & createIou(const double amount, const std::wstring &whom, const std::wstring &service) {

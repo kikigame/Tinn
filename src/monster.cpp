@@ -348,6 +348,7 @@ bool monster::unequip(item &item) {
     strength_ += calcStrBonus(equipment_) - strBonus;
     appearance_ += calcAppBonus(equipment_) - appBonus;
     dodge_ += calcDodBonus(equipment_) - dodBonus;
+    item.onUnequip(*this);
   }
   return rtn;
 }

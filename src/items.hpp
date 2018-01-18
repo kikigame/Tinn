@@ -96,6 +96,9 @@ public:
   // returns true if successful, false otherwise (ie no suitable slots)
   virtual bool equip(monster &owner);
 
+  // called automatically by monster::unequip when successfully unequipped:
+  virtual void onUnequip(monster &monster);
+
   // in which slots can this item be equipped?
   // empty set if none
   //virtual std::set<slotType> slots() = 0;
@@ -196,6 +199,9 @@ item & createRndBottledItem(const int depth);
 
 // create a wand
 item & createWand(sharedAction<monster,monster>::key of);
+
+// create an equippable item with a power
+item & createEquippable(const itemTypeKey &, sharedAction<item,monster>::key of);
 
 // create an IOU card
 item & createIou(const double amount, const std::wstring &whom, const std::wstring &service);
