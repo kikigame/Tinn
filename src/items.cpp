@@ -20,6 +20,8 @@
 
 extern std::vector<damageType> allDamageTypes;
 
+template <itemTypeKey it>
+item & createItem();
 
 
 // built up of all visible properties.
@@ -80,6 +82,9 @@ protected:
     // TODO: check if any action exists in other equipped value
     auto t = shared_from_this();
     for (auto i : onEquip_) i->undo(t->isBlessed(), t->isCursed(), *t, m);
+  }
+  std::size_t countEquipActions() const {
+    return onEquip_.size();
   }
   
 };
@@ -1222,265 +1227,439 @@ public:
     basicEquip<item::equipType::worn>(type, slotType::amulet) {}
   virtual ~necklace() {};
   virtual std::wstring simpleName() const {
-    if (dynamic_cast<const onEquipMixin*>(this)) {
+    if (countEquipActions() > 0) {
       return L"talisman"; // meaning an amulet with magical effects
     } else
       return basicItem::name();
   }
 };
 
-// create an item of the given type. io may be used later by that item, eg for prompts when using.
-// TODO: Randomness for flavour: enchantment, flags, etc.
-item& createItem(const itemTypeKey & t) {
-  auto &r = itemTypeRepo::instance();
-  item *rtn;
-  switch(t) {
-  case itemTypeKey::apple:
-    rtn = new basicItem(r[t]);
-    break;
-    //case itemTypeKey::corpse: // not handled here; we do this when a monster dies
-  case itemTypeKey::mace:
-    rtn = new basicWeapon(r[t], damageType::bashing);
-    break;
-  case itemTypeKey::two_sword:
-    rtn = new twoHandedWeapon(r[t], damageType::edged); // we specifically chose a historical 2-handed cutting sword to annoy the reenactment purists :)
-    break;
-  case itemTypeKey::flamethrower:
-    rtn = new chargeWeapon<twoHandedWeapon>(r[t], damageType::hot, L"A burst of flames leaps forth");
-    break;
-  case itemTypeKey::nitrogen_tank:
-    rtn = new chargeWeapon<twoHandedWeapon>(r[t], damageType::cold, L"A jet of super-cooled liquid fires forth");
-    break;
-  case itemTypeKey::bubble_gun:
-    rtn = new basicWeapon(r[t], damageType::wet);
-    break;
-  case itemTypeKey::sonic_cannon:
-    rtn = new chargeWeapon<basicWeapon>(r[t], damageType::sonic, L"Air vibrations shudder forth");
-    break;
-  case itemTypeKey::maser:
-    rtn = new chargeWeapon<basicWeapon>(r[t], damageType::disintegration, L"Radiation fires forth");
-    break;
-  case itemTypeKey::taser:
-    rtn = new chargeWeapon<basicWeapon>(r[t], damageType::electric, L"Spark fly forth");
-    break;
-  case itemTypeKey::rock:
-    rtn = new basicThrown(r[t], damageType::bashing);
-    break;
-  case itemTypeKey::bow:
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::hat, slotType::tail);
-    break;
-  case itemTypeKey::boots:
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::shoes);
-    break;
-  case itemTypeKey::cloak:
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::robe);
-    break;
-  case itemTypeKey::crupper:
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::shorts);
-    break;
-  case itemTypeKey::doublet:
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::doublet);
-    break;
-  case itemTypeKey::flanchard:
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::jerkin);
-    break;
-  case itemTypeKey::haubergeon:
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::hauburk);
-    break;
-  case itemTypeKey::hauberk:
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::hauburk);
-    break;
-  case itemTypeKey::helmet:
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::hat);
-    break;
-  case itemTypeKey::jerkin:
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::jerkin);
-    break;
-  case itemTypeKey::peytral:
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::robe);
-    break;
-  case itemTypeKey::robe:
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::robe);
-    break;
-  case itemTypeKey::saddle:
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::saddle);
-    break;
-  case itemTypeKey::scabbord:
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::belt);
-    break;
-  case itemTypeKey::shirt:
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::shirt);
-    break;
-  case itemTypeKey::shorts:
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::shorts);
-    break;
-  case itemTypeKey::skirt:
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::shorts);
-    break;
-  case itemTypeKey::socks:
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::socks);
-    break;
-  case itemTypeKey::trousers:
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::shorts);
-    break;
-  case itemTypeKey::tshirt:
-    rtn = new tshirt();
-    break;
-  case itemTypeKey::underpants:
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::underwear);
-    break;
-  case itemTypeKey::stick: {
+// traits class holds:
+// - type: default class type to use
+// - make(): static template function, typed on concrete class type, taking itemtype parameter, producing new object on the heap and returning.
+// Verbose, but we can use wrapper classes to add mixin/subclass functionality to an object in future.
+template <itemTypeKey key> struct itemTypeTraits {};
+
+
+template <> struct itemTypeTraits<itemTypeKey::apple> {
+  typedef basicItem type;
+  template<typename type>
+  static item *make(const itemType &t) {return new type(t);} };
+template <> struct itemTypeTraits<itemTypeKey::mace> {
+  typedef basicWeapon type;
+  template<typename type>
+  static item *make(const itemType &t) {return new type(t, damageType::bashing);} };
+template <> struct itemTypeTraits<itemTypeKey::two_sword> {
+  typedef twoHandedWeapon type;
+  // we specifically chose a historical 2-handed cutting sword to annoy the reenactment purists :)
+  template<typename type>
+  static item *make(const itemType &t) {return new type(t, damageType::edged);} };
+template <> struct itemTypeTraits<itemTypeKey::flamethrower> {
+  typedef chargeWeapon<twoHandedWeapon> type;
+  template<typename type>
+  static item *make(const itemType &t) {return new type(t, damageType::hot, L"A burst of flames leaps forth"); }
+  };
+template <> struct itemTypeTraits<itemTypeKey::nitrogen_tank> {
+  typedef chargeWeapon<twoHandedWeapon> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, damageType::cold, L"A jet of super-cooled liquid fires forth"); }
+};
+template <> struct itemTypeTraits<itemTypeKey::bubble_gun> {
+  typedef basicWeapon type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, damageType::wet);}
+};
+template <> struct itemTypeTraits<itemTypeKey::sonic_cannon> {
+  typedef chargeWeapon<basicWeapon> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, damageType::sonic, L"Air vibrations shudder forth"); }
+};
+template <> struct itemTypeTraits<itemTypeKey::maser> {
+  typedef chargeWeapon<basicWeapon> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, damageType::disintegration, L"Radiation fires forth"); }
+};
+template <> struct itemTypeTraits<itemTypeKey::taser> {
+  typedef chargeWeapon<basicWeapon> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, damageType::electric, L"Spark fly forth");}
+};
+template <> struct itemTypeTraits<itemTypeKey::rock> {
+  typedef basicThrown type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, damageType::bashing); }
+};
+template <> struct itemTypeTraits<itemTypeKey::bow> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, slotType::hat, slotType::tail); }
+};
+template <> struct itemTypeTraits<itemTypeKey::boots> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  slotType::shoes); }
+};
+template <> struct itemTypeTraits<itemTypeKey::cloak> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  slotType::robe); }
+};
+template <> struct itemTypeTraits<itemTypeKey::crupper> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  slotType::shorts); }
+};
+template <> struct itemTypeTraits<itemTypeKey::doublet> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  slotType::doublet); }
+};
+template <> struct itemTypeTraits<itemTypeKey::flanchard> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  slotType::jerkin); }
+};
+template <> struct itemTypeTraits<itemTypeKey::haubergeon> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  slotType::hauburk); }
+};
+template <> struct itemTypeTraits<itemTypeKey::hauberk> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  slotType::hauburk); }
+};
+template <> struct itemTypeTraits<itemTypeKey::helmet> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  slotType::hat); }
+};
+template <> struct itemTypeTraits<itemTypeKey::jerkin> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  slotType::jerkin); }
+};
+template <> struct itemTypeTraits<itemTypeKey::peytral> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  slotType::robe); }
+};
+template <> struct itemTypeTraits<itemTypeKey::robe> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  slotType::robe); }
+};
+template <> struct itemTypeTraits<itemTypeKey::saddle> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  slotType::saddle); }
+};
+template <> struct itemTypeTraits<itemTypeKey::scabbord> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  slotType::belt); }
+};
+template <> struct itemTypeTraits<itemTypeKey::shirt> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  slotType::shirt); }
+};
+template <> struct itemTypeTraits<itemTypeKey::shorts> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  slotType::shorts); }
+};
+template <> struct itemTypeTraits<itemTypeKey::skirt> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  slotType::shorts); }
+};
+template <> struct itemTypeTraits<itemTypeKey::socks> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  slotType::socks); }
+};
+template <> struct itemTypeTraits<itemTypeKey::trousers> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  slotType::shorts); }
+};
+template <> struct itemTypeTraits<itemTypeKey::tshirt> {
+  typedef tshirt type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(); }
+};
+template <> struct itemTypeTraits<itemTypeKey::underpants> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  slotType::underwear); } 
+};
+template <> struct itemTypeTraits<itemTypeKey::stick> {
+  typedef wand type;
+  template<typename type>
+  static item *make(const itemType &t) { 
     auto &action = actionFactory<monster, monster>::get(static_cast<sharedAction<monster,monster>::key>(rndPickI(0, static_cast<int>(sharedAction<monster,monster>::key::END))));
     // random wands are initially created as sticks, must be enchanted to use:
-    rtn = new wand(0, action);
-    break;
-  }
-  case itemTypeKey::bottle:
-    rtn = new bottle(r[t]);
-    break;
-  case itemTypeKey::codex:
-    rtn = new readableItem(r[t]);
-    break;
-  case itemTypeKey::hitch_guide:
-    rtn = new hitchGuide(r[t]);
-    break;
-  case itemTypeKey::holy_book:
-    rtn = new holyBook();
-    break;
-    //   case itemTypeKey::iou: // not handled here
-  case itemTypeKey::poke:
-    rtn = new basicContainer(r[t]);
-    break;
-  case itemTypeKey::napsack_of_consumption:
-    rtn = new napsackOfConsumption();
-    break;
-  case itemTypeKey::water:
-    rtn = new basicItem(r[t]);
-    break;
-  case itemTypeKey::tears:
-    rtn = new transmutedWater(r[t], damageType::edged);
-    break;
-  case itemTypeKey::heavy_water:
-    rtn = new transmutedWater(r[t], damageType::bashing);
-    break;
-  case itemTypeKey::fire_water:
-    rtn = new transmutedWater(r[t], damageType::hot);
-    break;
-  case itemTypeKey::pop:
-    rtn = new transmutedWater(r[t], damageType::wet);
-    break;
-  case itemTypeKey::fizzy_pop:
-    rtn = new transmutedWater(r[t], damageType::sonic);
-    break;
-  case itemTypeKey::dehydrated_water:
-    rtn = new transmutedWater(r[t], damageType::disintegration);
-    break;
-  case itemTypeKey::spring_water:
-    rtn = new transmutedWater(r[t], damageType::starvation);
-    break;
-  case itemTypeKey::electro_pop:
-    rtn = new transmutedWater(r[t], damageType::electric);
-    break;
-  case itemTypeKey::wooden_ring:
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::ring_left_thumb, slotType::ring_left_index, slotType::ring_left_middle, slotType::ring_left_ring, slotType::ring_left_little, slotType::ring_right_thumb, slotType::ring_right_index, slotType::ring_right_middle, slotType::ring_right_ring, slotType::ring_right_little, slotType::toe_left_thumb, slotType::toe_left_index, slotType::toe_left_middle, slotType::toe_left_fourth, slotType::toe_left_little, slotType::toe_right_thumb, slotType::toe_right_index, slotType::toe_right_middle, slotType::toe_right_fourth, slotType::toe_right_little);
-    break;
-  case itemTypeKey::amulet: 
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::amulet);
-    break;
-  case itemTypeKey::necklace: 
-    rtn = new necklace(r[t]);
-    break;
-  case itemTypeKey::tikka: 
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::headband);
-    break;
-  case itemTypeKey::spectacles: 
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::glasses);
-    break;
-  case itemTypeKey::bracelet: 
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::bracelet_left, slotType::bracelet_right);
-    break;
-  case itemTypeKey::anklet: 
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::anklet_left, slotType::anklet_right);
-    break;
-  case itemTypeKey::cloth_gloves: 
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::gloves);
-    break;
-  case itemTypeKey::armband: 
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::bracelet_left, slotType::bracelet_right);
-    break;
-  case itemTypeKey::kalganid:
-    rtn = new basicItem(r[t]); // TODO: should we be able to equip coins on our eyes?
-    break;
-  case itemTypeKey::shop_card:
-    rtn = new shopCard(r[t]);
-    break;
-  case itemTypeKey::bottling_kit:
-    rtn = new bottlingKit(r[t]);
-    break;
-  case itemTypeKey::theremin: {  // attack_ray_med_electric
+    return new type(0,  action); }
+};
+template <> struct itemTypeTraits<itemTypeKey::bottle> {
+  typedef bottle type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t); }
+};
+template <> struct itemTypeTraits<itemTypeKey::codex> {
+  typedef readableItem type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t); }
+};
+template <> struct itemTypeTraits<itemTypeKey::hitch_guide> {
+  typedef hitchGuide type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t); }
+};
+template <> struct itemTypeTraits<itemTypeKey::holy_book> {
+  typedef holyBook type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(); } 
+};
+// corpse not handled by traits
+// IOU not handled by traits
+template <> struct itemTypeTraits<itemTypeKey::poke> {
+  typedef basicContainer type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t); }
+};
+template <> struct itemTypeTraits<itemTypeKey::napsack_of_consumption> {
+  typedef napsackOfConsumption type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(); }
+};
+template <> struct itemTypeTraits<itemTypeKey::water> {
+  typedef basicItem type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t); }
+};
+template <> struct itemTypeTraits<itemTypeKey::tears> {
+  typedef transmutedWater type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  damageType::edged); }
+};
+template <> struct itemTypeTraits<itemTypeKey::heavy_water> {
+  typedef transmutedWater type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  damageType::bashing); }
+};
+template <> struct itemTypeTraits<itemTypeKey::fire_water> {
+  typedef transmutedWater type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  damageType::hot); }
+};
+ template <> struct itemTypeTraits<itemTypeKey::pop> {
+  typedef transmutedWater type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  damageType::wet); }
+};
+template <> struct itemTypeTraits<itemTypeKey::fizzy_pop> {
+  typedef transmutedWater type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  damageType::sonic); }
+};
+template <> struct itemTypeTraits<itemTypeKey::dehydrated_water> {
+  typedef transmutedWater type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  damageType::disintegration); }
+};
+template <> struct itemTypeTraits<itemTypeKey::spring_water> {
+  typedef transmutedWater type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  damageType::starvation); }
+};
+template <> struct itemTypeTraits<itemTypeKey::electro_pop> {
+  typedef transmutedWater type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  damageType::electric); }
+};
+template <> struct itemTypeTraits<itemTypeKey::wooden_ring> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, slotType::ring_left_thumb, slotType::ring_left_index, slotType::ring_left_middle, slotType::ring_left_ring, slotType::ring_left_little, slotType::ring_right_thumb, slotType::ring_right_index, slotType::ring_right_middle, slotType::ring_right_ring, slotType::ring_right_little, slotType::toe_left_thumb, slotType::toe_left_index, slotType::toe_left_middle, slotType::toe_left_fourth, slotType::toe_left_little, slotType::toe_right_thumb, slotType::toe_right_index, slotType::toe_right_middle, slotType::toe_right_fourth, slotType::toe_right_little); }
+};
+template <> struct itemTypeTraits<itemTypeKey::amulet> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  slotType::amulet); }
+};
+template <> struct itemTypeTraits<itemTypeKey::necklace> {
+  typedef necklace type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t); }
+};
+template <> struct itemTypeTraits<itemTypeKey::tikka> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, slotType::headband); }
+};
+template <> struct itemTypeTraits<itemTypeKey::spectacles> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  slotType::glasses); }
+};
+template <> struct itemTypeTraits<itemTypeKey::bracelet> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, slotType::bracelet_left, slotType::bracelet_right); }
+};
+template <> struct itemTypeTraits<itemTypeKey::anklet> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, slotType::anklet_left, slotType::anklet_right); }
+};
+template <> struct itemTypeTraits<itemTypeKey::cloth_gloves> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, slotType::gloves); }
+};
+template <> struct itemTypeTraits<itemTypeKey::armband> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, slotType::bracelet_left, slotType::bracelet_right); }
+};
+template <> struct itemTypeTraits<itemTypeKey::kalganid> {
+  typedef basicItem type; // TODO: should we be able to equip coins on our eyes?
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t); }
+};
+template <> struct itemTypeTraits<itemTypeKey::shop_card> {
+  typedef shopCard type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t); }
+};
+template <> struct itemTypeTraits<itemTypeKey::bottling_kit> {
+  typedef bottlingKit type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t); }
+};
+template <> struct itemTypeTraits<itemTypeKey::theremin> {
+  typedef instrument type;
+  template<typename type>
+  static item *make(const itemType &t) {  // attack_ray_med_electric
     auto &action = actionFactory<monster, monster>::get(sharedAction<monster,monster>::key::attack_ray_med_electric);
-    rtn = new instrument(action, r[t]);
-    break;
+    return new type(action, t);
   }
-  case itemTypeKey::visi_sonor: {// charm
+};
+template <> struct itemTypeTraits<itemTypeKey::visi_sonor> {
+  typedef instrument type;
+  template<typename type>
+  static item *make(const itemType &t) { // charm
     auto &action = actionFactory<monster, monster>::get(sharedAction<monster,monster>::key::charm);
-    rtn = new instrument(action, r[t]);
-    break;
-  }
-  case itemTypeKey::baliset: {// enchant_item
+    return new type(action, t);
+  }    
+};
+template <> struct itemTypeTraits<itemTypeKey::baliset> {
+  typedef instrument type;
+  template<typename type>
+  static item *make(const itemType &t) { // enchant_item
     auto &action = actionFactory<monster, monster>::get(sharedAction<monster,monster>::key::enchant_item);
-    rtn = new instrument(action, r[t]);
-    break;
+    return new type(action, t);
   }
-  case itemTypeKey::drum: {// nudity
+};
+template <> struct itemTypeTraits<itemTypeKey::drum> {
+  typedef instrument type;
+  template<typename type>
+  static item *make(const itemType &t) { // nudity
     auto &action = actionFactory<monster, monster>::get(sharedAction<monster,monster>::key::nudity);
-    rtn = new instrument(action, r[t]);
-    break;
+    return new type(action, t);
   }
-  case itemTypeKey::bagpipes: {// petrify
+};
+template <> struct itemTypeTraits<itemTypeKey::bagpipes> {
+  typedef instrument type;
+  template<typename type>
+  static item *make(const itemType &t) { // petrify
     auto &action = actionFactory<monster, monster>::get(sharedAction<monster,monster>::key::petrify);
-    rtn = new instrument(action, r[t]);
-    break;
+    return new type(action, t);
   }
-  case itemTypeKey::conch: {// disarm
+};
+template <> struct itemTypeTraits<itemTypeKey::conch> {
+  typedef instrument type;
+  template<typename type>
+  static item *make(const itemType &t) { // disarm
     auto &action = actionFactory<monster, monster>::get(sharedAction<monster,monster>::key::disarm);
-    rtn = new instrument(action, r[t]);
-    break;
+    return new type(action, t);
   }
-  case itemTypeKey::harmonica: {// tremolo-tuned; attack_ray_med_sonic
+};
+template <> struct itemTypeTraits<itemTypeKey::harmonica> {
+  typedef instrument type;
+  template<typename type>
+  static item *make(const itemType &t) { // tremolo-tuned; attack_ray_med_sonic
     auto &action = actionFactory<monster, monster>::get(sharedAction<monster,monster>::key::attack_ray_med_sonic);
-    rtn = new instrument(action, r[t]);
-    break;
+    return new type(action, t);
   }
-  case itemTypeKey::pan_flute: {// attraction
+};
+template <> struct itemTypeTraits<itemTypeKey::pan_flute> {
+  typedef instrument type;
+  template<typename type>
+  static item *make(const itemType &t) { // attraction
     auto &action = actionFactory<monster, monster>::get(sharedAction<monster,monster>::key::attract);
-    rtn = new instrument(action, r[t]);
-    break;
+    return new type(action, t);
   }
-  case itemTypeKey::lyre: {// teleport_away
+};
+template <> struct itemTypeTraits<itemTypeKey::lyre> {
+  typedef instrument type;
+  template<typename type>
+  static item *make(const itemType &t) { // teleport_away
     auto &action = actionFactory<monster, monster>::get(sharedAction<monster,monster>::key::teleport_away);
-    rtn = new instrument(action, r[t]);
-    break;
+    return new type(action, t);
   }
-  case itemTypeKey::pianoforte: {// attack_ray_med_bashing
+};
+template <> struct itemTypeTraits<itemTypeKey::pianoforte> {
+  typedef instrument type;
+  template<typename type>
+  static item *make(const itemType &t) { // attack_ray_med_bashing
     auto &action = actionFactory<monster, monster>::get(sharedAction<monster,monster>::key::attack_ray_med_bashing);
-    rtn = new instrument(action, r[t]);
-    break;
+    return new type(action, t);
   }
-  case itemTypeKey::bridge:
-    rtn = new basicTransport(r[t], terrainType::WATER, terrainType::GROUND, 
-			     movementType({speed::slow3, goTo::none, goBy::avoid, 0}));
-    break;
-  case itemTypeKey::ship:
-    rtn = new basicTransport(r[t], terrainType::WATER, terrainType::GROUND, 
-			     movementType({speed::slow3, goTo::player, goBy::avoid, 0}));
-    break;
-  default:
-    throw t; // unknown type
-  }
+};
+template <> struct itemTypeTraits<itemTypeKey::bridge> {
+  typedef basicTransport type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, terrainType::WATER, terrainType::GROUND,
+					    movementType({speed::slow3, goTo::none, goBy::avoid, 0}));}
+};
+template <> struct itemTypeTraits<itemTypeKey::ship> {
+  typedef basicTransport type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, terrainType::WATER, terrainType::GROUND, 
+					    movementType({speed::slow3, goTo::player, goBy::avoid, 0})); }
+};
+
+template <itemTypeKey t, class T>
+item &createItem();
+
+// create an item of the given type. io may be used later by that item, eg for prompts when using.
+// TODO: Randomness for flavour: enchantment, flags, etc.
+template <itemTypeKey t>
+item &createItem() {
+  return createItem<t, itemTypeTraits<t> >();
+}
+
+template <itemTypeKey t, class T>
+item &createItem() {
+  //item& createItem(const itemTypeKey & t) {
+  auto &r = itemTypeRepo::instance();
+  typedef typename T::type concreteType;
+  item *rtn = T::template make<concreteType>(r[t]);
   itemHolderMap::instance().enroll(*rtn); // takes ownership
   return *rtn; // now safe to take reference
 }
+
+item & createEquippable(const itemTypeKey &t, sharedAction<item,monster>::key of) {
+  auto &action = actionFactory<item, monster>::get(of);
+  //  auto &item = createItem<t, equippableTypeTraits<t> >();
+  auto &item = createItem(t);
+  dynamic_cast<onEquipMixin&>(item).equipAction(action);
+  return item;
+}
+
 
 template<questItemType it>
 struct questItemTypeTraits{};
@@ -1572,14 +1751,15 @@ item &createCorpse(const monsterType &mt, const unsigned char maxDamage) {
   return *rtn;
 }
 
-item & createBottledItem(const itemTypeKey &type) {
-  auto &rtn = createItem(itemTypeKey::bottle);
-  auto &toBottle = createItem(type);
+template <itemTypeKey type>
+item & createBottledItem() {
+  auto &rtn = createItem<itemTypeKey::bottle>();
+  auto &toBottle = createItem<type>();
   dynamic_cast<bottle &>(rtn).addItem(toBottle);
   return rtn;
 }
 item & createRndBottledItem(const int depth) {
-  auto &rtn = createItem(itemTypeKey::bottle);
+  auto &rtn = createItem<itemTypeKey::bottle>();
   auto &toBottle = createRndItem(depth, L'~');
   dynamic_cast<bottle &>(rtn).addItem(toBottle);
   return rtn;
@@ -1589,47 +1769,6 @@ item & createWand(sharedAction<monster,monster>::key of) {
   auto &action = actionFactory<monster, monster>::get(of);
   // non-random wands are initially created with 1-5 charges:
   auto rtn = new wand(dPc() / 20, action);
-  itemHolderMap::instance().enroll(*rtn); // takes ownership
-  return *rtn;
-}
-
-item & createEquippable(const itemTypeKey &t, sharedAction<item,monster>::key of) {
-  auto &action = actionFactory<item, monster>::get(of);
-  auto &r = itemTypeRepo::instance();
-  basicEquip<item::equipType::worn> *rtn;
-  // TODO: Copy of createItem code; better to use templates?
-  switch(t) {
-  case itemTypeKey::wooden_ring:
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::ring_left_thumb, slotType::ring_left_index, slotType::ring_left_middle, slotType::ring_left_ring, slotType::ring_left_little, slotType::ring_right_thumb, slotType::ring_right_index, slotType::ring_right_middle, slotType::ring_right_ring, slotType::ring_right_little, slotType::toe_left_thumb, slotType::toe_left_index, slotType::toe_left_middle, slotType::toe_left_fourth, slotType::toe_left_little, slotType::toe_right_thumb, slotType::toe_right_index, slotType::toe_right_middle, slotType::toe_right_fourth, slotType::toe_right_little);
-    break;
-  case itemTypeKey::amulet: 
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::amulet);
-    break;
-  case itemTypeKey::necklace: 
-    rtn = new necklace(r[t]);
-    break;
-  case itemTypeKey::tikka: 
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::headband);
-    break;
-  case itemTypeKey::spectacles: 
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::glasses);
-    break;
-  case itemTypeKey::bracelet: 
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::bracelet_left, slotType::bracelet_right);
-    break;
-  case itemTypeKey::anklet: 
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::anklet_left, slotType::anklet_right);
-    break;
-  case itemTypeKey::cloth_gloves: 
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::gloves);
-    break;
-  case itemTypeKey::armband: 
-    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::bracelet_left, slotType::bracelet_right);
-    break;
-  default:
-    throw t;
-  }
-  rtn->equipAction(action);
   itemHolderMap::instance().enroll(*rtn); // takes ownership
   return *rtn;
 }
@@ -1655,6 +1794,7 @@ item &createRndEquippable(const itemTypeKey &type) {
   return createEquippable(type, of);
 }
 
+
 // create a random item suitable for the given level depth
 // TODO: depth limitations
 item &createRndItem(const int depth, bool allowLiquids) {
@@ -1663,7 +1803,7 @@ item &createRndItem(const int depth, bool allowLiquids) {
     auto type = rndPick(r.begin(), r.end());
     // we can produce water, but we must bottle it:
     if (type->first == itemTypeKey::water && !allowLiquids)
-      return createBottledItem(itemTypeKey::water);
+      return createBottledItem<itemTypeKey::water>();
     // other more exotic liquids are usually ignored:
     if (!allowLiquids && r[type->first].material() == materialType::liquid) continue;
     // we never autogenerate a corpse because they always need a monster first:
@@ -1680,5 +1820,87 @@ item &createRndItem(const int depth, bool allowLiquids) {
       return createRndEquippable(type->first);
     // general case: call createItem():
     return createItem(type->first); // already enrolled
+  }
+}
+
+
+// giant switch ensures every case is compiled in, and means we can create items
+// of dynamic type:
+item &createItem(const itemTypeKey &key) {
+  switch (key) {
+  case itemTypeKey::apple: return createItem<itemTypeKey::apple>();
+    //  case itemTypeKey::corpse: return createItem<itemTypeKey::corpse>();
+  case itemTypeKey::mace: return createItem<itemTypeKey::mace>();
+  case itemTypeKey::two_sword: return createItem<itemTypeKey::two_sword>();
+  case itemTypeKey::flamethrower: return createItem<itemTypeKey::flamethrower>();
+  case itemTypeKey::nitrogen_tank: return createItem<itemTypeKey::nitrogen_tank>();
+  case itemTypeKey::bubble_gun: return createItem<itemTypeKey::bubble_gun>();
+  case itemTypeKey::sonic_cannon: return createItem<itemTypeKey::sonic_cannon>();
+  case itemTypeKey::maser: return createItem<itemTypeKey::maser>();
+  case itemTypeKey::taser: return createItem<itemTypeKey::taser>();
+  case itemTypeKey::rock: return createItem<itemTypeKey::rock>();
+  case itemTypeKey::bow: return createItem<itemTypeKey::bow>();
+  case itemTypeKey::boots: return createItem<itemTypeKey::boots>();
+  case itemTypeKey::cloak: return createItem<itemTypeKey::cloak>();
+  case itemTypeKey::crupper: return createItem<itemTypeKey::crupper>();
+  case itemTypeKey::doublet: return createItem<itemTypeKey::doublet>();
+  case itemTypeKey::flanchard: return createItem<itemTypeKey::flanchard>();
+  case itemTypeKey::haubergeon: return createItem<itemTypeKey::haubergeon>();
+  case itemTypeKey::hauberk: return createItem<itemTypeKey::hauberk>();
+  case itemTypeKey::helmet: return createItem<itemTypeKey::helmet>();
+  case itemTypeKey::jerkin: return createItem<itemTypeKey::jerkin>();
+  case itemTypeKey::peytral: return createItem<itemTypeKey::peytral>();
+  case itemTypeKey::robe: return createItem<itemTypeKey::robe>();
+  case itemTypeKey::saddle: return createItem<itemTypeKey::saddle>();
+  case itemTypeKey::scabbord: return createItem<itemTypeKey::scabbord>();
+  case itemTypeKey::shirt: return createItem<itemTypeKey::shirt>();
+  case itemTypeKey::shorts: return createItem<itemTypeKey::shorts>();
+  case itemTypeKey::skirt: return createItem<itemTypeKey::skirt>();
+  case itemTypeKey::socks: return createItem<itemTypeKey::socks>();
+  case itemTypeKey::trousers: return createItem<itemTypeKey::trousers>();
+  case itemTypeKey::tshirt: return createItem<itemTypeKey::tshirt>();
+  case itemTypeKey::underpants: return createItem<itemTypeKey::underpants>();
+  case itemTypeKey::stick: return createItem<itemTypeKey::stick>();
+  case itemTypeKey::bottle: return createItem<itemTypeKey::bottle>();
+  case itemTypeKey::codex: return createItem<itemTypeKey::codex>();
+  case itemTypeKey::hitch_guide: return createItem<itemTypeKey::hitch_guide>();
+  case itemTypeKey::holy_book: return createItem<itemTypeKey::holy_book>();
+    //  case itemTypeKey::iou: return createItem<itemTypeKey::iou>();
+  case itemTypeKey::poke: return createItem<itemTypeKey::poke>();
+  case itemTypeKey::napsack_of_consumption: return createItem<itemTypeKey::napsack_of_consumption>();
+  case itemTypeKey::water: return createItem<itemTypeKey::water>();
+  case itemTypeKey::tears: return createItem<itemTypeKey::tears>();
+  case itemTypeKey::heavy_water: return createItem<itemTypeKey::heavy_water>();
+  case itemTypeKey::fire_water: return createItem<itemTypeKey::fire_water>();
+  case itemTypeKey::pop: return createItem<itemTypeKey::pop>();
+  case itemTypeKey::fizzy_pop: return createItem<itemTypeKey::fizzy_pop>();
+  case itemTypeKey::dehydrated_water: return createItem<itemTypeKey::dehydrated_water>();
+  case itemTypeKey::spring_water: return createItem<itemTypeKey::spring_water>();
+  case itemTypeKey::electro_pop: return createItem<itemTypeKey::electro_pop>();
+  case itemTypeKey::wooden_ring: return createItem<itemTypeKey::wooden_ring>();
+  case itemTypeKey::amulet: return createItem<itemTypeKey::amulet>();
+  case itemTypeKey::necklace: return createItem<itemTypeKey::necklace>();
+  case itemTypeKey::tikka: return createItem<itemTypeKey::tikka>();
+  case itemTypeKey::spectacles: return createItem<itemTypeKey::spectacles>();
+  case itemTypeKey::bracelet: return createItem<itemTypeKey::bracelet>();
+  case itemTypeKey::anklet: return createItem<itemTypeKey::anklet>();
+  case itemTypeKey::cloth_gloves: return createItem<itemTypeKey::cloth_gloves>();
+  case itemTypeKey::armband: return createItem<itemTypeKey::armband>();
+  case itemTypeKey::kalganid: return createItem<itemTypeKey::kalganid>();
+  case itemTypeKey::shop_card: return createItem<itemTypeKey::shop_card>();
+  case itemTypeKey::bottling_kit: return createItem<itemTypeKey::bottling_kit>();
+  case itemTypeKey::theremin: return createItem<itemTypeKey::theremin>();
+  case itemTypeKey::visi_sonor: return createItem<itemTypeKey::visi_sonor>();
+  case itemTypeKey::baliset: return createItem<itemTypeKey::baliset>();
+  case itemTypeKey::drum: return createItem<itemTypeKey::drum>();
+  case itemTypeKey::bagpipes: return createItem<itemTypeKey::bagpipes>();
+  case itemTypeKey::conch: return createItem<itemTypeKey::conch>();
+  case itemTypeKey::harmonica: return createItem<itemTypeKey::harmonica>();
+  case itemTypeKey::pan_flute: return createItem<itemTypeKey::pan_flute>();
+  case itemTypeKey::lyre: return createItem<itemTypeKey::lyre>();
+  case itemTypeKey::pianoforte: return createItem<itemTypeKey::pianoforte>();
+  case itemTypeKey::bridge: return createItem<itemTypeKey::bridge>();
+  case itemTypeKey::ship: return createItem<itemTypeKey::ship>();
+  default: throw key;
   }
 }
