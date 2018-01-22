@@ -71,6 +71,8 @@ enum class itemTypeKey {
     haubergeon,
     hauberk,
     helmet,
+  // gloves, TODO leathery; worn under gauntlets
+  // gauntlets, TODO, Metallic; Worn over gloves
     jerkin,
     peytral, // (horse chest armour)
     robe,
@@ -83,7 +85,7 @@ enum class itemTypeKey {
     trousers,
     tshirt, // sexy if wet or torn
     underpants,
-    
+  //TODO:    goggles,
 
   ////
   // Stylii ('/' for wand in nethack, cf \ for throne)
@@ -127,6 +129,14 @@ enum class itemTypeKey {
   // Jewellery ('*' ; nethack uses * for gems, " for amulets/webs and = for rings
   ////
     wooden_ring,
+    amulet, // stony; worn on neck. Called a talisman when has an effect.
+    necklace, // metallic, worn on neck
+    tikka, // pendant worn on short chain down the hair parting (india); headband slot
+    spectacles, // glassy, worn on eyes slot
+    bracelet, // metallic arm jewellery
+    anklet, // metallic leg jewellery
+    cloth_gloves, // clothy form of gloves
+    armband, // black band worn for mourning; singular
 
   //// 
   // Valuables ('$'; nethack uses this for coins (denominated in zorkmids) and '$' for gems.

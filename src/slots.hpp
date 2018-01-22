@@ -45,7 +45,7 @@ enum class slotType {
     ring_left_middle,
     ring_left_ring,
     ring_left_little,
-    bracelet_left,
+    bracelet_left, // TODO: should we also have armlets? for upper arms
     gloves,
     gauntlets,
     ring_right_thumb,

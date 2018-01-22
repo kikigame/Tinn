@@ -705,6 +705,7 @@ Lightning: Electro pop (assuming this is difficult to generate, this could besto
 * I'd like to do more with containers. eg Fixer boxes that repair things put in (maybe with a chance of destroying them), memory holes (Orwell's 1984 containers of oblivion), perhaps a slimy/oily bag that makes its contents slimy/oily?
 * Bottling a bottle should create a Klein bottle, but I'm unsure yet what a klein bottle should do in the game. Perhaps a category of hyperdimensional objects needed for some quest?
 * A power suit would provide both weapons and armour. Powerful at first, but could quickly be destroyed unless effectively proofed.
+* Handcuffs: occupy both bracelet slots and weapon slots (so can't equip a weapon), and preform only 50% damage of bashing type (regardless of base type) while equipped.
 
 
 Character Class ideas

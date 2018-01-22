@@ -133,7 +133,7 @@ basicItem::~basicItem() {}
 const wchar_t basicItem::render() const {
   return type_.render();
 }
-// return the simple name for this item type; overridden in corpse.
+// return the simple name for this item type; overridden in corpse/necklace etc.
 std::wstring basicItem::simpleName() const {
   return type_.name();
 }
@@ -1216,6 +1216,18 @@ public:
   virtual ~basicTransport() {}
 };
 
+class necklace : public basicEquip<item::equipType::worn> {
+public:
+  necklace(const itemType &type) :
+    basicEquip<item::equipType::worn>(type, slotType::amulet) {}
+  virtual ~necklace() {};
+  virtual std::wstring simpleName() const {
+    if (dynamic_cast<const onEquipMixin*>(this)) {
+      return L"talisman"; // meaning an amulet with magical effects
+    } else
+      return basicItem::name();
+  }
+};
 
 // create an item of the given type. io may be used later by that item, eg for prompts when using.
 // TODO: Randomness for flavour: enchantment, flags, etc.
@@ -1371,6 +1383,30 @@ item& createItem(const itemTypeKey & t) {
     break;
   case itemTypeKey::wooden_ring:
     rtn = new basicEquip<item::equipType::worn>(r[t], slotType::ring_left_thumb, slotType::ring_left_index, slotType::ring_left_middle, slotType::ring_left_ring, slotType::ring_left_little, slotType::ring_right_thumb, slotType::ring_right_index, slotType::ring_right_middle, slotType::ring_right_ring, slotType::ring_right_little, slotType::toe_left_thumb, slotType::toe_left_index, slotType::toe_left_middle, slotType::toe_left_fourth, slotType::toe_left_little, slotType::toe_right_thumb, slotType::toe_right_index, slotType::toe_right_middle, slotType::toe_right_fourth, slotType::toe_right_little);
+    break;
+  case itemTypeKey::amulet: 
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::amulet);
+    break;
+  case itemTypeKey::necklace: 
+    rtn = new necklace(r[t]);
+    break;
+  case itemTypeKey::tikka: 
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::headband);
+    break;
+  case itemTypeKey::spectacles: 
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::glasses);
+    break;
+  case itemTypeKey::bracelet: 
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::bracelet_left, slotType::bracelet_right);
+    break;
+  case itemTypeKey::anklet: 
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::anklet_left, slotType::anklet_right);
+    break;
+  case itemTypeKey::cloth_gloves: 
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::gloves);
+    break;
+  case itemTypeKey::armband: 
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::bracelet_left, slotType::bracelet_right);
     break;
   case itemTypeKey::kalganid:
     rtn = new basicItem(r[t]); // TODO: should we be able to equip coins on our eyes?
@@ -1557,12 +1593,45 @@ item & createWand(sharedAction<monster,monster>::key of) {
   return *rtn;
 }
 
-item & createEquippable(const itemTypeKey &type, sharedAction<item,monster>::key of) {
+item & createEquippable(const itemTypeKey &t, sharedAction<item,monster>::key of) {
   auto &action = actionFactory<item, monster>::get(of);
-  auto &rtn = createItem(type); // takes ownership
-  auto &mixin = dynamic_cast<onEquipMixin&>(rtn);
-  mixin.equipAction(action);
-  return rtn;
+  auto &r = itemTypeRepo::instance();
+  basicEquip<item::equipType::worn> *rtn;
+  // TODO: Copy of createItem code; better to use templates?
+  switch(t) {
+  case itemTypeKey::wooden_ring:
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::ring_left_thumb, slotType::ring_left_index, slotType::ring_left_middle, slotType::ring_left_ring, slotType::ring_left_little, slotType::ring_right_thumb, slotType::ring_right_index, slotType::ring_right_middle, slotType::ring_right_ring, slotType::ring_right_little, slotType::toe_left_thumb, slotType::toe_left_index, slotType::toe_left_middle, slotType::toe_left_fourth, slotType::toe_left_little, slotType::toe_right_thumb, slotType::toe_right_index, slotType::toe_right_middle, slotType::toe_right_fourth, slotType::toe_right_little);
+    break;
+  case itemTypeKey::amulet: 
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::amulet);
+    break;
+  case itemTypeKey::necklace: 
+    rtn = new necklace(r[t]);
+    break;
+  case itemTypeKey::tikka: 
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::headband);
+    break;
+  case itemTypeKey::spectacles: 
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::glasses);
+    break;
+  case itemTypeKey::bracelet: 
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::bracelet_left, slotType::bracelet_right);
+    break;
+  case itemTypeKey::anklet: 
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::anklet_left, slotType::anklet_right);
+    break;
+  case itemTypeKey::cloth_gloves: 
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::gloves);
+    break;
+  case itemTypeKey::armband: 
+    rtn = new basicEquip<item::equipType::worn>(r[t], slotType::bracelet_left, slotType::bracelet_right);
+    break;
+  default:
+    throw t;
+  }
+  rtn->equipAction(action);
+  itemHolderMap::instance().enroll(*rtn); // takes ownership
+  return *rtn;
 }
 
 item & createIou(const double amount, const std::wstring &whom, const std::wstring &service) {
@@ -1578,6 +1647,12 @@ double forIou(const item &i, double d, std::wstring &buf) {// used in shop.cpp
     return ii->amount() + d;
   } else
     return d;
+}
+
+item &createRndEquippable(const itemTypeKey &type) {
+  typedef sharedAction<item,monster>::key key;
+  key of = static_cast<key>(rndPickI(0, static_cast<int>(key::END)));
+  return createEquippable(type, of);
 }
 
 // create a random item suitable for the given level depth
@@ -1600,6 +1675,9 @@ item &createRndItem(const int depth, bool allowLiquids) {
     // don't autogenerate water transport:
     if (type->first == itemTypeKey::bridge) continue;
     if (type->first == itemTypeKey::ship) continue;
+    // some jewellery is magic:
+    if (type->second->render() == L'*' && dPc() < depth)
+      return createRndEquippable(type->first);
     // general case: call createItem():
     return createItem(type->first); // already enrolled
   }
