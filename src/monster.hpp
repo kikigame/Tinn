@@ -27,6 +27,7 @@ class monsterBuilder;
 class levelImpl;
 class slot;
 class damage;
+template <class ...T> class sharedAction;
 
 // attack() can remove a monster from the game, so we copy
 // the data to a struct to return it:
@@ -147,6 +148,7 @@ public:
   bool equip(item &item, const std::array<const slot *, 2> &slots);
   // try to unequip an item. Returns true on success, false if not equipped or cursed
   bool unequip(item &item);
+  bool isEquipped(sharedAction<item, monster> &act) const;
   // returns true if this monster has this equipment slot and it is empty
   // returns false if this monster does not have this slot, or it is occupied.
   bool slotAvail(const slot * slot) const;

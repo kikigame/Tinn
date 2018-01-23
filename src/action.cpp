@@ -557,7 +557,6 @@ public:
     return true;
   }
   virtual bool undo(bool blessed, bool cursed, item &source, monster &target) {
-    // TODO: check for other items with the same abilitiy first.
     target.abilities().proof(damageRepo::instance()[dt_], false);
     return true;
   }
@@ -576,7 +575,6 @@ public:
     return true;
   }
   virtual bool undo(bool blessed, bool cursed, item &source, monster &target) {
-    // TODO: check for other items with the same abilitiy first.
     target.abilities().resist(&damageRepo::instance()[dt_], amount_);
     return true;
   }
@@ -596,7 +594,6 @@ public:
     return true;
   }
   virtual bool undo(bool blessed, bool cursed, item &source, monster &target) {
-    // TODO: check for other items with the same abilitiy first.
     target.abilities().extraDamage(&damageRepo::instance()[dt_], amount_);
     return true;
   }
@@ -621,7 +618,6 @@ public:
     return true;
   }
   bool undo(bool blessed, bool cursed, item &source, monster &target) {
-    // TODO: check for other items with the same abilitiy first.
     auto &able = target.abilities();
     (able.*method_)(clear_);
     return true;
@@ -646,7 +642,6 @@ public:
     return true;
   }
   bool undo(bool blessed, bool cursed, item &source, monster &target) {
-    // TODO: check for other items with the same abilitiy first.
     auto &able = target.abilities();
     (able.*method_)(!set_);
     return true;
@@ -665,7 +660,6 @@ public:
     return true;
   }
   bool undo(bool blessed, bool cursed, item &source, monster &target) {
-    // TODO: check for other items with the same abilitiy first.
     target.abilities().move(tFactory.get(terrainType::ALTAR), false);
     target.abilities().move(tFactory.get(terrainType::GROUND), false);
     target.abilities().move(tFactory.get(terrainType::BULKHEAD), false);
@@ -684,7 +678,6 @@ public:
     return true;
   }
   bool undo(bool blessed, bool cursed, item &source, monster &target) {
-    // TODO: check for other items with the same abilitiy first.
     target.abilities().move(tFactory.get(terrainType::FIRE), false);
     return true;
   }
@@ -868,39 +861,39 @@ L"When something with this property is equipped, you will deal extra damage\n"
 
     rtn[action::key::extra_damage_major_edged] = std::unique_ptr<action>
       (new extraDamageAction(20, damageType::edged, L"extreme sharpness",
-L"When something with this property is equipped, you will deal extra damage\n"
+L"When something with this property is equipped, you will deal very significant\n"
 "extra damage with edged weapons."));
     rtn[action::key::extra_damage_major_bashing] = std::unique_ptr<action>
       (new extraDamageAction(20, damageType::bashing, L"hefty blunt might", 
-L"When something with this property is equipped, you will deal extra damage\n"
+L"When something with this property is equipped, you will deal very significant\n"
 "extra damage when wielding blunt force" ));
     rtn[action::key::extra_damage_major_hot] = std::unique_ptr<action>
       (new extraDamageAction(20, damageType::hot, L"fourth degree frostbite", 
-L"When something with this property is equipped, you will deal extra damage\n"
+L"When something with this property is equipped, you will deal very significant\n"
 "extra damage when using cold attacks" ));
     rtn[action::key::extra_damage_major_cold] = std::unique_ptr<action>
       (new extraDamageAction(20, damageType::cold, L"consuming inferno",
-L"When something with this property is equipped, you will deal extra damage\n"
+L"When something with this property is equipped, you will deal very significant\n"
 "extra damage when using heat attacks" ));
     rtn[action::key::extra_damage_major_wet] = std::unique_ptr<action>
       (new extraDamageAction(20, damageType::wet, L"extreme wetness",
-L"When something with this property is equipped, you will deal extra damage\n"
+L"When something with this property is equipped, you will deal very significant\n"
 "extra damage when using water attacks" ));
     rtn[action::key::extra_damage_major_sonic] = std::unique_ptr<action>
       (new extraDamageAction(20, damageType::sonic, L"extreme acoustic volume",
-L"When something with this property is equipped, you will deal extra damage\n"
+L"When something with this property is equipped, you will deal very significant\n"
 "extra damage when using sonic attacks" ));
     rtn[action::key::extra_damage_major_disintegration] = std::unique_ptr<action>
       (new extraDamageAction(20, damageType::disintegration, L"extreme disintegration",
-L"When something with this property is equipped, you will deal extra damage\n"
+L"When something with this property is equipped, you will deal very significant\n"
 "extra damage when using disintegration attacks" ));
     rtn[action::key::extra_damage_major_starvation] = std::unique_ptr<action>
       (new extraDamageAction(20, damageType::starvation, L"starvation",
-L"When something with this property is equipped, you will deal extra damage\n"
+L"When something with this property is equipped, you will deal very significant\n"
 "extra damage when using starvation attacks" ));
     rtn[action::key::extra_damage_major_electric] = std::unique_ptr<action>
       (new extraDamageAction(20, damageType::electric, L"lightning charge",
-L"When something with this property is equipped, you will deal extra damage\n"
+L"When something with this property is equipped, you will deal very significant\n"
 "extra damage when using electrical attacks" ));
 
     rtn[action::key::move_through_solid] = std::unique_ptr<action>

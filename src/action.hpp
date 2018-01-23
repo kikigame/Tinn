@@ -21,6 +21,10 @@ public:
   virtual bool operator ()(bool blessed, bool cursed, T & ... ) = 0;
 };
 
+template <class ...T>
+bool operator ==(sharedAction<T...> &a, sharedAction<T...> &b) {
+  return &a == &b;
+}
 
 // actions for a source and target monster:
 template<>

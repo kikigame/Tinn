@@ -353,6 +353,8 @@ bool monster::unequip(item &item) {
   return rtn;
 }
 
+// monster.isEquipped defined in items.cpp
+
 bool monster::slotAvail(const slot *s) const {
   return equipment_.find(s) != equipment_.end();
 }

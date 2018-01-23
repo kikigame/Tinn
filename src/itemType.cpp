@@ -509,7 +509,7 @@ L"A decorative pendant an a short chain, worn along the parting of the hair",
 L"Dried meat or vegetables, diced, marinated in spices and dry-roasted."
 			     ));
     emplace(itemTypeKey::spectacles, // glassy, worn on eyes slot
-	    new itemTypeImpl(0.05, materialType::glassy, L'*', L"spectacles",
+	    new itemTypeImpl(0.05, materialType::glassy, L'*', L"pair of spectacles",
 L"A pair of eyeglasses, each consisting of a convex lens of polished glass.\n"
 "Worn to enhance the vision by adjusting the effective focal point of the eye\n"
 "or correcting for an astigmatism.",

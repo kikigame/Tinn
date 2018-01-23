@@ -73,21 +73,64 @@ public:
   void equipAction(sharedAction<item, monster> &act) {
     onEquip_.push_back(&act);
   }
+  bool hasAction(sharedAction<item, monster> &act) const {
+    return std::find(onEquip_.begin(), onEquip_.end(), &act) != onEquip_.end();
+  }
 protected:
   void onEquip(monster &m) {
     auto t = shared_from_this();
     for (auto i : onEquip_) (*i)(t->isBlessed(), t->isCursed(), *t, m);
   }
   void onUnequipImpl(monster &m) {
-    // TODO: check if any action exists in other equipped value
     auto t = shared_from_this();
-    for (auto i : onEquip_) i->undo(t->isBlessed(), t->isCursed(), *t, m);
+    for (auto i : onEquip_)
+      if (!m.isEquipped(*i))
+	i->undo(t->isBlessed(), t->isCursed(), *t, m);
+  }
+  std::wstring ofName() const {
+    auto onEq = renderedActions();
+    if (onEq.empty()) return L"";
+    std::wstring rtn = L" of ";
+    auto eq = onEq.begin();
+    while (true) {
+      rtn += (*eq)->name();
+      ++eq;
+      if (eq != onEq.end()) rtn += L" and ";
+      else return rtn;
+    }
+  }
+  std::wstring ofPowers() const {
+    auto onEq = renderedActions();
+    if (onEq.empty()) return L"";
+    std::wstring rtn = L"\nThis item has magical effects:\n";
+    for (auto eq : onEq) 
+      rtn += eq->name() + L":-\n " + eq->description() + L"\n\n";
+    return rtn;
   }
   std::size_t countEquipActions() const {
     return onEquip_.size();
   }
-  
+private:
+  std::vector<renderedAction<item, monster> *> renderedActions() const {
+    std::vector<renderedAction<item, monster> *> onEq;
+    for (auto i : onEquip_) {
+      auto e = dynamic_cast<renderedAction<item, monster> *>(i);
+      if (e) onEq.push_back(e);
+    }
+    return onEq;
+  }
 };
+
+// defined here for access to item classes; simplifies the item interface a bit.
+bool monster::isEquipped(sharedAction<item, monster> &act) const {
+  for (auto i : equipment_)
+    if (i.second) {
+      auto e = dynamic_cast<onEquipMixin*>(&(i.second.value()));
+      if (e && e->hasAction(act)) return true;
+    }
+  return false;
+}
+
 
 
 // mixin class for things which burn charges; see basicItem below.
@@ -437,6 +480,12 @@ public:
   virtual equipType equippable() const {
     return static_cast<equipType>(equipTyp);
   }
+  virtual std::wstring name() const {
+    return basicItem::name() + ofName();
+  }
+  virtual std::wstring description() const {
+    return basicItem::description() + ofPowers();
+  }
 };
 
 class basicWeapon : public basicEquip<item::equipType::wielded> {
@@ -519,7 +568,12 @@ public:
   virtual equipType equippable() const {
     return static_cast<equipType>(equipTyp);
   }
-
+  virtual std::wstring name() const {
+    return basicItem::name() + ofName();
+  }
+  virtual std::wstring description() const {
+    return basicItem::description() + ofPowers();
+  }
 };
 
 class twoHandedWeapon : public twoEquip<item::equipType::wielded> {
