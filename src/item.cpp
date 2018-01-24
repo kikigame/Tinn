@@ -1,6 +1,7 @@
 /* License and copyright go here*/
 
 #include "items.hpp"
+#include "equippable.hpp"
 
 extern std::vector<damageType> allDamageTypes;
 
@@ -190,8 +191,19 @@ int basicItem::enchantment() const {
   return enchantment_;
 }
 void basicItem::enchant(int enchantment) {
-  // TODO: We need to signal to recalculate the bonus if this item is equipped
+  ::equippable *owner = nullptr;
+  if (!itemHolderMap::instance().beforeFirstAdd(*this))
+    owner = dynamic_cast<::equippable*>(&holder());
+  std::array<const slot *,2> slots;
+  if (owner && !owner->slotsOf(*this).empty()) {
+    // temporarily unequip the item; this will force stats to recalculate
+    slots = owner->forceUnequip(*this);
+  }
   enchantment_ += enchantment;
+  if (owner && slots[0]) {
+    // signal to recalculate the bonus if this item is equipped
+    owner->equip(*this, slots);
+  }
 }
 
 

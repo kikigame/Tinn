@@ -214,6 +214,7 @@ protected:
 
   // overridden to recalculate stats
   virtual void onEquip(item &item, const slot *s1, const slot *s2);
+  virtual std::array<const slot *, 2> forceUnequip(item &);
 };
 
 class monsterBuilder {

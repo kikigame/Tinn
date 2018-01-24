@@ -29,8 +29,10 @@ bool equippable::equip(item &item, const std::pair<slotType, slotType> &slots) {
 }
 
 bool equippable::equip(item &item, const std::array<const slot *,2> &slots) {
+  if (slots[0] == slots[1]) return equip(item, slots[0]);
 
   for (auto s : slots) {
+    if (s == nullptr) continue;
     auto i = equipment_.find(s);
     if (i == equipment_.end()) return false; // monster doesn't have this slot
     if (i->second) return false; // already occupied
@@ -71,6 +73,14 @@ bool equippable::unequip(item &item) {
       rtn = true; // don't break! some items have multiple slots
     }
   return rtn;
+}
+
+std::array<const slot *, 2> equippable::forceUnequip(item &it) {
+  auto arr = slotsOf(it);
+  optionalRef<::item> nullItem;
+  for (auto slot : arr)
+    if (slot) equipment_[slot] = nullItem;
+  return arr;
 }
 
 // monster.isEquipped defined in items.cpp

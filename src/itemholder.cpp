@@ -58,8 +58,12 @@ public:
     return find != map_.end() && &(*(find->second)) == &h;
   }
   bool beforeFirstAdd(const item &i) const {
-    auto pi = from(const_cast<item&>(i)); // pinky-swear not to change it
-    return map_.at(pi) == nullptr;
+    auto pos =
+    std::find_if(map_.begin(), map_.end(), [&i](std::pair<std::shared_ptr<item>, itemHolder*> entry){
+	return entry.first.get() == &i;
+      });
+    return pos == map_.end() // maybe still in constructor; no shared_ptr
+      || pos->second == nullptr; // not registered yet
   }
 private:
   std::shared_ptr<const item> from(const item &i) const {

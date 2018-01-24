@@ -33,6 +33,7 @@ public:
   bool equip(item &item, const slotType slot);
   // equip a 2-handed weapon, or a pair of something:
   bool equip(item &item, const std::pair<slotType, slotType> &slots);
+  // NB: The following method should always work if immediately after forceUnequip: (for recalculation of stats):
   bool equip(item &item, const std::array<const slot *, 2> &slots);
   // try to unequip an item. Returns true on success, false if not equipped or cursed
   virtual bool unequip(item &item);
@@ -42,6 +43,9 @@ public:
   bool slotAvail(const slot * slot) const;
   // returns the slot if equipped, nullptr otherwise:
   const std::array<const slot *, 2> slotsOf(const item &item) const;
+  // forcably unequip an item, bypassing normal rules (eg for stealing a cursed item):
+  // NB: An immediate call to equip(item, slots) should always work after this:
+  virtual std::array<const slot *, 2> forceUnequip(item &);
 protected:
   equippable(std::vector<const slot *>slots);
   virtual ~equippable();

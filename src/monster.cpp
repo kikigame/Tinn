@@ -656,3 +656,17 @@ bool monster::unequip(item &item) {
   }
   return rtn;
 }
+
+std::array<const slot *, 2> monster::forceUnequip(item &item) {
+  // Calculate any previous bonuses
+  const int strBonus = equippable::strBonus();
+  const int appBonus = equippable::appBonus();
+  const int dodBonus = equippable::dodBonus();
+  auto rtn = equippable::forceUnequip(item);
+  // calculate any new bonuses and apply adjustment
+  strength_ += equippable::strBonus() - strBonus;
+  appearance_ += equippable::appBonus() - appBonus;
+  dodge_ += equippable::dodBonus() - dodBonus;
+  item.onUnequip(*this);
+  return rtn;
+}
