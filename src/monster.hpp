@@ -12,10 +12,10 @@
 #include "monsterIntrinsics.hpp"
 #include "materialType.hpp"
 #include "time.hpp"
-#include "slots.hpp"
 #include "itemholder.hpp"
 #include "bonus.hpp"
 #include "damage.hpp"
+#include "equippable.hpp"
 
 #include <memory> // shared_ptr
 #include <string>
@@ -42,7 +42,7 @@ struct attackResult {
 // I'm not using pImpl here, because pain.
 // Sutter (in Effective C++) reminds me that nothing virtual should go in the pImpl, as the pImpl can't be
 // effectively used as a base or derrived class.
-class monster : public renderable, public itemHolder {
+class monster : public renderable, public itemHolder, public equippable {
 private:
   level *level_; // raw pointer to avoid cyclic reference; level owns its monsters
   bool highlight_;
@@ -59,12 +59,6 @@ private:
   // Smart pointer is not needed as gods are effectively a bunch of create-on-demand singletons
   // (just like in real life?)
   deity const  *align_;
-  // carried items are inventory. Worn/wielded items are equipment.
-  // an item can only be equipment if it is also inventory.
-  // slots may be empty; an individual monster may have equipped items that are in
-  // slots unavailable to its monster type (eg if polymorphed; you won't lose your
-  // cursed tail bow).
-  std::map<const slot*, optionalRef<item> > equipment_;
   monsterIntrinsics intrinsics_;
   monsterAbilityMods abilities_;
   // which monsters have charmed this one?
@@ -139,21 +133,6 @@ public:
   // what kind of damage does this monster do?
   virtual damageType unarmedDamageType() const;
 
-  // try and wield/wear etc. the given item in the specified slot. Returns true if successful, false
-  // if the slot was full or n/a for this monster type. Precodition: slot must be available for type.
-  bool equip(item &item, const slot *slot);
-  bool equip(item &item, const slotType slot);
-  // equip a 2-handed weapon, or a pair of something:
-  bool equip(item &item, const std::pair<slotType, slotType> &slots);
-  bool equip(item &item, const std::array<const slot *, 2> &slots);
-  // try to unequip an item. Returns true on success, false if not equipped or cursed
-  bool unequip(item &item);
-  bool isEquipped(sharedAction<item, monster> &act) const;
-  // returns true if this monster has this equipment slot and it is empty
-  // returns false if this monster does not have this slot, or it is occupied.
-  bool slotAvail(const slot * slot) const;
-  // returns the slot if equipped, nullptr otherwise:
-  const std::array<const slot *, 2> slotsOf(const item &item) const;
   // drop an item. Returns true on success, false on failure (eg cursed)
   bool drop(item &item) { return drop(item, level_->posOf(*this)); }
   // drop an item. Returns true on success, false on failure (eg cursed)
@@ -219,6 +198,9 @@ public:
   std::list<monster *>::const_iterator charmedBegin() const;
   std::list<monster *>::const_iterator charmedEnd() const;
 
+  // overridden to recalculate stats
+  virtual bool unequip(item &item);
+
 protected:
 
   // given a damage figue of damage of a given type,
@@ -230,13 +212,8 @@ protected:
   // called when a monster dies
   virtual void death();
 
-  // used to switch monster category
-  void polymorphCategory(monsterCategory c);
-
-private:
-  // called after item is equipped to calculate bonuses
-  // for single-slot items, pass s1 == s2
-  void onEquip(item &item, const slot *s1, const slot *s2);
+  // overridden to recalculate stats
+  virtual void onEquip(item &item, const slot *s1, const slot *s2);
 };
 
 class monsterBuilder {

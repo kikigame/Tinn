@@ -3,16 +3,13 @@
 // define a monster in the dungeon
 
 #include "monster.hpp"
-#include "dungeon.hpp"
 #include "random.hpp"
-#include "religion.hpp"
-#include "terrain.hpp"
-#include "output.hpp"
 #include "items.hpp"
-#include "graphsearch.hpp"
-#include "damage.hpp"
+#include "output.hpp"
+#include "terrain.hpp"
+#include "dungeon.hpp"
+#include "religion.hpp"
 #include "pathfinder.hpp"
-
 #include <sstream>
 
 //Roll 2D52-2
@@ -20,14 +17,9 @@ unsigned char dPc() {
   return static_cast<unsigned char>(d51() + d51() - 2);
 }
 
-// used to find outermost slots for armour/weapons:
-class coverSearch : public graphSearch<const slot*, optionalRef<item> > {
-  virtual std::vector<const slot*> deeper(const slot* const & sl) {
-    return sl->covered();
-  }
-};
 
 monster::monster(monsterBuilder & b) :
+  equippable(slotsFor(b.type_->category())),
   level_(b.iLevel()),
   highlight_(b.isHighlight()),
   strength_(b.strength()),
@@ -40,16 +32,12 @@ monster::monster(monsterBuilder & b) :
   eachTick_(),
   type_(*b.type_),
   align_(b.align_),
-  equipment_(),
   intrinsics_(),
   abilities_(intrinsics_),
-  onDeath_(b.onDeath()) {
-  // create all slots as empty initially
-  for (auto slot : slotsFor(type_.category()))
-    equipment_.emplace(slot, optionalRef<item>());
-}
+  onDeath_(b.onDeath()) {}
 
 monster::monster(monsterBuilder & b, std::vector<const slot *>slots) :
+  equippable(slots),
   level_(b.iLevel()),
   highlight_(b.isHighlight()),
   strength_(b.strength()),
@@ -62,14 +50,9 @@ monster::monster(monsterBuilder & b, std::vector<const slot *>slots) :
   eachTick_(),
   type_(*b.type_),
   align_(b.align_),
-  equipment_(),
   intrinsics_(),
   abilities_(intrinsics_),
-  onDeath_(b.onDeath()) {
-  // create all slots as empty initially
-  for (auto slot : slots)
-    equipment_.emplace(slot, optionalRef<item>());
-}
+  onDeath_(b.onDeath()) {}
 
 void monster::eachTick(const std::function<void()> &callback) { 
   //  eachTick_.emplace_back(new time::callback(true, callback));
@@ -126,10 +109,7 @@ const attackResult monster::attack(monster &target) {
   if (dHit > f) return attackResult(injury(), L"miss");
 
   // find the weapon:
-  auto weap = equipment_.find(slotBy(slotType::primary_weapon));
-  if (weap == equipment_.end()) weap = equipment_.find(slotBy(slotType::secondary_weapon));
-  optionalRef<item> weapon;
-  if (weap != equipment_.end()) weapon = weap->second;
+  auto weapon = findWeapon();
   damageType type = (weapon) ? weapon.value().weaponDamage(true) : unarmedDamageType();
   auto dt = damageRepo::instance()[type];
 
@@ -167,41 +147,21 @@ int monster::wound(unsigned char reductionPc, const damage & type) {
 }
 
 bool monster::damageArmour(const damage &d) {
-  std::vector<item *> outerArmour;
-  auto wp = weaponSlots();
-  auto wpe = wp.end();
-  coverSearch cs;
-  for (auto i : equipment_)
-    if (wp.find(i.first) == wpe) {
-      // considering non-weapon slots
-      // non-weapon item in slot i.first is i.second
-      // we don't consider enchantments of armour in slots that are covered
-      
-      if (i.second // is it occupied?
-	  && !cs.isCovered(equipment_, i.first)) {// is it covered?
-	auto &item = i.second;
-	outerArmour.emplace_back(&item.value());
-      }
-    }
-  if (outerArmour.empty()) return false; // nothing to damage, so fail
-  auto item = *rndPick(outerArmour.begin(), outerArmour.end());
-  bool rtn = item->strike(d.type());
-  if (rtn && item->damageOfType(d.type()) > 4) {
-    if (isPlayer()) ioFactory::instance().message(L"Your " + item->name() + L" couldn't survive the " + d.name() );
-    destroyItem(*item);
+  auto w = findWeapon();
+  if (!w) return false; // nothing to damage, so fail
+  auto &item = w.value();
+  bool rtn = item.strike(d.type());
+  if (rtn && item.damageOfType(d.type()) > 4) {
+    if (isPlayer()) ioFactory::instance().message(L"Your " + item.name() + L" couldn't survive the " + d.name() );
+    destroyItem(item);
   }
   return rtn;
 }
 
 long monster::modDamage(/*by value*/long pc, const damage & type) const {
-  char delta = intrinsics_.resist(type);
-  // TODO: extrinsics
+  char delta = abilities().resist(type);
   pc -= delta * 5; // NB: Can go positive, such is the goodness of magic
-  for (auto i : equipment_) {
-    auto &item = i.second;
-    if (item) pc = item.value().modDamage(pc, type);
-  }
-  return pc;
+  return equippable::modDamage(pc, type);
 }
 
 
@@ -211,164 +171,6 @@ void monster::death() {
   level_->removeDeadMonster(*this);
 }
 
-
-// calculate the current strength bonus from equipment
-int calcStrBonus(const std::map<const slot*, optionalRef<item> > &eq) {
-  int rtn = 0;
-  auto e = eq.end();
-  for (auto s : weaponSlots()) {
-    auto i = eq.find(s);
-    if (i != e && i->second) {
-      auto it = i->second;
-      // +1 so that even an unenchanted weapon does some damage:
-      rtn += it.value().enchantment() + 1;
-    }
-  }
-  return rtn;
-}
-
-// TODO: shields. These occupy weapon slots, and allow for deflection rather than armour.
-// calculate the current strength bonus from equipment
-int calcDodBonus(const std::map<const slot*, optionalRef<item> > &eq) {
-  int rtn = 0;
-  auto wp = weaponSlots();
-  auto wpe = wp.end();
-  for (auto i : eq)
-    if (i.second && wp.find(i.first) == wpe) {
-      // considering occupied non-weapon slots
-      auto &item = i.second.value();
-      double defence;
-      // base armour = (weight) * (material armour multiplicand) / 10:
-      switch (item.material()) {
-      case materialType::glassy: defence = (1/3.); break; // basically untoughened leather
-      case materialType::woody: defence = 0.5; break; // basically untoughened leather
-      case materialType::fleshy: defence = (2/3.); break; // basically untoughened leather
-      case materialType::leathery: defence = 1; break; // standard armour
-      case materialType::stony: defence = 1.5; break; // very strong if very heavy...
-      case materialType::metallic: defence = 3; break; // best armour is metal, but also the heaviest
-      default: defence = 0;
-      }
-      defence *= item.weight() / 10;
-      defence += item.enchantment(); // each bonus adds +1 (=> +5%). Note that you can wear a *lot*, so enchantment adds up quite fast.
-      if (item.isBlessed()) defence *= 1.5;
-      if (item.isCursed()) defence *= 0.5;
-      rtn += static_cast<int>(defence);
-    }
-  return rtn;
-}
-
-// calculate the current appearance bonus from equipment
-int calcAppBonus(const std::map<const slot*, optionalRef<item> > &eq) {
-  int rtn = 0;
-  auto wp = weaponSlots();
-  auto wpe = wp.end();
-  coverSearch cs;
-  for (auto i : eq)
-    if (wp.find(i.first) == wpe) {
-      // considering non-weapon slots
-      // non-weapon item in slot i.first is i.second
-      // we don't consider enchantments of armour in slots that are covered
-      
-      if (i.second // is it occupied?
-	  && !cs.isCovered(eq, i.first)) {// is it covered?
-	auto &item = i.second;
-	rtn += item.value().enchantment();
-	if (item.value().isSexy()) ++rtn;
-	if (item.value().isSexy() && item.value().isBlessed()) ++rtn;
-	// TODO: tshirts should get extra bonuses for being torn or wet (double if blessed).
-	// the tshirt bonus is easy to get, but not that useful as it will generally be covered.
-      }
-    }
-  return rtn;
-}
-
-bool monster::equip(item &item, const std::pair<slotType, slotType> &slots) {
-  std::array<const slot *, 2> sl{ slotBy(slots.first), slotBy(slots.second) };
-  return equip(item, sl);
-}
-
-bool monster::equip(item &item, const std::array<const slot *,2> &slots) {
-
-  for (auto s : slots) {
-    auto i = equipment_.find(s);
-    if (i == equipment_.end()) return false; // monster doesn't have this slot
-    if (i->second) return false; // already occupied
-  }
-
-  onEquip(item, slots[0], slots[1]);
-  return true;
-}
-
-bool monster::equip(item &item, const slotType slot) {
-  auto s = slotBy(slot);
-  return equip(item, s);
-}
-
-bool monster::equip(item &item, const slot *s) {
-  auto i = equipment_.find(s);
-  if (i == equipment_.end()) return false; // monster doesn't have this slot
-  if (i->second) return false; // already occupied
-  onEquip(item, s, s);
-  return true;
-}
-
-void monster::onEquip(item &item, const slot *s1, const slot *s2) {
-  // we can equip the item. Calculate any previous bonuses
-  const int strBonus = calcStrBonus(equipment_);
-  const int appBonus = calcAppBonus(equipment_);
-  const int dodBonus = calcDodBonus(equipment_);
-  // equip the item
-  //  equipment_.insert(std::pair<const slot*, std::shared_ptr<item>>(s, item));
-  equipment_[s1] = item;
-  equipment_[s2] = item;
-  // calculate any new bonuses and apply adjustment
-  strength_.adjustBy(calcStrBonus(equipment_) - strBonus);
-  appearance_.adjustBy(calcAppBonus(equipment_) - appBonus);
-  dodge_.adjustBy(calcDodBonus(equipment_) - dodBonus);
-}
-
-bool monster::unequip(item &item) {
-  if (item.isCursed()) return false;
-  // Calculate any previous bonuses
-  const int strBonus = calcStrBonus(equipment_);
-  const int appBonus = calcAppBonus(equipment_);
-  const int dodBonus = calcDodBonus(equipment_);
-  bool rtn = false;
-  auto eend = equipment_.end();
-  for (auto e = equipment_.begin(); e != eend; ++e)
-    if (e->second && &(e->second.value()) == &item) {
-      // we can equip the item. 
-      // unequip the item
-      optionalRef<::item> nullItem;
-      e->second = nullItem;
-      rtn = true;
-    }
-  if (rtn) {
-    // calculate any new bonuses and apply adjustment
-    strength_ += calcStrBonus(equipment_) - strBonus;
-    appearance_ += calcAppBonus(equipment_) - appBonus;
-    dodge_ += calcDodBonus(equipment_) - dodBonus;
-    item.onUnequip(*this);
-  }
-  return rtn;
-}
-
-// monster.isEquipped defined in items.cpp
-
-bool monster::slotAvail(const slot *s) const {
-  return equipment_.find(s) != equipment_.end();
-}
-const std::array<const slot *,2> monster::slotsOf(const item &item) const {
-  std::array<const slot *,2> rtn = {nullptr, nullptr };
-  bool foundOne = false;
-  for (auto i : equipment_)
-    if (i.second && &(i.second.value()) == &item) {
-      rtn[foundOne ? 1 : 0] = i.first;
-      foundOne = true;
-    }
-  if (rtn[1] == nullptr) rtn[1] = rtn[0];
-  return rtn;
-}
 
 bool monster::drop(item &ite, const coord &c) {
   if (ite.isCursed()) return false;
@@ -809,25 +611,6 @@ void monster::eat() {
 }
 
 
-void monster::polymorphCategory(monsterCategory c) {
-  const auto &slots = slotsFor(c);
-  std::vector<const slot*> toRemove;
-  for (auto p : equipment_)
-    if (std::find(slots.begin(), slots.end(), p.first) == slots.end())
-      toRemove.push_back(p.first);
-  for (auto s : slots)
-    if (equipment_.count(s) == 0)
-      equipment_.emplace(s, optionalRef<item>()); // new empty slot
-  for (auto s : toRemove) {
-    if (equipment_[s])
-      // remove item from the slot if possible. If item is cursed, the slot stays.
-      // (yes, you can get more equipment slots by polymorping with cursed items; they've got to be
-      // good for something).
-      unequip(equipment_[s].value()); // can fail (eg cursed)
-    if (!equipment_[s])
-      equipment_.erase(s);
-  }
-}
 
 bool monster::setCharmedBy(monster & mon) {
   auto m = &mon;
@@ -842,4 +625,34 @@ std::list<monster*>::const_iterator monster::charmedBegin() const {
 }
 std::list<monster*>::const_iterator monster::charmedEnd() const {
   return charmedBy_.end();
+}
+
+void monster::onEquip(item &item, const slot *s1, const slot *s2) {
+  // we can equip the item. Calculate any previous bonuses
+  const int strBonus = equippable::strBonus();
+  const int appBonus = equippable::appBonus();
+  const int dodBonus = equippable::dodBonus();
+  // equip the item
+  equippable::onEquip(item, s1, s2);  
+  // calculate any new bonuses and apply adjustment
+  strength_.adjustBy(equippable::strBonus() - strBonus);
+  appearance_.adjustBy(equippable::appBonus() - appBonus);
+  dodge_.adjustBy(equippable::dodBonus() - dodBonus);
+}
+
+bool monster::unequip(item &item) {
+  if (item.isCursed()) return false;
+  // Calculate any previous bonuses
+  const int strBonus = equippable::strBonus();
+  const int appBonus = equippable::appBonus();
+  const int dodBonus = equippable::dodBonus();
+  bool rtn = equippable::unequip(item);
+  if (rtn) {
+    // calculate any new bonuses and apply adjustment
+    strength_ += equippable::strBonus() - strBonus;
+    appearance_ += equippable::appBonus() - appBonus;
+    dodge_ += equippable::dodBonus() - dodBonus;
+    item.onUnequip(*this);
+  }
+  return rtn;
 }

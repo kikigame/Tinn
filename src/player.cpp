@@ -142,9 +142,8 @@ void player::takeInventory() {
 }
 
 void player::equip() {
-  auto ws = weaponSlots();
   auto &ios = ioFactory::instance();
-  auto result = firstItem([this, &ws, &ios](item &i) {
+  auto result = firstItem([this, &ios](item &i) {
       if (slotsOf(i)[0] != nullptr) return false; // already equipped
       auto type = i.equippable();
       if (type == item::equipType::none) return false; // unequippable

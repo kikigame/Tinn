@@ -122,7 +122,7 @@ private:
 };
 
 // defined here for access to item classes; simplifies the item interface a bit.
-bool monster::isEquipped(sharedAction<item, monster> &act) const {
+bool equippable::isEquipped(sharedAction<item, monster> &act) const {
   for (auto i : equipment_)
     if (i.second) {
       auto e = dynamic_cast<onEquipMixin*>(&(i.second.value()));

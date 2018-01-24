@@ -622,8 +622,3 @@ const slot* slotBy(slotType slot) {
     throw slot;
   }
 }
-
-const std::set<const slot*> weaponSlots() {
-  std::set<const slot*> weaponSlots = { slotRepo.primary_weapon.get(), slotRepo.secondary_weapon.get() };
-  return weaponSlots;
-}
