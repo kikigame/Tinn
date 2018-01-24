@@ -900,9 +900,7 @@ public:
   virtual ~corpse() {};
   virtual materialType material() const {
     // trolls are stony, bats are leathery, plants are veggy, etc.
-    // TODO: delegate to monsterType? More code but better encapsulated
-    if (type_.type() == monsterTypeKey::troll) return materialType::stony;
-    return materialType::fleshy;
+    return type_.material();
   }
   //virtual double weight() {
   //return 610; // weight of average human in N Earth gravity (610lb). TODO: per type somehow
