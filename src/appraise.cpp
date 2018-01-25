@@ -8,7 +8,7 @@
 
 bool isDamaged(const item &);
 
-double appraise(const monster &monster, const item &thing) {
+double appraise(const monster &monster, const item &thing, transaction t) {
 
   auto value = thing.weight();
   // switch on category type
@@ -49,7 +49,10 @@ double appraise(const monster &monster, const item &thing) {
     }
     value += value * 0.2 * proofs;
   }
-  value += monster.appearance().cur(); // TODO: buy/sell; tweak
+  if (t == transaction::buy)
+    value *= (100 + monster.appearance().cur()) / 100.;
+  else if (t == transaction::sell)
+    value *= (150 - monster.appearance().cur()) / 100.;
   value *= (100 + thing.enchantment()) / 100.;
   return value;
 }

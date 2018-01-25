@@ -285,7 +285,7 @@ private:
     for (auto &s : servicesBought_)
       p += s.second;
     for (auto &i : basket_)
-      p += appraise(inventory_, *i);
+      p += appraise(inventory_, *i, transaction::buy);
     handlePayment(p);
   }
 
@@ -317,7 +317,7 @@ private:
       // 6) if players items' price is above P, adjust inventory and done
       double b=0;
       for (auto &i : barter)
-	b += appraise(inventory_, *i);
+	b += appraise(inventory_, *i, transaction::sell);
       if (b > p) {
 	completeSale(barter);
 	return true;
@@ -342,7 +342,7 @@ private:
 	auto pi = i.shared_from_this();
 	auto end = barter.end();
 	if (std::find(barter.begin(), end, pi) == end) { // not already for barter
-	  double price = appraise(inventory_,i);
+	  double price = appraise(inventory_,i, transaction::sell);
 	  if (itemPrice < price) {
 	    found = pi;
 	    itemPrice = price;
@@ -353,7 +353,7 @@ private:
       barter.push_back(found);
       t=0;
       for (auto &i : barter)
-	t += appraise(inventory_, *i);
+	t += appraise(inventory_, *i, transaction::sell);
     } while (t < q);
     return barter;
   }
@@ -493,7 +493,7 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
       ios.message(L"Magical enenergy flows through your " + item.name());
 
     servicesBought_.emplace(L"Enchantment to " + item.name(),
-			    appraise(inventory_, item));
+			    appraise(inventory_, item, transaction::buy));
   }
 
   void proof() {
@@ -516,7 +516,7 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
 		 L" could use a little more work");
 
     servicesBought_.emplace(std::wstring(damage_.mendName()) + L" protection unto " + item.name(),
-			    appraise(inventory_, item));
+			    appraise(inventory_, item, transaction::buy));
   }
 
   void mend() {
@@ -537,7 +537,7 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
 		 L" seems unchanged");
 
     servicesBought_.emplace(std::wstring(damage_.mendName()) + L" reparation unto " + item.name(),
-			    appraise(inventory_, item));
+			    appraise(inventory_, item, transaction::buy));
   }
 
 };

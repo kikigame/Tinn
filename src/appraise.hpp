@@ -8,6 +8,12 @@
 #include "items.hpp"
 class monster;
 
-double appraise(const monster &monster, const item &thing);
+enum class transaction {
+  buy, // raise prices when buying, based on appearance
+    sell, // raise/lower prices when selling, based on appearance
+    score // fair price (used for scoring)
+};
+
+double appraise(const monster &monster, const item &thing, transaction t);
 
 #endif // ndef APPRAISE_HPP__
