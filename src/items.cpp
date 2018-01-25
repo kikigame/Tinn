@@ -906,7 +906,6 @@ public:
   //return 610; // weight of average human in N Earth gravity (610lb). TODO: per type somehow
   //}
   // if wielded, what damage does this weapon do?
-  //virtual damageType weaponDamage() const = 0; // TODO: sharp monsters? electric?
   // list of all adjectives applicable to type
   virtual std::vector<std::wstring> adjectives() const {
     auto baseAdjectives = basicItem::adjectives();

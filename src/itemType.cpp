@@ -482,61 +482,70 @@ L"Popular music can be loosely destribed as modern music, usually with one\n"
 "artificial electronic sound."
 			     ));
 
-    //TODO: weights for jewellery
     emplace(itemTypeKey::wooden_ring,
-	    new itemTypeImpl(0.05, materialType::woody, L'*', L"wooden ring",
+	    // gold ring  = 4-6 oz, so say 4oz. Density of gold=19.32g/m^3 (assuming 24-karat)
+	    // Density of balsa = 16g/m^3 => 3.1326...oz
+	    new itemTypeImpl(0.92191, materialType::woody, L'*', L"wooden ring",
 L"Often used by gymnasts to demonstrate the graceful application of upper-body\n"
 "strength. This simple ring can still be worn, is extremely lightweight and\n"
 "inexpensive, and can be imbued with charges of magical energy.\n",
 L"It don\'t mean a thing if you ain\'t got that swing..." // ref: Gladiators (TV series)/Hang Tough (which probably referenced something else)
 			     ));
     emplace(itemTypeKey::amulet, // stony; worn on neck; an amulet with an effect is be called a talisman
-	    new itemTypeImpl(0.05, materialType::stony, L'*', L"gemstone amulet",
+	    // 1 carat
+	    new itemTypeImpl(0.002012291, materialType::stony, L'*', L"gemstone amulet",
 L"An amulet is any stone, pendant or similar, worn around the neck, or\n"
 "elsewhere on the body, for protection. This one is jasper, with a necklace\n"
 "string.",
 L"Stone with its own slingshot."
 			     ));
     emplace(itemTypeKey::necklace, // metallic, worn on neck
-	    new itemTypeImpl(0.05, materialType::metallic, L'*', L"necklace",
+	    // based on 15.3g gold chain neclace (14k) seen online
+	    new itemTypeImpl(0.151, materialType::metallic, L'*', L"necklace",
 L"One of the earliest forms of adornment used by humans, this necklace is a\n"
 "simple golden chain that can be worn around the neck.",
 L"Bicycle chain for a very small bicycle."
 			     ));
     emplace(itemTypeKey::tikka, // pendant worn on short chain down the hair parting (india); headband slot
-	    new itemTypeImpl(0.05, materialType::metallic, L'*', L"tikka",
+	    // 1 carat
+	    new itemTypeImpl(0.002012291, materialType::metallic, L'*', L"tikka",
 L"A decorative pendant an a short chain, worn along the parting of the hair",
 L"Dried meat or vegetables, diced, marinated in spices and dry-roasted."
 			     ));
     emplace(itemTypeKey::spectacles, // glassy, worn on eyes slot
-	    new itemTypeImpl(0.05, materialType::glassy, L'*', L"pair of spectacles",
+	    // guessing 50g for old-fashioned style
+	    new itemTypeImpl(0.49, materialType::glassy, L'*', L"pair of spectacles",
 L"A pair of eyeglasses, each consisting of a convex lens of polished glass.\n"
 "Worn to enhance the vision by adjusting the effective focal point of the eye\n"
 "or correcting for an astigmatism.",
 L"vessels for cold drinks." // glasses
 			     ));
     emplace(itemTypeKey::bracelet, // metallic arm jewellery
-	    new itemTypeImpl(0.05, materialType::metallic, L'*', L"bracelet",
+	    // 35g based on cartier love bracelet without diamonds
+	    new itemTypeImpl(0.34323275, materialType::metallic, L'*', L"bracelet",
 L"A metal band worn around the lower arm. Bracelets are a diminutive of the\n"
 "armoured brace and have been worn since prehistory.",
 L"Short length of pipe." // indistinguistable from anklet
 			     ));
     emplace(itemTypeKey::anklet, // metallic leg jewellery
-	    new itemTypeImpl(0.05, materialType::metallic, L'*', L"anklet",
+	    // let's take 35g again. Afterall, arms are just forelegs
+	    new itemTypeImpl(0.34323275, materialType::metallic, L'*', L"anklet",
 L"Anklets of different styles have been worn since prehistory, often by women\n"
 "but not exclusively. This type is a chain of gold links moven into a chain,\n"
 "to which small bells are attached to produce a pleasing sound while walking.",
 L"Short length of pipe." // indistinguistable from anklet
 			     ));
     emplace(itemTypeKey::cloth_gloves, // clothy form of gloves
-	    new itemTypeImpl(0.05, materialType::clothy, L'*', L"cloth gloves",
+	    // assuming 1 square foot of cotton drill @260gsm
+	    new itemTypeImpl(0.004503, materialType::clothy, L'*', L"cloth gloves",
 L"White formal cloth gloves; these keep one's hands from becoming sweaty.\n"
 "These are easier to keep clean than leather gloves, and at a push can be worn\n"
 "under gauntlets to protect the hands.",
 L"Minimalist mime costume"
 			     ));
     emplace(itemTypeKey::armband, // black band worn for mourning; singular
-	    new itemTypeImpl(0.05, materialType::clothy, L'*', L"armband",
+	    // assuming 1/2 square foot of cotton drill
+	    new itemTypeImpl(0.0175205, materialType::clothy, L'*', L"armband",
 L"A black armband, often worn singly as a symbol of mourning or rememberance.",
 L"Black bandana"
 			     ));
