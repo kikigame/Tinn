@@ -304,8 +304,13 @@ public:
     renderedAction(name, description) {}
   virtual ~popupShopAction() {}
   virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
-    if (!source.isPlayer()) return false; // TODO: Monsters demand to shop with the player!
-    popUpShop(source,target);
+    if (target.isPlayer())
+      // TODO: Reverse shop; Monsters demand to shop with the player!
+      popUpShop(target, source);
+    else if (source.isPlayer())
+      popUpShop(source,target);
+    else
+      return false; // monsters don't bother shopping with each other. This would be a faff to write and not do anything for gameplay.
     return true;
   }  
 };
