@@ -164,8 +164,7 @@ public:
 };
 
 // create an item of the given type. io may be used later by that item, eg for prompts when using.
-// NB: if "it" is a water type, then it should normally only be placed in a fluid container (eg bottle).
-// TODO: Type system should enforce fluidity somehow.
+// NB: if "it" is a water type, then return value should normally only be placed in a fluid container (eg bottle).
 item & createItem(const itemTypeKey & key);
 
 // craete a quest item:

@@ -14,6 +14,9 @@
 #include <iostream>
 #include <sstream>
 
+unsigned char dPc(); // avoid including all of random.hpp
+
+
 // handle a user keystroke.
 void processInput(dungeon & d, const std::wstring &c, const std::shared_ptr<io> ios);
 std::wstring print(const xo &xo);
@@ -104,15 +107,32 @@ const wchar_t * help() {
 
 void doTick(dungeon &d){
   static bool lastTick;
-  bool fast = (d.pc()->intrinsics().speedy() == bonus(true));
-  bool slow = (d.pc()->intrinsics().speedy() == bonus(false));
+  auto s = d.pc()->abilities().adjust(d.pc()->movement().speed_);
 
-  if (fast)
-    lastTick = !lastTick;
-  if (!fast || lastTick)
+  switch (s) {
+  case speed::slow3: 
     time::tick(true);
-  if (slow)
     time::tick(true);
+    break;
+  case speed::slow2: 
+    time::tick(true);
+    if ((lastTick = !lastTick) && dPc() < 75)
+      time::tick(true);
+    break;
+  case speed::perturn:
+    time::tick(true);
+    break;
+  case speed::turn2:
+    if ((lastTick = !lastTick))
+      time::tick(true);
+    break;
+  case speed::turn3:
+    if ((lastTick = !lastTick) && dPc() < 75)
+      time::tick(true);
+    break;
+  default:
+    throw s;
+  }
 }
 
 void processInput(dungeon & d, const std::wstring &c, const std::shared_ptr<io> ios) {
