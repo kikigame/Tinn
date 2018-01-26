@@ -1080,7 +1080,7 @@ public:
     if (countEquipActions() > 0) {
       return L"talisman"; // meaning an amulet with magical effects
     } else
-      return basicItem::name();
+      return basicItem::simpleName();
   }
 };
 
