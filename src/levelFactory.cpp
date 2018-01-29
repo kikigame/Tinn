@@ -121,6 +121,14 @@ public:
     const int alpha=10;
     const int beta =level::MAX_WIDTH-12;
 
+    for (coord c : coordRectIterator(0,0,level::MAX_WIDTH-1,level::MAX_HEIGHT-1))
+      if (at(c) == terrainType::ROCK)
+	place(c, terrainType::SPACE);
+    // place alpha airlock
+    placeAirlock(alpha,10, L"Alpha");
+    // place beta airlock
+    placeAirlock(beta, 10, L"Beta");
+
     auto overall = rectarea::create(0,0,level::MAX_WIDTH, level::MAX_HEIGHT);
     auto airlock1 = airlockArea(alpha,10);
     auto airlock2 = airlockArea(beta,10);
@@ -130,14 +138,6 @@ public:
     auto zone = std::make_shared<spaceZone>(std::move(spaceArea), pub_);
     monsterZone(zone);
     itemZone(zone);
-
-    for (coord c : coordRectIterator(0,0,level::MAX_WIDTH-1,level::MAX_HEIGHT-1))
-      if (at(c) == terrainType::ROCK)
-	place(c, terrainType::SPACE);
-    // place alpha airlock
-    placeAirlock(alpha,10, L"Alpha");
-    // place beta airlock
-    placeAirlock(beta, 10, L"Beta");
 
     place(coord(alpha,10), terrainType::UP);
     place(coord(beta,10), terrainType::DOWN);
@@ -149,7 +149,6 @@ public:
     pub_.holder(findRndTerrain(terrainType::SPACE))
       .addItem(createRndItem(pub_.depth(), L'*'));
   }
-private:
   static std::unique_ptr<geometry> airlockArea(unsigned char x, unsigned char y) {
     using shape::add;
     using std::move;
@@ -179,7 +178,7 @@ private:
     place(coord(posX-3, posY), terrainType::DECK);
     place(coord(posX+3, posY), terrainType::DECK);
     auto &p(pub_);
-    monsterZone(std::make_shared<airlock>(posX, posY, pub_, 
+    monsterZone(std::make_shared<airlock>(posX, posY, pub_,
 					  [&p, posY](int x) { 
       // open door
       p.changeTerrain(coord(x,posY), terrainType::DECK); // TODO: bulkhead/deck
@@ -196,18 +195,19 @@ private:
     enum class state {CLOSED, INNER, OUTER};
     const unsigned char x_, y_;
     const level &pub_;
+    std::unique_ptr<geometry> g_;
     // functions take exact X coord and open/close door in that space:
     std::function<void(int)> openDoor_, closeDoor_;
     state state_;
   public:
     airlock(unsigned char x, unsigned char y, const level &pub,
 	    std::function<void(int)> openDoor, std::function<void(int)> closeDoor) :
-      x_(x), y_(y), pub_(pub), openDoor_(openDoor), closeDoor_(closeDoor),
+      x_(x), y_(y), pub_(pub), g_(airlockArea(x,y)),
+      openDoor_(openDoor), closeDoor_(closeDoor),
       state_(state::CLOSED) {}
     virtual ~airlock() {}
     virtual bool contains(coord area) {
-      return (area.second == y_ &&
-	      area.first >= x_-6 && area.first <= x_+6);
+      return g_->contains(area);
     }
     virtual bool onMoveWithin(monster &m, const coord &dest) {
       // monster in A or K: open outer airlock
@@ -256,7 +256,6 @@ private:
       }
     }
   };
-
 };
 
 levelGen *newGen(specialLevelKey key, levelImpl *l, level *level, bool addDownRamp) {
