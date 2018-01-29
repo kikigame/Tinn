@@ -352,12 +352,21 @@ bool monster::eat(item &item, bool force) {
 }
 
 void monster::eat() {
-  auto isEdible = [this](item &i) {
+  bool drunk = false;
+  auto isEdible = [this, &drunk](item &i) {
+    auto bottle = dynamic_cast<liquidContainer*>(&i);
+    if (bottle && type().eats(materialType::liquid) && bottle->containsLiquid()) {
+      drunk = !isPlayer() || 
+	ioFactory::instance().ynPrompt(L"Drink " + i.name() + L"?");
+      if (drunk) bottle->consumeBy(*this);
+      return drunk;
+    }
     if (!type().eats(i.material())) return false;
     if (isPlayer())
       return ioFactory::instance().ynPrompt(L"Eat " + i.name() + L"?");
     return true; // monsters eat whatever
   };
+
   // is there anything to eat in the current location?
   auto &holder = level_->holder(level_->posOf(*this));
   optionalRef<item> it = holder.firstItem(isEdible);
@@ -368,6 +377,7 @@ void monster::eat() {
     return;
   }
 
+  if (drunk) return; // we can only drink items in inventory, and the consumeBy() method already handled it.
   try {
     // keep eating until the 
     std::weak_ptr<item> pItem = it.value().shared_from_this();

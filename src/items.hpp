@@ -30,6 +30,19 @@ class shared_item : public std::enable_shared_from_this<item> {
 };
 
 /*
+ * Class to identify containers of liquids (drinkables).
+ * NB: containers of fluids *may* contain other things instead.
+ */
+class liquidContainer {
+public:
+  // true if there is at least 1 portion to drink, false if empty or containing non-fluids.
+  virtual bool containsLiquid() const = 0;
+  // called when the contents are consumed. If the container is single-use, it should destroy itself here.
+  // this method is responsible for destroying the contents of the bottle.
+  virtual void consumeBy(monster &) = 0;
+};
+
+/*
  * Pure-virtual base class to define an in-game object
  */
 class item : public renderable, public virtual shared_item {

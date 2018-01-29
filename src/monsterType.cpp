@@ -194,6 +194,7 @@ public:
 	    .gen(genderAssignType::indirect)
 	    .eats(materialType::fleshy)
 	    .eats(materialType::leathery) // definitely carnivores, but I'm guessing they'll eat some of your armour too
+	    .eats(materialType::liquid)
 	    .saying(L"Behold the Powerful Dragon") // should not actually say this; depends on the monster's specifics
 	    .encyclopedium(L"The dragon is a powerful creature shrouded in mystery.") // TODO: Better this
             .fearless());
@@ -251,6 +252,7 @@ L"Sometimes a human ventures into a Dungeon upon a quest. This is usually ill-\n
 	    .align(dr.getExact(Element::earth, Domination::aggression, Outlook::kind))
 	    .saying(L"*poing*") // ref: Sluggy Freelance
 	    .eats(materialType::fleshy) // obligate carnivores
+	    .eats(materialType::liquid)
 	    .movement({speed::turn2, goTo::player, goBy::smart, 75})
 	    .encyclopedium(
 L"Meaning \"Little Thief\", ferrets are small, hyperflexible elongated mammels\n"
@@ -289,6 +291,7 @@ L"Meaning \"Little Thief\", ferrets are small, hyperflexible elongated mammels\n
 	    .eats(materialType::veggy)
 	    .eats(materialType::fleshy)
 	    .eats(materialType::leathery)
+	    .eats(materialType::liquid)
 	    .movement({speed::turn2, goTo::player, goBy::smart, 75})
 	    .encyclopedium(
 L"The difference between a goblin and an orc is that orcs don't exist.\n"
@@ -327,6 +330,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .align(dr.getExact(Element::earth, Domination::aggression, Outlook::cruel))
 	    .align(dr.getExact(Element::earth, Domination::aggression, Outlook::none))
 	    .eats(materialType::fleshy)
+	    .eats(materialType::liquid)
 	    .saying(L"(howl)") // todo: woof for puppies & dogs
 	    .movement({speed::turn2, goTo::unaligned, goBy::smart, 50})
 	    .encyclopedium(L"Canines are furry, with four legs and a tail. They are easily excited, always\n"
@@ -359,6 +363,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .saying(L"Cor; it's like Picadilly Circus 'round 'ere.") // ref: I cannot source this quote, but it's a common saying for "it's busy/crowded/lots of people"
 	    .eats(materialType::veggy)
 	    .eats(materialType::fleshy)
+	    .eats(materialType::liquid)
 	    .encyclopedium(L"Amongst the smelliest of monsters, these strange creatures have a poor sense\n"
 " of smell. They lack in intelligece, cunning, learning, strength, power and\n"
 "speed - but are very adept at using tools and being unpredictable."));
@@ -424,6 +429,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .align(dr.getExact(Element::water, Domination::aggression, Outlook::cruel))
 	    .movement({speed::perturn, goTo::unaligned, goBy::smart, 20})
 	    .eats(materialType::fleshy)
+	    .eats(materialType::liquid)
 	    .encyclopedium(
 L"Kelpies live in rivers and streams, while the stronger Each-uisge prefers\n"
 "the sea - although there is some overlap. When in human form, either can be\n"
@@ -456,6 +462,7 @@ L"Kelpies live in rivers and streams, while the stronger Each-uisge prefers\n"
 	    .align(dr.getExact(Element::water, Domination::concentration, Outlook::kind))
 	    .movement({speed::turn3, goTo::none, goBy::smart, 10})
 	    .eats(materialType::fleshy)
+	    .eats(materialType::liquid)
 	    .encyclopedium(
 L"Merfolk do not like to stray outside the sea, and mermen less so. Having the\n"
 "tail of a fish and the body of the beautiful human, albeit covered in tiny\n"
@@ -488,6 +495,7 @@ L"Merfolk do not like to stray outside the sea, and mermen less so. Having the\n
 	    .align(dr.getExact(Element::water, Domination::concentration, Outlook::cruel))
 	    .movement({speed::perturn, goTo::none, goBy::smart, 10}) // slow for a bird, but works better as we are likely to be charmed.
 	    .eats(materialType::fleshy)
+	    .eats(materialType::liquid)
 	    .encyclopedium(
 L"Of all the birds of the sea, the sirens are the most beautiful and the most\n"
 "deadly. With human heads, they sing an irrisistably enchanting song, luring\n"
@@ -517,6 +525,7 @@ L"Of all the birds of the sea, the sirens are the most beautiful and the most\n"
 	    .align(dr.begin(), dr.end())
 	    .movement({speed::turn3, goTo::player, goBy::smart, 10})
 	    .eats(materialType::clothy) // ripping clothes off with its teeth...
+	    .eats(materialType::liquid)
 	    .encyclopedium(
     //ref: http://www.chesterfieldparanormalresearch.com/incubus---sucubbus-demon.html; wikipedia; http://mythicalcreatureslist.com/mythical-creature/Succubus; others
     L"The word succubus comes from the Latin /succubāre/ (to lie\n"
@@ -557,6 +566,7 @@ L"Of all the birds of the sea, the sirens are the most beautiful and the most\n"
 	    .align(dr.getExact(Element::earth, Domination::none, Outlook::cruel))
 	    .movement({speed::slow3, goTo::unaligned, goBy::beeline, 25})
 	    .eats(materialType::stony)
+	    .eats(materialType::liquid) // I'm sure I've read about them sucking the water of lichenss
 	    // Mostly based on http://www.mysticfiles.com/trolls-from-ancient-to-modern/
 	    .encyclopedium(L"Dim-witted creatures of Norse and Scandinavian origin. Big and ugly, trolls\n"
 "are known for possessing magical objects and treasures - like gold, or\n"
@@ -589,6 +599,7 @@ L"Of all the birds of the sea, the sirens are the most beautiful and the most\n"
 	    .gen(genderAssignType::neuter)
 	    .align(dr.getExact(Element::plant, Domination::aggression, Outlook::cruel))
 	    .eats(materialType::fleshy) // obligate carnivores
+	    // they may drink water, but they can't open a bottle of it
 	    .movement({speed::stop, goTo::none, goBy::avoid, 0})
 	    .encyclopedium(
 L"There are a great number of creatures in the world, and not all sit neatly\n"
@@ -666,6 +677,7 @@ L"There are a great number of creatures in the world, and not all sit neatly\n"
 	    .align(dr.getExact(Element::air, Domination::concentration, Outlook::cruel))
 	    .movement({speed::turn2, goTo::wander, goBy::avoid, 0})
 	    .eats(materialType::fleshy)
+	    .eats(materialType::liquid)
 	    // ref: https://skeptoid.com/episodes/4262
 	    .encyclopedium(
      L"Most flying creatures will leave you alone unless disturbed, but\n"

@@ -465,7 +465,7 @@ public:
 
 
 // NB: We must be an itemHolder, to meet the itemHolderMap contract.
-class bottle : public basicItem, private itemHolder {
+class bottle : public basicItem, public liquidContainer, private itemHolder {
   friend class bottlingKit;
 private:
   optionalRef<item> content() {
@@ -603,6 +603,16 @@ public:
   virtual bool addItem(item &i) {
     if (content()) return false; // already occupied
     return itemHolder::addItem(i);
+  }
+  // interface liquidContainer:
+  virtual bool containsLiquid() const {
+    optionalRef<const item> c = content();
+    return c && c.value().material() == materialType::liquid;
+  }
+  virtual void consumeBy(monster &m) {
+    auto &fluid = content().value(); // we don't come in here unless we contain liquid
+    // TODO: fluid effects.
+    itemHolder::destroyItem(fluid);
   }
 };
 
