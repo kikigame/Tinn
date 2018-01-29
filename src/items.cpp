@@ -1473,7 +1473,7 @@ template <> struct itemTypeTraits<itemTypeKey::bridge> {
   typedef basicTransport type;
   template<typename type>
   static item *make(const itemType &t) { return new type(t, terrainType::WATER, terrainType::GROUND,
-					    movementType({speed::slow3, goTo::none, goBy::avoid, 0}));}
+					    movementType({speed::stop, goTo::none, goBy::avoid, 0}));}
 };
 template <> struct itemTypeTraits<itemTypeKey::ship> {
   typedef basicTransport type;

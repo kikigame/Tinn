@@ -16,6 +16,15 @@
 
 unsigned char dPc(); // avoid including all of random.hpp
 
+speed playerSpeed(dungeon &d) {
+  return d.pc()->abilities().adjust(d.pc()->movement().speed_);
+}
+
+bool validateSpeed(dungeon &d) {
+  auto rtn = playerSpeed(d) != speed::stop;
+  if (!rtn) ioFactory::instance().message(L"You can't move.");
+  return rtn;
+}
 
 // handle a user keystroke.
 void processInput(dungeon & d, const std::wstring &c, const std::shared_ptr<io> ios);
@@ -107,9 +116,14 @@ const wchar_t * help() {
 
 void doTick(dungeon &d){
   static bool lastTick;
-  auto s = d.pc()->abilities().adjust(d.pc()->movement().speed_);
+  auto s = playerSpeed(d);
 
   switch (s) {
+  case speed::stop:
+    time::tick(true);
+    time::tick(true);
+    time::tick(true);
+    break;
   case speed::slow3: 
     time::tick(true);
     time::tick(true);
@@ -146,46 +160,56 @@ void processInput(dungeon & d, const std::wstring &c, const std::shared_ptr<io> 
     d.quit();
     return; // don't count quit as a move
   case L'w': case L'W': // north
-    d.cur_level().moveOrFight(*(d.pc()), ::dir(0,-1), true);
+    if (validateSpeed(d))
+      d.cur_level().moveOrFight(*(d.pc()), ::dir(0,-1), true);
     doTick(d);
     break;
   case L'a': case L'A': // west
-    d.cur_level().moveOrFight(*(d.pc()), ::dir(-1,0), true);
+    if (validateSpeed(d))
+      d.cur_level().moveOrFight(*(d.pc()), ::dir(-1,0), true);
     doTick(d);
     break;
   case L's': case L'S': // south
-    d.cur_level().moveOrFight(*(d.pc()), ::dir(0,+1), true);
+    if (validateSpeed(d))
+      d.cur_level().moveOrFight(*(d.pc()), ::dir(0,+1), true);
     doTick(d);
     break;
   case L'd': case L'D': // east
-    d.cur_level().moveOrFight(*(d.pc()), ::dir(+1,0), true);
+    if (validateSpeed(d))
+      d.cur_level().moveOrFight(*(d.pc()), ::dir(+1,0), true);
     doTick(d);
     break;
   case 256+L'w': case 256+L'W': // north
-    d.cur_level().moveOrFight(*(d.pc()), ::dir(0,-1), false);
+    if (validateSpeed(d))
+      d.cur_level().moveOrFight(*(d.pc()), ::dir(0,-1), false);
     doTick(d);
     break;
   case 256+L'a': case 256+L'A': // west
-    d.cur_level().moveOrFight(*(d.pc()), ::dir(-1,0), false);
+    if (validateSpeed(d))
+      d.cur_level().moveOrFight(*(d.pc()), ::dir(-1,0), false);
     doTick(d);
     break;
   case 256+L's': case 256+L'S': // south
-    d.cur_level().moveOrFight(*(d.pc()), ::dir(0,+1), false);
+    if (validateSpeed(d))
+      d.cur_level().moveOrFight(*(d.pc()), ::dir(0,+1), false);
     doTick(d);
     break;
   case 256+L'd': case 256+L'D': // east
-    d.cur_level().moveOrFight(*(d.pc()), ::dir(+1,0), false);
+    if (validateSpeed(d))
+      d.cur_level().moveOrFight(*(d.pc()), ::dir(+1,0), false);
     doTick(d);
     break;
   case L'/':
     d.interrogate();
     break;
   case L'<':
-    d.cur_level().up(*(d.pc()));
+    if (validateSpeed(d))
+      d.cur_level().up(*(d.pc()));
     doTick(d);
     break;
   case L'>':
-    d.cur_level().down(*(d.pc()));
+    if (validateSpeed(d))
+      d.cur_level().down(*(d.pc()));
     doTick(d);
     break;
   case L',': case L'p': case L'P':

@@ -168,3 +168,11 @@ bool itemHolder::replaceItem(item &from, item &to) {
     }
   return false;
 }
+
+double itemHolder::totalWeight() const  {
+  double totalWeight=0;
+  forEachItem([&totalWeight](const item &i, std::wstring) {
+      totalWeight += i.weight();
+    });
+  return totalWeight;
+}

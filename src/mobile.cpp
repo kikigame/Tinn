@@ -89,6 +89,7 @@ void moveMobile(T &mon) {
   // do we move and - if so - how many times?
   int loopMax=0;
   switch (fastness) {
+  case speed::stop: break;
   case speed::slow3: if ((time::moveCount()) % 3 == 0) ++loopMax; break;
   case speed::slow2: if ((time::moveCount()) % 2 == 0) ++loopMax; break;
   case speed::perturn: ++loopMax; break;

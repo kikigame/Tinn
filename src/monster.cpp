@@ -29,7 +29,7 @@ monster::monster(monsterBuilder & b) :
   type_(*b.type_),
   align_(b.align_),
   intrinsics_(),
-  abilities_(intrinsics_),
+  abilities_(*this, intrinsics_),
   onDeath_(b.onDeath()) {}
 
 monster::monster(monsterBuilder & b, std::vector<const slot *>slots) :
@@ -47,7 +47,7 @@ monster::monster(monsterBuilder & b, std::vector<const slot *>slots) :
   type_(*b.type_),
   align_(b.align_),
   intrinsics_(),
-  abilities_(intrinsics_),
+  abilities_(*this, intrinsics_),
   onDeath_(b.onDeath()) {}
 
 void monster::eachTick(const std::function<void()> &callback) { 

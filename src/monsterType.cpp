@@ -589,7 +589,7 @@ L"Of all the birds of the sea, the sirens are the most beautiful and the most\n"
 	    .gen(genderAssignType::neuter)
 	    .align(dr.getExact(Element::plant, Domination::aggression, Outlook::cruel))
 	    .eats(materialType::fleshy) // obligate carnivores
-	    .movement({speed::slow3, goTo::none, goBy::avoid, 0})
+	    .movement({speed::stop, goTo::none, goBy::avoid, 0})
 	    .encyclopedium(
 L"There are a great number of creatures in the world, and not all sit neatly\n"
 "in their categories. The Venus trap is a deadly flora which allures its\n"

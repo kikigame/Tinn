@@ -137,6 +137,18 @@ void player::takeInventory() {
     forEachItem([this, &inv](const item &i, std::wstring) {
 	containerInventory(inv, L"", i);
       });
+    double weight = totalWeight();
+    inv.precision(2);
+    inv << std::scientific
+	<< L"Total weight: " << weight << L" Newtons. ";
+    int wt = weight / 3000;
+    switch (wt) {
+    case 0: break;
+    case 1: inv << L"\n\tThis stuff is heavy!"; break;
+    default: inv << L"\n\tThis stuff is ";
+      for (int i=2; i < wt; ++i) inv << L"really ";
+      inv << "slowing you down!";
+    }
     ioFactory::instance().longMsg(inv.str()); // TODO: description hints
   }
 }

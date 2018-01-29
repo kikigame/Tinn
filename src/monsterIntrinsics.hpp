@@ -11,6 +11,7 @@
 
 class damage;
 class terrain;
+class itemHolder;
 
 class monsterAbilities {
 public:
@@ -126,15 +127,15 @@ public:
   virtual speed adjust(const speed & fastness);
 };
 
-
 // abilites work the same as intrinsics, but may be granted by a more 
 // transient action, such as wearing a magic item, and can be more easily revoked.
 class monsterAbilityMods : public monsterIntrinsics {
 private:
+  const itemHolder &mon_;
   monsterIntrinsics &intrinsics_;
   std::shared_ptr<monsterIntrinsicsImpl> mod_;
 public:
-  monsterAbilityMods(monsterIntrinsics &intrinsics);
+  monsterAbilityMods(itemHolder &mon, monsterIntrinsics &intrinsics);
   virtual ~monsterAbilityMods() {}
   // monsters may be inherantly proof (bonus) against a damage type:
   virtual void proof(const damage & type, const bool isProof);

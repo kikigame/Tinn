@@ -74,6 +74,8 @@ public:
   // Return of true should mean than "from" remains in the container and "to" has not been added.
   // if adding "to" to the container fails, "from" must be replaced.
   bool replaceItem(item &from, item &to);
+  // convenience method to get the total weight in container.
+  double totalWeight() const;
 };
 
 

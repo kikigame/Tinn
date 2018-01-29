@@ -5,13 +5,15 @@
 #include "monsterIntrinsics.hpp"
 #include "damage.hpp"
 #include "terrain.hpp"
+#include "itemholder.hpp"
+#include "items.hpp"
 #include <map>
 #include <bitset>
 
 enum class bonusType {
   eatVeggie, // TODO
     dblAttack, // TODO
-    speedy, // TODO: for players
+    speedy, // 1 slot on speed
     hearing, // TODO
     seeing, // TODO
     flying,
@@ -24,6 +26,7 @@ enum class bonusType {
 // shared "method":
 speed adjustSpeed(const bonus &s, const speed &fastness) {
   switch (fastness) {
+  case speed::stop: return speed::stop;
   case speed::slow3:   return s == bonus(true) ? speed::slow2 : speed::slow3;
   case speed::slow2:   return s == bonus(true) ? speed::perturn : s == bonus(false) ? speed::slow3 : speed::slow2;
   case speed::perturn: return s == bonus(true) ? speed::turn2 : s == bonus(false) ? speed::slow2 : speed::perturn;
@@ -205,7 +208,8 @@ speed monsterIntrinsics::adjust(const speed & fastness) {
 
 
 
-monsterAbilityMods::monsterAbilityMods(monsterIntrinsics &intrinsics) :
+monsterAbilityMods::monsterAbilityMods(itemHolder &mon, monsterIntrinsics &intrinsics) :
+  mon_(mon),
   intrinsics_(intrinsics), mod_(new monsterIntrinsicsImpl()) {};
 
   // monsters may be inherantly proof (bonus) against a damage type:
@@ -322,9 +326,17 @@ void monsterAbilityMods::speedy(const bonus & fast) {
 const bonus monsterAbilityMods::speedy() const {
   return intrinsics_.speedy() + mod_->bonuses[bonusType::speedy];
 }
-  // adjust the given enum based on the speed bonus/penalty
+// adjust the given enum based on the speed bonus/penalty
+// NB: For each 3000N (~1/3tonne, in Earth gravity) the monster carries,
+// rate is reduced by 1 slot. This means a human warrier can carry about a tonne.
 speed monsterAbilityMods::adjust(const speed & fastness) {
   const bonus & s = speedy();
-  return adjustSpeed(s, fastness);
+  auto rtn = adjustSpeed(s, fastness);
+  double totalWeight=mon_.totalWeight();
+  while (totalWeight > 3000 && rtn != speed::stop) {
+    rtn = static_cast<speed>(static_cast<int>(rtn)-1);
+    totalWeight -= 3000;
+  }
+  return rtn;
 }
 

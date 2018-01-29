@@ -6,6 +6,7 @@
 #define MOVEMENT_HPP
 
 enum class speed {
+  stop, // movement attempts cause 3 ticks and error
   slow3, // move only on turn % 3 == 0
   slow2, // move only on turn % 3 == 0
   perturn, // move each turn
@@ -44,7 +45,7 @@ struct movementType {
   unsigned char jitterPc; // chance of deviating by one square from path
 };
 
-extern movementType stationary; //{ speed::slow3, goTo::none, goBy::avoid, 0 };
+extern movementType stationary; //{ speed::stop, goTo::none, goBy::avoid, 0 };
 
 
 #endif // ndef MOVEMENT_HPP~
