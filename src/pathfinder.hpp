@@ -51,19 +51,13 @@ public:
   }
 
   // returns the Manhatten distance
-  int absdistance(const coord &start, const coord &end) {
+  static int absdistance(const coord &start, const coord &end) {
     return
       std::abs(start.first - end.first) +
       std::abs(start.second - end.second);      
   }
 
-  coord advance(const coord &x, const dir &d) {
-    coord rtn = x;
-    rtn.first += d.first;
-    rtn.second += d.second;
-    return rtn;
-  }
-
+private:
   /*
    * c - start square for the next hop
    * end - target square

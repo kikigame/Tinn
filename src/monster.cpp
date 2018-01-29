@@ -280,7 +280,9 @@ monster::~monster() {}
 
 bool monster::operator == (const monster &rhs) { return this == &rhs; }
 
-
+/*
+ * Algorithm to find next available moves within a level.
+ */
 template<bool avoidTraps, bool avoidHiddenTraps>
 class nextLevelMoves {
 private:
@@ -305,6 +307,34 @@ public:
   }
 };
 
+/*
+ * Algorithm to find next available moves within a level.
+ * Returns only cardinal moves; faster for longer distances but may miss some monster-only paths.
+ */
+template<bool avoidTraps, bool avoidHiddenTraps>
+class nextLevelCardMoves {
+private:
+  const monster &mon_;
+  const level &level_;
+public:
+  nextLevelCardMoves(monster &mon) :
+    mon_(mon), level_(mon.curLevel()) {};
+  std::set<coord> operator()(const coord &c) const {
+    static std::set<dir> all({{dir(-1,0), dir(0,-1), dir(1,0), dir(0,1)}});
+    std::set<coord> rtn;
+    for (auto dir : all) {
+      auto pos = c.inDir(dir);
+      if (pos.first < 0 || pos.second < 0 ||
+	  pos.first >= level::MAX_WIDTH || pos.second >= level::MAX_HEIGHT)
+	continue; // off the map; here be monsters...
+      if (level_.movable(pos, pos, mon_, avoidTraps, avoidHiddenTraps)) 
+	rtn.emplace(pos);
+    }	
+    return rtn;
+  }
+};
+
+
 // delegate to type by default, but overridden for special behiour
 const movementType & monster::movement() const {
   return type_.movement();
@@ -318,6 +348,7 @@ void moveMonster(monster &mon) {
   const movementType &type = mon.movement();
 
   auto fastness = mon.intrinsics().adjust(type.speed_);
+  auto myPos = level.posOf(mon);
 
   // do we move and - if so - how many times?
   int loopMax=0;
@@ -329,6 +360,7 @@ void moveMonster(monster &mon) {
   case speed::turn3: loopMax = 3; break;
   default: throw type.speed_;
   }
+
   for (int counter = 0; counter < loopMax; ++counter) {
     ::dir dir(0,0);
     coord targetPos;
@@ -337,7 +369,6 @@ void moveMonster(monster &mon) {
     if (mon.charmedBegin() != mon.charmedEnd()) {
       auto pM = rndPick(mon.charmedBegin(), mon.charmedEnd());
       if (dPc() < (*pM)->appearance().cur()) {
-	auto myPos = level.posOf(mon);
 	targetPos = level.posOf(**pM);
 	dir.first = myPos.first < targetPos.first ? 1 : myPos.first == targetPos.first ? 0 : -1;
 	dir.second = myPos.second < targetPos.second ? 1 : myPos.second == targetPos.second ? 0 : -1;
@@ -358,10 +389,9 @@ void moveMonster(monster &mon) {
     case goTo::coaligned:
       if (pcPos.first < 0 ||
 	  level.dung().pc()->align().coalignment(mon.align()) >= 3) {
-	mon.curLevel().forEachMonster([&mon, &dir, &level, &targetPos, pcPos](monster &m){
+	mon.curLevel().forEachMonster([&mon, &dir, &level, &targetPos, &pcPos, &myPos](monster &m){
 	    if (m.align().coalignment(mon.align()) >= 3) {
 	      targetPos = pcPos; if (targetPos.first < 0) return; // player is not on this level; skip
-	      auto myPos = level.posOf(mon);
 	      dir.first = myPos.first < targetPos.first ? 1 : myPos.first == targetPos.first ? 0 : -1;
 	      dir.second = myPos.second < targetPos.second ? 1 : myPos.second == targetPos.second ? 0 : -1;
 	    }
@@ -373,10 +403,9 @@ void moveMonster(monster &mon) {
       if (type.goTo_ == goTo::unaligned && (
 	  pcPos.first < 0 ||
 	  level.dung().pc()->align().coalignment(mon.align()) < 3)) {
-	mon.curLevel().forEachMonster([&mon, &dir, &level, &targetPos, pcPos](monster &m){
+	mon.curLevel().forEachMonster([&mon, &dir, &level, &targetPos, &pcPos, &myPos](monster &m){
 	    if (m.align().coalignment(mon.align()) >= 3) {
 	      targetPos = pcPos; if (targetPos.first < 0) return; // player is not on this level; skip
-	      auto myPos = level.posOf(mon);
 	      dir.first = myPos.first < targetPos.first ? 1 : myPos.first == targetPos.first ? 0 : -1;
 	      dir.second = myPos.second < targetPos.second ? 1 : myPos.second == targetPos.second ? 0 : -1;
 	    }
@@ -385,21 +414,21 @@ void moveMonster(monster &mon) {
       } // else fall through to goTo::player
     case goTo::player:
       targetPos = pcPos; if (targetPos.first < 0) return; // player is not on this level; skip
-      {auto myPos = level.posOf(mon);
+      {
       dir.first = myPos.first < targetPos.first ? 1 : myPos.first == targetPos.first ? 0 : -1;
       dir.second = myPos.second < targetPos.second ? 1 : myPos.second == targetPos.second ? 0 : -1;
       }
       break;
     case goTo::up:
       targetPos = level.findTerrain(terrainType::UP); 
-      {auto myPos = level.posOf(mon);
+      {
       dir.first = myPos.first < targetPos.first ? 1 : myPos.first == targetPos.first ? 0 : -1;
       dir.second = myPos.second < targetPos.second ? 1 : myPos.second == targetPos.second ? 0 : -1;
       }
       break;
     case goTo::down:
       targetPos = level.findTerrain(terrainType::DOWN);
-      {auto myPos = level.posOf(mon);
+      {
       dir.first = myPos.first < targetPos.first ? 1 : myPos.first == targetPos.first ? 0 : -1;
       dir.second = myPos.second < targetPos.second ? 1 : myPos.second == targetPos.second ? 0 : -1;     
       }
@@ -410,9 +439,17 @@ void moveMonster(monster &mon) {
 
     // special case: work out best direction before applying jitter; ignore dir worked out above
     if (type.goBy_ == goBy::smart) {
-      auto nlm = nextLevelMoves<true, true>(mon);
-      std::function<std::set<coord >(const coord &)> nextMoves = nlm;
-      dir = pathfinder<2>(nextMoves).find(level.posOf(mon), targetPos);
+      if (pathfinder<2>::absdistance(myPos, pcPos) < 4) {
+	// very close; use a more accurate pathfinder
+	auto nlm = nextLevelMoves<true, true>(mon); // up to 8 options
+	std::function<std::set<coord >(const coord &)> nextMoves = nlm;
+	dir = pathfinder<2>(nextMoves).find(myPos, targetPos); // order: 8 ^ 2 = 64
+      } else {
+	// only consider cardinal moves. Jitter may still help.
+	auto nlm = nextLevelCardMoves<true, true>(mon); // up to 4 options
+	std::function<std::set<coord >(const coord &)> nextMoves = nlm;
+	dir = pathfinder<8>(nextMoves).find(myPos, targetPos); // order: 4 ^ 6 = 4096
+      }
     }
 
 

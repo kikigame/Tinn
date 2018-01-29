@@ -12,9 +12,16 @@
 class dir : public std::pair<signed char, signed char> {
 public:
   dir() : std::pair<signed char, signed char>(0,0) {}
+  dir(const dir &other) = default;
   dir(int x, int y) :
     std::pair<signed char, signed char>(x < 0 ? -1 : x > 0 ? +1 : 0,
 					y < 0 ? -1 : y > 0 ? +1 : 0) {}
+  bool operator < (const dir &other) {
+    return first < other.first || (first == other.first && second < other.second);
+  }
+  bool operator == (const dir &other) {
+    return first == other.first && second == other.second;
+  }
 };
 
 /*
