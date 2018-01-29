@@ -12,10 +12,7 @@
 #include "itemTypes.hpp"
 #include "items.hpp"
 #include "role.hpp"
-
-// defined in monster.cpp
-void moveMonster(monster &mon);
-void monsterAttacks(monster &mon);
+#include "mobile.hpp"
 
 
 monsterBuilder::monsterBuilder(bool allowRandom) : 
@@ -721,7 +718,7 @@ std::shared_ptr<monster> ofType(level & level, monsterBuilder &b) {
   // pass by reference causes a SIGSEGV; not sure why.
   // you can't create a second shared_ptr on the same pointer.
   auto &m = *ptr;
-  ptr->eachTick([&m]() {moveMonster(m);} );
+  ptr->eachTick([&m]() {moveMobile<monster>(m);} );
   ptr->eachTick([&m]() {monsterAttacks(m);} );
   equipMonster(type.type(), level, *ptr);
   return ptr;

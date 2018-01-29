@@ -111,7 +111,7 @@ public:
   monsterAbilities & abilities();
   const monsterAbilities & abilities() const;
 
-  // retrieve the current level; needed by moveMonster() function as monsters can switch levels.
+  // retrieve the current level; needed by moveMobile() function as monsters can switch levels.
   level & curLevel(); 
   const level & curLevel() const; 
 
