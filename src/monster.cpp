@@ -117,9 +117,10 @@ const attackResult monster::attack(monster &target) {
   }
 
   // Now to see how much damage we did...
+  auto cur = target.injury().cur();
   auto max = target.injury().max();
   int damage = target.wound(strength_.cur(), dt);
-  bool fatal = static_cast<unsigned char>(damage) >= max;
+  bool fatal = static_cast<unsigned char>(cur + damage) >= max;
   if (!fatal) onHit(target, damage);
   if (damage == 0) return attackResult(injury(), L"ineffectual");
   if (fatal) return attackResult(injury(), L"fatal");
