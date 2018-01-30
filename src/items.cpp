@@ -912,9 +912,9 @@ public:
     // trolls are stony, bats are leathery, plants are veggy, etc.
     return type_.material();
   }
-  //virtual double weight() {
-  //return 610; // weight of average human in N Earth gravity (610lb). TODO: per type somehow
-  //}
+  virtual double weight() const {
+    return type_.corpseWeight(); // weight of average human in N Earth gravity (610lb). TODO: per type somehow
+  }
   // if wielded, what damage does this weapon do?
   // list of all adjectives applicable to type
   virtual std::vector<std::wstring> adjectives() const {

@@ -115,6 +115,9 @@ private:
 
   const genderAssignType gen_;
 
+  // how much does a corpse of this type weigh?
+  const double corpseWeight_;
+
   // most monsters are fleshy but not all...
   const materialType material_;
 
@@ -145,8 +148,8 @@ public:
     : key_(monsterTypeKey::human), category_(monsterCategory::biped),
       levelFactor_(0), levelOffset_(0), minSpawn_(0), maxSpawn_(0), xpFactor_(0),
       xpOffset_(0), renderChar_('\0'), strength_(0), appearance_(0), fighting_(0),
-      dodge_(0), maxDamage_(0), gen_(genderAssignType::f), material_(materialType::fleshy),
-      movementType_(stationary) { 
+      dodge_(0), maxDamage_(0), gen_(genderAssignType::f), corpseWeight_(0),
+      material_(materialType::fleshy),  movementType_(stationary) { 
     throw "needed for containers but shouldn't copy monster types!";};
 
   const monsterTypeKey type() const;
@@ -177,6 +180,7 @@ public:
   const std::vector<const wchar_t *>::const_iterator sayingsBegin() const;
   const std::vector<const wchar_t *>::const_iterator sayingsEnd() const;
 
+  const double corpseWeight() const;
   const bool eats(const materialType foodType) const;
 
   const genderAssignType gen() const;

@@ -35,6 +35,7 @@ private:
   int dodge_;
   int maxDamage_;
   genderAssignType gen_;
+  double corpseWeight_;
   materialType material_;
   std::vector<deity *> alignment_;
   std::wstring encyclopedium_ = L"";
@@ -47,8 +48,8 @@ public:
   monsterTypeBuilder(monsterTypeKey key) : 
     category_(), monsterNames_(), levelFactor_(0), levelOffset_(0), minSpawn_(0), maxSpawn_(0),
     xpFactor_(0), xpOffset_(0), renderChar_(L'\0'), strength_(0), appearance_(0), fighting_(0),
-    dodge_(0), maxDamage_(0), gen_(genderAssignType::neuter), material_(materialType::fleshy),
-    alignment_(),
+    dodge_(0), maxDamage_(0), gen_(genderAssignType::neuter), corpseWeight_(0),
+    material_(materialType::fleshy), alignment_(),
     foodMaterials_(), sayings_(),
     movementType_ ({ speed::turn2, goTo::player, goBy::smart, 0 }),
     fearless_(),
@@ -70,6 +71,7 @@ public:
   monsterTypeBuilder& maxDamage(int maxDamage) { maxDamage_ = maxDamage; return *this; }
   monsterTypeBuilder& gen(genderAssignType gen) { gen_ = gen; return *this; }
   monsterTypeBuilder& material(materialType mat) { material_ = mat; return *this; }
+  monsterTypeBuilder& corpseWeight(double weight) { corpseWeight_ = weight; return *this; }
   monsterTypeBuilder& align(deity & align) { alignment_.push_back(&align); return *this; }
   monsterTypeBuilder& saying(const wchar_t * const saying) { sayings_.push_back(saying); return *this; }
   // if an entry in the "agenda" is an "agendum", then an entry in the "encyclopedia" must be an...
@@ -105,6 +107,7 @@ monsterType::monsterType(const monsterTypeBuilder & b) :
   dodge_(b.dodge_),
   maxDamage_(b.maxDamage_),
   gen_(b.gen_),
+  corpseWeight_(b.corpseWeight_),
   material_(b.material_),
   foodMaterials_(b.foodMaterials_),
   sayings_(b.sayings_),
@@ -120,6 +123,7 @@ const int monsterType::iAppearance() const { return appearance_; }
 const int monsterType::iFighting() const { return fighting_; }
 const int monsterType::iDodge() const { return dodge_; }
 const int monsterType::iMaxDamage() const { return maxDamage_; }
+const double monsterType::corpseWeight() const { return corpseWeight_; }
 const materialType monsterType::material() const { return material_; }
 const wchar_t monsterType::renderChar() const { return renderChar_; }
 const std::vector<const wchar_t*>& monsterType::names() const { return monsterNames_; }
@@ -192,6 +196,7 @@ public:
 	    .dodge(5) // they're big
 	    .maxDamage(80) // not easy to kill even as a baby, although tougher creatures exist
 	    .gen(genderAssignType::indirect)
+	    .corpseWeight(98066.500286389)// 10 metric tonnes for transport; we *can* lift them, but don't want to encourage it...
 	    .eats(materialType::fleshy)
 	    .eats(materialType::leathery) // definitely carnivores, but I'm guessing they'll eat some of your armour too
 	    .eats(materialType::liquid)
@@ -223,6 +228,7 @@ public:
 	    .saying(L"My Quest is for the Shield") // ref:Knightmare (TV Series)
 	    .saying(L"My Quest is for the Crown") // ref:Knightmare (TV Series)
 	    .saying(L"My Quest is for the Maiden") // ref:Knightmare (TV Series) (series 1)
+	    .corpseWeight(1334.46648459) // 300lb
 	     // no eats(); uses a napsack
 	    .movement({speed::perturn, goTo::down, goBy::smart, 100})
 	    .encyclopedium(
@@ -251,6 +257,9 @@ L"Sometimes a human ventures into a Dungeon upon a quest. This is usually ill-\n
 	    .gen(genderAssignType::mf)
 	    .align(dr.getExact(Element::earth, Domination::aggression, Outlook::kind))
 	    .saying(L"*poing*") // ref: Sluggy Freelance
+	    // ferrets weight 2-4lb (male) or 1-2lb (female), but we don't support discrimination,
+	    // so we'll stick to 2lb.
+	    .corpseWeight(8.8964432306) //2lb
 	    .eats(materialType::fleshy) // obligate carnivores
 	    .eats(materialType::liquid)
 	    .movement({speed::turn2, goTo::player, goBy::smart, 75})
@@ -286,6 +295,7 @@ L"Meaning \"Little Thief\", ferrets are small, hyperflexible elongated mammels\n
 	    .align(dr.getExact(Element::none, Domination::aggression, Outlook::cruel)) 
 	    .saying(L"Go back to your room. Play with your toys and costumes. Forget about the baby") // ref: Labyrinth
 	    .saying(L"I ask for so little. Just fear me, love me, do as I say") // ref: Labyrinth
+	    .corpseWeight(889.64432306) //200lb
 	    .eats(materialType::papery) // not very fussy
 	    .eats(materialType::clothy) // not very fussy
 	    .eats(materialType::veggy)
@@ -329,6 +339,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .align(dr.getExact(Element::earth, Domination::aggression, Outlook::kind))
 	    .align(dr.getExact(Element::earth, Domination::aggression, Outlook::cruel))
 	    .align(dr.getExact(Element::earth, Domination::aggression, Outlook::none))
+	    .corpseWeight(889.64432306) // 200lb. That's scrawny for a wolf, on the big side for a dog
 	    .eats(materialType::fleshy)
 	    .eats(materialType::liquid)
 	    .saying(L"(howl)") // todo: woof for puppies & dogs
@@ -361,6 +372,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .saying(L"(mumble mumble) synergise (mumble muble) teamwork.") // clearly a manager...
 	    .saying(L"Have you seen my 'phone?") // something people say. They're obsessed with 'phones, but none in this game.
 	    .saying(L"Cor; it's like Picadilly Circus 'round 'ere.") // ref: I cannot source this quote, but it's a common saying for "it's busy/crowded/lots of people"
+	    .corpseWeight(2713.415185333) // 610lb; average weight of Earth gravity human
 	    .eats(materialType::veggy)
 	    .eats(materialType::fleshy)
 	    .eats(materialType::liquid)
@@ -391,6 +403,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .material(materialType::liquid) // prevent player from taking corpse easily
 	    .align(dr.begin(), dr.end())
 	    .movement({speed::turn3, goTo::unaligned, goBy::smart, 10})
+	    .corpseWeight(-10) // magical creature
 	    .eats(materialType::clothy) // ripping clothes off with its teeth...
     //ref: http://www.chesterfieldparanormalresearch.com/incubus---sucubbus-demon.html; wikipedia; http://mythicalcreatureslist.com/mythical-creature/Succubus; others
 	    .encyclopedium(L"The word incubus comes from the Latin /incubāre/ (to lay\n"
@@ -428,6 +441,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .align(dr.getExact(Element::water, Domination::concentration, Outlook::cruel))
 	    .align(dr.getExact(Element::water, Domination::aggression, Outlook::cruel))
 	    .movement({speed::perturn, goTo::unaligned, goBy::smart, 20})
+	    .corpseWeight(4893.04377683) // 1100lb as typical for a horse
 	    .eats(materialType::fleshy)
 	    .eats(materialType::liquid)
 	    .encyclopedium(
@@ -461,6 +475,7 @@ L"Kelpies live in rivers and streams, while the stronger Each-uisge prefers\n"
 	    .material(materialType::fleshy)
 	    .align(dr.getExact(Element::water, Domination::concentration, Outlook::kind))
 	    .movement({speed::turn3, goTo::none, goBy::smart, 10})
+	    .corpseWeight(2713.415185333) // 610lb; average weight of Earth gravity human
 	    .eats(materialType::fleshy)
 	    .eats(materialType::liquid)
 	    .encyclopedium(
@@ -474,7 +489,7 @@ L"Merfolk do not like to stray outside the sea, and mermen less so. Having the\n
 
     // unique feature: sits on rocks and lures other monsters to their death with its song
     emplace(monsterTypeBuilder(monsterTypeKey::siren)
-	    .category(monsterCategory::bird) // TODO: birds with human heads; NB: we don't differentiate head slots
+	    .category(monsterCategory::bird) // birds with human heads, but we don't differentiate head slots
 	    .name(L"Siren")
 	    .className(L"birdoid") // NB: Will fight cross-aligned birds of prey
 	    .levelFactor(1)
@@ -490,6 +505,7 @@ L"Merfolk do not like to stray outside the sea, and mermen less so. Having the\n
 	    .maxDamage(20)
 	    .saying(L"La!")
 	    .gen(genderAssignType::mf) // sometimes female, but this seems to be cross-contamination with mermaid myths
+	    .corpseWeight(49.0333) // as bird of prey
 	    .material(materialType::fleshy)
 	    .align(dr.getExact(Element::air, Domination::concentration, Outlook::cruel))
 	    .align(dr.getExact(Element::water, Domination::concentration, Outlook::cruel))
@@ -524,6 +540,7 @@ L"Of all the birds of the sea, the sirens are the most beautiful and the most\n"
 	    .material(materialType::liquid) // prevent player from taking corpse easily
 	    .align(dr.begin(), dr.end())
 	    .movement({speed::turn3, goTo::player, goBy::smart, 10})
+	    .corpseWeight(2713.415185333) // 610lb; average weight of Earth gravity human
 	    .eats(materialType::clothy) // ripping clothes off with its teeth...
 	    .eats(materialType::liquid)
 	    .encyclopedium(
@@ -565,6 +582,7 @@ L"Of all the birds of the sea, the sirens are the most beautiful and the most\n"
 	    .material(materialType::stony)
 	    .align(dr.getExact(Element::earth, Domination::none, Outlook::cruel))
 	    .movement({speed::slow3, goTo::unaligned, goBy::beeline, 25})
+	    .corpseWeight(27134.15185333) // 10 * 610lb; average weight of Earth gravity human
 	    .eats(materialType::stony)
 	    .eats(materialType::liquid) // I'm sure I've read about them sucking the water of lichenss
 	    // Mostly based on http://www.mysticfiles.com/trolls-from-ancient-to-modern/
@@ -598,6 +616,7 @@ L"Of all the birds of the sea, the sirens are the most beautiful and the most\n"
 	    .maxDamage(10)
 	    .gen(genderAssignType::neuter)
 	    .align(dr.getExact(Element::plant, Domination::aggression, Outlook::cruel))
+	    .corpseWeight(1.9613) // 200g
 	    .eats(materialType::fleshy) // obligate carnivores
 	    // they may drink water, but they can't open a bottle of it
 	    .movement({speed::stop, goTo::none, goBy::avoid, 0})
@@ -632,6 +651,7 @@ L"There are a great number of creatures in the world, and not all sit neatly\n"
 	    .maxDamage(70)
 	    .saying(L"Brains...")
 	    .gen(genderAssignType::mfn)
+	    .corpseWeight(2713.415185333) // 610lb; average weight of Earth gravity human
 	    .material(materialType::fleshy)
 	    .align(dr.getExact(Element::time, Domination::aggression, Outlook::none))
 	    .movement({speed::slow3, goTo::player, goBy::zombeeline, 0})
@@ -675,6 +695,7 @@ L"There are a great number of creatures in the world, and not all sit neatly\n"
 	    .align(dr.getExact(Element::air, Domination::concentration, Outlook::kind))
 	    .align(dr.getExact(Element::air, Domination::concentration, Outlook::none))
 	    .align(dr.getExact(Element::air, Domination::concentration, Outlook::cruel))
+	    .corpseWeight(49.0333) // this should vary wildly, but set it at 5kg for a roughly typical weight
 	    .movement({speed::turn2, goTo::wander, goBy::avoid, 0})
 	    .eats(materialType::fleshy)
 	    .eats(materialType::liquid)
@@ -708,6 +729,7 @@ L"There are a great number of creatures in the world, and not all sit neatly\n"
 	    .fighting(60)
 	    .dodge(10)
 	    .maxDamage(75)
+	    .corpseWeight(5426.830370666) // 2 x 610lb; average weight of Earth gravity human
 	    .saying(L"Delete!")
 	    .saying(L"You will be Converted!")
 	    .saying(L"Resistance is useless!")
