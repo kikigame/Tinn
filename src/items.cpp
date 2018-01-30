@@ -2,6 +2,7 @@
 
 // Things and stuff
 
+#include "action.hpp"
 #include "items.hpp"
 #include "monster.hpp"
 #include "output.hpp"
@@ -408,9 +409,10 @@ class bottlingKit;
 class transmutedWater : public basicItem {
 private:
   damageType toRepair_;
+  const itemType &type_;
 public:
-  transmutedWater(const itemType &type,  const damageType &toRepair)
-    : basicItem(type), toRepair_(toRepair) {}
+  transmutedWater(const itemType &type,  const damageType &toRepair) :
+    basicItem(type), toRepair_(toRepair), type_(type) {}
   virtual bool strike(const damageType &t) {
     if (t != toRepair_)
       return basicItem::strike(t);
@@ -422,6 +424,60 @@ public:
     else
       return basicItem::repair(t);
     return true;
+  }
+  const wchar_t * useMessage() const {
+    auto &it = itemTypeRepo::instance();
+    if (type_ == it[itemTypeKey::water])
+      return L"Delicious and refreshing.";
+    else if (type_ == it[itemTypeKey::tears])
+      return L"This has a poignant taste.";
+    else if (type_ == it[itemTypeKey:: heavy_water])
+	return L"This tasts serious."; // ref: Back to the Future
+    else if (type_ == it[itemTypeKey:: fire_water])
+      return L"This has a serious kick to it.";
+    else if (type_ == it[itemTypeKey:: pop])
+      return L"Pure as sunlight"; // Ref:1927 Coca Cola slogon.
+    else if (type_ == it[itemTypeKey:: fizzy_pop])
+      return L"*hic!*";
+    else if (type_ == it[itemTypeKey:: dehydrated_water])
+      return L"You are still thirsty.";
+    else if (type_ == it[itemTypeKey:: spring_water])
+      return L"Boing!"; // Ref: Same message is used in Nethack for a wand of strking or force bolt spell, if resisted.
+    else if (type_ == it[itemTypeKey:: electro_pop])
+      return L"You feel musical";
+    else
+      throw std::wstring(L"Unknown type ") + type_.name();
+    }
+  optionalRef<sharedAction<item, monster> > useAction() const {
+    auto &it = itemTypeRepo::instance();
+    if (type_ == it[itemTypeKey::water])
+      return optionalRef<sharedAction<item, monster> >();
+    else if (type_ == it[itemTypeKey::tears])
+      // TODO: tradgedy action
+      return optionalRef<sharedAction<item, monster> >();
+    else if (type_ == it[itemTypeKey:: heavy_water])
+      return optionalRef<sharedAction<item, monster> >();
+    else if (type_ == it[itemTypeKey:: fire_water]) {
+      if (isCursed())
+	return actionFactory<item, monster>::get(sharedAction<item, monster>::key::extra_damage_hot);
+      else if (isBlessed())
+	return actionFactory<item, monster>::get(sharedAction<item, monster>::key::resist_all_damage_hot);
+      else 
+	return actionFactory<item, monster>::get(sharedAction<item, monster>::key::resist_damage_hot);
+    } else if (type_ == it[itemTypeKey:: pop])
+      return optionalRef<sharedAction<item, monster> >();
+    else if (type_ == it[itemTypeKey:: fizzy_pop])
+      return optionalRef<sharedAction<item, monster> >();
+    else if (type_ == it[itemTypeKey:: dehydrated_water])
+      return optionalRef<sharedAction<item, monster> >();
+    else if (type_ == it[itemTypeKey:: spring_water])
+      // we don't have a jump action, so let's be nice and bestow flight.
+      // TODO: this should be blessed only; we should jump otherwise. If we jump.
+      return actionFactory<item, monster>::get(sharedAction<item, monster>::key::flight);
+    else if (type_ == it[itemTypeKey:: electro_pop])
+      return optionalRef<sharedAction<item, monster> >();
+    else
+      throw std::wstring(L"Unknown type ") + type_.name();
   }
 };
 
@@ -475,6 +531,7 @@ private:
       });
     return rtn;
   }
+  // TODO: bottles should use charges for potion sizes.
   optionalRef<const item> content() const {
     optionalRef<const item> rtn;
     forEachItem([&rtn](const item &i, std::wstring) {
@@ -611,8 +668,20 @@ public:
   }
   virtual void consumeBy(monster &m) {
     auto &fluid = content().value(); // we don't come in here unless we contain liquid
-    // TODO: fluid effects.
-    itemHolder::destroyItem(fluid);
+    const bool isPc = m.isPlayer();
+    const wchar_t * msg;
+    optionalRef<sharedAction<item, monster> > action;
+    if (dynamic_cast<water*>(&fluid)) {
+      msg = L"Delicious and refreshing.";
+    } else if (dynamic_cast<transmutedWater*>(&fluid)) {
+      auto &tw = dynamic_cast<transmutedWater&>(fluid);
+      msg = tw.useMessage();
+      action = tw.useAction();
+    }
+    if (isPc) ioFactory::instance().message(msg);
+    if (action) action.value()(isBlessed(), isCursed(), *this, m);
+    if (enchantment() > 1) enchant(-1);
+    else itemHolder::destroyItem(fluid);
   }
 };
 
