@@ -218,6 +218,7 @@ bool monster::onMove(const coord &pos, const terrain &terrain) {
   }
   switch (terrain.type()) {
   case terrainType::PIT_HIDDEN:
+    fall(dPc() / 10);
     if (isPlayer()) // TODO: Pit traps should not be revealed by flying monsters, or should they?
       ioFactory::instance().message(L"It's a (pit) trap!"); // ref: Admiral Ackbar, Star Wars film Episode VI: Return of the Jedi.
     return true; // you can move into a hidden pit
@@ -229,6 +230,23 @@ bool monster::onMove(const coord &pos, const terrain &terrain) {
     intrinsics_.entrap(count);
     return rtn;
   }
+  case terrainType::PIANO_HIDDEN:
+    // always take 5% damage exactly, plus bash headgear
+    // NB: This is unlike nethack, where wearing metal headgear protects from falling rocks.
+    damage_ += 5;
+    {
+      std::set<slotType> hatSlots({{slotType::hat, slotType::hat_2, slotType::hat_3, 
+	      slotType::hat_4, slotType::hat_5}});
+      for (auto slot : hatSlots) {
+	auto it = inSlot(slot);
+	if (it) it.value().strike(damageType::bashing);
+      }
+    }
+    curLevel().holder(pos).addItem(createItem(itemTypeKey::pianoforte));
+    if (damage_.cur() == damage_.max()) death();
+    if (isPlayer()) // TODO: Pit traps should not be revealed by flying monsters, or should they?
+      ioFactory::instance().message(L"Sudenly, a piano falls on you.");
+    return true; // you can move into a hidden piano trap
   default:
     return true;
   }

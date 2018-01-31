@@ -595,6 +595,9 @@ public:
       // reveal any pits:
       if (!pM->abilities().fly() && terrain_.at(dest).type() == terrainType::PIT_HIDDEN)
 	terrain_[dest] = tFactory.get(terrainType::PIT);
+      // any single-shot traps:
+      if (terrain_.at(dest).type() == terrainType::PIANO_HIDDEN)
+	terrain_[dest] = tFactory.get(terrainType::GROUND);
       if (pM->isPlayer())
 	describePlayerLoc(*pM, dest);
       pM->postMove(dest, terrain_.at(dest).value());
@@ -1012,8 +1015,18 @@ void levelGen::addTraps(const std::pair<coord,coord> &coords) {
       std::uniform_int_distribution<int> dx(coords.first.first+1, coords.second.first - 2);
       std::uniform_int_distribution<int> dy(coords.first.second+1, coords.second.second - 2);
       const coord c(dx(generator), dy(generator)); // coords=(0,0)-(2,1) but c=gibberish
-      if (level_->terrain_.at(c).type() == terrainType::GROUND)
-	level_->terrain_.at(c) = tFactory.get(terrainType::PIT_HIDDEN);
+      if (level_->terrain_.at(c).type() == terrainType::GROUND) {
+	switch(dPc() % 10) {
+	case 0: case 1:
+	case 2: case 3:
+	case 4: case 5:
+	case 6: case 7:
+	  level_->terrain_.at(c) = tFactory.get(terrainType::PIT_HIDDEN);
+	  break;
+	case 8: case 9:
+	  level_->terrain_.at(c) = tFactory.get(terrainType::PIANO_HIDDEN);
+	}
+      }
     }
   }
 }

@@ -88,6 +88,11 @@ std::array<const slot *, 2> equippable::forceUnequip(item &it) {
 bool equippable::slotAvail(const slot *s) const {
   return equipment_.find(s) != equipment_.end();
 }
+optionalRef<item> equippable::inSlot(slotType slot) {
+  auto it = equipment_.find(slotBy(slot));
+  if (it == equipment_.end()) return optionalRef<item>();
+  return optionalRef<item>(it->second);
+}
 const std::array<const slot *,2> equippable::slotsOf(const item &item) const {
   std::array<const slot *,2> rtn = {nullptr, nullptr };
   bool foundOne = false;

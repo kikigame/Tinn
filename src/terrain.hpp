@@ -21,6 +21,8 @@ enum class terrainType {
   // TRAP: pit entraps non-flying players/monsters. Requires 4(ish) turns to escape, halved with fast-climb.
   // Falling into a pit instakills Zombies, else deals dPc()/10 bashing damage.
   PIT,
+  // TRAP: a piano will fall on you the first time you step on it, then turns to ground
+  PIANO_HIDDEN,
   FIRE, // fires of a campfire, fire-maze etc.
   WATER, // stream, river, moat, lake, sea
   SPACE, // vacuum, used with space zone. Chance of displaying as a L'*' for twinkling effect
