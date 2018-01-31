@@ -50,6 +50,7 @@ bool item::use () {
 
 basicItem::basicItem(const itemType& type) :
   item(),
+  flags_(),
   enchantment_(0),
   type_(type) {
   const damageRepo &dr = damageRepo::instance();
@@ -75,7 +76,7 @@ std::wstring basicItem::name() const {
   for (auto a : adjectives())
       buffer_ += a + L" ";
   buffer_ += simpleName();
-  return buffer_.c_str();
+  return buffer_;
 }
 
 
