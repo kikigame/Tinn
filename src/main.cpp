@@ -10,6 +10,7 @@
 #include "role.hpp"
 #include "damage.hpp"
 #include "itemTypes.hpp"
+#include "args.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -308,8 +309,21 @@ int handleActiveError() {
   }    
 }
 
-int main () {
+int main (int argc, char **argv) {
   renderable::all(); // ensure that the static variables are initialised before use...
+
+  auto opt =
+    args(argc, argv)
+    .flag('t').optWithArg("transcript")
+    .flag('h').flag('?');
+
+  if (opt.isFlag('h') || opt.isFlag('?') || opt.option("help")) {
+    std::wcout << L"Welcome to Tinn!" << std::endl
+	       << L"Options are:\n"
+	       << L"h/?/-help - this help text\n"
+	       << std::endl;
+    return 0;
+  }
 
   try {
     play();
