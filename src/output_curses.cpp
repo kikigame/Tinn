@@ -7,9 +7,11 @@
 #include "dungeon.hpp"
 #include "level.hpp"
 #include "player.hpp"
+#include "args.hpp"
 
 #include <cwchar>
 #include <iostream>
+#include <fstream>
 #include <sstream> // wstringstream
 #include <limits> // numeric_limits for ignore
 #include <algorithm> // find_if_not for trim
@@ -447,13 +449,110 @@ private:
   }
 };
 
+class transcriptWrapper : public io {
+private:
+  std::shared_ptr<io> delegate_;
+  mutable std::wofstream out_;
+public:
+  transcriptWrapper(std::shared_ptr<io> delegate, const char * const filename) :
+    delegate_(delegate), out_(filename) {
+    if (!out_.good()) {
+      delegate_->longMsg(L"I can't write your transcript file :(");
+    }
+  }
+  virtual ~transcriptWrapper() {}
+  virtual void clear() const { delegate_->clear(); }
+  virtual void message(const std::wstring &msg) const {
+    out_ << msg << std::endl;
+    delegate_->message(msg);
+  }
+  virtual std::wstring keyPrompt() const {
+    return delegate_->keyPrompt();
+  }
+  virtual wchar_t dirPrompt() const {
+    return delegate_->dirPrompt();
+  }
+  virtual bool ynPrompt(std::wstring msg) const {
+    out_ << msg << std::flush;
+    auto rtn = delegate_->ynPrompt(msg);
+    out_ << rtn << std::endl;
+    return rtn;
+  }
+  virtual std::wstring linePrompt() const {
+    auto rtn = delegate_->linePrompt();
+    out_ << rtn << std::endl;
+    return rtn;
+  }
+  template <typename T>
+  T choice(const std::wstring &prompt, const std::wstring &help, 
+	   const std::vector<std::pair<T, std::wstring>> &choices,
+	   const std::wstring &extraHelp) const {
+    out_ << prompt << std::endl
+	 << help << std::endl;
+    for (auto ch : choices)
+      out_ << ch.second << L')' << std::endl;
+    out_ << extraHelp << std::endl;
+    return delegate_->choice(prompt, help, choices, extraHelp);
+  }
+  virtual std::pair<unsigned char, unsigned char> 
+  genderPrompt(const wchar_t * msg, const wchar_t * help,
+	       const wchar_t * female0help, const wchar_t * female100help,
+	       const wchar_t * male0help, const wchar_t * male100help) const {
+    out_ << msg << std::endl
+	 << help << std::endl
+	 << "Female 0%  : " << female0help << std::endl
+	 << "Female 100%: " << female100help << std::endl
+	 << "Male 0%    : " << male0help << std::endl
+	 << "Male 100%  : " << male100help << std::endl
+	 << "?";
+    auto rtn = delegate_->genderPrompt(msg, help, 
+				      female0help, female100help,
+				      male0help, male100help);
+    out_ << rtn.first << '/' << rtn.second << std::endl;
+    return rtn;
+  }
+  virtual void draw(const dungeon &d) const {
+    delegate_->draw(d);
+  }
+  virtual void draw(const renderByCoord & d) const {
+    delegate_->draw(d);
+  }
+  virtual void draw(const player & d) const {
+    delegate_->draw(d);
+  }
+  virtual void interrogate(const renderByCoord &r, const coord &c) const {
+    delegate_->interrogate(r,c);
+  }
+  virtual void longMsg(const std::wstring &msg) const {
+    out_ << msg << std::endl;
+    delegate_->longMsg(msg);
+  }
+  virtual std::wstring keyPrompt(const std::wstring & msg, const std::wstring &help) const {
+    out_ << help << std::endl
+	 << msg << L" ?" << std::flush;
+    auto rtn = delegate_->keyPrompt(msg, help);
+    out_ << rtn << std::endl;
+    return rtn;
+  }
+  virtual std::wstring linePrompt(const std::wstring &msg, const std::wstring &help) const {
+    out_ << help << std::endl
+	 << msg << L" ?" << std::flush;
+    auto rtn = delegate_->linePrompt(msg, help);
+    out_ << rtn << std::endl;
+    return rtn;
+  }
+};
+
+
 // logic to create the user's preferred I/O goes here:
-std::shared_ptr<io> ioFactory::create() {
+std::shared_ptr<io> ioFactory::create(const args &opts) {
   if (impl_.lock()) throw "Already implemented";
   // we only have one implementation thus far:
   // Warning: putting the parens on "new ncurse()" causes the object
   // to be sliced and the destructor not called. I am unsure why exactly.
   auto rtn = std::shared_ptr<io>(new ncurse());
+  auto transcript = opts.option("transcript");
+  if (transcript) rtn = std::shared_ptr<io>(new transcriptWrapper(rtn, transcript));
   impl_ = rtn;
   return rtn;
 }

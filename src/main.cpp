@@ -31,10 +31,10 @@ bool validateSpeed(dungeon &d) {
 void processInput(dungeon & d, const std::wstring &c, const std::shared_ptr<io> ios);
 std::wstring print(const xo &xo);
 
-int play() {
+int play(const args &opt) {
 
   ioFactory iof;
-  auto io = iof.create();
+  auto io = iof.create(opt);
 
   std::wstring endDetails;
   //  io->message(;
@@ -321,12 +321,13 @@ int main (int argc, char **argv) {
     std::wcout << L"Welcome to Tinn!" << std::endl
 	       << L"Options are:\n"
 	       << L"h/?/-help - this help text\n"
+	       << L"transcript=<file> - output transcript to file"
 	       << std::endl;
     return 0;
   }
 
   try {
-    play();
+    play(opt);
     cleanup();
   } catch (...) {
     cleanup();

@@ -11,6 +11,7 @@
 #include <memory>
 #include <vector>
 
+class args;
 class dungeon;
 class level;
 class player;
@@ -84,7 +85,7 @@ private:
   static std::weak_ptr<io> impl_;
 public:
   // logic to create the user's preferred I/O goes here:
-  std::shared_ptr<io> create();
+  std::shared_ptr<io> create(const args &opts);
   static const io &instance();
 };
 
