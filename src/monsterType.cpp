@@ -786,4 +786,14 @@ void monsterTypeRepo::close() {
   instance_.reset(NULL);
 }
 
-
+// pick a random solid monster, eg for culinary purposes:
+const monsterType &rndSolidMonster() {
+  auto &repo = monsterTypeRepo::instance();
+  const monsterType *rtn;
+  do {
+    // do not return zombie, because no-one wants a zombie steak.
+    auto key = static_cast<monsterTypeKey>(rndPickI(0, static_cast<int>(monsterTypeKey::zombie)));
+    rtn = &(repo[key]);
+  } while (rtn->material() == materialType::liquid);
+  return *rtn;
+}

@@ -210,4 +210,7 @@ public:
   static void close();
 };
 
+/* pick a "solid" monster (not liquid or a zombie) */
+const monsterType &rndSolidMonster();
+
 #endif // ndef MONSTERTYPE_HPP

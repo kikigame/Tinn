@@ -390,6 +390,58 @@ public:
   }
 };
 
+class pie : public basicItem {
+private:
+  enum class type {
+    apple,
+      cherry,
+      cottage,
+      cream,
+      lemon_meringue,
+      meat,
+      pecan,
+      pumpkin,
+      shephards,
+      steak_and_kidney,
+      END
+      };
+  type type_;
+public:
+  pie(const itemType &typ) : 
+    basicItem(typ),
+    type_(static_cast<type>(rndPickI(0, static_cast<int>(type::END)))) {}
+  virtual ~pie() {}
+  const wchar_t *filling() const {
+    switch (type_) {
+    case type::apple: return L"apple";
+    case type::cherry: return L"cherry";
+    case type::cottage: return L"cottage";
+    case type::cream: return L"cream";
+    case type::lemon_meringue: return L"lemon meringue";
+    case type::meat: return L"meat";
+    case type::pecan: return L"pecan";
+    case type::pumpkin: return L"pumpkin";
+    case type::shephards: return L"shephard's";
+    case type::steak_and_kidney: return L"steak & kidney";
+    default: throw type_;
+    };
+  }
+  virtual std::vector<std::wstring> adjectives() const {
+    auto rtn = basicItem::adjectives();
+    rtn.push_back(filling());
+    return rtn;
+  };
+  virtual materialType material() const {
+    switch (type_) {
+    case type::cottage:
+    case type::shephards:
+      return materialType::fleshy;
+    default:
+      return basicItem::material();
+    };
+  };
+};
+
 class tshirt : public basicEquip<item::equipType::worn> {
 public:
   tshirt() :
@@ -1003,6 +1055,84 @@ public:
   }
 };
 
+// joints or steaks of an animal/monster
+class joint : public basicItem {
+private:
+  const monsterType &type_;
+public:
+  joint(const itemType &it, const monsterType &of) :
+    basicItem(it),
+    type_(of) {}
+  virtual ~joint() {}
+  virtual materialType material() const {
+    // trolls are stony, bats are leathery, plants are veggy, etc.
+    return type_.material();
+  }
+  const wchar_t * const cut() const {
+    switch (enchantment()) {
+    case 0: return L"rump";
+    case 1: return L"top-rump";
+    case 2: return L"leg";
+    case 3: return L"skirt";
+    case 4: return L"brisket";
+    case 5: return L"chuck";
+    case 6: return L"blade";
+    case 7: return L"neck";
+    case 8: return L"flank";
+    case 9: return L"shank";
+    case 10: return L"rib-eye";
+    case 11: return L"silverside";
+    case 12: return L"topside";
+    case 13: return L"fillet";
+    default: return L"sirloin";
+    }
+  }
+  virtual std::vector<std::wstring> adjectives() const {
+    auto adjectives = basicItem::adjectives();
+    if (enchantment() > 14 || isBlessed()) adjectives.push_back(L"finest");
+    adjectives.push_back(type_.names().at(0));
+    adjectives.push_back(cut());
+    return adjectives;    
+  }
+};
+
+// TODO: steak fails the ISA test for joint, but we can't make it a private baseclass without
+// hiding "item". Should we rethink items in terms of composition?
+class steak : public joint {
+private:
+  enum class prep {
+    bleu,
+      rare,
+      medrare,
+      medium,
+      welldone,
+      END
+      };
+  prep prep_;
+public:
+  steak(const itemType &it, const monsterType &of) :
+    joint(it, of),
+    prep_(static_cast<prep>(rndPickI(0,static_cast<int>(prep::END)))) {}
+  virtual ~steak() {}
+  const wchar_t * const prepName() const {
+    switch (prep_) { // TODO: should this be based on fire damage?
+    case prep::bleu: return L"bleu";
+    case prep::rare: return L"rare";
+    case prep::medrare: return L"medium-rare";
+    case prep::medium: return L"medium";
+    case prep::welldone: return L"well-done";
+    default: throw prep_;
+    }
+  }
+  virtual std::vector<std::wstring> adjectives() const {
+    auto baseAdjectives = joint::adjectives();
+    std::vector<std::wstring> adjectives;
+    adjectives.push_back(prepName());
+    adjectives.insert(adjectives.end(), baseAdjectives.begin(), baseAdjectives.end());
+    return adjectives;
+  }
+};
+
 
 void transmutate(item &from, item &to) {
   std::array<const slot *,2> slots = {nullptr, nullptr};
@@ -1174,6 +1304,26 @@ template <> struct itemTypeTraits<itemTypeKey::apple> {
   typedef basicItem type;
   template<typename type>
   static item *make(const itemType &t) {return new type(t);} };
+template <> struct itemTypeTraits<itemTypeKey::bread> {
+  typedef basicItem type;
+  template<typename type>
+  static item *make(const itemType &t) {return new type(t);} };
+template <> struct itemTypeTraits<itemTypeKey::cake> {
+  typedef basicItem type;
+  template<typename type>
+  static item *make(const itemType &t) {return new type(t);} };
+template <> struct itemTypeTraits<itemTypeKey::pie> {
+  typedef pie type;
+  template<typename type>
+  static item *make(const itemType &t) {return new type(t);} };
+template <> struct itemTypeTraits<itemTypeKey::joint> {
+  typedef joint type;
+  template<typename type>
+  static item *make(const itemType &t) {return new type(t, rndSolidMonster());} };
+template <> struct itemTypeTraits<itemTypeKey::steak> {
+  typedef steak type;
+  template<typename type>
+  static item *make(const itemType &t) {return new type(t, rndSolidMonster());} };
 template <> struct itemTypeTraits<itemTypeKey::mace> {
   typedef basicWeapon type;
   template<typename type>
@@ -1758,7 +1908,12 @@ item &createRndItem(const int depth, bool allowLiquids) {
 item &createItem(const itemTypeKey &key) {
   switch (key) {
   case itemTypeKey::apple: return createItem<itemTypeKey::apple>();
+  case itemTypeKey::bread: return createItem<itemTypeKey::bread>();
+  case itemTypeKey::cake: return createItem<itemTypeKey::cake>();
     //  case itemTypeKey::corpse: return createItem<itemTypeKey::corpse>();
+  case itemTypeKey::pie: return createItem<itemTypeKey::pie>();
+  case itemTypeKey::joint: return createItem<itemTypeKey::joint>();
+  case itemTypeKey::steak: return createItem<itemTypeKey::steak>();
   case itemTypeKey::mace: return createItem<itemTypeKey::mace>();
   case itemTypeKey::two_sword: return createItem<itemTypeKey::two_sword>();
   case itemTypeKey::flamethrower: return createItem<itemTypeKey::flamethrower>();

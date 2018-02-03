@@ -90,6 +90,58 @@ L"The Apple is rumoured to provide knowledge, music, well-built hardware, and\n"
 L"This is a greenish redish seed-bearing structure of a flowering plant. It is\n"
 "notable only for its exact weight of 1N."
 			   ));
+    emplace(itemTypeKey::bread, // 800g is standard for a full-sized loaf in the UK (weights & measures that stood for 750 years)
+	    new itemTypeImpl(7.84532, materialType::veggy, L'%', L"bannock",
+L"The loaf of bread has been a staple of food in much of the world since pre-\n"
+"history. Flower is ground into powder, mixed with egg or another binding\n"
+"agent, a rising agent is added and it is baked on a skillet on an open fire.",
+L"Thinking machine" // "use your loaf"
+			     ));
+    emplace(itemTypeKey::cake, // same as bread
+	    new itemTypeImpl(7.84532, materialType::veggy, L'%', L"cake",
+L"Cake is associated with many rituals of life, from birthdays and marriages\n"
+"to funereal wakes. Unbaked bread dough is sweetened with honey or sugar and\n"
+"flavoured with many other ingredients to produce a range of sweet\n"
+"confectionary high in carbohydrates. A leaven, typically yeast, is used to\n"
+"produce a light constituancy. This one is a simple Victory Sponge.",
+L"For use in case of famine." // ref: "Qu'ils mangent de la brioche", quote popularly misattributed to Mary Antoinette.
+			     ));
+    emplace(itemTypeKey::pie, // 220g for a random Iceland (UK supermarket) frozen pie; single-serving
+	    new itemTypeImpl(2.157463, materialType::veggy, L'%', L"pie",
+L"A pastry dough shell filled cooked with a sweet or savoury filling.\n"
+"There are many variations; some of the more popular are:\n"
+"\tApple pie - stewed apples mixed with sugar\n"
+"\tCherry pie - filled with cherries and sugar\n"
+"\tCottage pie - beef mince in gravy, topped with mashed potato\n"
+"\tCream pie - a light pie made with whipped cream\n"
+"\tLemon meringue pie - light pie made with lemon and egg-white\n"
+"\tMeat pie - an enclosed pastry shell stuffed with meat and gravy\n"
+"\tPecan pie - pecan nuts mixed with eggs, butter and sugar\n"
+"\tPumpkin pie - a spiced, pumpkin-based custard filling\n"
+"\tShephard's pie - stewed apples mixed with sugar\n",
+"\tSteak and kidney pie - an excellent balance of flavour and texture"
+L"3.14159.... Easy!" // Pi (ratio of circumferance to diameter of a circle on a 2d plane); easy as pie (19th centuary American saying, as pies are easy to eat)
+			     ));
+    emplace(itemTypeKey::joint, // 2.4kg based on a whole fillet
+	    new itemTypeImpl(23.53596, materialType::veggy, L'%', L"joint",
+L"Butchering in the art of separating the meaty sections of an animal into\n"
+"separate pieces, ready to cook. These pieces are known as joints are are\n"
+"usually roast separately. They may also be ground down to make ground meat\n"
+"for frying, stuffing or sausaugemeat, or carved into individual steaks.\n"
+"Different types of joint are known as \"cuts\". Many animals are hung before\n"
+"butchering.",
+L"Wow; trippy man!" // other meaning of joint
+	    ));
+    emplace(itemTypeKey::steak, // 16oz
+	    new itemTypeImpl(4.44822162825088, materialType::veggy, L'%', L"steak",
+L"A steak is usually prepared from a raw joint, cut into 1¼″ wide strips and\n"
+"then either fried or grilled per the preference of the diner. A bleu steak is\n"
+"one taken to the start of the cooking process, while a well-done steak is\n"
+"cooked through to an even appearance throughout. In between these extremes,\n"
+"common points of preference are named rare, medium-rare or medium.",
+L"Perfect for a long wait - " // a long wait is a "stake out".
+"bad for vampires" // ref: Sluggy freelance's "Muffin the Vampire Baker" http://sluggy.wikia.com/wiki/Muffin_the_Vampire_Baker
+	    ));
     emplace(itemTypeKey::corpse, // 610N is arerage weight for a human; actual mass will vary
 	    new itemTypeImpl(610, materialType::fleshy, L'%', L"corpse",
 L"After vital functions have ceased, creatures become a little less active\n"

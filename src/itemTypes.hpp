@@ -34,7 +34,12 @@ enum class itemTypeKey {
   // Food types ('%' as per Nethack)
   ////
   apple, // weight exactly 1 Neuton in normal gravity
+  bread, // veggy; staple (loaf)
+  cake, // veggy; staple, as bread
   corpse, // "a dead <foo>"
+  pie, // veggy; basicaly a scaled-up apple
+  joint, // as corpse, but a fraction of the size. Small monsters excluded.
+  steak, // as joint, but yet smaller fraction.
 
   ////
   // Weapon types ('!', unlike nethack, because they're inherantly dangerous)
