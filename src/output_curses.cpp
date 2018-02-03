@@ -460,7 +460,10 @@ public:
       delegate_->longMsg(L"I can't write your transcript file :(");
     }
   }
-  virtual ~transcriptWrapper() {}
+  virtual ~transcriptWrapper() {
+    out_ << L"   ---   GAME OVER   ---  \n"
+	 << std::endl;
+  }
   virtual void clear() const { delegate_->clear(); }
   virtual void message(const std::wstring &msg) const {
     out_ << msg << std::endl;
