@@ -543,6 +543,12 @@ public:
       }
     }
   }
+  // determines if a monster is still alive at the given position.
+  bool stillOnLevel(const monster *mon) const {
+    for (auto p : monsters_)
+      if (p.second.get() == mon) return true;
+    return false;
+  }
   // teleport a monster. NB: This will move the monster regardless of any traps, items or other things in the way
   // UNLESS zone effects do not allow it
   void moveTo(monster &m, const coord &dest) {
@@ -1267,6 +1273,11 @@ filteredIterable<std::shared_ptr<zoneArea<T> >,std::vector<std::shared_ptr<zoneA
 level::zonesAt(const coord & c) {
   return zoneTraits<T>::zonesAt(*pImpl_, c);
 }
+
+bool level::stillOnLevel(const monster *mon) const {
+  return pImpl_->stillOnLevel(mon);
+}
+
 
 
 class levelFactoryImpl {

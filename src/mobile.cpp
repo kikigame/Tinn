@@ -98,7 +98,8 @@ void moveMobile(T &mon) {
   default: throw type.speed_;
   }
 
-  for (int counter = 0; counter < loopMax; ++counter) {
+  auto pMon = &mon;
+  for (int counter = 0; counter < loopMax && level.stillOnLevel(pMon); ++counter) {
     ::dir dir(0,0);
     coord targetPos;
 

@@ -150,6 +150,10 @@ public:
   // dangerous method; it does not do anything with any monsters on this square. Use sparingly.
   void changeTerrain(const coord &c, terrainType t);
 
+  // determine if a monster still exists at the given location.
+  // Returns false if the monster has died. (So can't take a reference as it might be invalid).
+  bool stillOnLevel(const monster *mon) const;
+
   // prevent copying
   level operator =(level &other) = delete;
   // prevent moving
