@@ -632,7 +632,7 @@ template<> struct monsterTypeTraits<monsterTypeKey::siren> { typedef siren type;
 template<> struct monsterTypeTraits<monsterTypeKey::succubus> { typedef succubus type; };
 template<> struct monsterTypeTraits<monsterTypeKey::zombie> { typedef zombie type; };
 template<> struct monsterTypeTraits<monsterTypeKey::dragon> { typedef dragon type; };
-template<> struct monsterTypeTraits<monsterTypeKey::bird> { typedef bird type; };
+//template<> struct monsterTypeTraits<monsterTypeKey::bird> { typedef bird type; };
 template<> struct monsterTypeTraits<monsterTypeKey::birdOfPrey> { typedef bird type; };
 
 template<monsterTypeKey T>
@@ -659,7 +659,7 @@ std::shared_ptr<monster> monsterType::spawn(level & level) const {
 // while also ensuring all implementations of ofType<> actually get compiled in.
 std::shared_ptr<monster> monsterType::spawn(level & level, monsterBuilder &b) const {
   switch (type()) {
-  case monsterTypeKey::bird: return ofTypeImpl<monsterTypeKey::bird>(level,b);
+    //  case monsterTypeKey::bird: return ofTypeImpl<monsterTypeKey::bird>(level,b);
   case monsterTypeKey::birdOfPrey: return ofTypeImpl<monsterTypeKey::birdOfPrey>(level,b);
   case monsterTypeKey::dragon: return ofTypeImpl<monsterTypeKey::dragon>(level,b);
   case monsterTypeKey::dungeoneer: return ofTypeImpl<monsterTypeKey::dungeoneer>(level,b); 
@@ -680,7 +680,7 @@ std::shared_ptr<monster> monsterType::spawn(level & level, monsterBuilder &b) co
 }
 std::shared_ptr<monster> monsterType::spawnSpace(level & level, monsterBuilder &b) const {
   switch (type()) {
-  case monsterTypeKey::bird: return ofSpaceType<monsterTypeKey::bird>(level,b);
+    //  case monsterTypeKey::bird: return ofSpaceType<monsterTypeKey::bird>(level,b);
   case monsterTypeKey::birdOfPrey: return ofSpaceType<monsterTypeKey::birdOfPrey>(level,b);
   case monsterTypeKey::dragon: return ofSpaceType<monsterTypeKey::dragon>(level,b);
   case monsterTypeKey::dungeoneer: return ofSpaceType<monsterTypeKey::dungeoneer>(level,b); 
