@@ -103,17 +103,23 @@ public:
     rtn.second += d.second;
     return rtn;
   }
+  // number of squares (cardinals & diagonals) from arg
+  unsigned int linearDistance(const coord &other) const {
+    if (*this == other) return 0;
+    coord c = towards(other);
+    return (1+c.linearDistance(other));
+  }
   // abitrarily sort on x then y
-  bool operator <(const coord &other) {
+  bool operator <(const coord &other) const {
     return first < other.first ? true :
       (first == other.first && second < other.second);
   }
   // abitrarily sort on x then y
-  bool operator >(const coord &other) {
+  bool operator >(const coord &other) const {
     return first > other.first ? true :
       (first == other.first && second > other.second);
   }
-  bool operator ==(const coord &other) {
+  bool operator ==(const coord &other) const {
     return first == other.first && second == other.second;
   }
 };
