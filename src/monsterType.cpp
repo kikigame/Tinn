@@ -517,6 +517,52 @@ L"Of all the birds of the sea, the sirens are the most beautiful and the most\n"
 "deadly. With human heads, they sing an irrisistably enchanting song, luring\n"
 "unwary tranvellers into the sea, to dash swimmers and bots onto the rocks."));
 
+    // unique feature: length based on hit points (ref: computer game snake; grows at it eats. Also, nethack has some snake characters occuping multiple squares)
+    // TODO: Milking venom depending on type?
+    emplace(monsterTypeBuilder(monsterTypeKey::snake)
+	    .category(monsterCategory::snake)
+	    .name(L"grass snake")
+	    .name(L"rattle snake")
+	    .name(L"adder")
+	    .name(L"python")
+	    //.name(L"boa constrictor")
+	    .name(L"corn snake")
+	    .name(L"tree snake")
+	    .name(L"viper")
+	    .name(L"pit viper")
+	    .name(L"cobra")
+	    .name(L"king cobra") // TODO: something with lyres and lyre snakes?
+	    .className(L"serpant")
+	    .levelFactor(1)
+	    .levelOffset(5)
+	    .minSpawn(1)
+	    .maxSpawn(1)
+	    .xpFactor(20)
+	    .xpOffset(10)
+	    .renderChar(L's')
+	    .strength(10)
+	    .appearance(75)
+	    .fighting(40)
+	    .dodge(15)
+	    .maxDamage(30)
+	    .gen(genderAssignType::mf)
+	    .material(materialType::fleshy)
+	    .corpseWeight(1.9614) // based on 200g for a garter snake
+	    .saying(L"Ssssssssssss")
+	    .saying(L"Sssssss")
+	    .saying(L"SssssSSSssSsSSssss")
+	    .eats(materialType::fleshy)
+	    .align(dr.begin(), dr.end())
+	    .movement({speed::slow3, goTo::wander, goBy::smart})
+	    .encyclopedium(
+L"Be they creatures of immortality, creation, temptation, or hairstyle, snakes\n"
+"and other serpants have often found themselves at the centre of mythology.\n"
+"Snakes are cold-blooded, so dislike wasting energy. They eat once every few\n"
+"weeks, by dislocating their jaw to swallow they prey. Their main form of\n"
+"defence is to wrap themselves around branches; although some have venom\n"
+"used mostly for hunting, very few are poisonous."
+			   ));
+
     // unique feature: seduction/dream-rape
     emplace(monsterTypeBuilder(monsterTypeKey::succubus)
 	    .category(monsterCategory::biped)

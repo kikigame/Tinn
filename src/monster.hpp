@@ -217,6 +217,16 @@ protected:
   virtual std::array<const slot *, 2> forceUnequip(item &);
 };
 
+// big monsters maintain their own position:
+class bigMonster {
+public:
+  // called when position is first set, or on teleport:
+  virtual void setPos(const coord &c) = 0;
+  // return the position of the "main" element:
+  virtual coord mainPos() const = 0;
+  virtual ~bigMonster() {};
+};
+
 class monsterBuilder {
   friend class monster;
   level *level_;

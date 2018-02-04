@@ -258,37 +258,42 @@ void monsterAttacks(monster &mon) {
   auto myPos = level.posOf(mon);
   auto &dam = mon.injury();
   auto &malign = mon.align();
+  // take a copy, in case (eg a monster dies) the collection changes
+  // - make it a set, in case of big monsters
+  std::map<ref<monster>, coord > monstersAt;
   for (int dx=-1; dx <= +1; ++dx)
     for (int dy=-1; dy <= +1; ++dy) {
       coord pos(myPos.first + dx, myPos.second + dy);
       auto m = level.monstersAt(pos);
-      // take a copy, in case (eg a monster dies) the collection changes
-      std::vector<ref<monster> > monstersAt = m;
-      for (auto ren : monstersAt) {
-	auto &en = ren.value();
-	if (&en == &mon) continue; // monsters don't usually fight themselves
-	if (en.align().coalignment(malign) >= 3) continue; // monsters don't usually fight other creautures of the same alignment
-	if (en.type() == mon.type()) continue; // monsters don't usually fight other creatures of the same class
-	std::wstringstream msg;
-	msg << (mon.isPlayer() ? L"You" : mon.name())
-	    << myPos
-	    << L" attacks "
-	    << (en.isPlayer() ? L"you" : en.name())
-	    << pos
-	    << L": ";
-	auto result = mon.attack(en); // may invalidate refernec mon.
-	msg << result.text_;
-
-	auto m = msg.str();
-
-	auto &ios = ioFactory::instance();
-	if (m.find(L"\n") != m.npos)
-	  ios.longMsg(m);
-	else
-	  ios.message(m);
-
-	if (dam.cur() == dam.max())
-	  return; // defensive coding against resistive attacks from other monsters
-      }
+      for (auto pM : m) monstersAt.emplace(pM, pos);
     }
+  
+  for (auto ren : monstersAt) {
+    ref<monster> ref = ren.first;
+    monster &en = ref.value();
+    auto pos = ren.second;
+    if (&en == &mon) continue; // monsters don't usually fight themselves
+    if (en.align().coalignment(malign) >= 3) continue; // monsters don't usually fight other creautures of the same alignment
+    if (en.type() == mon.type()) continue; // monsters don't usually fight other creatures of the same class
+    std::wstringstream msg;
+    msg << (mon.isPlayer() ? L"You" : mon.name())
+	<< myPos
+	<< L" attacks "
+	<< (en.isPlayer() ? L"you" : en.name())
+	<< pos
+	<< L": ";
+    auto result = mon.attack(en); // may invalidate reference mon.
+    msg << result.text_;
+    
+    auto m = msg.str();
+	
+    auto &ios = ioFactory::instance();
+    if (m.find(L"\n") != m.npos)
+      ios.longMsg(m);
+    else
+      ios.message(m);
+    
+    if (dam.cur() == dam.max())
+      return; // defensive coding against resistive attacks from other monsters
+  }
 }

@@ -459,6 +459,8 @@ public:
     return coord(-1,-1);
   }
   coord posOf(const monster &m) const {
+    auto bm = dynamic_cast<const ::bigMonster*>(&m);
+    if (bm) return bm->mainPos();
     for (auto i = monsters_.begin(); i != monsters_.end(); ++i) {
       if (*(i->second) == m) {
 	return i->first;
@@ -552,6 +554,8 @@ public:
   // teleport a monster. NB: This will move the monster regardless of any traps, items or other things in the way
   // UNLESS zone effects do not allow it
   void moveTo(monster &m, const coord &dest) {
+    auto bm = dynamic_cast<::bigMonster*>(&m);
+    if (bm) bm->setPos(dest);
     // NB: This repeats the loop each time in case any callback removes or moves the monster.
     zoneActions<monster> zones;
     for (auto i = monsters_.begin(); i != monsters_.end(); ++i) {
@@ -596,7 +600,7 @@ public:
     if(pM->onMove(dest, terrain_.at(dest).value())) {
       if (posOf(*pM).first >= 0) { // in case monster has died/left the level in onMove()
 	monsters_.erase(i);
-	addMonster(pM, dest);
+	monsters_.emplace(::std::pair<coord, std::shared_ptr<monster> >(dest, pM));
       }
       // reveal any pits:
       if (!pM->abilities().fly() && terrain_.at(dest).type() == terrainType::PIT_HIDDEN)
@@ -724,13 +728,26 @@ public:
     // monster is removed
     removeMonster(m);
   }
+  // replace the positions of the monster with what matches its copy.
+  void bigMonster(monster &m, std::vector<coord> &pos) {
+    std::shared_ptr<monster> pM;
+    for (auto mn = monsters_.begin(); mn != monsters_.end();)
+      if (mn->second.get() == &m) {
+	pM = mn->second;
+	mn = monsters_.erase(mn);
+      } else ++mn;
+    for (auto c : pos)
+      monsters_.emplace(c, pM);
+  }
 
 
   void addMonster(const std::shared_ptr<monster> mon, const coord c) {
+    auto bm = std::dynamic_pointer_cast<::bigMonster>(mon);
     auto mn = monsters_.equal_range(c);
     if (mn.first == mn.second) {
       // no existing monster; place where requested
       monsters_.emplace(::std::pair<coord, std::shared_ptr<monster> >(c, mon));
+      if (bm) bm->setPos(c);
     } else {
       auto 
 	maxX = std::min(level::MAX_WIDTH, c.first + 2),
@@ -743,11 +760,13 @@ public:
 	  if (mni.first == mni.second) {
 	    // free nearby passible space
 	    monsters_.emplace(::std::pair<coord, std::shared_ptr<monster> >(i, mon));
+	    if (bm) bm->setPos(i);
 	    return;
 	  }
 	}
       // still here; nowhere is suitable; give up and stack 'em up:
       monsters_.emplace(::std::pair<coord, std::shared_ptr<monster> >(c, mon));
+      if (bm) bm->setPos(c);
     }
   }
 
@@ -1197,6 +1216,9 @@ void level::addMonster(std::shared_ptr<monster> monster, const coord &targetPos)
 }
 void level::removeDeadMonster(monster &m) {
   pImpl_->removeDeadMonster(m);
+}
+void level::bigMonster(monster &m, std::vector<coord> &pos) {
+  pImpl_->bigMonster(m, pos);
 }
 void level::pickUp() {
   pImpl_->pickUp();

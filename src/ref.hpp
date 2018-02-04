@@ -19,10 +19,16 @@ public:
   }
   T & value() {return *value_; }
   const T & value() const { return *value_; }
-  bool operator ==(const ref<T> &other) {
+  bool operator <(const ref<T> &other) const {
+    return value_ < other.value_;
+  }
+  bool operator >(const ref<T> &other) const {
+    return value_ > other.value_;
+  }
+  bool operator ==(const ref<T> &other) const {
     return value_ == other.value_;
   }
-  bool operator !=(const ref<T> &other) {
+  bool operator !=(const ref<T> &other) const {
     return !(*this == other);
   }
 };

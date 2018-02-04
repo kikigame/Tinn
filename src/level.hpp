@@ -112,6 +112,8 @@ public:
   void teleportTo(monster &monster, const coord &targetPos);
   void addMonster(std::shared_ptr<monster> monster, const coord &targetPos);
   void removeDeadMonster(monster & m); // called by monster so can't get the shared_ptr.
+  // modify the location of a monster that can occupy multiple coordinates:
+  void bigMonster(monster &m, std::vector<coord> &pos);
 
   /*
    * Player picks up items from the current level square

@@ -35,6 +35,8 @@ enum class monsterCategory {
     birdOfPrey,
   // merfolk: as biped, but tail instead of legs
     merfolk,
+  // snake: basically just a tail.
+    snake,
   // blobs have nothing. They are just blobs.
     blob
 };
@@ -71,6 +73,7 @@ enum class monsterTypeKey {
   kelpie, // water spirit. Can shape-shift between horse and human forms (possibly with hooves)
   merfolk,// merman or mermaid; can't move off water. Attacks with charm
   siren, // manevolent half-bird that sits on rocks at sea and lures travellers to their death with its song.
+  snake,
   succubus, // female form of incubus
   troll, 
   venusTrap,

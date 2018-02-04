@@ -14,6 +14,7 @@
 #include "role.hpp"
 #include "mobile.hpp"
 
+#include <cmath> // for std::ceil
 
 monsterBuilder::monsterBuilder(bool allowRandom) : 
   level_(NULL),
@@ -594,6 +595,75 @@ public:
   virtual ~incubus() {};
 };
 
+
+// snakes get longer based on their hit points.
+class snake : public trivialMonster, public bigMonster {
+private:
+  std::vector<coord> segments_;
+  monsterBuilder builder_;
+public:
+  snake(monsterBuilder &b) :
+    trivialMonster(b),
+    segments_(),
+    builder_(b) {
+    intrinsics().hear(true); // no ears; they hear through their jaws
+  }
+  virtual ~snake() {}
+  virtual void death() {
+    snakeToLength();
+    curLevel().bigMonster(*this, segments_);
+    trivialMonster::death();
+  }
+  // called from level class.
+  virtual void setPos(const coord &c) {
+    if (segments_.empty()) {
+      // creates if needed (on first call; we don't make segments until we move)
+      segments_.push_back(c);
+      return;
+    }
+    snakeToLength();
+    coord old = segments_[0];
+    segments_[0] = c;
+    if (segments_.size() == 1) return;
+    const coord &towardHead = segments_[1];
+    auto distance = c.linearDistance(towardHead);
+    switch (distance) {
+    case 0: // head moving onto tail; nothing to do
+      break;
+    case 1: // head moved 1 square
+    case 2: // head moved away from tail; move last segment to where the head was
+      segments_.pop_back();
+      segments_.insert(segments_.begin()+1, old);
+      break;
+    default: // full-on teleport; curl up snake
+      std::fill(segments_.begin(), segments_.end(), c);
+    }
+    curLevel().bigMonster(*this, segments_);
+  }
+  virtual coord mainPos() const {
+    return segments_.at(0);
+  }
+  // returns number of segments; 1 for head, +1 for each tail
+  unsigned char length() const {
+    unsigned char health = injury().max() - injury().cur();
+    unsigned char rtn = std::ceil(health / 10.0);
+    return std::max(static_cast<unsigned char>(1),rtn);
+  }
+private:
+  void snakeToLength() {
+    unsigned char numSegments = length();
+    // first handle shortening the snake:
+    if (segments_.size() > numSegments) {
+      // remove those segments:
+      segments_.erase(segments_.begin() + numSegments, segments_.end());
+    }
+    // lengthen the monster:
+    while (segments_.size() < numSegments)
+      segments_.push_back(segments_.back());
+  }
+};
+
+
 class succubus : public targetActionRefMonster {
 public:
   succubus(monsterBuilder &b) :
@@ -629,6 +699,7 @@ template<> struct monsterTypeTraits<monsterTypeKey::incubus> { typedef incubus t
 template<> struct monsterTypeTraits<monsterTypeKey::kelpie> { typedef kelpie type; };
 template<> struct monsterTypeTraits<monsterTypeKey::merfolk> { typedef merfolk type; };
 template<> struct monsterTypeTraits<monsterTypeKey::siren> { typedef siren type; };
+template<> struct monsterTypeTraits<monsterTypeKey::snake> { typedef snake type; };
 template<> struct monsterTypeTraits<monsterTypeKey::succubus> { typedef succubus type; };
 template<> struct monsterTypeTraits<monsterTypeKey::zombie> { typedef zombie type; };
 template<> struct monsterTypeTraits<monsterTypeKey::dragon> { typedef dragon type; };
@@ -671,6 +742,7 @@ std::shared_ptr<monster> monsterType::spawn(level & level, monsterBuilder &b) co
   case monsterTypeKey::kelpie: return ofTypeImpl<monsterTypeKey::kelpie>(level,b); 
   case monsterTypeKey::merfolk: return ofTypeImpl<monsterTypeKey::merfolk>(level,b);
   case monsterTypeKey::siren: return ofTypeImpl<monsterTypeKey::siren>(level,b); 
+  case monsterTypeKey::snake: return ofTypeImpl<monsterTypeKey::snake>(level,b); 
   case monsterTypeKey::succubus: return ofTypeImpl<monsterTypeKey::succubus>(level,b); 
   case monsterTypeKey::troll: return ofTypeImpl<monsterTypeKey::troll>(level,b); 
   case monsterTypeKey::venusTrap: return ofTypeImpl<monsterTypeKey::venusTrap>(level,b);

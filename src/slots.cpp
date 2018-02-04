@@ -535,6 +535,12 @@ struct slotRepoType {
 	  robe.get(), // robe/cloak/peytral (horse chest armour)
 	  tail.get()
 	  }));// biped
+    byCat_.emplace(monsterCategory::snake, std::vector<const slot * >({
+	  headband.get(),
+	  hat.get(),
+	  glasses.get(),
+	  tail.get()
+	  }));//snake
     byCat_.emplace(monsterCategory::blob,  std::vector<const slot * >({
 	  saddle.get() // think we should be able to saddle most things
 	    }));//blob
