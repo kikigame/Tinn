@@ -147,6 +147,10 @@ enum class itemTypeKey {
   // Valuables ('$'; nethack uses this for coins (denominated in zorkmids) and '$' for gems.
   //// // NB: We can have *different types* of coins, with different currency descriptions and value by weight...
     kalganid, // from Asimov's Foundation series
+    gpl_slip, // Gold Pressed Latinum; ref: Star Trek: TNG & later. 
+    gpl_strip, // = 100 slips
+    gpl_bar, // = 20 strips
+    gpl_brick, // = 50 bars
 
   ////
   // Tools ('(' as Nethack until we can think of something better

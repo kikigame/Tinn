@@ -1608,6 +1608,26 @@ template <> struct itemTypeTraits<itemTypeKey::kalganid> {
   template<typename type>
   static item *make(const itemType &t) { return new type(t); }
 };
+template <> struct itemTypeTraits<itemTypeKey::gpl_slip> {
+  typedef basicItem type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t); }
+};
+template <> struct itemTypeTraits<itemTypeKey::gpl_strip> {
+  typedef basicItem type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t); }
+};
+template <> struct itemTypeTraits<itemTypeKey::gpl_bar> {
+  typedef basicItem type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t); }
+};
+template <> struct itemTypeTraits<itemTypeKey::gpl_brick> {
+  typedef basicItem type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t); }
+};
 template <> struct itemTypeTraits<itemTypeKey::shop_card> {
   typedef shopCard type;
   template<typename type>
@@ -1971,6 +1991,10 @@ item &createItem(const itemTypeKey &key) {
   case itemTypeKey::cloth_gloves: return createItem<itemTypeKey::cloth_gloves>();
   case itemTypeKey::armband: return createItem<itemTypeKey::armband>();
   case itemTypeKey::kalganid: return createItem<itemTypeKey::kalganid>();
+  case itemTypeKey::gpl_slip: return createItem<itemTypeKey::gpl_slip>();
+  case itemTypeKey::gpl_strip: return createItem<itemTypeKey::gpl_strip>();
+  case itemTypeKey::gpl_bar: return createItem<itemTypeKey::gpl_bar>();
+  case itemTypeKey::gpl_brick: return createItem<itemTypeKey::gpl_brick>();
   case itemTypeKey::shop_card: return createItem<itemTypeKey::shop_card>();
   case itemTypeKey::bottling_kit: return createItem<itemTypeKey::bottling_kit>();
   case itemTypeKey::theremin: return createItem<itemTypeKey::theremin>();

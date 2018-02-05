@@ -615,6 +615,31 @@ L"The acquisition of money is a greedy goal, but you can swap coins like this\n"
 "not used much around here.\n",
 L"A strangly irridessent disc of metal with a worn-out inscription."
 			     ));
+constexpr auto latDef =
+L"Latinum is a silvery liquid, whose immensely complex chemical structure even\n"
+"the Federation's replicators cannot recreate. To be useful as a currency, it\n"
+"is pressed into a worthless metal to contain it; usually gold. It is mainly\n"
+"available in slips, strips, bars and bricks of gold pressed latinum (in\n"
+"increasing order of value).";
+constexpr auto latDefBase = L"Shiny paperweight";
+    emplace(itemTypeKey::gpl_slip,
+	    // ref: Star Trek: (particularly The Next Generation, Deep Space 9, "Balance of Power" (novel))
+	    // ref: Nethack also had Dilithium (also from Star Trek cannon)
+	    // The Perth Mint (Australia) makes a 1oz bar "depicting" a slip of GPL.
+	    // ...but we expect a bar (2000 slips) to be worth ~ 1000USD ~ 0.75XAU.
+	    // so we'll assume it's a scaled-up version, to account for the lack of latinum.
+	    // setting a strip of latinum at 0.75oz makes more sense to me anyway.
+	    new itemTypeImpl(0.0020851038821549999237, materialType::metallic, L'$', L"slip of gold pressed latinum",
+			     latDef, latDefBase));
+    emplace(itemTypeKey::gpl_strip,
+	    new itemTypeImpl(0.20851038821549999237, materialType::metallic, L'$', L"strip of gold pressed latinum",
+			     latDef, latDefBase));
+    emplace(itemTypeKey::gpl_bar,
+	    new itemTypeImpl(4.1702077643099998474, materialType::metallic, L'$', L"bar of gold pressed latinum",
+			     latDef, latDefBase));
+    emplace(itemTypeKey::gpl_brick,
+	    new itemTypeImpl(20.851038821549999237, materialType::metallic, L'$', L"brick of gold pressed latinum",
+			     latDef, latDefBase));
     emplace(itemTypeKey::shop_card,
 	    // ISO/IEC 7810:2003 says that ID-1 cards measure 85.60mm by 53.98mm, at 0.76mm thick,
 	    // with rounded corners of 3.18mm radius. But it doesn't say how much they weigh...
