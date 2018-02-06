@@ -76,6 +76,11 @@ public:
   bool replaceItem(item &from, item &to);
   // convenience method to get the total weight in container.
   double totalWeight() const;
+  // prompt the player for an item via io::instance():
+  item& pickItem(const std::wstring & prompt,
+		 const std::wstring & help,
+		 const std::wstring & extraHelp,
+		 const std::function<bool(const item &)> f=[](const item &){return true;}) const;
 };
 
 

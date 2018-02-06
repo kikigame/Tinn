@@ -445,22 +445,12 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
   }
 
   // pick an item to be used below.
+  // TODO: filter out foo-proof and/or foo-undamaged items as appropriate
   item& pickItem(const std::wstring & prompt,
 		 const std::wstring & help,
 		 const std::wstring & extraHelp,
 		 const std::function<bool(const item &)> f = [](const item &){return true;}) const {
-    // TODO: filter out foo-proof and/or foo-undamaged items as appropriate
-    std::vector<std::pair<int, std::wstring>> choices;
-    std::vector<item *> res;
-    int i=0;
-    inventory_.forEachItem([&choices, &i, &res, f](item &it, std::wstring name) {
-	if (f(it)) {
-	  choices.emplace_back(i++, it.name()); // TODO: nice to use formatted name here?
-	  res.emplace_back(&it);
-	}
-      });
-    int it = ioFactory::instance().choice(prompt, help, choices, extraHelp);
-    return **(res.begin() + it);
+    return inventory_.pickItem(prompt, help, extraHelp, f);
   }
 
   void enchant() {

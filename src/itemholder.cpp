@@ -176,3 +176,22 @@ double itemHolder::totalWeight() const  {
     });
   return totalWeight;
 }
+
+item &itemHolder::pickItem(const std::wstring & prompt,
+		 const std::wstring & help,
+		 const std::wstring & extraHelp,
+		 const std::function<bool(const item &)> f) const {
+  std::vector<std::pair<int, std::wstring>> choices;
+  std::vector<item *> res;
+  int i=0;
+  // pinkie-swear not to change anything:
+  const_cast<itemHolder *>(this)->
+  forEachItem([&choices, &i, &res, f](item &it, std::wstring name) {
+      if (f(it)) {
+	choices.emplace_back(i++, it.name()); // TODO: nice to use formatted name here?
+	res.emplace_back(&it);
+      }
+    });
+  int it = ioFactory::instance().choice(prompt, help, choices, extraHelp);
+  return **(res.begin() + it);
+}
