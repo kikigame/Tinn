@@ -177,10 +177,12 @@ double itemHolder::totalWeight() const  {
   return totalWeight;
 }
 
-item &itemHolder::pickItem(const std::wstring & prompt,
-		 const std::wstring & help,
-		 const std::wstring & extraHelp,
-		 const std::function<bool(const item &)> f) const {
+item *itemHolder::pickItem(const std::wstring & prompt,
+			   const std::wstring & help,
+			   const std::wstring & extraHelp,
+			   const std::function<bool(const item &)> f,
+			   const bool allowNone) const {
+  if (empty()) return nullptr;
   std::vector<std::pair<int, std::wstring>> choices;
   std::vector<item *> res;
   int i=0;
@@ -192,6 +194,10 @@ item &itemHolder::pickItem(const std::wstring & prompt,
 	res.emplace_back(&it);
       }
     });
+  if (allowNone) {
+    choices.emplace_back(i++, L"Nothing");
+    res.emplace_back(nullptr);
+  }
   int it = ioFactory::instance().choice(prompt, help, choices, extraHelp);
-  return **(res.begin() + it);
+  return *(res.begin() + it);
 }

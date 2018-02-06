@@ -387,7 +387,7 @@ private:
 	auto numItemsAvailable =  // count the number of non-cursed items in inventory
 	  inventory_.countIf([](item &i) { return !i.isCursed(); });
 	if (numItemsAvailable > barter.size()) { // still some items to add
-	  auto &toAdd = pickItem(L"What do you want to offer:", L"Choose the item to add to your offer",
+	  auto toAdd = pickItem(L"What do you want to offer:", L"Choose the item to add to your offer",
 /*Njorthrbiartr is longest keeper name */
 keeperName_ + L" will appraise the value of the items you offer, and decide if\n"
 "it is a fair trade. If it isn't, you can modify your offer or decline.",
@@ -399,7 +399,8 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
 				   std::find(barter.begin(), barter.end(), i.shared_from_this()) == barter.end();
 				 }
 			   );
-	  barter.push_back(toAdd.shared_from_this());
+	  if (toAdd)
+	    barter.push_back(toAdd->shared_from_this());
 	} else {
 	  auto &ios = ioFactory::instance();
 	  ios.message(L"Thou hast nothing to offer!");
@@ -446,18 +447,20 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
 
   // pick an item to be used below.
   // TODO: filter out foo-proof and/or foo-undamaged items as appropriate
-  item& pickItem(const std::wstring & prompt,
+  item *pickItem(const std::wstring & prompt,
 		 const std::wstring & help,
 		 const std::wstring & extraHelp,
 		 const std::function<bool(const item &)> f = [](const item &){return true;}) const {
-    return inventory_.pickItem(prompt, help, extraHelp, f);
+    return inventory_.pickItem(prompt, help, extraHelp, f, false);
   }
 
   void enchant() {
-    auto &item = pickItem(L"What would you like to enchant?",
-			 L"Choose the item whose enchantment you want to enhance",
-			 L"Enchantment adds charges to wands, resistance to armour and\n"
-			"damage to weapons. You may choose one item.");
+    auto pItem = pickItem(L"What would you like to enchant?",
+			  L"Choose the item whose enchantment you want to enhance",
+			  L"Enchantment adds charges to wands, resistance to armour and\n"
+			  "damage to weapons. You may choose one item.");
+    if (!pItem) return;
+    auto &item = *pItem;
     bool blessed = item.isBlessed();
     bool cursed = item.isCursed();
     
@@ -489,12 +492,13 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
   void proof() {
     auto prompt = std::wstring(L"What would you like to protect against ") + damage_.name();
     prompt += L"?";
-    auto &item = pickItem(prompt, std::wstring(L"Choose the item on which to bestow resistance"),
-			 L"This will completely protect your item against " + 
-			 std::wstring(damage_.name()) +
-			 L" attacks, traps and effects. When you wear an item with this protection,"
-			 "it will also protect any items worn under it.");
-    
+    auto pItem = pickItem(prompt, std::wstring(L"Choose the item on which to bestow resistance"),
+			  L"This will completely protect your item against " + 
+			  std::wstring(damage_.name()) +
+			  L" attacks, traps and effects. When you wear an item with this protection,"
+			  "it will also protect any items worn under it.");
+    if (!pItem) return;
+    auto &item = *pItem;
     auto &ios = ioFactory::instance();
     if (item.proof(damage_.type()))
       ios.message((std::wstring(L"The ") + damage_.mendName()) + 
@@ -512,10 +516,11 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
   void mend() {
     auto prompt = std::wstring(L"What would you like to protect against ") + damage_.name();
     prompt += L"?";
-    auto &item = pickItem(prompt, L"Choose the item on which to repair",
-			 L"This will repair your item against " + std::wstring(damage_.name()) +
-			 L"damage already taken.");
-    
+    auto *pItem = pickItem(prompt, L"Choose the item on which to repair",
+			   L"This will repair your item against " + std::wstring(damage_.name()) +
+			   L"damage already taken.");
+    if (!pItem) return;
+    auto &item = *pItem;
     auto &ios = ioFactory::instance();
     if (item.repair(damage_.type()))
       ios.message((std::wstring(L"The ") + damage_.mendName()) + 

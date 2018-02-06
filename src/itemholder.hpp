@@ -77,10 +77,12 @@ public:
   // convenience method to get the total weight in container.
   double totalWeight() const;
   // prompt the player for an item via io::instance():
-  item& pickItem(const std::wstring & prompt,
+  item* pickItem(const std::wstring & prompt,
 		 const std::wstring & help,
 		 const std::wstring & extraHelp,
-		 const std::function<bool(const item &)> f=[](const item &){return true;}) const;
+		 const std::function<bool(const item &)> f=[](const item &){return true;},
+		 // NB: If allowNone = false, caller must ensure that at least one item in container matches f().
+		 const bool allowNone = true) const;
 };
 
 

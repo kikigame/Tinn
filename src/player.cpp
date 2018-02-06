@@ -191,14 +191,22 @@ void player::drop(level &lvl) {
 }
 
 void player::use() {
-  std::function<void(item&, std::wstring)> f = [this](item &i, std::wstring name){
-    if (&(i.holder()) != this) return; // item has moved out of this container by a previously used item
-    auto &ios = ioFactory::instance();
-    if (ios.ynPrompt(L"Use " + name + L"?"))
-      if (!i.use())
-	ios.message(L"That doesn't seem to work.");
+  std::set<const item *> prepicked;
+  std::function<bool(const item&)> f = [this, &prepicked](const item &i){
+    return 
+    (&(i.holder()) == this) // in case item has moved out of this container by a previously used item
+    && prepicked.find(&i) == prepicked.end(); // can't use an item twice in one move
   };
-  forEachItem(f);
+  auto &ios = ioFactory::instance();
+  while (true) {
+    item *i = pickItem(L"What to use?", L"", L"", f);
+    if (!i) break;
+    prepicked.insert(i);
+    if (!i->use()) {
+      ios.message(L"That doesn't seem to work.");
+      break;
+    }
+  }
 }
 
 void player::death() {
