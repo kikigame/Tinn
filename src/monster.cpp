@@ -119,7 +119,7 @@ const attackResult monster::attack(monster &target) {
   // Now to see how much damage we did...
   auto cur = target.injury().cur();
   auto max = target.injury().max();
-  int damage = target.wound(strength_.cur(), dt);
+  int damage = target.wound(*this, strength_.cur(), dt);
   bool fatal = static_cast<unsigned char>(cur + damage) >= max;
   if (!fatal) onHit(target, damage);
   if (damage == 0) return attackResult(injury(), L"ineffectual");
@@ -133,10 +133,12 @@ damageType monster::unarmedDamageType() const {
 }
 
 // wounding in combat: between 0 and the damage_ stat, averaging 50%, then rounded down:
-int monster::wound(unsigned char reductionPc, const damage & type) {
+int monster::wound(const monster &by, unsigned char reductionPc, const damage & type) {
   long damage = dPc();
   damage *= reductionPc;
   damage /= 100;
+  damage += 5 * by.abilities().extraDamage(type);
+  damage -= 5 * abilities().resist(type);
   damage = modDamage(damage, type);
   damage_ += static_cast<unsigned char>(damage);
   if (damage_.cur() == damage_.max()) death();
@@ -268,7 +270,8 @@ void monster::postMove(const coord &pos, const terrain &terrain) {
 }
 
 void monster::fall(unsigned char reductionPc) {
-  auto damage = wound(dPc() / 10, damageRepo::instance()[damageType::bashing]);
+  // NB: Dealing extra bashing damage means you take extra damage from falling...
+  auto damage = wound(*this, dPc() / 10, damageRepo::instance()[damageType::bashing]);
   if (isPlayer()) ioFactory::instance().message
 		    (damage == 0 ?
 		     L"You adjust to the sudden change in altitude." :

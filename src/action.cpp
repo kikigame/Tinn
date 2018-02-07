@@ -61,7 +61,7 @@ public:
   virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
     auto &d = damageRepo::instance()[damageType_];
     auto name = target.name();
-    int damage = target.wound(damagePc, d);
+    int damage = target.wound(source, damagePc, d);
     auto &io = ioFactory::instance();
     bool rtn = damage > 0;
     if (!rtn)

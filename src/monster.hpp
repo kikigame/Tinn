@@ -125,7 +125,7 @@ public:
   void fall(unsigned char reductionPc);
 
   // ... and other injuries... (returns the lossed score)
-  int wound(unsigned char reductionPc, const damage & dt);
+  int wound(const monster &by, unsigned char reductionPc, const damage & dt);
 
   // damage armour (called automatically by wound())
   bool damageArmour(const damage &d);

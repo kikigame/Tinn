@@ -355,7 +355,7 @@ public:
     // TODO: double damage if sling equipped (rock only)
     auto tName = target->name(); // copy the name in case target is destroyed
     auto &damType = damageRepo::instance()[weaponDamage(true)];
-    auto rtn = target->wound(dam, damType);
+    auto rtn = target->wound(*source, dam, damType);
     if (source->isPlayer()) {
       auto &ios = ioFactory::instance();
       ios.longMsg(L"Your " + name() + (rtn > 0 ? L" hits " + tName

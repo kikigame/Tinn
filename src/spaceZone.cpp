@@ -98,7 +98,7 @@ bool spaceZone::moveInSpace(monster &mon, const coord &dest) {
 bool spaceZone::bounce(monster &mon, const coord &dest) {
   auto before = mon.injury().cur();
   auto max = mon.injury().max();
-  auto lost = mon.wound(1, damageRepo::instance()[damageType::bashing]);
+  auto lost = mon.wound(mon, 1, damageRepo::instance()[damageType::bashing]);
   if (before + lost >= max) return false; // monster has died. Let their corpse float here.
   //... setup new momentum trajectory:
   auto pos = lvl_.posOf(mon);
