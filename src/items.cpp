@@ -346,8 +346,9 @@ public:
     // 1) pick a monster
     auto target = pickTarget<lineOfSight>(*source);
     if (!target) return item::useResult::FAIL; // can't use missiles without a target
+    auto &level = target->curLevel();
     // 2) get monster's location
-    auto tPos = target->curLevel().posOf(*target);
+    auto tPos = level.posOf(*target);
     // 2) damage the monster
     unsigned char dam = amount;
     if (isBlessed()) dam *= 1.5;
@@ -358,18 +359,20 @@ public:
     auto rtn = target->wound(*source, dam, damType);
     if (source->isPlayer()) {
       auto &ios = ioFactory::instance();
-      ios.longMsg(L"Your " + name() + (rtn > 0 ? L" hits " + tName
-				       : L" misses " + tName));
+      if (level.stillOnLevel(target))
+	ios.message(L"Your " + name() + (rtn > 0 ? L" hits " + tName
+					 : L" misses " + tName));
+      else ios.message(L"Your " + name() + L" kills " + tName);
     } else if (target->isPlayer()) {
       auto &ios = ioFactory::instance();
-      ios.longMsg(source->name() + L" " + (rtn > 0 ? L" hits you with a " + name()
+      ios.message(source->name() + L" " + (rtn > 0 ? L" hits you with a " + name()
 					  : L" misses you with its " + name()));
     }
     // 3) relocate item to monster's location, or consume
     if (singleShot)
       holder().destroyItem(*this);
     else
-      target->curLevel().holder(tPos).addItem(*this);
+      level.holder(tPos).addItem(*this);
     return rtn > 0 ? item::useResult::DONE : item::useResult::FAIL;
   }
 };
@@ -1403,6 +1406,11 @@ template <> struct itemTypeTraits<itemTypeKey::rock> {
   template<typename type>
   static item *make(const itemType &t) { return new type(t, damageType::bashing); }
 };
+template <> struct itemTypeTraits<itemTypeKey::throwstick> {
+  typedef basicThrown<false, true, 20> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, damageType::bashing); }
+};
 template <> struct itemTypeTraits<itemTypeKey::bow> {
   typedef basicEquip<item::equipType::worn> type;
   template<typename type>
@@ -1978,6 +1986,7 @@ item &createItem(const itemTypeKey &key) {
   case itemTypeKey::maser: return createItem<itemTypeKey::maser>();
   case itemTypeKey::taser: return createItem<itemTypeKey::taser>();
   case itemTypeKey::rock: return createItem<itemTypeKey::rock>();
+  case itemTypeKey::throwstick: return createItem<itemTypeKey::throwstick>();
   case itemTypeKey::bow: return createItem<itemTypeKey::bow>();
   case itemTypeKey::boots: return createItem<itemTypeKey::boots>();
   case itemTypeKey::cloak: return createItem<itemTypeKey::cloak>();

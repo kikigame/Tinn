@@ -225,6 +225,17 @@ L"Not the fundamental building blocks, but the building blocks of the\n"
 "genre.",
 L"Like, totally stoned man." // just a pun, but it could reference nethack's hallucination
 			     ));
+    emplace(itemTypeKey::throwstick,
+	    // assuming R=1/8', l=2.5', (pi)*R*R*l = 0.1227... cubic feet
+	    // assuming pecan wood @ 47 lb / cubic ft (@ 4.44822161526051 lb/N earth gravity)
+	    new itemTypeImpl(25.65628756177556577001, materialType::woody, L'¬', L"throwing stick",
+L"One of the first known weapons, the throwing stick is well suited to small\n"
+"game and waterfowl. The heavy weight also lends itself well to use as a\n"
+"club. While some throwing sticks are made of bone, this one is a more common\n"
+"hardwood variety, about 2′6″ long and 3″ thick. They bear a superficial\n"
+"resemblance to a boomerang, but are thrown horizontally in a straight path.",
+L"My boomerang won't come back!" // ref: Charlie Drake song
+			     ));
     emplace(itemTypeKey::bow, // 25momme = mediumweight silk
 	    // http://lovasilk.com/guide-to-silk-bedding/momme-weight-explained/ - 1momme = lb weight of 100yds@45"
 	    // we want 8"x1" for a decemnt bow, so 25*8/(36*100*45) oz = 0.0012345679 oz
