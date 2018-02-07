@@ -102,8 +102,14 @@ public:
   // destroy an item
   virtual void destroy();
 
+  enum class useResult {
+    SUCCESS, // okay; can use another item
+      FAIL, // stop & abort; "that didn't work"
+      DONE // okay, but don't allow another use (action took time).
+  };
+
   // try to use the object
-  virtual bool use();
+  virtual useResult use();
 
   // try to equip an item. Precondition: item must be available for monster to equip.
   // returns true if successful, false otherwise (ie no suitable slots)

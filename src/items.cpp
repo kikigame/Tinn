@@ -188,7 +188,7 @@ public:
       if (dynamic_cast<useWithMixin*>(&i) == this) return; // can't use an item with itself
       auto &ios = ioFactory::instance();
       if (ios.ynPrompt(action + name + L" "+ preposition +L" your " + withName + L"?"))
-	if (!use(i))
+	if (use(i) == item::useResult::FAIL)
 	  ios.message(L"That doesn't seem to work.");
     };
     itemHolder.forEachItem(f);
@@ -196,8 +196,8 @@ public:
   }
 
   // try to use the object with another (eg put object into container; put candles on candlestick)
-  virtual bool use(item &other) {
-    return false; // no effect by default
+  virtual item::useResult use(item &other) {
+    return item::useResult::FAIL; // no effect by default
   }
 };
 
@@ -340,12 +340,12 @@ public:
   basicThrown(const itemType & type,  const damageType damage) :
     basicWeapon(type, damage) {}
   virtual ~basicThrown() {};
-  virtual bool use() {
+  virtual item::useResult use() {
     auto source = dynamic_cast<monster *>(&holder());
-    if (!source) return false; // must be in main inventory to use
+    if (!source) return item::useResult::FAIL; // must be in main inventory to use
     // 1) pick a monster
     auto target = pickTarget<lineOfSight>(*source);
-    if (!target) return false; // can't use missiles without a target
+    if (!target) return item::useResult::FAIL; // can't use missiles without a target
     // 2) get monster's location
     auto tPos = target->curLevel().posOf(*target);
     // 2) damage the monster
@@ -370,7 +370,7 @@ public:
       holder().destroyItem(*this);
     else
       target->curLevel().holder(tPos).addItem(*this);
-    return rtn > 0;
+    return rtn > 0 ? item::useResult::DONE : item::useResult::FAIL;
   }
 };
 
@@ -728,7 +728,7 @@ private:
     return rtn;
   }
 public:
-  virtual bool use() {
+  virtual useResult use() {
     if (content()) {
       auto *pc = dynamic_cast<monster*>(&holder());
       auto &ios = ioFactory::instance();
@@ -738,7 +738,7 @@ public:
 	  (!ship && ios.ynPrompt(L"Smash the " + name() + L"?")))
 	destroy();
     }
-    return true;
+    return item::useResult::SUCCESS;
   }
   // Note that, unlike basicContainer, this isn't use-with-item; the player can't
   // simply create their own bottles:
@@ -800,19 +800,20 @@ public:
     return rtn;
   }
 
-  virtual bool use() {
+  virtual item::useResult use() {
     const std::wstring name(basicItem::name());
     bool success = true;
     success &=useWithMixin::use(name, L"Put ", L"into", holder()); // calls use(item) as needed
-    return success && useWithMixin::use(name, L"Take ", L"from", *this); // calls use(item) as needed
+    return success && useWithMixin::use(name, L"Take ", L"from", *this) ? // calls use(item) as needed
+      item::useResult::SUCCESS : item::useResult::FAIL;
   }
   // put into or take out of bag:
-  virtual bool use(item &other) {
+  virtual item::useResult use(item &other) {
     if (!contains(other)) // not in this container, so put in
       itemHolder::addItem(other);
     else // in this container, so take out (add to *our* holder)
       holder().addItem(other);
-    return true;
+    return item::useResult::SUCCESS;
   }
   // put into bag; interface itemHolder
   virtual bool addItem(item & other) {
@@ -854,10 +855,10 @@ public:
   hitchGuide(const itemType& type) :
     readableItem(type) {}
   virtual ~hitchGuide() {}
-  virtual bool use() {
-    if (isCursed()) return false; // seems a bit harsh, but I don't have a better idea yet
+  virtual item::useResult use() {
+    if (isCursed()) return item::useResult::FAIL; // seems a bit harsh, but I don't have a better idea yet
     ::invokeGuide(isBlessed());
-    return true;
+    return item::useResult::SUCCESS;
   }
 };
 
@@ -879,15 +880,15 @@ public:
     buffer_ = L"holy book of " + align_.name();
     return buffer_.c_str();
   }
-  virtual bool use() {
+  virtual item::useResult use() {
     auto &ios = ioFactory::instance();
     if (isCursed()) {
       ios.message(L"The pages are stuck together.");
-      return false;
+      return item::useResult::FAIL;
     }
     ios.message(L"You turn the pages of the " + name());
     ios.longMsg(align_.description());
-    return true;
+    return item::useResult::SUCCESS;
   }
 };
 
@@ -911,7 +912,7 @@ public:
   virtual damageType weaponDamage(bool) {
     return damageType::electric; // ref: nethack has a ball-and-chain punishment, which makes a reasonable weapon...
   }
-  virtual bool use() {
+  virtual item::useResult use() {
     std::wstring msg = name();
     msg += L"\nFor services rendered:\n\n\t";
     msg += service_;
@@ -920,7 +921,7 @@ public:
       "Payment may be made to any Platinum Express Shop"; // ref: see platinum express card
     auto &ios = ioFactory::instance();
     ios.longMsg(msg);
-    return true;
+    return item::useResult::SUCCESS;
   }
   virtual void destroy() {
     holder().addItem(createIou(amount_, whom_, service_));
@@ -941,13 +942,14 @@ public:
 	     // story reason: In Knightmare, you see napsacks worn under cloaks, but over shirts.
 	     std::make_pair(slotType::hauburk, slotType::doublet)) {}
   virtual ~napsackOfConsumption() {};
-  virtual bool use() {
-    if (!usable()) return false;
+  virtual item::useResult use() {
+    if (!usable()) return item::useResult::FAIL;
     const std::wstring name(basicItem::name());
-    return useWithMixin::use(name, L"Put ", L"into", holder()); // calls use(item) as needed
+    return useWithMixin::use(name, L"Put ", L"into", holder()) ? // calls use(item) as needed
+      item::useResult::SUCCESS : item::useResult::FAIL;
   }
-  virtual bool use(item & other) {
-    return addItem(other);
+  virtual item::useResult use(item & other) {
+    return addItem(other) ? item::useResult::SUCCESS : item::useResult::FAIL;
   }
   virtual bool addItem(item & other) {
     if (!usable()) return false;
@@ -988,11 +990,11 @@ public:
   shopCard(const itemType& type) :
     basicItem(type) {}  
   virtual ~shopCard(){}
-  virtual bool use() {
+  virtual item::useResult use() {
     auto m = dynamic_cast<monster*>(&holder());
     if (m)
       ::goShopping(*m);
-    return m;
+    return m ? item::useResult::SUCCESS : item::useResult::FAIL;
   }
 };
 
@@ -1008,11 +1010,11 @@ public:
     enchant(dPc());
   }
   virtual ~bottlingKit() {}
-  virtual bool use() {
+  virtual item::useResult use() {
     auto &ios = ioFactory::instance();
     if (!hasCharge()) {
       ios.message(L"You are out of bottle caps.");
-      return false;
+      return item::useResult::FAIL;
     }
     auto &pc = dynamic_cast<monster&>(holder());
     optionalRef<item> bot = pc.firstItem([](item &i) {
@@ -1021,7 +1023,7 @@ public:
       });
     if (!bot) {
       ios.message(L"You'll need a bottle in your inventory to do that.");
-      return false;
+      return item::useResult::FAIL;
     }
     ios.message(L"You try the " + bot.value().name());
     bottle &b = dynamic_cast<bottle&>(bot.value());
@@ -1036,7 +1038,7 @@ public:
 	return false;
       });
     if (found) useCharge();
-    return found;
+    return found ? item::useResult::SUCCESS : item::useResult::FAIL;
   }
   virtual std::wstring describeCharges() const {
     auto rtn = std::wstring(L"This kit includes ");
@@ -1081,10 +1083,10 @@ public:
   virtual std::wstring simpleName() const {
     return type_.name(maxDamage_); // overridden to change type_ from itemType to monsterType.
   }
-  virtual bool use() {
+  virtual item::useResult use() {
     auto &ios = ioFactory::instance();
     ios.message(L"Please don't; it's not that kind of game.");
-    return false;
+    return item::useResult::FAIL;
   }
 };
 
@@ -1226,19 +1228,19 @@ public:
     }
     return buffer_.c_str();
   }
-  virtual bool use() {
-    if (!hasCharge()) return false;
+  virtual item::useResult use() {
+    if (!hasCharge()) return item::useResult::FAIL;
     if (isCursed()) {
       // fail to work about half the time:
       if (dPc() < 50) {
-	if (isBlessed()) return false; // blessed cursed wands don't lose charges when they fail to work
+	if (isBlessed()) return item::useResult::FAIL; // blessed cursed wands don't lose charges when they fail to work
 	useCharge();
-	return false; // plain cursed wands do lose charges if they fail to work
+	return item::useResult::FAIL; // plain cursed wands do lose charges if they fail to work
       }
     }
     if (!isBlessed() || dPc() < 50) // blessed wands use a charge only 50% of the time, normal wands 100%
       useCharge();
-    return fire();
+    return fire() ? item::useResult::SUCCESS : item::useResult::FAIL;
   }
 };
 
@@ -1276,9 +1278,9 @@ public:
       rtn.push_back(L"tremolo-tuned");
     return rtn;
   }
-  virtual bool use() {
+  virtual item::useResult use() {
     if (!dynamic_cast<monster*>(&holder()))
-      return false; // can only be used in main inventory
+      return item::useResult::FAIL; // can only be used in main inventory
     if (!hasCharge()) {
       if (dynamic_cast<monster&>(holder()).curLevel().dung().pc()->abilities().hear()) {
 	if (type_ == itemTypeRepo::instance()[itemTypeKey::bagpipes])
@@ -1286,19 +1288,19 @@ public:
 	else
 	  ioFactory::instance().message(L"The beautiful sound of a " + name() + L" fills the air");
       }
-      return true;
+      return item::useResult::SUCCESS;
     }
     if (isCursed()) {
       // fail to work about half the time:
       if (dPc() < 50) {
-	if (isBlessed()) return false; // blessed cursed wands don't lose charges when they fail to work
+	if (isBlessed()) return item::useResult::FAIL; // blessed cursed wands don't lose charges when they fail to work
 	useCharge();
-	return false; // plain cursed wands do lose charges if they fail to work
+	return item::useResult::FAIL; // plain cursed wands do lose charges if they fail to work
       }
     }
     if (!isBlessed() || dPc() < 50) // blessed wands use a charge only 50% of the time, normal wands 100%
       useCharge();
-    return fire();
+    return fire() ? item::useResult::SUCCESS : item::useResult::FAIL;
   }
 };
 

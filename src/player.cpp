@@ -202,10 +202,12 @@ void player::use() {
     item *i = pickItem(L"What to use?", L"", L"", f);
     if (!i) break;
     prepicked.insert(i);
-    if (!i->use()) {
+    auto result = i->use();
+    if (result == item::useResult::FAIL) {
       ios.message(L"That doesn't seem to work.");
       break;
     }
+    if (result == item::useResult::DONE) break;
   }
 }
 

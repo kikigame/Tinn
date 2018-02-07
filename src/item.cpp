@@ -42,8 +42,8 @@ void item::destroy() {
 }
 
 // try to use the object
-bool item::use () {
-  return false; // no effect by default
+item::useResult item::use () {
+  return item::useResult::FAIL; // no effect by default
 }
 
 // basicItem::description() defined in items.cpp.
