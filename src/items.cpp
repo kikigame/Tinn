@@ -336,21 +336,9 @@ public:
 
 template<bool singleShot, bool lineOfSight, unsigned char amount>
 class basicThrown : public basicWeapon {
-  std::function<std::wstring(const std::wstring &, const std::wstring &)> onHitOther_;
-  std::function<std::wstring(const std::wstring &, const std::wstring &)> onMissOther_;
-  std::function<std::wstring(const std::wstring &, const std::wstring &)> onHitByOther_;
-  std::function<std::wstring(const std::wstring &, const std::wstring &)> onMissByOther_;
 public:
-  basicThrown(const itemType & type,  const damageType damage,
-	      std::function<std::wstring(const std::wstring &, const std::wstring &)> onHitOther,
-	      std::function<std::wstring(const std::wstring &, const std::wstring &)> onMissOther,
-	      std::function<std::wstring(const std::wstring &, const std::wstring &)> onHitByOther,
-	      std::function<std::wstring(const std::wstring &, const std::wstring &)> onMissByOther) :
-    basicWeapon(type, damage),
-    onHitOther_(onHitOther),
-    onMissOther_(onMissOther),
-    onHitByOther_(onHitByOther),
-    onMissByOther_(onMissByOther) {}
+  basicThrown(const itemType & type,  const damageType damage) :
+    basicWeapon(type, damage) {}
   virtual ~basicThrown() {};
   virtual bool use() {
     auto source = dynamic_cast<monster *>(&holder());
@@ -370,10 +358,12 @@ public:
     auto rtn = target->wound(dam, damType);
     if (source->isPlayer()) {
       auto &ios = ioFactory::instance();
-      ios.longMsg(rtn > 0 ? onHitOther_(tName, name()) : onMissOther_(tName, name()));
+      ios.longMsg(L"Your " + name() + (rtn > 0 ? L" hits " + tName
+				       : L" misses " + tName));
     } else if (target->isPlayer()) {
       auto &ios = ioFactory::instance();
-      ios.longMsg(rtn > 0 ? onHitByOther_(source->name(), name()) : onMissByOther_(source->name(), name()));
+      ios.longMsg(source->name() + L" " + (rtn > 0 ? L" hits you with a " + name()
+					  : L" misses you with its " + name()));
     }
     // 3) relocate item to monster's location, or consume
     if (singleShot)
@@ -1409,16 +1399,7 @@ template <> struct itemTypeTraits<itemTypeKey::taser> {
 template <> struct itemTypeTraits<itemTypeKey::rock> {
   typedef basicThrown<false, true, 5> type;
   template<typename type>
-  static item *make(const itemType &t) { return new type(t, damageType::bashing,
-	 [](const std::wstring &mname, const std::wstring &name){
-	   return L"Your "+name+L" hits " + mname;},
-	 [](const std::wstring &mname, const std::wstring &name){
-	   return L"Your "+name+L" misses " + mname;},
-	 [](const std::wstring &mname, const std::wstring &name){
-	   return mname + L" hits you with a " + name + L"!";},
-	 [](const std::wstring &mname, const std::wstring &name){
-	   return mname + L" misses you with its " + name;}
-	 ); }
+  static item *make(const itemType &t) { return new type(t, damageType::bashing); }
 };
 template <> struct itemTypeTraits<itemTypeKey::bow> {
   typedef basicEquip<item::equipType::worn> type;
