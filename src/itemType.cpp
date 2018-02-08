@@ -254,6 +254,15 @@ L"When firing a crossbow, it is very important to ensure that the bolts are\n"
 "Throwing these at a target is less effective than firing with a crossbow.",
 L"This looks fast."
 			     ));
+    emplace(itemTypeKey::percussion_grenade, // 236g, based on M84 Stun grenade
+	    new itemTypeImpl(0.23143694067587804, materialType::metallic, L'¬', L"concussion grenade",
+L"This G60 Stun Grenade is an incremental development of the Thunderflash\n"
+"concussion greanade is a grenade with a precussion fuse.\n"
+"A simlpe metal shell explodes on impact with a deafening sound and blinding\n"
+"flash. Any monster experiencing this explosion will suffer significant\n"
+"acoustic injury.",
+L"Metallic pineapple paperweight."
+			     ));
 
     emplace(itemTypeKey::bow, // 25momme = mediumweight silk
 	    // http://lovasilk.com/guide-to-silk-bedding/momme-weight-explained/ - 1momme = lb weight of 100yds@45"

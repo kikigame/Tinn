@@ -64,7 +64,8 @@ enum class itemTypeKey {
     rock, // 5% bashing; double if sling equipped
     throwstick, // 20% bashing damage; a non-returning boomerang (also a 5% hand-weapon).
     dart, // 5% edged damage
-    bolt, // 5% edged damage; 20% if crossbow equippe
+    bolt, // 5% edged damage; 20% if crossbow equipped
+    percussion_grenade, // 50% sound damage; single-shot
   /*
     heat_seaking, // 20% hot damage; seeks hot target
     cold_seaking, // 20% cold damage; seeks cold target

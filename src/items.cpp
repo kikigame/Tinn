@@ -1417,6 +1417,11 @@ template <> struct itemTypeTraits<itemTypeKey::dart> {
   template<typename type>
   static item *make(const itemType &t) { return new type(t, damageType::edged); }
 };
+template <> struct itemTypeTraits<itemTypeKey::percussion_grenade> {
+  typedef basicThrown<true, true, 50> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, damageType::sonic); }
+};
 template <> struct itemTypeTraits<itemTypeKey::bolt> {
   typedef basicThrown<false, true, 20> type;
   template<typename type>
@@ -1999,6 +2004,7 @@ item &createItem(const itemTypeKey &key) {
   case itemTypeKey::rock: return createItem<itemTypeKey::rock>();
   case itemTypeKey::throwstick: return createItem<itemTypeKey::throwstick>();
   case itemTypeKey::dart: return createItem<itemTypeKey::dart>();
+  case itemTypeKey::percussion_grenade: return createItem<itemTypeKey::percussion_grenade>();
   case itemTypeKey::bolt: return createItem<itemTypeKey::bolt>();
   case itemTypeKey::bow: return createItem<itemTypeKey::bow>();
   case itemTypeKey::boots: return createItem<itemTypeKey::boots>();
