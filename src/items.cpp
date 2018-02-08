@@ -353,7 +353,8 @@ public:
     unsigned char dam = amount;
     if (isBlessed()) dam *= 1.5;
     if (isCursed()) dam /= 2;
-    // TODO: double damage if sling equipped (rock only)
+    // TODO: 2x damage if sling equipped (rock only)
+    // TODO: 4x damage if crossbow equipped (rock only)
     auto tName = target->name(); // copy the name in case target is destroyed
     auto &damType = damageRepo::instance()[weaponDamage(true)];
     auto rtn = target->wound(*source, dam, damType);
@@ -1411,6 +1412,16 @@ template <> struct itemTypeTraits<itemTypeKey::throwstick> {
   template<typename type>
   static item *make(const itemType &t) { return new type(t, damageType::bashing); }
 };
+template <> struct itemTypeTraits<itemTypeKey::dart> {
+  typedef basicThrown<false, true, 5> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, damageType::edged); }
+};
+template <> struct itemTypeTraits<itemTypeKey::bolt> {
+  typedef basicThrown<false, true, 20> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, damageType::edged); }
+};
 template <> struct itemTypeTraits<itemTypeKey::bow> {
   typedef basicEquip<item::equipType::worn> type;
   template<typename type>
@@ -1987,6 +1998,8 @@ item &createItem(const itemTypeKey &key) {
   case itemTypeKey::taser: return createItem<itemTypeKey::taser>();
   case itemTypeKey::rock: return createItem<itemTypeKey::rock>();
   case itemTypeKey::throwstick: return createItem<itemTypeKey::throwstick>();
+  case itemTypeKey::dart: return createItem<itemTypeKey::dart>();
+  case itemTypeKey::bolt: return createItem<itemTypeKey::bolt>();
   case itemTypeKey::bow: return createItem<itemTypeKey::bow>();
   case itemTypeKey::boots: return createItem<itemTypeKey::boots>();
   case itemTypeKey::cloak: return createItem<itemTypeKey::cloak>();

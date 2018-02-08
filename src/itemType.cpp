@@ -236,6 +236,25 @@ L"One of the first known weapons, the throwing stick is well suited to small\n"
 "resemblance to a boomerang, but are thrown horizontally in a straight path.",
 L"My boomerang won't come back!" // ref: Charlie Drake song
 			     ));
+    emplace(itemTypeKey::dart,//20g typical
+	    new itemTypeImpl(0.0196133000572778, materialType::metallic, L'¬', L"dart",
+L"A composite weapon composed of four parts: a point, barrel, shaft and flight.\n"
+"Around 6″ long; this dart has a steal tipped standard point, metal barrel and feather\n"
+"flight.",
+L"Oooh; I used to fold these all the time :)" // origami paper darts
+			     ));
+    emplace(itemTypeKey::bolt, // 350 grains
+	    new itemTypeImpl(0.22241108076302496, materialType::metallic, L'¬', L"bolt",
+L"When firing a crossbow, it is very important to ensure that the bolts are\n"
+"no lighter than the recommended grain weight of the bolt or arrow, as it\n"
+"is underweight ammunition that causes the main failures in the bow. A bolt\n"
+"is a type of arrow; this one has a metal shaft with a good stiff spine, at\n"
+"350 grain, with aluminium half-moon nock and fletchings, which cause the\n"
+"bolt to spin and fly true.\n"
+"Throwing these at a target is less effective than firing with a crossbow.",
+L"This looks fast."
+			     ));
+
     emplace(itemTypeKey::bow, // 25momme = mediumweight silk
 	    // http://lovasilk.com/guide-to-silk-bedding/momme-weight-explained/ - 1momme = lb weight of 100yds@45"
 	    // we want 8"x1" for a decemnt bow, so 25*8/(36*100*45) oz = 0.0012345679 oz
