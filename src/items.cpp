@@ -334,50 +334,6 @@ public:
   }
 };
 
-template<bool singleShot, bool lineOfSight, unsigned char amount>
-class basicThrown : public basicWeapon {
-public:
-  basicThrown(const itemType & type,  const damageType damage) :
-    basicWeapon(type, damage) {}
-  virtual ~basicThrown() {};
-  virtual item::useResult use() {
-    auto source = dynamic_cast<monster *>(&holder());
-    if (!source) return item::useResult::FAIL; // must be in main inventory to use
-    // 1) pick a monster
-    auto target = pickTarget<lineOfSight>(*source);
-    if (!target) return item::useResult::FAIL; // can't use missiles without a target
-    auto &level = target->curLevel();
-    // 2) get monster's location
-    auto tPos = level.posOf(*target);
-    // 2) damage the monster
-    unsigned char dam = amount;
-    if (isBlessed()) dam *= 1.5;
-    if (isCursed()) dam /= 2;
-    // TODO: 2x damage if sling equipped (rock only)
-    // TODO: 4x damage if crossbow equipped (rock only)
-    auto tName = target->name(); // copy the name in case target is destroyed
-    auto &damType = damageRepo::instance()[weaponDamage(true)];
-    auto rtn = target->wound(*source, dam, damType);
-    if (source->isPlayer()) {
-      auto &ios = ioFactory::instance();
-      if (level.stillOnLevel(target))
-	ios.message(L"Your " + name() + (rtn > 0 ? L" hits " + tName
-					 : L" misses " + tName));
-      else ios.message(L"Your " + name() + L" kills " + tName);
-    } else if (target->isPlayer()) {
-      auto &ios = ioFactory::instance();
-      ios.message(source->name() + L" " + (rtn > 0 ? L" hits you with a " + name()
-					  : L" misses you with its " + name()));
-    }
-    // 3) relocate item to monster's location, or consume
-    if (singleShot)
-      holder().destroyItem(*this);
-    else
-      level.holder(tPos).addItem(*this);
-    return rtn > 0 ? item::useResult::DONE : item::useResult::FAIL;
-  }
-};
-
 // as basicEquip, but requiring 2 slots
 template<int equipTyp>
 class twoEquip : public basicItem, public onEquipMixin {
@@ -1332,6 +1288,52 @@ public:
   }
 };
 
+
+template<bool singleShot, bool lineOfSight, unsigned char amount>
+class thrownWeapon : public basicWeapon {
+public:
+  thrownWeapon(const itemType & type,  const damageType damage) :
+    basicWeapon(type, damage) {}
+  virtual ~thrownWeapon() {};
+  virtual item::useResult use() {
+    auto source = dynamic_cast<monster *>(&holder());
+    if (!source) return item::useResult::FAIL; // must be in main inventory to use
+    // 1) pick a monster
+    auto target = pickTarget<lineOfSight>(*source);
+    if (!target) return item::useResult::FAIL; // can't use missiles without a target
+    auto &level = target->curLevel();
+    // 2) get monster's location
+    auto tPos = level.posOf(*target);
+    // 2) damage the monster
+    unsigned char dam = amount;
+    if (isBlessed()) dam *= 1.5;
+    if (isCursed()) dam /= 2;
+    // TODO: 2x damage if sling equipped (rock only)
+    // TODO: 4x damage if crossbow equipped (rock only)
+    auto tName = target->name(); // copy the name in case target is destroyed
+    auto &damType = damageRepo::instance()[weaponDamage(true)];
+    auto rtn = target->wound(*source, dam, damType);
+    if (source->isPlayer()) {
+      auto &ios = ioFactory::instance();
+      if (level.stillOnLevel(target))
+	ios.message(L"Your " + name() + (rtn > 0 ? L" hits " + tName
+					 : L" misses " + tName));
+      else ios.message(L"Your " + name() + L" kills " + tName);
+    } else if (target->isPlayer()) {
+      auto &ios = ioFactory::instance();
+      ios.message(source->name() + L" " + (rtn > 0 ? L" hits you with a " + name()
+					  : L" misses you with its " + name()));
+    }
+    // 3) relocate item to monster's location, or consume
+    if (singleShot)
+      holder().destroyItem(*this);
+    else
+      level.holder(tPos).addItem(*this);
+    return rtn > 0 ? item::useResult::DONE : item::useResult::FAIL;
+  }
+};
+
+
 // traits class holds:
 // - type: default class type to use
 // - make(): static template function, typed on concrete class type, taking itemtype parameter, producing new object on the heap and returning.
@@ -1403,27 +1405,27 @@ template <> struct itemTypeTraits<itemTypeKey::taser> {
   static item *make(const itemType &t) { return new type(t, damageType::electric, L"Spark fly forth");}
 };
 template <> struct itemTypeTraits<itemTypeKey::rock> {
-  typedef basicThrown<false, true, 5> type;
+  typedef thrownWeapon<false, true, 5> type;
   template<typename type>
   static item *make(const itemType &t) { return new type(t, damageType::bashing); }
 };
 template <> struct itemTypeTraits<itemTypeKey::throwstick> {
-  typedef basicThrown<false, true, 20> type;
+  typedef thrownWeapon<false, true, 20> type;
   template<typename type>
   static item *make(const itemType &t) { return new type(t, damageType::bashing); }
 };
 template <> struct itemTypeTraits<itemTypeKey::dart> {
-  typedef basicThrown<false, true, 5> type;
+  typedef thrownWeapon<false, true, 5> type;
   template<typename type>
   static item *make(const itemType &t) { return new type(t, damageType::edged); }
 };
 template <> struct itemTypeTraits<itemTypeKey::percussion_grenade> {
-  typedef basicThrown<true, true, 50> type;
+  typedef thrownWeapon<true, true, 50> type;
   template<typename type>
   static item *make(const itemType &t) { return new type(t, damageType::sonic); }
 };
 template <> struct itemTypeTraits<itemTypeKey::bolt> {
-  typedef basicThrown<false, true, 20> type;
+  typedef thrownWeapon<false, true, 20> type;
   template<typename type>
   static item *make(const itemType &t) { return new type(t, damageType::edged); }
 };
