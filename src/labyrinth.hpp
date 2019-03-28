@@ -415,8 +415,8 @@ private:
   bool findAndReplace(const std::vector<std::vector<T> > & find,
 		      const std::vector<std::vector<T> > & replace) {
     bool modified = false;
-    if (bd_.width < find[0].size() - 2) return modified; // too small (we can only overlap by 2)
-    if (bd_.height < find.size() - 2) return modified; // too small (we can only overlap by 2)
+    if (bd_.width < static_cast<long>(find[0].size() - 2)) return modified; // too small (we can only overlap by 2)
+    if (bd_.height < static_cast<long>(find.size() - 2)) return modified; // too small (we can only overlap by 2)
     int maxXX = bd_.width + 2 - find[0].size();
     for (int xx=-1; xx <= maxXX; ++xx) {
       int maxYY = bd_.height + 2 - find.size();

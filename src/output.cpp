@@ -54,7 +54,7 @@ T io::choice(const std::wstring &prompt, const std::wstring &help,
     if (choice == 9 && res < choices.size()) offset += 9;
   } while (choice == 9 && res < choices.size());
   auto rtn = choices.begin();
-  for (int i=1; i < res; ++i) ++rtn;
+  for (unsigned int i=1; i < res; ++i) ++rtn;
   return rtn->first;
 }
 

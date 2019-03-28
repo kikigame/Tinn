@@ -322,7 +322,7 @@ public:
     if (!use) return damageType_;
     if (!hasCharge()) return B::weaponDamage(use);
     if (B::isCursed()) {
-      useCharge(); if (dPc() < B::isBlessed() ? 75 : 50) return damageType_;
+      useCharge(); if (dPc() < (B::isBlessed() ? 75 : 50)) return damageType_;
       return B::weaponDamage(use);
     }
     if (!B::isBlessed() || dPc() < 50) useCharge();

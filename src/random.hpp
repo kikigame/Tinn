@@ -5,6 +5,7 @@
 #include <ctime>
 #include <random>
 #include <iterator>
+#include <functional>
 
 
 // we're a game, not a crypto, so seeding with the time should be okay.

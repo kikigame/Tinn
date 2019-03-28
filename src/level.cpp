@@ -131,8 +131,8 @@ private:
     } while (count > 0);
 
     // eliminate anything overlapping (or we get too many monsters!)
-    for (int i=0; i < locs.size(); ++i)
-      for (int j=i+1; j < locs.size();)
+    for (unsigned int i=0; i < locs.size(); ++i)
+      for (unsigned int j=i+1; j < locs.size();)
 	if ((locs[j].first.first > locs[i].first.first && locs[j].first.first < locs[i].second.first) &&
 	    (locs[j].first.second > locs[i].first.second && locs[j].first.second < locs[i].second.second) &&
 	    (locs[j].second.first > locs[i].first.first && locs[j].first.first < locs[i].second.first) &&
@@ -144,8 +144,8 @@ private:
   }
   int hmerge(std::vector<std::pair<coord, coord> > &locs) const {
     int size = locs.size();
-    for (int i=0; i < locs.size(); ++i)
-      for (int j=i+1; j < locs.size();)
+    for (unsigned int i=0; i < locs.size(); ++i)
+      for (unsigned int j=i+1; j < locs.size();)
 	if (locs[i].first.second == locs[j].first.second && locs[i].second.second == locs[j].second.second &&
 	    locs[i].second.first >= locs[j].first.first && locs[i].second.first <= locs[j].second.first) {
 	  locs[i].second.first = locs[j].second.first;
@@ -154,9 +154,9 @@ private:
     return locs.size() - size;
   }
   int vmerge(std::vector<std::pair<coord, coord> > &locs) const {
-    int size = locs.size();
-    for (int i=0; i < locs.size(); ++i)
-      for (int j=i+1; j < locs.size();)
+    unsigned int size = locs.size();
+    for (unsigned int i=0; i < locs.size(); ++i)
+      for (unsigned int j=i+1; j < locs.size();)
 	if (locs[i].first.first == locs[j].first.first && locs[i].second.first == locs[j].second.first &&
 	    locs[i].second.second >= locs[j].first.second && locs[i].second.second <= locs[j].second.second) {
 	  locs[i].second.second = locs[j].second.second;
