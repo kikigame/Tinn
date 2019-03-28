@@ -782,7 +782,7 @@ std::shared_ptr<monster> ofType(level & level, monsterBuilder &b) {
 
   const int levelFactor = type.getLevelFactor();
   const int levelOffset = type.getLevelOffset();
-  b.progress(std::min(1, level.depth() - levelOffset) * levelFactor);
+  b.progress(std::max(1, level.depth() - levelOffset) * levelFactor);
 
   // invoke move() every move, even when the player is helpless:
   std::shared_ptr<monster> ptr = std::make_shared<M>(b);
