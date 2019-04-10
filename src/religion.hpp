@@ -92,6 +92,12 @@ public:
   // retrieve a reference to a specific deity:
   deity& getExact(const Element, const Domination, const Outlook) const;
 
+  // returns an oppesed path.
+  // Note that nonaligned opposes itself (nonaligned are never coaligned).
+  // NB: non-aligned monsters will attack each other
+  //  - so all monsters will attack an oppositely-aligned monster.
+  deity& getOpposed(const deity &) const;
+  
   // iterate over all deities:
   std::vector<deity>::iterator begin();
   std::vector<deity>::iterator end();

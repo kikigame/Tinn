@@ -185,6 +185,53 @@ deity& deityRepo::getExact(const Element element, const Domination domination, c
   }
   throw "Thine deities hath deserted ye. This is probably a bug.";
 }
+deity & deityRepo::getOpposed(const deity &d) const {
+  const Element element(d.element());
+  const Domination domination(d.domination());
+  const Outlook outlook(d.outlook());
+  Element oe;
+  switch (element) {
+  case Element::earth:// cold, dry
+    oe = Element::air; break;
+  case Element::air:  // hot, wet
+    oe = Element::earth; break;
+  case Element::fire: // hot, dry
+    oe = Element::water; break;
+  case Element::water:// cold, wet
+    oe = Element::fire; break;
+  case Element::plant:
+    oe = Element::time; break;
+  case Element::time:
+    oe = Element::none; break;
+  case Element::none:
+    oe = Element::none; break;
+  }
+  Domination od;
+  switch (domination) {
+  case Domination::concentration:
+    od = Domination::aggression;
+    break;
+  case Domination::aggression:
+    od = Domination::concentration;
+    break;
+  case Domination::none:
+    od = Domination::none;
+    break;
+  }
+  Outlook oo;
+  switch (outlook) {
+  case Outlook::kind:
+    oo = Outlook::cruel;
+    break;
+  case Outlook::cruel:
+    oo = Outlook::kind;
+    break;
+  case Outlook::none:
+    oo = Outlook::none;
+    break;
+  }
+  return getExact(oe, od, oo);
+}
 
 deityRepo& deityRepo::instance() {
   if (!instance_) {
