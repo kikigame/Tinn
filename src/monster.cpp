@@ -395,7 +395,7 @@ void monster::eat() {
   // if not, try our own inventory:
   if (!it) it = firstItem(isEdible);
   if (!it) {
-    if (isPlayer()) ioFactory::instance().message(L"There's nothing to eat here.");
+    if (isPlayer()) ioFactory::instance().message(L"There's nothing to consume here.");
     return;
   }
 
