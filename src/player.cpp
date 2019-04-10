@@ -83,6 +83,17 @@ player::player(playerBuilder &b) :
   auto end = job().questsEnd();
   for (auto pQ = begin; pQ != end; ++pQ)
     pQ->setupPlayer(*this);
+
+  // proper cheat mode: if you have the player name of "Taqris" (deity of trees), you get one of each stick:
+  if (name() == L"Taqris")
+    for (sharedAction<monster,monster>::key action = static_cast<sharedAction<monster,monster>::key>(0);
+	 action != sharedAction<monster,monster>::key::END;
+	 action = static_cast<sharedAction<monster,monster>::key>(static_cast<int>(action)+1)) {
+      auto &wand = createWand(action);
+      wand.enchant(10);
+      addItem(wand);
+    }
+
 }
 
 player::~player() {}
