@@ -18,7 +18,7 @@ size_t choicePrompt(const io &ios, const std::wstring &prompt, const std::wstrin
 		    const std::wstring &extraHelp, size_t offset) {
   unsigned int res, i;
   size_t numChoices = choices.size() - offset;
-  bool hasMoreChoices = numChoices > 9;
+  bool hasMoreChoices = numChoices > 8;
   size_t maxInput = (hasMoreChoices) ? 9 : numChoices;
   if (hasMoreChoices) numChoices = 8;
   do {
@@ -51,7 +51,7 @@ T io::choice(const std::wstring &prompt, const std::wstring &help,
   do {
     choice = choicePrompt(*this, prompt,help,choices,extraHelp,offset);
     res = choice + offset;
-    if (choice == 9 && res < choices.size()) offset += 9;
+    if (choice == 9 && res < choices.size()) offset += 8;
   } while (choice == 9 && res < choices.size());
   auto rtn = choices.begin();
   for (unsigned int i=1; i < res; ++i) ++rtn;
