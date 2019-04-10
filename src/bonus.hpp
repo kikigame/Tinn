@@ -16,6 +16,7 @@ public:
   // create a non-bonus, non-penalty (ie the default state)
   bonus();
   bool operator == (const bonus & rhs) const;
+  bool operator != (const bonus & rhs) const;
   bool operator > (const bonus & rhs) const;
   bool operator < (const bonus & rhs) const;
   bonus operator + (const bonus & rhs) const;

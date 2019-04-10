@@ -27,6 +27,9 @@ bonus::bonus(const bonus & rhs) :
 bool bonus::operator == (const bonus & rhs) const {
   return bonus_ == rhs.bonus_ && penalty_ == rhs.penalty_;
 }
+bool bonus::operator != (const bonus & rhs) const {
+  return !(bonus_ == rhs.bonus_ && penalty_ == rhs.penalty_);
+}
 bool bonus::operator > (const bonus & rhs) const {
   if (bonus_ && !rhs.bonus_) return true;
   if (!bonus_ && !penalty_ && rhs.penalty_) return true;
