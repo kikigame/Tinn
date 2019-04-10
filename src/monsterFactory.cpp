@@ -43,6 +43,7 @@ void monsterBuilder::maxDamage(unsigned char s) { maxDamage_  = s; }
 void monsterBuilder::male(unsigned char s) { male_   = s; }
 void monsterBuilder::female(unsigned char s) { female_  = s; }
 void monsterBuilder::align(const deity &a) { align_  = &a; }
+void monsterBuilder::alignAgainst(const deity &a) { align_  = &(deityRepo::instance().getOpposed(a)); }
 void monsterBuilder::type(const monsterType &t) { 
   // type also sets various fields if not already set
   type_  = &t; 

@@ -259,6 +259,7 @@ public:
   void male(unsigned char m);
   void female(unsigned char f);
   void align(const deity & d);
+  void alignAgainst(const deity &d); // align to opposite of d
   void type(const monsterType & t);
   void highlight();
   void onDeath(std::function<void()>);
