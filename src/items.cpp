@@ -633,7 +633,7 @@ public:
     return rtn;
   }
   // when a bottle is destroyed, its contents are revealed:
-  virtual void destroy() {
+  virtual bool destroy() {
     optionalRef<item> c = content();
     auto &ios =ioFactory::instance();
     if (!c) {
@@ -666,7 +666,7 @@ public:
       }
     }
     if (content()) throw L"Destroying bottle without losing its contents!";
-    basicItem::destroy();
+    return basicItem::destroy();
   }
 private:
 // if we were a ship in a bottle, on which square must we launch it?
@@ -883,8 +883,9 @@ public:
     ios.longMsg(msg);
     return item::useResult::SUCCESS;
   }
-  virtual void destroy() {
+  virtual bool destroy() {
     holder().addItem(createIou(amount_, whom_, service_));
+    return false;
   }
   virtual bool isBlessed() { return false;}
   virtual bool isCursed() { return true;}

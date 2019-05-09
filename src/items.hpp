@@ -100,7 +100,7 @@ public:
   virtual void enchant(int enchantment) = 0; // may be negative
 
   // destroy an item
-  virtual void destroy();
+  virtual bool destroy();
 
   enum class useResult {
     SUCCESS, // okay; can use another item
@@ -141,7 +141,7 @@ private:
   // what are we *explicitly* proof against?
   // something may be proof against a material even with no damage track; this may
   // become useful in later development (eg transferring proofs between objects or
-  // polymorping the type and/or material of the object). Generally the existance
+  // polymorphing the type and/or material of the object). Generally the existance
   // of a damage track should be checked first.
   std::set<damageType> proof_;
   std::bitset<NUM_FLAGS> flags_;

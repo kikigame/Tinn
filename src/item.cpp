@@ -34,7 +34,7 @@ item::equipType item::equippable() const {
   return equipType::none; 
 }
 // destroy an item in inventory
-void item::destroy() {
+bool item::destroy() {
   if (holder().contains(*this) )
     holder().destroyItem(*this);
   else

@@ -164,15 +164,85 @@ public:
     renderedAction(name, description) {};
   virtual ~comedyAction() {}
   virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+    auto &io = ioFactory::instance();
+    const bool onSelf = &source == &target;
     // perform the first applicable effect:
     // - trousers fall down (deequip & become dropped)
+    optionalRef<item> trousers = target.inSlot(slotType::shorts);
+    if (trousers) {
+      target.unequip(trousers.value());
+      std::wstring msg = L"Falling " + (trousers.value().name() + L"! Hahaha!");
+      if (cursed && onSelf)
+	trousers.value().sexUp(false);
+      else
+	target.drop(trousers.value());
+      if (blessed && !onSelf) {
+	trousers.value().strike(damageType::edged);
+	msg += L" Rrrrippp!";
+      }
+      io.longMsg(msg);
+      return true;
+    }
     // - primary weapon turns to flowers (50% chance sexy, not normally equippable)
+    auto weapon = target.inSlot(slotType::primary_weapon);
+    if (weapon) {
+      // TODO: flowers & polymorphing objects
+      // no polymorphing objects yet, so let's just destroy it with a silly message:
+      std::wstring name = weapon.value().name();
+      if (weapon.value().destroy()) {
+	auto pronoun = (&source == &target) ? L"Your " : L"Their ";
+	io.longMsg(pronoun + name + L"\n\tbecomes a beautiful bouquet! Hahaha!");
+	return true;
+      }
+    }
     // - fall over (1% damage, stun for 1 turn)
-    // - summon another monster to chase them
+    auto speedy = target.abilities().speedy();
+    if (speedy != bonus(false)) {
+      target.intrinsics().speedy(false);
+      if (target.abilities().speedy() != speedy) {
+	target.fall(1);
+	// TODO: stunning for limited time?
+	std::wstring whowhat = (&source == &target) ? L"Your fall" : (target.name() + L" falls");
+	io.longMsg(L"Whoops! " + whowhat + L" over! Hahaha!");
+	return true;
+      }
+    }
     // - cream pie in face to blind them (ref:Nethack, keystone kops)
+    if (target.abilities().see()) {
+      target.intrinsics().see(false);
+      if (!target.intrinsics().see()) {
+	// TODO: equipped creampie of some sort? Too nethack to wipe off?
+	std::wstring msg = (&source == &target) ? L"cream pie to the eyes! Hahaha!" :
+	  (target.name() + L": cream pie to the eyes! Hahaha!");
+	io.longMsg(msg);
+	return true;
+      }
+    }
     // - levitation (ref: Mary Poppins)
-    // - "there's glitter everywhere". Add glittery adjective to corpse.
-    throw "Not implemented TODO!";
+    if (!target.abilities().fly()) {
+      target.intrinsics().fly(true);
+      if (target.abilities().fly()) {
+	std::wstring msg = (&source == &target) ? (target.name() + L": come down at once! Hahaha!") :
+	  L"Come down from there at once! Hahaha!";
+	io.longMsg(msg);
+	return true;
+      }
+    }
+    // - "there's glitter everywhere". Add glittery adjective to monster/corpse. TODO: Best way to do this?
+    // - summon another monster to chase them
+    level &l = target.curLevel();
+    coord pos = l.posOf(target);
+    monsterBuilder b(true);
+    b.startOn(l);
+    b.male(100 - target.male().cur());
+    b.female(100 - target.male().cur());
+    b.alignAgainst(target.align());
+    auto &zombie = monsterTypeRepo::instance()[monsterTypeKey::zombie];
+    b.type(zombie);
+    auto mon = zombie.spawn(l, b);
+    l.moveTo(*mon, pos); // TODO: Chase somehow?
+    io.longMsg(L"Yakety Sax! Hahaha!"); // Ref: Benny Hill (in turn referencing Keystone Cops)
+    return true;
   }
 };
 
@@ -540,6 +610,8 @@ L"The action of petrification is to cause someone to become stiff or like\n"
 L"Charming a monster will make it less inclined to attack you, and more\n"
 "inclined to approach. The effectiveness of the charm depends on the charmer's\n"
 "physical beauty."));
+	rtn[action::key::comedy] = std::unique_ptr<action>(new comedyAction(L"comedy",
+L"Always fun for a floor show. Use with caution"));
 	return rtn;
   }
   static action &get(const typename action::key k) {
@@ -956,7 +1028,7 @@ L"When something with this property is equipped, you will be able to move twice\
       (new intrinsicsBonusAction(&monsterAbilities::speedy, bonus(false), bonus(),
 			   L"sloth",
 L"When something with this property is equipped, you will be able to move half\n"
-"as fast as normal."));
+"as fast as normal."));    
     return rtn;
   }
 };

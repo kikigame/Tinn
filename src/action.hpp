@@ -108,6 +108,8 @@ class sharedAction<monster, monster>{
     charm,
     // create a shop on the fly with the inventory of the given monster
     popup_shop,
+    // a variety of hilarious hijinks
+    comedy,
     END
   };
 };
