@@ -50,7 +50,7 @@ public:
   virtual void swim(const bool canSwim) = 0;
   virtual const bool swim() const = 0;
   // can you fly?
-  virtual void fly(const bool canSwim) = 0;
+  virtual void fly(const bool canFly) = 0;
   virtual const bool fly() const = 0;
   // affected by petrify/fear actions? (false = double effect)
   virtual void fearless(const bonus &fearless) = 0;
@@ -64,7 +64,7 @@ public:
   // does *this* monster have a speed bonus/penalty
   virtual void speedy(const bonus & fast) = 0;
   virtual const bonus speedy() const = 0;
-  // adjust the given enum based on the speed bonus/penalty
+  // adjust the passed enum based on the speed bonus/penalty
   virtual speed adjust(const speed & fastness) = 0;
 };
 

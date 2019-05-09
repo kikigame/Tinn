@@ -45,7 +45,7 @@ void monsterBuilder::female(unsigned char s) { female_  = s; }
 void monsterBuilder::align(const deity &a) { align_  = &a; }
 void monsterBuilder::alignAgainst(const deity &a) { align_  = &(deityRepo::instance().getOpposed(a)); }
 void monsterBuilder::type(const monsterType &t) { 
-  // type also sets various fields if not already set
+  // type also sets various fields if not already 
   type_  = &t; 
   if (align_ == NULL) align_ = *rndPick(t.alignment().begin(), t.alignment().end());
   if (strength_ == 0) strength_ = type_->iStrength();

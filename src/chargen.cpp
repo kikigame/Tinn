@@ -82,7 +82,7 @@ playerBuilder chargen() {
 	{Element::none, L"None of the above" }
 	 });
     auto &repo = deityRepo::instance();
-    deity & path = repo.getExact(element, domination, outlook);
+    const deity & path = repo.getExact(element, domination, outlook);
     ios.clear();
 
     if (path.nonaligned()) {
