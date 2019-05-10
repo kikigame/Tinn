@@ -228,7 +228,15 @@ public:
 	return true;
       }
     }
-    // - "there's glitter everywhere". Add glittery adjective to monster/corpse. TODO: Best way to do this?
+    // - "there's glitter everywhere". Add glittery adjective to monster/corpse.
+    auto adj = target.adjectives();
+    const auto gl = L"glittery";
+    if (std::find(adj.begin(), adj.end(), gl) == adj.end()) {
+      io.longMsg(L"there's glitter everywhere!");
+      source.addDescriptor(gl);
+      target.addDescriptor(gl);
+      return true;
+    }
     // - summon another monster to chase them
     level &l = target.curLevel();
     coord pos = l.posOf(target);
