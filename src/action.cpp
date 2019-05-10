@@ -374,9 +374,34 @@ public:
     renderedAction(name, description) {}
   virtual ~popupShopAction() {}
   virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
-    if (target.isPlayer())
-      // TODO: Reverse shop; Monsters demand to shop with the player!
-      popUpShop(target, source);
+    if (target.isPlayer()) {
+      // Reverse shop; Monsters demand to shop with the player!
+      auto &io = ioFactory::instance();
+      if (source.size() == 0 && target.size() == 0) {
+	io.longMsg(L"You trade insults with " + source.name());
+      } else if (source.size() == 0) {
+	io.longMsg(source.name() + L" can't barter with nothing to spend.");
+      } else if (target.size() == 0) {
+	io.longMsg(source.name() + L" tries to trade, but you can't pay!");
+      } else {
+	auto &sItem = source.firstItem([](item &i) { return true; }).value();
+	auto &tItem = source.firstItem([](item &i) { return true; }).value();
+	const auto tItemName = tItem.name();
+	const auto sItemName = sItem.name();
+	auto tOk = target.addItem(sItem);
+	auto sOk = target.addItem(tItem);
+	if (tOk && sOk) {
+	  io.longMsg(L"You trade your " + tItemName + L" for the " + sItemName + L" of the " + source.name());
+	} else if (sOk) {
+	  io.longMsg(source.name() + L" seems disappointed to present: " + tItemName);
+	} else if (tOk) {
+	  io.longMsg(L"You seem disappointed to present to " + source.name() + L" your " + sItemName);
+	} else {
+	  io.longMsg(L"You are both disappointed not to trade.");
+	}
+      }
+    }
+    //      popUpShop(target, source);
     else if (source.isPlayer())
       popUpShop(source,target);
     else
