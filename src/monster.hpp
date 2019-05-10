@@ -16,9 +16,9 @@
 #include "bonus.hpp"
 #include "damage.hpp"
 #include "equippable.hpp"
+#include "hasAdjectives.hpp"
 
 #include <memory> // shared_ptr
-#include <string>
 #include <list>
 
 class monsterImpl;
@@ -42,7 +42,7 @@ struct attackResult {
 // I'm not using pImpl here, because pain.
 // Sutter (in Effective C++) reminds me that nothing virtual should go in the pImpl, as the pImpl can't be
 // effectively used as a base or derrived class.
-class monster : public renderable, public itemHolder, public equippable {
+class monster : public renderable, public itemHolder, public equippable, public virtual hasAdjectives {
 private:
   level *level_; // raw pointer to avoid cyclic reference; level owns its monsters
   bool highlight_;
@@ -64,6 +64,7 @@ private:
   // which monsters have charmed this one?
   std::list<monster*> charmedBy_;
   std::vector<std::function<void()>> onDeath_;
+  std::vector<std::wstring> extraAdjectives_;//usually empty.
 protected:
   // create monster by builder, with specific weapon slots (used internally by dragons)
   monster(monsterBuilder & b, std::vector<const slot *>slots);
@@ -106,6 +107,7 @@ public:
   // what about the monster's intrinsics?
   // NB: This is only the intrinsic properties; a monster may also gain these powers from extrinsics (equipped items)
   monsterIntrinsics & intrinsics();
+  const monsterIntrinsics & intrinsics() const;
 
   // monster abilities. Based on intrinsics, but modified by items to add, remove or change things.
   monsterAbilities & abilities();
@@ -201,6 +203,12 @@ public:
   // overridden to recalculate stats
   virtual bool unequip(item &item);
 
+  // adjectives
+  std::vector<std::wstring> adjectives() const;
+
+  // adds an adjective
+  void addDescriptor(std::wstring);
+  
 protected:
 
   // given a damage figue of damage of a given type,

@@ -60,8 +60,12 @@ const wchar_t monster::render() const { // delegate to type by default
 }
 
 std::wstring monster::name() const {
+  std::wstring buffer;
+  for (auto a : adjectives())
+    buffer += a + L" ";
   auto damage = damage_.max();
-  return type_.name(damage);
+  buffer += type_.name(damage);
+  return buffer;
 }
 
 bool monster::highlight() const {
@@ -195,6 +199,10 @@ bool monster::isFemale() const {
 }
 
 monsterIntrinsics & monster::intrinsics() {
+  return intrinsics_;
+}
+
+const monsterIntrinsics & monster::intrinsics() const {
   return intrinsics_;
 }
 
@@ -470,4 +478,45 @@ std::array<const slot *, 2> monster::forceUnequip(item &item) {
   dodge_ += equippable::dodBonus() - dodBonus;
   item.onUnequip(*this);
   return rtn;
+}
+
+extern std::vector<damageType> allDamageTypes;
+
+std::vector<std::wstring> monster::adjectives() const {
+  std::vector<std::wstring> rtn;
+  // naked - humanoid without clothing
+  // sexy - high appearance
+  // hungry/charmed etc aren't included because they would be copied to the corpse.
+  
+  // injury types - similar to item
+  auto &dr = damageRepo::instance();
+  const materialType &m = material();
+  for (auto dt : allDamageTypes) {
+    if (intrinsics().proof(dr[dt])) { // don't consider proof based on equipment, as they'll lose this as a corpse.
+      // adjective for being (this material) being proof to this damage type:
+      auto ptr = dr[dt].proofAdj(m);
+      if (ptr != nullptr)
+	rtn.push_back(std::wstring(ptr));
+      continue;
+    }
+  }
+
+  auto &inj = injury();
+  if (!inj.isFull()) {
+    std::wstring adj(L"injured");
+    auto injPc = inj.pc(); // 0-100
+    if (injPc > 80 || inj.cur() == 0) {} 
+    else if (injPc > 60) rtn.push_back(std::wstring(L"barely ") + adj);
+    else if (injPc > 40) rtn.push_back(std::wstring(adj));
+    else if (injPc > 20) rtn.push_back(std::wstring(L"very ") + adj);
+    else if (injPc > 00) rtn.push_back(std::wstring(L"thoroughly ") + adj);
+  }
+
+  rtn.insert(rtn.end(), extraAdjectives_.begin(), extraAdjectives_.end());
+  return rtn;
+}
+
+void monster::addDescriptor(std::wstring desc) {
+  if (std::find(extraAdjectives_.begin(), extraAdjectives_.end(), desc) != extraAdjectives_.end())
+    extraAdjectives_.push_back(desc);
 }

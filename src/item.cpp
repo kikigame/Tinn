@@ -36,7 +36,7 @@ item::equipType item::equippable() const {
 // destroy an item in inventory
 bool item::destroy() {
   if (holder().contains(*this) )
-    holder().destroyItem(*this);
+    return holder().destroyItem(*this);
   else
     throw L"Item not in supplied container"; // should not fall through if procondition met
 }

@@ -10,10 +10,9 @@
 #include "itemholder.hpp"
 #include "slots.hpp"
 #include "action.hpp"
+#include "hasAdjectives.hpp"
 #include <algorithm>
 #include <memory>
-#include <string>
-#include <vector>
 #include <bitset>
 #include <set>
 
@@ -45,7 +44,7 @@ public:
 /*
  * Pure-virtual base class to define an in-game object
  */
-class item : public renderable, public virtual shared_item {
+class item : public renderable, public virtual shared_item, public virtual hasAdjectives {
   friend class itemHolderMap;
 public:
   item () = default;
@@ -195,7 +194,8 @@ class deity;
 item & createHolyBook(const deity &align);
 
 // corpses need especial handling:
-item & createCorpse(const monsterType &mt, const unsigned char maxDamage);
+item & createCorpse(const monster &m);
+item & createCorpse(const monsterType &mt, const unsigned char maxDamage); //  as we shouldn't need a monster to create an item.
 
 // create a random item suitable for the given level depth
 item & createRndItem(const int depth, bool allowLiquids = false);

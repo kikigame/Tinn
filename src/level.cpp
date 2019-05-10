@@ -723,7 +723,7 @@ public:
 	h.addItem(i);
       });
     // corpse is added
-    auto &corpse = createCorpse(m.type(), m.injury().max());
+    auto &corpse = createCorpse(m);
     holder(c).addItem(corpse);
     // monster is removed
     removeMonster(m);

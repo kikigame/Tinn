@@ -1015,6 +1015,7 @@ private:
   const monsterType &type_;
   // how advanced was this in life?
   const unsigned char maxDamage_;
+  std::vector<std::wstring> extraAdjectives_;
 public:
   corpse( const monsterType &of, const unsigned char maxDamage) :
     basicItem(itemTypeRepo::instance()[itemTypeKey::corpse]),
@@ -1023,6 +1024,13 @@ public:
     // TODO: should any monster types be proof against damage? Already (eg) wet?
     // TODO: incubus & succubus should be sexy. After all, they are confident...
     // if (monsterType == monsterType::incubus || monsterType == monsterType::succubus) sexUp(true);
+  }
+  corpse (const monster &m) :
+    basicItem(itemTypeRepo::instance()[itemTypeKey::corpse]),
+    type_(m.type()),
+    maxDamage_(m.injury().max()) {
+    auto extraAdj = m.adjectives();
+    extraAdjectives_.insert(extraAdjectives_.end(), extraAdj.begin(), extraAdj.end());
   }
   virtual ~corpse() {};
   virtual materialType material() const {
@@ -1902,6 +1910,12 @@ void dummy() {
 
 item & createHolyBook(const deity &align) {
   auto rtn = new holyBook(align);
+  itemHolderMap::instance().enroll(*rtn); // takes ownership
+  return *rtn;
+}
+
+item &createCorpse(const monster &m) {
+  auto rtn = new corpse(m);
   itemHolderMap::instance().enroll(*rtn); // takes ownership
   return *rtn;
 }
