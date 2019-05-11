@@ -97,6 +97,11 @@ const monsterType& monster::type() const { return type_; }
 
 const deity &monster::align() const { return *align_; }
 
+/*
+ * This is the public method called whenever one monster attacks another.
+ * For the player, we always want this to be a plain attack or a monster attack (TODO), if any.
+ * For other monsters, we should also consider any applicable item attacks.
+ */
 const attackResult monster::attack(monster &target) {
   if (std::find(charmedBegin(), charmedEnd(), &target) != charmedEnd()
       && dPc() < target.appearance().cur())

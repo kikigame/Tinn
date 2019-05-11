@@ -377,8 +377,6 @@ public:
 
 
   // dead creatures are removed from the level (shared_ptr).
-  // aggressor can't die, so can be passed as references
-  // target can, so needs to be a shared_ptr here.
   void attack(monster &aggressor, monster &target) {
     for (auto z : zonesAt(posOf(aggressor), true))
       if (!z->onAttack(aggressor, target)) return;
@@ -398,6 +396,40 @@ public:
     else ioFactory::instance().message(rtn);
   }
 
+    optionalRef<item> thrownWeapon(monster &m) {
+    if (!m.abilities().throws()) return optionalRef<item>();
+    return m.firstItem([&m](item &i){ return i.render() == L'¬'; });
+  }
+  optionalRef<item> zapItem(monster &m) {
+    if (!m.abilities().zap()) return optionalRef<item>();
+    return m.firstItem([&m](item &i){ return i.enchantment() > 0 && i.render() == '|'; });
+  }
+
+
+  optionalRef<monster> lineOfSightTarget(monster &m, const coord  &mPos) {
+    if (!m.abilities().see()) return optionalRef<monster>(); // can't see targets
+    for (auto it = monsters_.begin(); it != monsters_.end(); ++it) {
+      const coord &tPos = it->first;
+      std::shared_ptr<monster> t = it->second; // target monster
+      // don't self-flagellate
+      if (&(*t) == &m) continue;
+      // only non-coaligned monsters attack
+      if (m.align().coalignment(t->align()) >= 3) continue;
+      // never throw into a temple (let's say any zone for ease)
+      auto zones = zonesAt(posOf(*t), true);
+      if (zones.begin() != zones.end()) continue;
+      // skip anyone charming
+      if (std::find(m.charmedBegin(), m.charmedEnd(), &(*t)) != m.charmedEnd()) continue;
+      // check for a line of movement
+      coord c;
+      for (c = mPos; c != tPos; c = c.towards(tPos))
+	if (!m.abilities().move(terrainAt(c)))
+	  break; // give up
+      if (c == tPos) return optionalRef<monster>(*t); // found one!
+    }
+    return optionalRef<monster>(); // no targets found
+  }
+
   void moveOrFight(monster &m, const ::dir &dir, bool avoidTraps) {
     coord c = posOf(m);
     coord cc = c.inDir(dir);
@@ -407,6 +439,39 @@ public:
     auto mn = monsters_.find(cc);
     while (mn != monsters_.end()) {
       attack(m, *(mn->second)); // can't move into monster
+      return;
+    }
+    // if the monster can throw AND has a thrown item, or can zap AND has a wand, then we should check for monsters in line of sight.
+    // if there are any, then attack that way.
+    auto thrown = thrownWeapon(m);
+    auto zapped = zapItem(m);
+    auto target = lineOfSightTarget(m,c);
+    if ((thrown || zapped) && target && dPc() <= 40 /* ~ 33% chance */ ) {
+      if (thrown || (thrown && zapped && dPc() <= 50)) {
+	// throw thrown.value() at target
+	auto missile = thrown.value().name();
+	auto dt = thrown.value().weaponDamage(false); // throwing doesn't consume charges.
+	auto missileWeight = thrown.value().weight();
+	// TODO: extra % chance of missing?
+	bool success = (holder(posOf(target.value())).addItem(thrown.value()));
+	if (success) {
+	  if (target.value().isPlayer())
+	    ioFactory::instance().message(m.name() + L" throws " + missile + L" at you!");
+	  else
+	    ioFactory::instance().message(m.name() + L" throws " + missile + L" at " + target.value().name());
+	} else {
+	  ioFactory::instance().message(m.name() + L" fumbles with " + missile);
+	}
+	unsigned char pc = static_cast<unsigned char>(100 * missileWeight / target.value().totalWeight());
+	int damage = target.value().wound(m, pc, damageRepo::instance()[dt]);
+	if (damage == 0)
+	  ioFactory::instance().message(m.name() + L" misses!");
+	else
+	  ioFactory::instance().message(m.name() + L" hits!");
+      } else {
+	// zap zapped.value() at a target (might not be the same one; meh)
+	zapped.value().use();
+      }
       return;
     }
     move(m, dir, avoidTraps);
