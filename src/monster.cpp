@@ -426,6 +426,12 @@ bool monster::setCharmedBy(monster & mon) {
   if (m == this) return false;
   if (std::find(charmedBy_.begin(), charmedBy_.end(), m) != charmedBy_.end()) return false;
   charmedBy_.push_back(m);
+  // if the monster dies, we must no longer be charmed by it, as the pointer becomes invalid.
+  // NB: we can still remove an invalid pointer by value.
+  mon.onDeath_.emplace_back(([this, m]() {
+      // m in invalid pointer, so we can't referenece it, but can remove it:.
+	charmedBy_.erase(std::remove(charmedBy_.begin(), charmedBy_.end(), m), charmedBy_.end());
+      }));
   return true;
 }
 
