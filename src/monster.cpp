@@ -511,11 +511,11 @@ std::vector<std::wstring> monster::adjectives() const {
   if (!inj.isFull()) {
     std::wstring adj(L"injured");
     auto injPc = inj.pc(); // 0-100
-    if (injPc > 80 || inj.cur() == 0) {} 
-    else if (injPc > 60) rtn.push_back(std::wstring(L"barely ") + adj);
+    if (injPc < 20 || inj.cur() == inj.max()) {} 
+    else if (injPc > 80) rtn.push_back(std::wstring(L"thoroughly ") + adj);
+    else if (injPc > 60) rtn.push_back(std::wstring(L"very ") + adj);
     else if (injPc > 40) rtn.push_back(std::wstring(adj));
-    else if (injPc > 20) rtn.push_back(std::wstring(L"very ") + adj);
-    else if (injPc > 00) rtn.push_back(std::wstring(L"thoroughly ") + adj);
+    else if (injPc > 20) rtn.push_back(std::wstring(L"barely ") + adj);
   }
 
   rtn.insert(rtn.end(), extraAdjectives_.begin(), extraAdjectives_.end());
