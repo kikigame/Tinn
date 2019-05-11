@@ -162,6 +162,9 @@ public:
   level operator =(level &&other) = delete;
 
   operator const renderByCoord&() const;
+
+  // find a non-coaligned monster in line of sight:
+  optionalRef<monster> lineOfSightTarget(monster &m);
 };
 
 # endif // ndef  LEVEL_HPP__

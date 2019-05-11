@@ -399,7 +399,10 @@ public:
 
     optionalRef<item> thrownWeapon(monster &m) {
     if (!m.abilities().throws()) return optionalRef<item>();
-    return m.firstItem([&m](item &i){ return i.render() == L'¬'; });
+    return m.firstItem([&m](item &i){
+	auto pUse = dynamic_cast<useInCombat*>(&i);
+	return pUse && i.render() == L'¬' && pUse->shouldUse(m);
+      });
   }
   optionalRef<item> zapItem(monster &m) {
     if (!m.abilities().zap()) return optionalRef<item>();
@@ -449,31 +452,13 @@ public:
     // if there are any, then attack that way.
     auto thrown = thrownWeapon(m);
     auto zapped = zapItem(m);
-    auto target = lineOfSightTarget(m,c);
+    auto target = lineOfSightTarget(m,c); // we only really care if any target exists at this point.
     if ((thrown || zapped) && target && dPc() <= 40 /* ~ 33% chance */ ) {
       if (thrown || (thrown && zapped && dPc() <= 50)) {
-	// throw thrown.value() at target
-	auto missile = thrown.value().name();
-	auto dt = thrown.value().weaponDamage(false); // throwing doesn't consume charges.
-	auto missileWeight = thrown.value().weight();
-	// TODO: extra % chance of missing?
-	bool success = (holder(posOf(target.value())).addItem(thrown.value()));
-	if (success) {
-	  if (target.value().isPlayer())
-	    ioFactory::instance().message(m.name() + L" throws " + missile + L" at you!");
-	  else
-	    ioFactory::instance().message(m.name() + L" throws " + missile + L" at " + target.value().name());
-	} else {
-	  ioFactory::instance().message(m.name() + L" fumbles with " + missile);
-	}
-	unsigned char pc = static_cast<unsigned char>(100 * missileWeight / target.value().totalWeight());
-	int damage = target.value().wound(m, pc, damageRepo::instance()[dt]);
-	if (damage == 0)
-	  ioFactory::instance().message(m.name() + L" misses!");
-	else
-	  ioFactory::instance().message(m.name() + L" hits!");
+	// lob/fire at the target:
+	dynamic_cast<useInCombat&>(thrown.value()).useForCombat();
       } else {
-	// zap zapped.value() at a target (might not be the same one; meh)
+	// zap zapped.value() at a target
 	zapped.value().use();
       }
       return;
@@ -1367,6 +1352,9 @@ level::zonesAt(const coord & c) {
 
 bool level::stillOnLevel(const monster *mon) const {
   return pImpl_->stillOnLevel(mon);
+}
+optionalRef<monster> level::lineOfSightTarget(monster &m) {
+  return pImpl_->lineOfSightTarget(m, posOf(m));
 }
 
 

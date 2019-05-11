@@ -1309,7 +1309,7 @@ public:
 
 
 template<bool singleShot, bool lineOfSight, unsigned char amount>
-class thrownWeapon : public basicWeapon {
+class thrownWeapon : public basicWeapon, public useInCombat {
 public:
   thrownWeapon(const itemType & type,  const damageType damage) :
     basicWeapon(type, damage) {}
@@ -1349,6 +1349,64 @@ public:
     else
       level.holder(tPos).addItem(*this);
     return rtn > 0 ? item::useResult::DONE : item::useResult::FAIL;
+  }
+  virtual bool shouldUse(const monster &m) const {
+    return true; // all missiles are usable in combat.
+  }
+  virtual bool useForCombat() {
+    // nb: similar to actionMonsterMixin::fire()
+    // TODO: damage modifiers for blessed/cursed
+    auto holder = &(shared_from_this()->holder());
+    monster *m;
+    do {
+      m = dynamic_cast<monster *>(holder);
+      item * it = dynamic_cast<item *>(holder);
+      if (it) holder = &(it->holder());
+    } while (m == nullptr);
+    optionalRef<monster> target;
+    if (m->isPlayer()) {
+      wchar_t dir;
+      // prompt the user for a monster to fire on
+      auto &io = ioFactory::instance();
+      dir = io.dirPrompt();
+      switch (dir) {
+      case L'<': case L'>':
+	break; // you will miss
+      case L'.':
+	target = optionalRef<monster>(*m); // firing at onesself
+	break;
+      default:
+	target = m->curLevel().findMonster(*m, dir);
+	break;
+      }
+      if (!target)
+	io.message(L"You don't hit even one monster.");
+    } else {
+      // select a monster to fire on
+      auto &lvl = m->curLevel();
+      auto target = lvl.lineOfSightTarget(*m);
+      auto missile = name();
+      auto dt = weaponDamage(false); // throwing doesn't consume charges.
+      auto missileWeight = weight();
+      // TODO: extra % chance of missing?
+      bool success = (lvl.holder(lvl.posOf(target.value())).addItem(*this));
+      if (success) {
+	if (target.value().isPlayer())
+	  ioFactory::instance().message(m->name() + L" throws " + missile + L" at you!");
+	else
+	  ioFactory::instance().message(m->name() + L" throws " + missile + L" at " + target.value().name());
+      } else {
+	ioFactory::instance().message(m->name() + L" fumbles with " + missile);
+      }
+      unsigned char pc = static_cast<unsigned char>(100 * missileWeight / target.value().totalWeight());
+      int damage = target.value().wound(*m, pc, damageRepo::instance()[dt]);
+      if (damage == 0)
+	ioFactory::instance().message(m->name() + L" misses!");
+      else
+	ioFactory::instance().message(m->name() + L" hits!");
+      return success;
+    }
+    return target;
   }
 };
 
