@@ -107,6 +107,10 @@ const attackResult monster::attack(monster &target) {
       && dPc() < target.appearance().cur())
     return attackResult(0, L"seems to be under a charm");
 
+  if (!isPlayer()) {
+    // TODO: non-player monsters may choose to use a monster ability instead
+  }
+  
   // We hit (unless dodged) the target if D% < fighting, or always on a roll of 0.
   auto dHit = dPc();
   unsigned char f = fighting().cur();

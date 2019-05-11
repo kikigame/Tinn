@@ -47,6 +47,9 @@ public:
     }
     return false;
   }
+  virtual bool aggressive() const { return true; }
+  virtual bool heals() const { return false; }
+  virtual bool buffs() const { return false; }
 };
 
 // basic weapon damage action
@@ -70,6 +73,9 @@ public:
       io.message(name + L" takes " + std::wstring(d.name()) + L" damage.");
     return rtn;
   }
+  virtual bool aggressive() const { return true; }
+  virtual bool heals() const { return false; }
+  virtual bool buffs() const { return false; }
 };
 
 // swap places with the given monster's location. All monsters and items on squares are moved.
@@ -110,6 +116,9 @@ public:
 
     return true;
   }
+  virtual bool aggressive() const { return true; } // use in combat.
+  virtual bool heals() const { return false; }
+  virtual bool buffs() const { return false; }
 };
 
 // move the target towards the main
@@ -142,6 +151,9 @@ public:
     }
     return rtn;
   }
+  virtual bool aggressive() const { return true; } // use in combat
+  virtual bool heals() const { return false; }
+  virtual bool buffs() const { return false; }
 };
 
 // forcably cause the target monster to consume some sprouts
@@ -155,6 +167,9 @@ public:
     source.addItem(sprouts);
     return target.eat(sprouts, true);
   }
+  virtual bool aggressive() const { return false; }
+  virtual bool heals() const { return true; }
+  virtual bool buffs() const { return false; }
 };
 
 // do something funny, and possibly slightly inconvenient, to the target
@@ -252,6 +267,9 @@ public:
     io.longMsg(L"Yakety Sax! Hahaha!"); // Ref: Benny Hill (in turn referencing Keystone Cops)
     return true;
   }
+  virtual bool aggressive() const { return true; } // use in combat
+  virtual bool heals() const { return false; }
+  virtual bool buffs() const { return false; }
 };
 
 // make the target monster sad
@@ -266,6 +284,9 @@ public:
     // + reduce movement rate by 1 slot
     throw "Not implemented TODO!";
   }
+  virtual bool aggressive() const { return true; } // use in combat
+  virtual bool heals() const { return false; }
+  virtual bool buffs() const { return false; }
 };
 
 // move the target as far as possible (manhatten distance) from the source, 
@@ -296,6 +317,9 @@ public:
     // no message
     return level.posOf(target) == dPos;
   }
+  virtual bool aggressive() const { return true; } // use in combat
+  virtual bool heals() const { return false; }
+  virtual bool buffs() const { return false; }
 };
 
 // create a prison on the level, putting the target monster in it
@@ -316,6 +340,9 @@ public:
       return false;
     }
   }
+  virtual bool aggressive() const { return true; } // use in combat
+  virtual bool heals() const { return false; }
+  virtual bool buffs() const { return false; }
 };
 
 // repulse target by (movement speed + 1 square away from player, stopping at impassible)
@@ -343,6 +370,9 @@ public:
     tLevel.moveTo(target, tPos);
     return true;
   }
+  virtual bool aggressive() const { return true; } // use in combat
+  virtual bool heals() const { return false; }
+  virtual bool buffs() const { return false; }
 };
 
 // foocubi attacks
@@ -351,6 +381,9 @@ class foocubusAction : public sharedAction<monster, monster> {
 public:
   virtual ~foocubusAction() {}
   virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target);
+  virtual bool aggressive() const { return true; } // use in combat
+  virtual bool heals() const { return true; } // use if injured
+  virtual bool buffs() const { return true; } // sometimes
 };
 
 
@@ -359,11 +392,18 @@ class monsterItemAction : public renderedAction<monster, monster> {
 private:
   std::function<bool(item &)> filter_;
   std::function<void(item &)> apply_;
+  std::bitset<3> flags_;
 public:
   monsterItemAction(const wchar_t * const name, const wchar_t * const description,
-		  std::function<bool(item &)> filter, std::function<void(item &)> apply) :
+		    std::function<bool(item &)> filter, std::function<void(item &)> apply,
+		    bool aggressive, bool heals, bool buffs
+		    ) :
     renderedAction(name, description),
-    filter_(filter), apply_(apply) {}
+    filter_(filter), apply_(apply), flags_() {
+    flags_[0] = aggressive;
+    flags_[1] = heals;
+    flags_[2] = buffs;
+  }
   virtual ~monsterItemAction() {}
   virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
     auto t = target.firstItem(filter_);
@@ -371,6 +411,9 @@ public:
     apply_(t.value());
     return true;
   }
+  virtual bool aggressive() const { return flags_[0]; } // use in combat
+  virtual bool heals() const { return flags_[1]; }
+  virtual bool buffs() const { return flags_[2]; }
 };
 
 // defined in shop.cpp:
@@ -416,6 +459,9 @@ public:
       return false; // monsters don't bother shopping with each other. This would be a faff to write and not do anything for gameplay.
     return true;
   }  
+  virtual bool aggressive() const { return false; }
+  virtual bool heals() const { return false; }
+  virtual bool buffs() const { return false; }
 };
 
 class petrifyAction :  public renderedAction<monster, monster> {
@@ -435,6 +481,9 @@ public:
     a.entrap(turns);
     return true; // even cursed is always 1 turn
   }
+  virtual bool aggressive() const { return true; } // use in combat
+  virtual bool heals() const { return false; }
+  virtual bool buffs() const { return false; }
 };
 
 class charmAction : public renderedAction<monster, monster> {
@@ -454,6 +503,9 @@ public:
       ioFactory::instance().message(L"You find the " + source.name() + L" quite charming.");
     return true;
   }
+  virtual bool aggressive() const { return true; } // use in combat
+  virtual bool heals() const { return false; }
+  virtual bool buffs() const { return false; }
 };
 
 template<>
@@ -591,31 +643,31 @@ L"Some magical effects move the enemy away from you. Repulsion usually just\n"
 
 	rtn[action::key::curse_item] = std::unique_ptr<action>(new monsterItemAction(L"curse",
 L"A curse can prevent items from being dropped as well as reducing their effectiveness.",
-[](const item &i) {return !i.isCursed();}, [](item &i) {i.curse(true);}));
+[](const item &i) {return !i.isCursed();}, [](item &i) {i.curse(true);}, false, false, false));
 	rtn[action::key::uncurse_item] = std::unique_ptr<action>(new monsterItemAction(L"remove curse",
 L"Curses on items can be difficult to remove, but a specialist tool can sometimes be effective.",
-[](const item &i) {return i.isCursed();}, [](item &i) {i.curse(false);}));
+[](const item &i) {return i.isCursed();}, [](item &i) {i.curse(false);}, false, false, true));
 	rtn[action::key::bless_item] = std::unique_ptr<action>(new monsterItemAction(L"bless",
 L"A blessing can increase the effectiveness or utility of an item.",
-[](const item &i) {return !i.isBlessed();}, [](item &i) {i.bless(true);}));
+[](const item &i) {return !i.isBlessed();}, [](item &i) {i.bless(true);}, false, false, true));
 	rtn[action::key::unbless_item] = std::unique_ptr<action>(new monsterItemAction(L"remove blessing",
 L"Blessings on items can be difficult to remove, but a specialist tool can sometimes be effective.",
-[](const item &i) {return i.isBlessed();}, [](item &i) {i.bless(false);}));
+[](const item &i) {return i.isBlessed();}, [](item &i) {i.bless(false);}, false, false, false));
 	rtn[action::key::enchant_item] = std::unique_ptr<action>(new monsterItemAction(L"enchantment",
 L"An active item can be enchanted to reveal or recover its effect.\n" 
 "A weapon or armour can be enchanted to increase its effectiveness.",
-[](const item &i) {return true;}, [](item &i) {i.enchant(dPc() / 20);})); //TODO: should this match shop's blessed/cursed rules?
+[](const item &i) {return true;}, [](item &i) {i.enchant(dPc() / 20);}, false, false, true)); //TODO: should this match shop's blessed/cursed rules?
 	rtn[action::key::disenchant_item] = std::unique_ptr<action>(new monsterItemAction(L"disenchantment",
 L"An active item can be disenchanted to hide or limit its effect.\n"
 "A weapon or armour can be disenchanted to reduce its effectiveness.",
-[](const item &i) {return i.enchantment() > 0;}, [](item &i) {i.enchant(-dPc() / 20);}));
+[](const item &i) {return i.enchantment() > 0;}, [](item &i) {i.enchant(-dPc() / 20);}, false, false, false));
 	rtn[action::key::sex_up_item] = std::unique_ptr<action>(new monsterItemAction(L"sexiness",
 L"Sexy items will increase your physical appearance when visibly worn.\n",
-[](const item &i) {return !i.isSexy() && i.equippable() == item::equipType::worn;}, [](item &i) {i.sexUp(true);}));
+[](const item &i) {return !i.isSexy() && i.equippable() == item::equipType::worn;}, [](item &i) {i.sexUp(true);}, false, false, true));
 	rtn[action::key::sex_down_item] = std::unique_ptr<action>(new monsterItemAction(L"chastity",
 L"Unsexy items do nothing for your physical appearance, meaning you can wear\n"
 "them without affecting your appearance percentage.",
-[](const item &i) {return i.isSexy();}, [](item &i) {i.sexUp(false);}));
+[](const item &i) {return i.isSexy();}, [](item &i) {i.sexUp(false);}, false, false, false));
 	rtn[action::key::nudity] = std::unique_ptr<action>(new monsterItemAction(L"nudity",
 L"Clothing and armour can provide a number of benifits, to defensibility and\n"
 "also to outward appearance. Some can also provide less helpful effects.\n"
@@ -623,7 +675,7 @@ L"Clothing and armour can provide a number of benifits, to defensibility and\n"
 "simple effect of feeling the forces of the world directly on your bare skin.",
 [](const item &i) {return i.equippable() == item::equipType::worn && 
                    dynamic_cast<monster&>(i.holder()).slotsOf(i)[0] != nullptr;}, 
-[](item &i) {return dynamic_cast<monster&>(i.holder()).unequip(i);}));
+[](item &i) {return dynamic_cast<monster&>(i.holder()).unequip(i);}, true, false, false));
 	rtn[action::key::disarm] = std::unique_ptr<action>(new monsterItemAction(L"disarm",
 L"Weapons can be used to intimidate, attack, harm or destroy an opponent.\n"
 "Sometimes; however, a more inclusive, open-handed (open-clawed,\n"
@@ -632,7 +684,7 @@ L"Weapons can be used to intimidate, attack, harm or destroy an opponent.\n"
 "weapon.",
 [](const item &i) {return i.equippable() == item::equipType::wielded && 
                    dynamic_cast<monster&>(i.holder()).slotsOf(i)[0] != nullptr;}, 
-[](item &i) {return dynamic_cast<monster&>(i.holder()).unequip(i);}));
+[](item &i) {return dynamic_cast<monster&>(i.holder()).unequip(i);}, true, false, false));
 	rtn[action::key::popup_shop] = std::unique_ptr<action>(new popupShopAction(L"shopping",
 L"A pop-up shop is a small retail event lasting for a short length of time."));
 	rtn[action::key::petrify] = std::unique_ptr<action>(new petrifyAction(L"petrify",
@@ -670,6 +722,9 @@ public:
     target.abilities().proof(damageRepo::instance()[dt_], false);
     return true;
   }
+  virtual bool aggressive() const { return false; }
+  virtual bool heals() const { return false; }
+  virtual bool buffs() const { return true; }
 };
 
 class resistAction : public renderedAction<item, monster> {
@@ -688,6 +743,9 @@ public:
     target.abilities().resist(&damageRepo::instance()[dt_], amount_);
     return true;
   }
+  virtual bool aggressive() const { return false; }
+  virtual bool heals() const { return false; }
+  virtual bool buffs() const { return true; }
 };
 
 
@@ -707,6 +765,9 @@ public:
     target.abilities().extraDamage(&damageRepo::instance()[dt_], amount_);
     return true;
   }
+  virtual bool aggressive() const { return false; }
+  virtual bool heals() const { return false; }
+  virtual bool buffs() const { return true; }
 };
 
 class intrinsicsBonusAction : public renderedAction<item, monster> {
@@ -732,6 +793,9 @@ public:
     (able.*method_)(clear_);
     return true;
   }
+  virtual bool aggressive() const { return false; }
+  virtual bool heals() const { return false; }
+  virtual bool buffs() const { return true; }
 };
 
 class intrinsicsBoolAction : public renderedAction<item, monster> {
@@ -756,6 +820,9 @@ public:
     (able.*method_)(!set_);
     return true;
   }
+  virtual bool aggressive() const { return false; }
+  virtual bool heals() const { return false; }
+  virtual bool buffs() const { return true; }
 };
 
 class tesseractAction : public renderedAction<item, monster> {
@@ -775,6 +842,9 @@ public:
     target.abilities().move(tFactory.get(terrainType::BULKHEAD), false);
     return true;
   }
+  virtual bool aggressive() const { return false; }
+  virtual bool heals() const { return false; }
+  virtual bool buffs() const { return false; }
 };
 
 
@@ -791,6 +861,9 @@ public:
     target.abilities().move(tFactory.get(terrainType::FIRE), false);
     return true;
   }
+  virtual bool aggressive() const { return false; }
+  virtual bool heals() const { return false; }
+  virtual bool buffs() const { return true; }
 };
 
 template<>

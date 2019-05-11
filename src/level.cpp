@@ -15,6 +15,7 @@
 #include "role.hpp"
 #include "transport.hpp"
 #include "ref.hpp"
+#include "combat.hpp"
 
 #include <algorithm> // max/min
 #include <random>
@@ -402,7 +403,10 @@ public:
   }
   optionalRef<item> zapItem(monster &m) {
     if (!m.abilities().zap()) return optionalRef<item>();
-    return m.firstItem([&m](item &i){ return i.enchantment() > 0 && i.render() == '|'; });
+    return m.firstItem([&m](item &i){
+	auto pUse = dynamic_cast<useInCombat*>(&i);
+	return pUse && pUse->shouldUse(m);
+      });
   }
 
 

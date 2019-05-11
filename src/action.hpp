@@ -19,6 +19,12 @@ public:
   virtual ~sharedAction() {};
   // takes targets; returns true if action was successful, false if blocked or failed.
   virtual bool operator ()(bool blessed, bool cursed, T & ... ) = 0;
+  // is the action aggressive? (use by monsters only in combat)
+  virtual bool aggressive() const = 0;
+  // is the action healing? (use by monsters only with low HP)
+  virtual bool heals() const = 0;
+  // does the action boost stats?
+  virtual bool buffs() const = 0;
 };
 
 template <class ...T>
@@ -31,6 +37,9 @@ template<>
 class sharedAction<monster, monster>{
  public:  
   virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) = 0;
+  virtual bool aggressive() const = 0;
+  virtual bool heals() const = 0;
+  virtual bool buffs() const = 0;
   enum class key {
     // steal small items (1N or less) from target
     steal_small,
@@ -118,6 +127,9 @@ template<>
 class sharedAction<monster, item>{
  public:  
   virtual bool operator ()(bool blessed, bool cursed, monster &source, item &target) = 0;
+  virtual bool aggressive() const = 0;
+  virtual bool heals() const = 0;
+  virtual bool buffs() const = 0;
   enum class key {
     // in the sense of taking the essence of something (eg to make essential oils); reveal the intrinsic property
     // convert an extrinsic property of the object into an intrinsic property, destroying the object.
@@ -135,6 +147,9 @@ class sharedAction<item, monster>{
  public:  
   virtual bool operator ()(bool blessed, bool cursed, item &source, monster &target) = 0;
   virtual bool undo(bool blessed, bool cursed, item &source, monster &target) = 0;
+  virtual bool aggressive() const = 0;
+  virtual bool heals() const = 0;
+  virtual bool buffs() const = 0;
   enum class key {
     resist_all_damage_edged,
       resist_all_damage_bashing,

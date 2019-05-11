@@ -14,6 +14,7 @@
 #include "dungeon.hpp"
 #include "transport.hpp"
 #include "target.hpp"
+#include "combat.hpp"
 
 extern std::vector<damageType> allDamageTypes;
 
@@ -246,6 +247,11 @@ public:
       return false;
     auto pThis = shared_from_this();
       return action_(pThis->isBlessed(), pThis->isCursed(), *m, target.value());
+  }
+  bool shouldUse(const monster &m) const {
+    return action_.aggressive() ||
+      action_.buffs() ||
+      (m.injury().pc() > 50 && action_.heals());
   }
 };
 
@@ -1177,7 +1183,7 @@ void transmutate(item &from, item &to) {
 
 // wands: sticks that carry charges in their enchantment and some sort of action.
 // TODO: if a wand is blessed by a deity, it could be come a holy rod of that deity, preventing access from other temples and providing extra effects in the right shrine or against the right monster?
-class wand : public basicItem, public burnChargeMixin, public actionMonsterMixin {
+class wand : public basicItem, public burnChargeMixin, public actionMonsterMixin, public useInCombat {
 public:
   wand(unsigned char numCharges, renderedAction<monster, monster> &action) :
     basicItem(itemTypeRepo::instance()[itemTypeKey::stick]),
@@ -1211,6 +1217,10 @@ public:
       useCharge();
     return fire() ? item::useResult::SUCCESS : item::useResult::FAIL;
   }
+  virtual bool shouldUse(const monster &m) const {
+    return actionMonsterMixin::shouldUse(m);
+  }
+  virtual bool useForCombat() { return fire(); }
 };
 
 class instrument : public basicItem, burnChargeMixin, actionMonsterMixin {
