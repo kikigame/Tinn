@@ -397,7 +397,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .fighting(50)
 	    .dodge(5) // why would they dodge?
 	    .maxDamage(30)
-	    .saying(L"You you doin'?") // ref:Friends (TV Series), Joey
+	    .saying(L"How you doin'?") // ref:Friends (TV Series), Joey
 	    .saying(L"Eyy!") // ref: Arthur Herbert Fonzarelli, Happy Days
 	    .gen(genderAssignType::m)
 	    .material(materialType::liquid) // prevent player from taking corpse easily
