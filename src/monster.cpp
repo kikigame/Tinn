@@ -28,7 +28,7 @@ monster::monster(monsterBuilder & b) :
   eachTick_(),
   type_(*b.type_),
   align_(b.align_),
-  intrinsics_(),
+  intrinsics_(b.type_->intrinsics()),
   abilities_(*this, intrinsics_),
   onDeath_(b.onDeath()) {}
 

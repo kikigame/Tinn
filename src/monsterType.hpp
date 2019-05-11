@@ -5,8 +5,8 @@
 #ifndef MONSTERTYPE_HPP
 #define MONSTERTYPE_HPP
 
+#include "monsterIntrinsics.hpp"
 #include "materialType.hpp"
-#include "movement.hpp"
 #include <memory>
 #include <vector>
 #include <string>
@@ -145,6 +145,9 @@ private:
 
   // how does this monster move?
   const movementType movementType_;
+
+  // monster default flags
+  const monsterIntrinsics intrinsics_;
 public:
   monsterType(const monsterTypeBuilder &);
   monsterType(const monsterType &) 
@@ -197,6 +200,8 @@ public:
   std::shared_ptr<monster> spawn(level &) const;
   // spawn a space version of the monster:
   std::shared_ptr<monster> spawnSpace(level &, monsterBuilder &b) const;
+
+  const monsterIntrinsics & intrinsics() const;
 };
 
 /* singleton repository for monster types */

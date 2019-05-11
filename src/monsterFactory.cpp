@@ -772,6 +772,9 @@ std::shared_ptr<monster> monsterType::spawnSpace(level & level, monsterBuilder &
   default: throw type();
   }
 }
+const monsterIntrinsics &monsterType::intrinsics() const {
+  return intrinsics_;
+}
 
 template<monsterTypeKey T, class M>
 std::shared_ptr<monster> ofType(level & level, monsterBuilder &b) {

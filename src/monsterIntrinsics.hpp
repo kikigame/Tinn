@@ -66,6 +66,12 @@ public:
   virtual const bonus speedy() const = 0;
   // adjust the passed enum based on the speed bonus/penalty
   virtual speed adjust(const speed & fastness) = 0;
+  // can this monster use thrown weapons? (eg ranged attack / healing)
+  virtual void throws(const bool useWands) = 0;
+  virtual const bool throws() const = 0;
+  // can this monster use wands? (eg ranged attack / healing)
+  virtual void zap(const bool useWands) = 0;
+  virtual const bool zap() const = 0;
 };
 
 class monsterIntrinsicsImpl;
@@ -74,6 +80,8 @@ private:
 const std::unique_ptr<monsterIntrinsicsImpl> pImpl_;
 public:
   monsterIntrinsics();
+  // explicit copy constructor as we create intrinsics by copying from the monster type:
+  monsterIntrinsics(const monsterIntrinsics &);
   virtual ~monsterIntrinsics();
   // monsters may be inherantly proof (bonus) against a damage type:
   virtual void proof(const damage & type, const bool isProof);
@@ -125,6 +133,12 @@ public:
   virtual const bonus speedy() const;
   // adjust the given enum based on the speed bonus/penalty
   virtual speed adjust(const speed & fastness);
+  // can this monster use thrown weapons? (eg ranged attack / healing)
+  virtual void throws(const bool useWands);
+  virtual const bool throws() const;
+  // can this monster use wands? (eg ranged attack / healing)
+  virtual void zap(const bool useWands);
+  virtual const bool zap() const;
 };
 
 // abilites work the same as intrinsics, but may be granted by a more 
@@ -187,6 +201,12 @@ public:
   virtual const bonus speedy() const;
   // adjust the given enum based on the speed bonus/penalty
   virtual speed adjust(const speed & fastness);
+  // can this monster use thrown weapons? (eg ranged attack / healing)
+  virtual void throws(const bool useWands);
+  virtual const bool throws() const;
+  // can this monster use wands? (eg ranged attack / healing)
+  virtual void zap(const bool useWands);
+  virtual const bool zap() const;
 };
 
 

@@ -20,6 +20,8 @@ enum class bonusType {
     swimming, // TODO (need water too)
     climbing, // fast at escaping pits
     fearless, // affected by petrify (or other fear) actions
+    throws, //can the monster lob things at another
+    zap, // can the monster zap another with a wand
     END
     };
 
@@ -38,28 +40,28 @@ speed adjustSpeed(const bonus &s, const speed &fastness) {
 
 class monsterIntrinsicsImpl {
 private:
-  std::bitset<9> damageProof; // TODO: Magic constant is number of damageType enum values
+  std::bitset<9> damageProof_; // TODO: Magic constant is number of damageType enum values
 public:
   int turnsToEscape_;
-  mutable std::map<bonusType, bonus> bonuses; // mutable allows [] to auto-fill default
-  std::map<damageType *, char> resistLevel;
-  std::map<damageType *, char> extraDamageLevel;
-  std::map<terrainType, bool> terrainMove;
+  mutable std::map<bonusType, bonus> bonuses_; // mutable allows [] to auto-fill default
+  std::map<damageType *, char> resistLevel_;
+  std::map<damageType *, char> extraDamageLevel_;
+  std::map<terrainType, bool> terrainMove_;
   monsterIntrinsicsImpl() :
-    damageProof(), turnsToEscape_(0), bonuses(), resistLevel(), extraDamageLevel(), terrainMove() {
+    damageProof_(), turnsToEscape_(0), bonuses_(), resistLevel_(), extraDamageLevel_(), terrainMove_() {
     // all creatures move on ground by default:
-    terrainMove[terrainType::ROCK] = false;
-    terrainMove[terrainType::GROUND] = true;
-    terrainMove[terrainType::UP] = true;
-    terrainMove[terrainType::DOWN] = true;
+    terrainMove_[terrainType::ROCK] = false;
+    terrainMove_[terrainType::GROUND] = true;
+    terrainMove_[terrainType::UP] = true;
+    terrainMove_[terrainType::DOWN] = true;
   }
   bool proof(const damageType & t) const {
     auto typ = static_cast<typename std::underlying_type<damageType>::type>(t);
-    return damageProof.test(typ);
+    return damageProof_.test(typ);
   }
   void proof(const damageType & t, const bool isProof) {
     auto typ = static_cast<typename std::underlying_type<damageType>::type>(t);
-    damageProof.set(typ, isProof);
+    damageProof_.set(typ, isProof);
   }
 };
 
@@ -68,6 +70,9 @@ monsterAbilities::~monsterAbilities() {}
 
 monsterIntrinsics::monsterIntrinsics() :
   pImpl_(new monsterIntrinsicsImpl()) {};
+
+monsterIntrinsics::monsterIntrinsics(const monsterIntrinsics &other) :
+  pImpl_(new monsterIntrinsicsImpl(*(other.pImpl_))) {};
 
 monsterIntrinsics::~monsterIntrinsics() {}
 
@@ -81,44 +86,44 @@ const bool monsterIntrinsics:: proof(const damage & type) const {
 
 // and there may be some simple flags too:
 void monsterIntrinsics::eatVeggie(const bonus & isBonus) {
-  pImpl_->bonuses[bonusType::eatVeggie] = isBonus;
+  pImpl_->bonuses_[bonusType::eatVeggie] = isBonus;
 }
 const bonus monsterIntrinsics::eatVeggie() const {
-  return pImpl_->bonuses[bonusType::eatVeggie];
+  return pImpl_->bonuses_[bonusType::eatVeggie];
 }
 
 // bonus - 2 x attacks / round; penalty - 2 x rounds / attack
 void monsterIntrinsics::dblAttack(const bonus & isDblAttack) {
-  pImpl_->bonuses[bonusType::dblAttack] = isDblAttack;
+  pImpl_->bonuses_[bonusType::dblAttack] = isDblAttack;
 }
 const bonus monsterIntrinsics:: dblAttack() const {
-  return pImpl_->bonuses[bonusType::dblAttack];
+  return pImpl_->bonuses_[bonusType::dblAttack];
 }
 
 // fearless - ignores fear; penalty - 2 x rounds affected by fear
 void monsterIntrinsics::fearless(const bonus & isFearless) {
-  pImpl_->bonuses[bonusType::fearless] = isFearless;
+  pImpl_->bonuses_[bonusType::fearless] = isFearless;
 }
 const bonus monsterIntrinsics:: fearless() const {
-  return pImpl_->bonuses[bonusType::fearless];
+  return pImpl_->bonuses_[bonusType::fearless];
 }
 
 // resist damage of a given type (nullptr for all) - by 5% increments
 // (may be negative for extra damage)
 void monsterIntrinsics::resist(const damage * type, char level) {
   if (type == nullptr) {
-    pImpl_->resistLevel[nullptr] = level;
+    pImpl_->resistLevel_[nullptr] = level;
   } else {
     damageType t = type->type();
-    pImpl_->resistLevel[&t] = level;
+    pImpl_->resistLevel_[&t] = level;
   }
 }
 // total intrinsic damage resistance of a given type in 5% increments
 // (may be negative for extra damage)
 const char monsterIntrinsics::resist(const damage & type) const {
   damageType t = type.type();
-  char rtn = pImpl_->resistLevel[&t];
-  rtn += pImpl_->resistLevel[nullptr];
+  char rtn = pImpl_->resistLevel_[&t];
+  rtn += pImpl_->resistLevel_[nullptr];
   return rtn;
 }
 
@@ -126,56 +131,56 @@ const char monsterIntrinsics::resist(const damage & type) const {
 // (may be negative for healing attack)
 void monsterIntrinsics::extraDamage(const damage * type, char level) {
   if (type == nullptr) {
-    pImpl_->extraDamageLevel[nullptr] = level;
+    pImpl_->extraDamageLevel_[nullptr] = level;
   } else {
     damageType t = type->type();
-    pImpl_->extraDamageLevel[&t] = level;
+    pImpl_->extraDamageLevel_[&t] = level;
   }
 }
 // total intrinsic extra damage of a given type in 5% increments
 // (may be negative for healing attack)
 const char monsterIntrinsics::extraDamage(const damage & type) const {
   damageType t = type.type();
-  char rtn = pImpl_->extraDamageLevel[&t];
-  rtn += pImpl_->extraDamageLevel[nullptr];
+  char rtn = pImpl_->extraDamageLevel_[&t];
+  rtn += pImpl_->extraDamageLevel_[nullptr];
   return rtn;
 }
 
 // can you move through a given terrain?
 void monsterIntrinsics::move(const terrain & type, const bool isMove) {
-  pImpl_->terrainMove[type.type()] = isMove;
+  pImpl_->terrainMove_[type.type()] = isMove;
 }
 const bool monsterIntrinsics:: move(const terrain & type) const {
-  return pImpl_->terrainMove[type.type()];
+  return pImpl_->terrainMove_[type.type()];
 }
 
 // can you hear monsters?
 void monsterIntrinsics::hear(const bool hearing) {
-  pImpl_->bonuses[bonusType::hearing] = bonus(hearing);
+  pImpl_->bonuses_[bonusType::hearing] = bonus(hearing);
 }
 const bool monsterIntrinsics:: hear() const {
-  return pImpl_->bonuses[bonusType::hearing] == bonus(true);
+  return pImpl_->bonuses_[bonusType::hearing] == bonus(true);
 }
 // can you see monsters?
 void monsterIntrinsics::see(const bool sight) {
-  pImpl_->bonuses[bonusType::seeing] = bonus(sight);
+  pImpl_->bonuses_[bonusType::seeing] = bonus(sight);
 }
 const bool monsterIntrinsics:: see() const {
-  return pImpl_->bonuses[bonusType::seeing] == bonus(true);
+  return pImpl_->bonuses_[bonusType::seeing] == bonus(true);
 }
 // moving in water
 void monsterIntrinsics::swim(const bool swim) {
-  pImpl_->bonuses[bonusType::swimming] = bonus(swim);
+  pImpl_->bonuses_[bonusType::swimming] = bonus(swim);
 }
 const bool monsterIntrinsics:: swim() const {
-  return pImpl_->bonuses[bonusType::swimming] == bonus(true);
+  return pImpl_->bonuses_[bonusType::swimming] == bonus(true);
 }
 // can you fly?
 void monsterIntrinsics::fly(const bool fly) {
-  pImpl_->bonuses[bonusType::flying] = bonus(fly);
+  pImpl_->bonuses_[bonusType::flying] = bonus(fly);
 }
 const bool monsterIntrinsics:: fly() const {
-  return pImpl_->bonuses[bonusType::flying] == bonus(true);
+  return pImpl_->bonuses_[bonusType::flying] == bonus(true);
 }
 // are you trapped right now?
 void monsterIntrinsics::entrap(const int turnsToEscape) {
@@ -186,19 +191,32 @@ const bool monsterIntrinsics::entrapped() const {
 }
 // how fast can we get out of a pit?
 void monsterIntrinsics::climb(const bonus & sight) {
-  pImpl_->bonuses[bonusType::climbing] = bonus(sight);
+  pImpl_->bonuses_[bonusType::climbing] = bonus(sight);
 }
 const bonus monsterIntrinsics:: climb() const {
-  return pImpl_->bonuses[bonusType::climbing];
+  return pImpl_->bonuses_[bonusType::climbing];
 }
 // does *this* monster have a speed bonus/penalty
 void monsterIntrinsics::speedy(const bonus & isDblAttack) {
-  pImpl_->bonuses[bonusType::speedy] = isDblAttack;
+  pImpl_->bonuses_[bonusType::speedy] = isDblAttack;
 }
 const bonus monsterIntrinsics:: speedy() const {
-  return pImpl_->bonuses[bonusType::speedy];
+  return pImpl_->bonuses_[bonusType::speedy];
 }
-
+// can you throw things at monsters?
+void monsterIntrinsics::throws(const bool throws) {
+  pImpl_->bonuses_[bonusType::throws] = bonus(throws);
+}
+const bool monsterIntrinsics::throws() const {
+  return pImpl_->bonuses_[bonusType::throws] == bonus(true);
+}
+// can you zap wands at monsters?
+void monsterIntrinsics::zap(const bool zap) {
+  pImpl_->bonuses_[bonusType::zap] = bonus(zap);
+}
+const bool monsterIntrinsics:: zap() const {
+  return pImpl_->bonuses_[bonusType::zap] == bonus(true);
+}
 
 // adjust the given enum based on the speed bonus/penalty
 speed monsterIntrinsics::adjust(const speed & fastness) {
@@ -221,89 +239,89 @@ const bool monsterAbilityMods::proof(const damage & type) const {
 }
   // and there may be some simple flags too:
 void monsterAbilityMods::eatVeggie(const bonus & isBonus) {
-  mod_->bonuses[bonusType::eatVeggie] = isBonus;
+  mod_->bonuses_[bonusType::eatVeggie] = isBonus;
 }
 const bonus monsterAbilityMods::eatVeggie() const {
-  return intrinsics_.eatVeggie() + mod_->bonuses[bonusType::eatVeggie];
+  return intrinsics_.eatVeggie() + mod_->bonuses_[bonusType::eatVeggie];
 }
 // bonus - 2 x attacks / round; penalty - 2 x rounds / attack
 void monsterAbilityMods::dblAttack(const bonus & isDblAttack) {
-  mod_->bonuses[bonusType::dblAttack] = isDblAttack;
+  mod_->bonuses_[bonusType::dblAttack] = isDblAttack;
 }
 const bonus monsterAbilityMods::dblAttack() const {
-  return intrinsics_.dblAttack() + mod_->bonuses[bonusType::dblAttack];
+  return intrinsics_.dblAttack() + mod_->bonuses_[bonusType::dblAttack];
 }
   // resist damage of a given type (nullptr for all) - by 5% increments
   // (may be negative for extra damage)
 void monsterAbilityMods::resist(const damage * type, char level) {
-  if (type == nullptr) mod_->resistLevel[nullptr] = level;
+  if (type == nullptr) mod_->resistLevel_[nullptr] = level;
   else {
     damageType t = type->type();
-    mod_->resistLevel[&t] = level;
+    mod_->resistLevel_[&t] = level;
   }
 }
   // total intrinsic damage resistance of a given type in 5% increments
   // (may be negative for extra damage)
 const char monsterAbilityMods::resist(const damage & type) const {
   damageType t = type.type();
-  return std::max(mod_->resistLevel[&t], intrinsics_.resist(type));
+  return std::max(mod_->resistLevel_[&t], intrinsics_.resist(type));
 }
   // extra damage of a given type (nullptr for all) - by 5% increments
   // (may be negative to deal healing)
 void monsterAbilityMods::extraDamage(const damage * type, char level) {
-  if (type == nullptr) mod_->extraDamageLevel[nullptr] = level;
+  if (type == nullptr) mod_->extraDamageLevel_[nullptr] = level;
   else {
     damageType t = type->type();
-    mod_->extraDamageLevel[&t] = level;
+    mod_->extraDamageLevel_[&t] = level;
   }
 }
 // total intrinsic damage resistance of a given type in 5% increments
 // (may be negative to deal healing)
 const char monsterAbilityMods::extraDamage(const damage & type) const {
   damageType t = type.type();
-  return std::max(mod_->extraDamageLevel[&t], intrinsics_.extraDamage(type));
+  return std::max(mod_->extraDamageLevel_[&t], intrinsics_.extraDamage(type));
 }
   // can you move through a given terrain?
 void monsterAbilityMods::move(const terrain & type, const bool isMove) {
-  mod_->terrainMove[type.type()] = isMove;
+  mod_->terrainMove_[type.type()] = isMove;
 }
 const bool monsterAbilityMods::move(const terrain & type) const {
-  return intrinsics_.move(type) || mod_->terrainMove[type.type()];
+  return intrinsics_.move(type) || mod_->terrainMove_[type.type()];
 }
   // can you hear monsters?
 void monsterAbilityMods::hear(const bool hearing) {
-  mod_->bonuses[bonusType::hearing] = hearing;
+  mod_->bonuses_[bonusType::hearing] = hearing;
 }
 const bool monsterAbilityMods::hear() const {
-  return intrinsics_.hear() || mod_->bonuses[bonusType::hearing] == bonus(true);
+  return intrinsics_.hear() || mod_->bonuses_[bonusType::hearing] == bonus(true);
 }
   // can you see monsters?
 void monsterAbilityMods::see(const bool sight) {
-  mod_->bonuses[bonusType::seeing] = sight;
+  mod_->bonuses_[bonusType::seeing] = sight;
 }
 const bool monsterAbilityMods::see() const {
-  return intrinsics_.see() || mod_->bonuses[bonusType::seeing] == bonus(true);
+  return intrinsics_.see() || mod_->bonuses_[bonusType::seeing] == bonus(true);
 }
   // can you move through water?
 void monsterAbilityMods::swim(const bool canSwim) {
-  mod_->bonuses[bonusType::swimming] = canSwim;
+  mod_->bonuses_[bonusType::swimming] = canSwim;
 }
 const bool monsterAbilityMods::swim() const {
-  return intrinsics_.swim() || mod_->bonuses[bonusType::swimming] == bonus(true);
+  return intrinsics_.swim() || mod_->bonuses_[bonusType::swimming] == bonus(true);
 }
   // can you fly?
 void monsterAbilityMods::fly(const bool canFly) {
-  mod_->bonuses[bonusType::flying] = canFly;
+  mod_->bonuses_[bonusType::flying] = canFly;
 }
 const bool monsterAbilityMods::fly() const {
-  return intrinsics_.fly() || mod_->bonuses[bonusType::flying] == bonus(true);
+  return intrinsics_.fly() || mod_->bonuses_[bonusType::flying] == bonus(true);
 }
   // affected by petrify/fear actions? (false = double effect)
 void monsterAbilityMods::fearless(const bonus &fearless) {
-  mod_->bonuses[bonusType::fearless] = fearless;
+  mod_->bonuses_[bonusType::fearless] = fearless;
 }
 const bonus monsterAbilityMods::fearless() const {
-  return intrinsics_.fearless() + mod_->bonuses[bonusType::fearless];
+  return intrinsics_.fearless() + mod_->bonuses_[bonusType::fearless];
 }
 // entrapment ignores modifiers
 void monsterAbilityMods::entrap(const int ticksToEscape) {
@@ -314,17 +332,17 @@ const bool monsterAbilityMods::entrapped() const {
 }
   // good at climbing?
 void monsterAbilityMods::climb(const bonus & canClimb) {
-  mod_->bonuses[bonusType::climbing] = canClimb;
+  mod_->bonuses_[bonusType::climbing] = canClimb;
 }
 const bonus monsterAbilityMods::climb() const {
-  return intrinsics_.climb() + mod_->bonuses[bonusType::climbing];
+  return intrinsics_.climb() + mod_->bonuses_[bonusType::climbing];
 }
   // does *this* monster have a speed bonus/penalty
 void monsterAbilityMods::speedy(const bonus & fast) {
-  mod_->bonuses[bonusType::speedy] = fast;
+  mod_->bonuses_[bonusType::speedy] = fast;
 }
 const bonus monsterAbilityMods::speedy() const {
-  return intrinsics_.speedy() + mod_->bonuses[bonusType::speedy];
+  return intrinsics_.speedy() + mod_->bonuses_[bonusType::speedy];
 }
 // adjust the given enum based on the speed bonus/penalty
 // NB: For each 3000N (~1/3tonne, in Earth gravity) the monster carries,
@@ -338,5 +356,20 @@ speed monsterAbilityMods::adjust(const speed & fastness) {
     totalWeight -= 3000;
   }
   return rtn;
+}
+
+// can you throw things at monsters?
+void monsterAbilityMods::throws(const bool throws) {
+  mod_->bonuses_[bonusType::throws] = bonus(throws);
+}
+const bool monsterAbilityMods:: throws() const {
+  return intrinsics_.throws() || mod_->bonuses_[bonusType::throws] == bonus(true);
+}
+// can you zap wands at monsters?
+void monsterAbilityMods::zap(const bool zap) {
+  mod_->bonuses_[bonusType::zap] = bonus(zap);
+}
+const bool monsterAbilityMods:: zap() const {
+  return intrinsics_.zap() || mod_->bonuses_[bonusType::zap] == bonus(true);
 }
 

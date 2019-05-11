@@ -43,6 +43,7 @@ private:
   std::vector<const wchar_t *> sayings_;
   movementType movementType_;
   bonus fearless_;
+  monsterIntrinsics intrinsics_;
 public:
   const monsterTypeKey key_;
   monsterTypeBuilder(monsterTypeKey key) : 
@@ -52,7 +53,7 @@ public:
     material_(materialType::fleshy), alignment_(),
     foodMaterials_(), sayings_(),
     movementType_ ({ speed::turn2, goTo::player, goBy::smart, 0 }),
-    fearless_(),
+    fearless_(), intrinsics_(),
     key_(key) {}					   
   monsterTypeBuilder& category(monsterCategory category) { category_ = category; return *this; }
   monsterTypeBuilder& name(const wchar_t * name) { monsterNames_.push_back(name); return *this; }
@@ -86,6 +87,8 @@ public:
   monsterTypeBuilder& movement(movementType type) { movementType_ = type; return *this; }
   monsterTypeBuilder& fearless() { fearless_ = bonus(true); return *this; }
   monsterTypeBuilder& scardy() { fearless_ = bonus(false); return *this; }
+  monsterTypeBuilder& throws() { intrinsics_.throws(true); return *this; }
+  monsterTypeBuilder& zap() { intrinsics_.zap(true); return *this; }
 };
 
 monsterType::monsterType(const monsterTypeBuilder & b) :
@@ -112,7 +115,8 @@ monsterType::monsterType(const monsterTypeBuilder & b) :
   foodMaterials_(b.foodMaterials_),
   sayings_(b.sayings_),
   alignment_(b.alignment_),
-  movementType_(b.movementType_) {
+  movementType_(b.movementType_),
+  intrinsics_(b.intrinsics_) {
 }
 
 const monsterTypeKey monsterType::type() const { return key_; }
@@ -202,6 +206,8 @@ public:
 	    .eats(materialType::liquid)
 	    .saying(L"Behold the Powerful Dragon") // should not actually say this; depends on the monster's specifics
 	    .encyclopedium(L"The dragon is a powerful creature shrouded in mystery.") // TODO: Better this
+	    .throws()
+	    .zap()
             .fearless());
 
     // unique feature: doesn't descend below level 3
@@ -231,6 +237,8 @@ public:
 	    .corpseWeight(1334.46648459) // 300lb
 	     // no eats(); uses a napsack
 	    .movement({speed::perturn, goTo::down, goBy::smart, 100})
+	    .throws()
+	    .zap()
 	    .encyclopedium(
 L"Sometimes a human ventures into a Dungeon upon a quest. This is usually ill-\n"
 "advised."));
@@ -263,6 +271,7 @@ L"Sometimes a human ventures into a Dungeon upon a quest. This is usually ill-\n
 	    .eats(materialType::fleshy) // obligate carnivores
 	    .eats(materialType::liquid)
 	    .movement({speed::turn2, goTo::player, goBy::smart, 75})
+	    .zap() // they lack the strength to throw stuff, but are curious enough to use a wand.
 	    .encyclopedium(
 L"Meaning \"Little Thief\", ferrets are small, hyperflexible elongated mammels\n"
 "of the Mustela family. They are domesticated hunting working animals bread for\n"
@@ -303,6 +312,8 @@ L"Meaning \"Little Thief\", ferrets are small, hyperflexible elongated mammels\n
 	    .eats(materialType::leathery)
 	    .eats(materialType::liquid)
 	    .movement({speed::turn2, goTo::player, goBy::smart, 75})
+	    .throws()
+	    .zap()
 	    .encyclopedium(
 L"The difference between a goblin and an orc is that orcs don't exist.\n"
 "Not all goblins are malevolent; some are merely mischievous. All are obsessed\n"
@@ -376,6 +387,8 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .eats(materialType::veggy)
 	    .eats(materialType::fleshy)
 	    .eats(materialType::liquid)
+	    .throws()
+	    .zap()
 	    .encyclopedium(L"Amongst the smelliest of monsters, these strange creatures have a poor sense\n"
 " of smell. They lack in intelligece, cunning, learning, strength, power and\n"
 "speed - but are very adept at using tools and being unpredictable."));
@@ -478,6 +491,8 @@ L"Kelpies live in rivers and streams, while the stronger Each-uisge prefers\n"
 	    .corpseWeight(2713.415185333) // 610lb; average weight of Earth gravity human
 	    .eats(materialType::fleshy)
 	    .eats(materialType::liquid)
+	    .throws() // trydants traditionally
+	    .zap()
 	    .encyclopedium(
 L"Merfolk do not like to stray outside the sea, and mermen less so. Having the\n"
 "tail of a fish and the body of the beautiful human, albeit covered in tiny\n"
@@ -512,6 +527,7 @@ L"Merfolk do not like to stray outside the sea, and mermen less so. Having the\n
 	    .movement({speed::perturn, goTo::none, goBy::smart, 10}) // slow for a bird, but works better as we are likely to be charmed.
 	    .eats(materialType::fleshy)
 	    .eats(materialType::liquid)
+	    // no throw or zap; they make you go to them
 	    .encyclopedium(
 L"Of all the birds of the sea, the sirens are the most beautiful and the most\n"
 "deadly. With human heads, they sing an irrisistably enchanting song, luring\n"
@@ -632,6 +648,7 @@ L"Be they creatures of immortality, creation, temptation, or hairstyle, snakes\n
 	    .eats(materialType::stony)
 	    .eats(materialType::liquid) // I'm sure I've read about them sucking the water of lichenss
 	    // Mostly based on http://www.mysticfiles.com/trolls-from-ancient-to-modern/
+	    .throws()
 	    .encyclopedium(L"Dim-witted creatures of Norse and Scandinavian origin. Big and ugly, trolls\n"
 "are known for possessing magical objects and treasures - like gold, or\n"
 "princesses. They wander little and are fierecely territorial, but have been\n"
@@ -783,6 +800,8 @@ L"There are a great number of creatures in the world, and not all sit neatly\n"
 	    // do not eat. We could let them eat metals, but then they'd not eat paper. Cybers recharge electrically I believe.
 	    .align(dr.getExact(Element::time, Domination::aggression, Outlook::neutral))
 	    .movement({speed::slow2, goTo::player, goBy::beeline, 10})
+            .throws()
+            .zaps()
 	    .encyclopedium(L"Mondas calls whence they hail; the twin planet of Earth,\n"
       "driven hence to travel the Universe. The cyber folk are unique for\n"
       "their method of reproduction, in which they take an otherwise\n"
