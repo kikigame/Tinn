@@ -743,6 +743,25 @@ Trap ideas
 We should be able to create entire rooms/levels as a well-designed trap. What you need is a lure (some big, obvious treasure/magic items), a trigger (a switch that springs the trap once the player approaches) and a payload (something that will likely kill the player). This kind of trap must be easy to bypass; that way, we're giving the user a choice to risk everything now for something shiny that will help them win later if they survive. Payloads can be lots of monsters to throw in, lots of trap squares to open up, etc. We should aim for a 50/50 chance of survival but avoid instakills. For the midgame.
 
 
+Dream idea
+------------
+We could have a "dream" level, accessed by a potion of sleep or similar. This level could be a map, showing you only a small portion of the world around you and regenerating as you move through it. You could meet monsters, particularly incubi and succubi, and perhaps even the god Morpheus, or a vision of your own deity.
+If you die in the dream, you would wake up. However, attributes and abilities would be restored.
+Injury should be restored by dreaming.
+Only intelligent monster types can sleep/dream, and not demons or undead.
+Possibly dreaming should be a % chance when sleeping.
+The player needs to know they're dreaming: an explicit message "you are having a dream"; perhaps corridors should be made of wavy lines or otherwise different from the main game.
+There should be some obvious way to wake up, or perhaps a timer indicating the duration of the dream.
+Side-effects of dreaming could include:
+ * restoring health (sleeping) OR being woken by monsters attacking you
+ * gaining from encounters OR de-identifying items in a fug of confusion
+ * moving position / level OR being woken up & moved on by the watch mid-encounter
+ * gaining quest information OR comedy encounters.
+ * visions/prophecies of lower levels OR visions of hoards of monsters
+
+Nethack has a special "level", where you can be swallowed by a dust monster and find yourself inside its vortex. The map is replaced with an ASCII circle surrounding the player. Player would remain centred on the board, but the board moves around the player.  Incubi & Succubi are ordinary monsters; there is a auto-curse amulet of restful sleep, but it just forces the player to skip turns while healing at a normal rate.
+
+
 Object map
 ----------
 
