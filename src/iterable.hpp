@@ -46,7 +46,11 @@ public:
   iterable(const C &container) : container_(container) {};
   virtual ~iterable() {}
   typename C::const_iterator begin() { return container_.begin(); }
-  typename C::const_iterator end()  { return container_.end(); }   
+  typename C::const_iterator end()  { return container_.end(); }
+  iterable<T,C,constant,true> & operator=(iterable<T,C,constant,true> &other) {
+    container_ = other.container_;
+    return *this;
+  }
 };
 
 
@@ -65,7 +69,7 @@ private:
   filter_type filter_;
 public:
   filtered_iterator() = default;
-  filtered_iterator(filter_type filter, BaseIterator base, BaseIterator end = {})
+  filtered_iterator(filter_type &filter, BaseIterator base, BaseIterator end = {})
     : BaseIterator(base), end_(end), filter_(filter) {
     while (*this != end_ && !filter_(**this)) {
       BaseIterator::operator++();
