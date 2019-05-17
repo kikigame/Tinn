@@ -52,7 +52,7 @@ public:
     auto pi = from(i);
     map_.erase(pi);
   }
-  bool contains(item &i, const itemHolder &h) const {
+  bool contains(const item &i, const itemHolder &h) const {
     auto pi = from(i);
     auto find = map_.find(pi);
     return find != map_.end() && &(*(find->second)) == &h;
@@ -65,10 +65,16 @@ public:
     return pos == map_.end() // maybe still in constructor; no shared_ptr
       || pos->second == nullptr; // not registered yet
   }
+  optionalRef<item> rndIf(std::function<bool(item &)> pred) {
+    for (auto entry : map_)
+      if (pred(*(entry.first)))
+	return optionalRef<item>(*(entry.first));
+    return optionalRef<item>();
+  }
 private:
-  std::shared_ptr<const item> from(const item &i) const {
+  std::shared_ptr<item> from(const item &i) const {
     // all items implement enable_shared_from_this:
-    return static_cast<const shared_item&>(i).shared_from_this();
+    return static_cast<shared_item&>(const_cast<item &>(i)).shared_from_this();
   }
   std::shared_ptr<item> from(item &i) const {
     // all items implement enable_shared_from_this:
@@ -82,9 +88,13 @@ itemHolder &itemHolderMap::forItem(item & i) { return pImpl_->forItem(i); }
 itemHolder &itemHolderMap::forItem(const item & i) { return pImpl_->forItem(i); }
 void itemHolderMap::move(item & i, itemHolder &h) { pImpl_->move(i,h); }
 void itemHolderMap::destroy(item & i) { pImpl_->destroy(i); }
-bool itemHolderMap::contains(item & i, const itemHolder &h) const { return pImpl_->contains(i,h); }
+bool itemHolderMap::contains(const item & i, const itemHolder &h) const { return pImpl_->contains(i,h); }
 void itemHolderMap::enroll(item & i) { pImpl_->enroll(i); }
 bool itemHolderMap::beforeFirstAdd(const item & i) const { return pImpl_->beforeFirstAdd(i); }
+
+optionalRef<item> itemHolderMap::rndIf(std::function<bool(item &)> pred) {
+  return pImpl_->rndIf(pred);
+}
 
 bool itemHolder::addItem(item &item) {
   auto &map = itemHolderMap::instance();
@@ -120,7 +130,7 @@ bool itemHolder::destroyItem(item &item) {
   return rtn;
 }
 
-bool itemHolder::contains(item &item) const {
+bool itemHolder::contains(const item &item) const {
   return itemHolderMap::instance().contains(item, *this);
 }
 
@@ -201,3 +211,4 @@ item *itemHolder::pickItem(const std::wstring & prompt,
   int it = ioFactory::instance().choice(prompt, help, choices, extraHelp);
   return *(res.begin() + it);
 }
+

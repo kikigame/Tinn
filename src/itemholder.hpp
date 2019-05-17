@@ -29,10 +29,11 @@ public:
   itemHolder &forItem(const item &); // does linear search to avoid const issues
   void enroll(item &); // called from item constructor
   bool beforeFirstAdd(const item &) const; // has this enrolled item been added via itemHolder.addItem() yet?
+  optionalRef<item> rndIf(std::function<bool(item &)>); // pick a random item matching functor from the entire game.
 protected:
   void destroy(item &);
   void move(item &, itemHolder &);
-  bool contains(item &, const itemHolder &) const; // NB item is only non-const so we can take a temporary shared_ptr to it. This would destroy the item if it doesn't have another shared_ptr reference elsewhere.
+  bool contains(const item &, const itemHolder &) const; // NB item is only non-const so we can take a temporary shared_ptr to it. This would destroy the item if it doesn't have another shared_ptr reference elsewhere.
 };
 
 
@@ -62,7 +63,7 @@ public:
   // iterate over all items, stopping at first match:
   virtual optionalRef<item> firstItem(std::function<bool(item&)>);
   // test if the item is in this container
-  bool contains(item &item) const;
+  bool contains(const item &item) const;
   // test for an empty container
   bool empty() const;
   // get number of items; returns 0 if empty() == true
