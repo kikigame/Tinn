@@ -172,6 +172,47 @@ public:
   virtual bool buffs() const { return false; }
 };
 
+extern void dream(monster &p, bool blessed, bool cursed); // defined in dreamscape.cpp
+
+// run the dream action.
+//if blessed, you will heal fully (unless cursed) and the action will take no time.
+//if cursed, target will not enter the dreamscape; otherwise, only player targets will.
+//if cursed, you will not heal (unless blessed); normally heal by 50%.
+class dreamAction : public renderedAction<monster, monster> {
+public:
+  dreamAction(const wchar_t * const name, const wchar_t * const description) :
+    renderedAction(name, description) {};
+  virtual ~dreamAction() {}
+  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+    auto &io = ioFactory::instance();
+    if (cursed) {
+      if (blessed) {
+	io.longMsg(L"You enter a dreamless slumber.");
+	target.injury() -= 10;
+      } else {
+	io.longMsg(L"You enter a dreamless slumber. Time passes.");
+	time::tick(false);
+      }
+      return true;
+    }
+    if (blessed) {
+      io.longMsg(L"Sweet dreams...");
+      target.injury() -= 100;
+    } else {
+      io.longMsg(L"You are dreaming.");
+      target.injury() -= 50;
+      time::tick(false);
+    }
+    if (target.isPlayer()) {
+      dream(target, blessed, cursed);
+    }
+    return true;
+  }
+  virtual bool aggressive() const { return true; }
+  virtual bool heals() const { return false; } // don't use on self during combat
+  virtual bool buffs() const { return false; } // don't use on self during combat
+};
+
 // do something funny, and possibly slightly inconvenient, to the target
 class comedyAction : public renderedAction<monster, monster> {
 public:
@@ -697,6 +738,12 @@ L"Charming a monster will make it less inclined to attack you, and more\n"
 "physical beauty."));
 	rtn[action::key::comedy] = std::unique_ptr<action>(new comedyAction(L"comedy",
 L"Always fun for a floor show. Use with caution"));
+	rtn[action::key::dream] = std::unique_ptr<action>(new dreamAction(L"slumber",
+L"The human carcadian rhythm will grant an adult human between 7 and 9 hours of"
+"nightly sleep, with younger people typically needing more. The truly lucky may"
+"be visited by the Sandman, whose rheum deposits can provide pleasant dreams."
+"Be warned: nightmares are all to prevalent during times of stress, a prone"
+"body is always at risk and past performance is no guarantee of future returns.")); // ref:common investment disclaimer. Sleep can be seen as investing time for future productivity.
 	return rtn;
   }
   static action &get(const typename action::key k) {
@@ -1168,7 +1215,7 @@ bool foocubusAction<incubus>::operator () (bool blessed, bool cursed, monster &s
     auto &ios = ioFactory::instance();
     if (isProtected) {
       if (source.isPlayer()) ios.message(L"You aren't in the mood.");
-      else ios.message(source.name() + L" doesn't seem to be in the mood.");
+      else ios.message(L"The " + source.name() + L" doesn't seem to be in the mood.");
       return false;
     }
     if (isCompatible && dPc() < target.appearance().cur()) {

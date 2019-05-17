@@ -13,7 +13,6 @@
 
 class args;
 class dungeon;
-class level;
 class player;
 class renderable;
 class renderByCoord;

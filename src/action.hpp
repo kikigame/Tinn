@@ -119,10 +119,13 @@ class sharedAction<monster, monster>{
     popup_shop,
     // a variety of hilarious hijinks
     comedy,
+    // to sleep, perchance to dream
+    dream,
     END
   };
 };
 
+// effects by a monster on an item
 template<>
 class sharedAction<monster, item>{
  public:  
