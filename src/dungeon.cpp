@@ -60,6 +60,15 @@ int dungeon::maxLevel() const {
   return level_.size() -1;
 }
 
+level & dungeon::operator[](const unsigned char &i) {
+  return *level_[i];
+}
+
+const level & dungeon::operator[](const unsigned char &i) const {
+  return *level_[i];
+}
+
+
 void dungeon::announceLevel() {
   ioFactory::instance().message(L"You find yourself in: " + level_[cur_level_]->name());
 }

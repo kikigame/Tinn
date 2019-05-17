@@ -38,6 +38,10 @@ public:
   const std::shared_ptr<player> pc() const;
   int maxLevel() const;
 
+  // look ahead
+  level & operator[](const unsigned char &);
+  const level & operator[](const unsigned char &) const;
+  
   // travelling
   void upLevel();
   void downLevel();
