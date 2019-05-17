@@ -535,3 +535,5 @@ void monster::addDescriptor(std::wstring desc) {
   if (std::find(extraAdjectives_.begin(), extraAdjectives_.end(), desc) != extraAdjectives_.end())
     extraAdjectives_.push_back(desc);
 }
+
+movementType stationary = {speed::stop, goTo::none, goBy::avoid, 0 };
