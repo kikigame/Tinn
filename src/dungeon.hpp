@@ -57,7 +57,7 @@ public:
 
   // render score information
   std::wstring score() const;
-private:
+
   // called on level entry
   void announceLevel();
 };
