@@ -107,4 +107,11 @@ public:
   static void close();
 };
 
+// used for religious items
+class hasAlign {
+public:
+  virtual ~hasAlign() {};
+  virtual const deity& align() const = 0;
+};
+
 #endif //ndef RELIGION_HPP__

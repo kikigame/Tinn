@@ -118,7 +118,7 @@ public:
   const level & curLevel() const; 
 
   // Spiritual alignment
-  const deity& align() const;
+  virtual const deity& align() const;
 
   // fighting...
   const attackResult attack(monster &target);

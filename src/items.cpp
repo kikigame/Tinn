@@ -828,7 +828,7 @@ public:
   }
 };
 
-class holyBook : public readableItem {
+class holyBook : public readableItem, hasAlign {
 private:
   const deity &align_;
 public:
@@ -855,6 +855,9 @@ public:
     ios.message(L"You turn the pages of the " + name());
     ios.longMsg(align_.description());
     return item::useResult::SUCCESS;
+  }
+  virtual const deity& align() const {
+    return align_;
   }
 };
 
