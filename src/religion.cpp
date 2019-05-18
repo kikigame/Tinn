@@ -7,6 +7,7 @@
 #include <vector>
 #include <memory>
 #include <sstream>
+#include <bitset>
 
 // most spiritual paths are represented by a deity.
 // all combinations exist.
@@ -88,6 +89,10 @@ public:
   const wchar_t * const house() const {
     return house_;
   }
+  unsigned char alignCounter() const {
+    auto &repo = deityRepo::instance();
+    return repo.alignCounter(repo.getExact(element_, domination_, outlook_));
+  }
 };
   
 // consumer of the newly allocated pointer.
@@ -104,7 +109,7 @@ const wchar_t deity::render() const { return pImpl_->render(); }
 std::wstring deity::name() const { return pImpl_->name(); }
 std::wstring deity::description() const { return pImpl_->description(); }
 const wchar_t * const deity::house() const { return pImpl_->house(); }
-
+unsigned char deity::alignCounter() const { return pImpl_->alignCounter(); }
 
 // concevably used if the vector expands
 deity::deity(deity && rhs) : pImpl_(std::move(rhs.pImpl_)) {
@@ -136,9 +141,15 @@ private:
   std::multimap<Element, deity*> byElement_;
   std::multimap<Domination, deity*> byDomination_;
   std::multimap<Outlook, deity*> byOutlook_;
+  // alignment counters work by axis, not deity. So they are defined here (see flyweight pattern)
+  std::bitset<static_cast<size_t>(Element::none)> alignByElement_;
+  std::bitset<static_cast<size_t>(Domination::none)> alignByDomination_;
+  std::bitset<static_cast<size_t>(Outlook::none)> alignByOutlook_;
 public:
   deityRepoImpl() :
-    repo_() {}
+    repo_(),
+    byElement_(), byDomination_(), byOutlook_(),
+    alignByElement_(0), alignByDomination_(0), alignByOutlook_(0) {}
   deityRepoImpl(deityRepoImpl & rhs); // no definition; disallow copies
   void emplace(Element e, Domination d, Outlook o, const wchar_t * const name, const wchar_t * const house, const wchar_t * const teachings) {
     repo_.reserve(72); // There are 72 gods and deities in the map
@@ -156,6 +167,26 @@ public:
   }
   std::vector<deity>::iterator end() {
     return repo_.end();
+  }
+private:
+  template <unsigned long T, typename E>
+  bool set(std::bitset<T> &bitset, E en, bool val) {
+    auto rtn = bitset[static_cast<size_t>(en)];
+    bitset[static_cast<size_t>(en)] = val;
+    return rtn;
+  }
+public:
+  unsigned char alignCounter(const deity &d) const {
+    unsigned char c=0;
+    if (alignByElement_[static_cast<size_t>(d.element())]) ++c;
+    if (alignByDomination_[static_cast<size_t>(d.domination())]) ++c;
+    if (alignByOutlook_[static_cast<size_t>(d.outlook())]) ++c;
+    return c;
+  }
+  void countAlign(const deity &d, bool advance) {
+    if (set(alignByElement_, d.element(), advance) != advance) return;
+    if (set(alignByDomination_, d.domination(), advance) != advance) return;
+    alignByOutlook_[static_cast<size_t>(d.outlook())] = advance;
   }
 };
 
@@ -231,6 +262,13 @@ deity & deityRepo::getOpposed(const deity &d) const {
     break;
   }
   return getExact(oe, od, oo);
+}
+
+unsigned char deityRepo::alignCounter(const deity &d) const {
+  return pImpl_->alignCounter(d);
+}
+void deityRepo::countAlign(const deity &d, bool advance) {
+  return pImpl_->countAlign(d, advance);
 }
 
 deityRepo& deityRepo::instance() {

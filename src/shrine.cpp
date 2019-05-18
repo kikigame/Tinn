@@ -47,13 +47,14 @@ std::wstring shrine::name() const {
 // handles limitations on entering the zone
 bool shrine::onEnter(monster  &monster, itemHolder &pev) {
   auto &ios = ioFactory::instance();
-  auto coalign = align_.coalignment(monster.align());
+  auto alignment = monster.align().coalignment(align_);
   auto p = monster.isPlayer();
-  if (coalign == 0) {
+  if (p) alignment += monster.align().alignCounter();
+  if (alignment == 0) {
     if (p) ios.message(L"You are prevented from entering the " + name() + L" by a mysterious barrier");
     return false; // opposed. You can't normally enter by your own power.
   }
-  if (coalign == 1) {
+  if (alignment == 1) {
     auto roll = dPc();
     bool success = roll < monster.strength().cur();
     if (p) {
@@ -64,9 +65,17 @@ bool shrine::onEnter(monster  &monster, itemHolder &pev) {
     }
     return success;
   }
-  if (p) {
+  if (p && alignment < 6) {
     ios.message(L"You enter the " + name());
     if (align_ == monster.align()) ios.message(L"You feel very safe here.");
+  }
+  if (p && alignment >= 6) {
+    if (monster.abilities().hear())
+      ios.message(L"A heavenly chorous you into the " + name());
+    else
+      ios.message(L"You enter the " + name());
+    if (align_ == monster.align()) ios.message(L"You are completely safe here.");
+    monster.injury() -= 25;
   }
   return true;
 }
@@ -78,7 +87,7 @@ bool shrine::onEnter(item &item, itemHolder &prev) {
   if (item.render() != L'%') // okay, but not an offering as most creatures can't eat it
     return true;
   // TODO: Should dropping bottles of water count as an offering?
-  // TODO: alignment counters
+  deityRepo::instance().countAlign(p->align(), true);
   auto &ios = ioFactory::instance();
   ios.message(L"Your offering is accepted");
   return true;
@@ -90,11 +99,11 @@ bool shrine::onExit(item &item, itemHolder &prev) {
   if (!p) return true; // okay; no penalty for non-monsters
   if (item.render() != L'%') // okay, not an offering as most creatures can't eat it
     return true;
-  // TODO: alignment counters
   auto &ios = ioFactory::instance();
-  if (p->injury().pc() > 10)
+  if (p->injury().pc() > 10) {
     ios.message(L"You take an offering intended for the needy...");
-  else
+    deityRepo::instance().countAlign(align_, false);
+  } else
     ios.message(L"You accept the charity of " + align_.name());
   return true;
 }
@@ -122,3 +131,4 @@ bool shrine::onAttack(monster &aggressor, monster &target) {
     }
   return true;
 }
+

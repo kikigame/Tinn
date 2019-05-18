@@ -75,6 +75,10 @@ private:
    * are these the same deity? (identity comparison)
    */
   bool operator ==(const deity &other) const;
+  /*
+   * how well respected is the player by this deity?
+   */
+  unsigned char alignCounter() const;
 };
 
 class deityRepoImpl;
@@ -105,6 +109,9 @@ public:
   static deityRepo& instance();
 
   static void close();
+
+  unsigned char alignCounter(const deity &) const;
+  void countAlign(const deity&, bool advance);
 };
 
 // used for religious items
