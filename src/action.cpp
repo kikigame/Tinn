@@ -320,10 +320,22 @@ public:
     renderedAction(name, description) {};
   virtual ~tragedyAction() {}
   virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+    auto &io = ioFactory::instance();
+    if (target.intrinsics().speedy() == bonus(false) &&
+	target.intrinsics().dblAttack() == bonus(false)) {
+      if (target.isPlayer()) io.message(L"You don't get any sadder.");
+      else io.message(target.name() + L" doesn't get any sadder.");
+      return false;
+    }
     // monster becomes sad.
-    // - reduce attack by 20% of current value (rounded down)
-    // + reduce movement rate by 1 slot
-    throw "Not implemented TODO!";
+    // - halve attack rate & movement penalty
+    if (target.isPlayer())
+      io.message(L"You are overwhelmed with sorrow.");
+    else
+      io.message(target.name() + L" doesn't seem as jolly now.");
+    target.intrinsics().speedy(false); // penalty
+    target.intrinsics().dblAttack(false); // penalty
+    return true;
   }
   virtual bool aggressive() const { return true; } // use in combat
   virtual bool heals() const { return false; }
