@@ -327,6 +327,30 @@ L"The diminutive form of /helm/; a helmet covers only the head. Originally\n"
 "metal or bronze, this steel protective headgear will protect from various\n"
 "forms of cranial impact. This one looks like a basic bascinet, sans aventail.",
 L"A decorative pointy metal hat."
+			     )) ;
+    emplace(itemTypeKey::gloves,
+	    new itemTypeImpl(0.97304848117988, materialType::leathery, L'[', L"gloves", // 3.5oz
+L"Hand protectors in soft deer leather, dyed during the tanning process to a\n"
+"dark brown colour. The leather is cut into tranks, thumbs, fourchettes,\n"
+" quirks and welt, then sewn together with decarative points on the back of\n"
+" the hand. As well as providing some protection from minor cuts and grazes,\n"
+"gloves can also protect the hand from armoured metal gauntlets placed on top.",
+L"The unstuffed hands of a mannequin. Stuffing seems to have fallen out of\n"
+			     " the holes."
+			     ));
+    emplace(itemTypeKey::boxing_gloves, // 18oz is the heavist common weight of boxing glove, but I can't tell if that's 1 glove or 2.
+	    new itemTypeImpl(6.950346294142, materialType::leathery, L'[', L"cestus", // so 25oz for cestus (probably on the light side, but joking that it's boxing gloves)
+L"A hand-held weapon made using leather straps, and filled with weighty items\n"
+"to improve the effectiveness of a punch. Th",
+L"Mittons for swollen hands."
+			     ));
+    emplace(itemTypeKey::gauntlets,
+	    new itemTypeImpl(9.07115127649098, materialType::metallic, L'[', L"gauntlets", // 925g
+L"Armoured hand protectors in metal. Wearing over bare skin is ill-advised. A\n"
+"person wearing these will find their punches hit harder and their hands and\n"
+"their lower arms are protected from glancing blows. Made from iron plate,\n"
+L"with linked fingers and rivoted lammellas.",
+L"Old novelty gloves in a dull metallic silver."
 			     ));
     emplace(itemTypeKey::jerkin, // I can't find a good reference, so I'm guessing 36oz for now (4 square feet; see scabbord)
 	    new itemTypeImpl(10.0084986635645, materialType::leathery, L'[', L"jerkin",

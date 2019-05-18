@@ -1554,6 +1554,21 @@ template <> struct itemTypeTraits<itemTypeKey::helmet> {
   template<typename type>
   static item *make(const itemType &t) { return new type(t,  slotType::hat); }
 };
+template <> struct itemTypeTraits<itemTypeKey::gloves> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, slotType::gloves); }
+};
+template <> struct itemTypeTraits<itemTypeKey::boxing_gloves> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, slotType::gauntlets); }
+};
+template <> struct itemTypeTraits<itemTypeKey::gauntlets> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, slotType::gauntlets); }
+};
 template <> struct itemTypeTraits<itemTypeKey::jerkin> {
   typedef basicEquip<item::equipType::worn> type;
   template<typename type>
@@ -2102,6 +2117,9 @@ item &createItem(const itemTypeKey &key) {
   case itemTypeKey::flanchard: return createItem<itemTypeKey::flanchard>();
   case itemTypeKey::haubergeon: return createItem<itemTypeKey::haubergeon>();
   case itemTypeKey::hauberk: return createItem<itemTypeKey::hauberk>();
+  case itemTypeKey::gloves:  return createItem<itemTypeKey::gloves>();
+  case itemTypeKey::boxing_gloves:  return createItem<itemTypeKey::boxing_gloves>();
+  case itemTypeKey::gauntlets:  return createItem<itemTypeKey::gauntlets>();
   case itemTypeKey::helmet: return createItem<itemTypeKey::helmet>();
   case itemTypeKey::jerkin: return createItem<itemTypeKey::jerkin>();
   case itemTypeKey::peytral: return createItem<itemTypeKey::peytral>();

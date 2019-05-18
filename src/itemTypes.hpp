@@ -85,8 +85,9 @@ enum class itemTypeKey {
     haubergeon,
     hauberk,
     helmet,
-  // gloves, TODO leathery; worn under gauntlets
-  // gauntlets, TODO, Metallic; Worn over gloves
+    gloves, // leathery; worn under gauntlets
+    boxing_gloves, // leathery, worn in the gauntlet slot as you can put gloves under but not gauntlets over
+    gauntlets, //Metallic; Worn over gloves
     jerkin,
     peytral, // (horse chest armour)
     robe,
@@ -123,7 +124,7 @@ enum class itemTypeKey {
   // Containers ('=' as bounding something; nethack uses '(' as for all tools; cf weapons are ')')
   ////
     poke, // old word for large pocket, especially not sewn in. Also, a bag.
-    napsack_of_consumption, // ref:Knightmare
+    napsack_of_consumption, // ref:Knightmare (TV show)
   //prism_box, // any enchantemnt/flag changes on the box propagate to the contents; splitting the waveform of magic
 
   ////

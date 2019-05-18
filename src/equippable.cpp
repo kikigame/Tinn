@@ -169,6 +169,14 @@ int equippable::strBonus() const {
     if (it && it.value().equippable() == item::equipType::wielded) {
       // +1 so that even an unenchanted weapon does some damage:
       rtn += it.value().enchantment() + 1;
+    } else if (it && i.first == slotBy(slotType::gauntlets)) {
+        coverSearch cs;
+	if (!cs.isCovered(equipment_, i.first)) {
+	  if (it.value().material() == materialType::metallic || it.value().material() == materialType::stony)
+	    rtn += it.value().enchantment() + 1;
+	  else
+	    rtn += it.value().enchantment() / 2 + 1;
+	}
     }
   }
   return rtn;
