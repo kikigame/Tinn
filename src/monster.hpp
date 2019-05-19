@@ -208,6 +208,10 @@ public:
 
   // adds an adjective
   void addDescriptor(std::wstring);
+
+  // pick an action to attack with; called during combat.
+  // return empty reference for conventional melee attack.
+  virtual optionalRef<sharedAction<monster, monster>> attackAction();
   
 protected:
 

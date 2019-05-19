@@ -594,6 +594,9 @@ public:
     intrinsics().swim(true);
   }
   virtual ~incubus() {};
+  virtual optionalRef<sharedAction<monster, monster>> attackAction() {
+    return optionalRef<sharedAction<monster, monster>>(incubusAction());
+  }
 };
 
 
@@ -674,6 +677,9 @@ public:
     intrinsics().swim(true);
   }
   virtual ~succubus() {};
+  virtual optionalRef<sharedAction<monster, monster>> attackAction() {
+    return optionalRef<sharedAction<monster, monster>>(succubusAction());
+  }
 };
 
 class bird : public trivialMonster {

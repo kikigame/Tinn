@@ -99,7 +99,7 @@ const deity &monster::align() const { return *align_; }
 
 /*
  * This is the public method called whenever one monster attacks another.
- * For the player, we always want this to be a plain attack or a monster attack (TODO), if any.
+ * For the player, we always want this to be a plain attack or a monster attack, if any.
  * For other monsters, we should also consider any applicable item attacks.
  */
 const attackResult monster::attack(monster &target) {
@@ -107,32 +107,39 @@ const attackResult monster::attack(monster &target) {
       && dPc() < target.appearance().cur())
     return attackResult(0, L"seems to be under a charm");
 
-  if (!isPlayer()) {
-    // TODO: non-player monsters may choose to use a monster ability instead
-  }
-  
-  // We hit (unless dodged) the target if D% < fighting, or always on a roll of 0.
-  auto dHit = dPc();
-  unsigned char f = fighting().cur();
-  
-  if (dHit > f) return attackResult(injury(), L"miss");
-
-  // find the weapon:
-  auto weapon = findWeapon();
-  damageType type = (weapon) ? weapon.value().weaponDamage(true) : unarmedDamageType();
-  auto dt = damageRepo::instance()[type];
-
-  // Now to see if the opponent dodged it...
-  unsigned char d = target.dodge().cur();
-  if (dHit < d) {
-    target.damageArmour(dt); // always damage armour on unsuccessful attack, unless proofed.
-    return attackResult(injury(), L"evaded");
-  }
-
-  // Now to see how much damage we did...
   auto cur = target.injury().cur();
   auto max = target.injury().max();
-  int damage = target.wound(*this, strength_.cur(), dt);
+  int damage;
+
+  // non-player monsters may choose to use a monster ability instead
+  auto attack = attackAction();
+  if (attack) {
+    if (!attack.value()(false, false, *this, target))
+      return attackResult(0, L"failed");
+    damage = target.injury().cur() - cur;
+  } else {
+  
+    // We hit (unless dodged) the target if D% < fighting, or always on a roll of 0.
+    auto dHit = dPc();
+    unsigned char f = fighting().cur();
+  
+    if (dHit > f) return attackResult(injury(), L"miss");
+
+    // find the weapon:
+    auto weapon = findWeapon();
+    damageType type = (weapon) ? weapon.value().weaponDamage(true) : unarmedDamageType();
+    auto dt = damageRepo::instance()[type];
+
+    // Now to see if the opponent dodged it...
+    unsigned char d = target.dodge().cur();
+    if (dHit < d) {
+      target.damageArmour(dt); // always damage armour on unsuccessful attack, unless proofed.
+      return attackResult(injury(), L"evaded");
+    }
+
+    // Now to see how much damage we did...
+    damage = target.wound(*this, strength_.cur(), dt);
+  }
   bool fatal = static_cast<unsigned char>(cur + damage) >= max;
   if (!fatal) onHit(target, damage);
   if (damage == 0) return attackResult(injury(), L"ineffectual");
@@ -534,6 +541,11 @@ std::vector<std::wstring> monster::adjectives() const {
 void monster::addDescriptor(std::wstring desc) {
   if (std::find(extraAdjectives_.begin(), extraAdjectives_.end(), desc) != extraAdjectives_.end())
     extraAdjectives_.push_back(desc);
+}
+
+optionalRef<sharedAction<monster, monster>> monster::attackAction() {
+  // default: no action
+  return optionalRef<sharedAction<monster, monster>>();
 }
 
 movementType stationary = {speed::stop, goTo::none, goBy::avoid, 0 };
