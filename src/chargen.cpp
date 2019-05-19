@@ -44,10 +44,18 @@ playerBuilder chargen() {
 	 {Domination::aggression, L"Defend yourself with a good offense"},
 	 {Domination::none, L"None of the above" }
        },
-       L"Those minded to concentration will have a bonus to mind and defence,\n" //
-       "   at a cost of speed, and being hurt more by fire.\n\n"
-       "Those minded to aggression will have a bonus to attack and damage,\n"
-       "   at a cost of outward beauty, and being struck more often in combat."
+       [](const Domination &d) {
+	 switch (d) {
+	 case Domination::concentration:
+	 return L"Those minded to concentration will have a bonus to mind and defence,\n"
+	 "   at a cost of speed, and being hurt more by fire.\n\n";
+	 case Domination::aggression:
+	 return L"Those minded to aggression will have a bonus to attack and damage,\n"
+	 "   at a cost of outward beauty, and being struck more often in combat.";
+	 default:
+	 return L"";
+	 }
+       }
        );
     Outlook outlook = ios.choice<Outlook>
       (L"CHARACTER GENERATION[3/7]> Welcome " + name,
@@ -58,10 +66,18 @@ playerBuilder chargen() {
 	 {Outlook::cruel, L"Take what riches you can"}, // greed, of course, is still cruelty, however callous
 	 {Outlook::none, L"None of the above" }
        },
-       L"Those minded to compassion will have a bonus to outward beauty,\n"
-       "   at a cost of stamina.\n"
-       "Those of a callous mindset will have an intrinsic armour bonus,\n"
-       "   at a cost of physical charisma.\n"
+       [](const Outlook &o) {
+	 switch (o) {
+	 case Outlook::kind:
+	 return L"Those minded to compassion will have a bonus to outward beauty,\n"
+	 "   at a cost of stamina.\n";
+	 case Outlook::cruel:
+	 return L"Those of a callous mindset will have an intrinsic armour bonus,\n"
+	 "   at a cost of physical charisma.\n";
+	 default:
+	 return L"";
+	 }
+       }
        );
     Element element = ios.choice<Element>
       (L"CHARACTER GENERATION[4/7]> Your spiritual path",

@@ -235,10 +235,11 @@ private:
     if (i == 0) ++i; // start at 1
     for (auto it : forSale_)
       choices.emplace_back(i++, it->name());
+    const std::function<std::wstring(const int &)> extraHelp =
+      [this](const int &idx){return forSale_[idx-1]->description(); };
     int idx = ioFactory::instance().choice(L"What would you like to buy?",
 			 L"Choose the item you want to add to your shopping basket",
-			 choices,
-			 L"per-item help is TODO.");
+			 choices, extraHelp);
     i=0;
     auto &ios = ioFactory::instance();
     for (auto s : services_) {

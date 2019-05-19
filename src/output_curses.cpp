@@ -489,7 +489,7 @@ public:
   template <typename T>
   T choice(const std::wstring &prompt, const std::wstring &help, 
 	   const std::vector<std::pair<T, std::wstring>> &choices,
-	   const std::wstring &extraHelp) const {
+	   const std::function<std::wstring(const T&)> &extraHelp) const {
     out_ << prompt << std::endl
 	 << help << std::endl;
     for (auto ch : choices)

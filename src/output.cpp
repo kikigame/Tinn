@@ -13,25 +13,51 @@
 io::~io(){}
 
 template <typename T>
+bool fillExtraHelp(std::vector<std::wstring> &extraHelps,
+		   const std::vector<std::pair<T, std::wstring> > &choices,
+		   const std::function<std::wstring(const T &)> &extraHelp,
+		   size_t offset, size_t numChoices /*>=1*/) {
+  std::set<std::wstring> extraHelpIdx;
+  for (size_t i=0; i < numChoices; ++i) {
+    std::wstring help = extraHelp(choices[offset + i].first);
+    extraHelps.emplace_back(help);
+    extraHelpIdx.emplace(help);
+  }
+  return extraHelpIdx.size() > 1 || *extraHelpIdx.begin() != std::wstring(L"");
+}
+
+template <typename T>
 size_t choicePrompt(const io &ios, const std::wstring &prompt, const std::wstring &help, 
 		    const std::vector<std::pair<T, std::wstring> > &choices,
-		    const std::wstring &extraHelp, size_t offset) {
+		    const std::function<std::wstring(const T &)> &extraHelp,
+		    size_t offset) {
   unsigned int res, i;
   size_t numChoices = choices.size() - offset;
   bool hasMoreChoices = numChoices > 8;
   size_t maxInput = (hasMoreChoices) ? 9 : numChoices;
+  size_t highlight = 0;
+  std::vector<std::wstring> extraHelps;
+  bool hasExtraHelp = fillExtraHelp(extraHelps, choices, extraHelp, offset, numChoices);
   if (hasMoreChoices) numChoices = 8;
   do {
   LOOP:
     std::wstring msg = prompt + L"; please press [1] to [" + std::to_wstring(numChoices) +  L"]:";
-    std::wstring list;  
-    for (i=0; i < numChoices; ++i)
-      list += L"  " + std::to_wstring(i+1) + L" - " + choices[offset + i].second + L"\n";
+    std::wstring list;
+    for (i=0; i < numChoices; ++i) {
+      list += L"  " + std::to_wstring(i+1) + (i == highlight ? L" > " : L" - ") + choices[offset + i].second + L"\n";
+      auto str = extraHelps.at(i);
+    }
+    std::wstring extraHelpMsg = extraHelp(choices[highlight + offset].first);
+    if (hasExtraHelp)
+      extraHelpMsg = L"\t([W] & [S] navigate help)\n\n" + extraHelpMsg;
     if (hasMoreChoices)
       list += L"  9 - --MORE--\n";
-    auto ch = ios.keyPrompt(msg, help + L"\n" + list + L"\n" + extraHelp);
+    auto ch = ios.keyPrompt(msg, help + L"\n" + list + L"\n" + extraHelpMsg).c_str();
+    if (*ch == L'W' || *ch == L'w') highlight = (highlight == 0) ? 0 : highlight - 1;
+    if (*ch == L'S' || *ch == L's') highlight = (highlight == maxInput+1) ? 0 : highlight + 1;
+    if (*ch == L'\n') return offset + highlight + 1; // 1-based index in return
     try {
-      res = std::stoi(ch.c_str());
+      res = std::stoi(ch);
     } catch (std::invalid_argument) {
       goto LOOP; // retry after invalid key
     } catch (std::out_of_range) {
@@ -46,7 +72,7 @@ size_t choicePrompt(const io &ios, const std::wstring &prompt, const std::wstrin
 template <typename T>
 T io::choice(const std::wstring &prompt, const std::wstring &help, 
 	     const std::vector<std::pair<T, std::wstring> > &choices,
-	     const std::wstring &extraHelp) const {
+	     const std::function<std::wstring(const T &)> &extraHelp) const {
   size_t offset=0, choice, res;
   do {
     choice = choicePrompt(*this, prompt,help,choices,extraHelp,offset);
@@ -141,4 +167,7 @@ void junk(const io &ios) { // this method is not used.
   ios.choice<int>(L"", L"", {}); // used in shop
   ios.choice<std::shared_ptr<item> >(L"", L"", {}); // used in shop
   ios.choice<wchar_t>(L"", L"", {}); // used in encyclopedia
+  std::function<std::wstring (wchar_t const&)> fn = [](wchar_t){return L"";};
+  std::vector<std::pair<wchar_t, std::wstring>> v;
+  ios.choice<wchar_t>(L"", L"", v, fn);
 }

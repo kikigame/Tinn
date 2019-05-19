@@ -7,6 +7,7 @@
 
 #include "coord.hpp"
 
+#include <functional>
 #include <string>
 #include <memory>
 #include <vector>
@@ -55,12 +56,21 @@ public:
   virtual std::wstring linePrompt(const std::wstring &msg, const std::wstring &help) const = 0;
   virtual std::wstring linePrompt(const wchar_t *msg, const wchar_t *help) const { return linePrompt(std::wstring(msg), std::wstring(help)); }
   
+  // present a menu of options to the player. See shop.cpp
+  // T is the type
+  template <typename T>
+  T choice(const std::wstring &prompt, const std::wstring &help, 
+	   const std::vector<std::pair<T, std::wstring>> &choices,
+	   const std::function<std::wstring(const T &)> &extraHelp) const;
+
   // present a menu of options to the player. See chargen.cpp
   // T is the type
   template <typename T>
   T choice(const std::wstring &prompt, const std::wstring &help, 
 	   const std::vector<std::pair<T, std::wstring>> &choices,
-	   const std::wstring &extraHelp = L"") const;
+	   const std::wstring &extraHelp = L"") const {
+    return choice<T>(prompt, help, choices, [&extraHelp](const T&) { return extraHelp;});
+  }
 
   // prompt for gender, returning male % and female %.
   // this could be generalised in valious ways, but let's not do that until we need to prompt for
