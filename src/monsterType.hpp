@@ -148,6 +148,8 @@ private:
 
   // monster default flags
   const monsterIntrinsics intrinsics_;
+
+  const bool alluring_;
 public:
   monsterType(const monsterTypeBuilder &);
   monsterType(const monsterType &) 
@@ -155,7 +157,7 @@ public:
       levelFactor_(0), levelOffset_(0), minSpawn_(0), maxSpawn_(0), xpFactor_(0),
       xpOffset_(0), renderChar_('\0'), strength_(0), appearance_(0), fighting_(0),
       dodge_(0), maxDamage_(0), gen_(genderAssignType::f), corpseWeight_(0),
-      material_(materialType::fleshy),  movementType_(stationary) { 
+      material_(materialType::fleshy),  movementType_(stationary), alluring_(false) { 
     throw "needed for containers but shouldn't copy monster types!";};
 
   const monsterTypeKey type() const;
@@ -202,6 +204,9 @@ public:
   std::shared_ptr<monster> spawnSpace(level &, monsterBuilder &b) const;
 
   const monsterIntrinsics & intrinsics() const;
+
+  // is this monster type supernaturally alluring?
+  bool alluring() const;
 };
 
 /* singleton repository for monster types */

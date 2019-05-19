@@ -44,6 +44,7 @@ private:
   movementType movementType_;
   bonus fearless_;
   monsterIntrinsics intrinsics_;
+  bool alluring_;
 public:
   const monsterTypeKey key_;
   monsterTypeBuilder(monsterTypeKey key) : 
@@ -53,9 +54,9 @@ public:
     material_(materialType::fleshy), alignment_(),
     foodMaterials_(), sayings_(),
     movementType_ ({ speed::turn2, goTo::player, goBy::smart, 0 }),
-    fearless_(), intrinsics_(),
-    key_(key) {}					   
-  monsterTypeBuilder& category(monsterCategory category) { category_ = category; return *this; }
+    fearless_(), intrinsics_(), alluring_(false),
+    key_(key) {}
+    monsterTypeBuilder& category(monsterCategory category) { category_ = category; return *this; }
   monsterTypeBuilder& name(const wchar_t * name) { monsterNames_.push_back(name); return *this; }
   monsterTypeBuilder& className(const std::wstring & className) { className_ = className; return *this; }
   monsterTypeBuilder& levelFactor(int levelFactor) { levelFactor_ =levelFactor ; return *this; }
@@ -89,6 +90,7 @@ public:
   monsterTypeBuilder& scardy() { fearless_ = bonus(false); return *this; }
   monsterTypeBuilder& throws() { intrinsics_.throws(true); return *this; }
   monsterTypeBuilder& zap() { intrinsics_.zap(true); return *this; }
+  monsterTypeBuilder& alluring() { alluring_ = true; return *this; }
 };
 
 monsterType::monsterType(const monsterTypeBuilder & b) :
@@ -116,7 +118,8 @@ monsterType::monsterType(const monsterTypeBuilder & b) :
   sayings_(b.sayings_),
   alignment_(b.alignment_),
   movementType_(b.movementType_),
-  intrinsics_(b.intrinsics_) {
+  intrinsics_(b.intrinsics_),
+  alluring_(b.alluring_) {
 }
 
 const monsterTypeKey monsterType::type() const { return key_; }
@@ -165,6 +168,9 @@ const wchar_t * monsterType::name(const unsigned char maxDamage) const {
 }
 const genderAssignType monsterType::gen() const {
   return gen_;
+}
+bool monsterType::alluring() const {
+  return alluring_;
 }
 
 
@@ -419,6 +425,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .corpseWeight(-10) // magical creature
 	    .eats(materialType::clothy) // ripping clothes off with its teeth...
     //ref: http://www.chesterfieldparanormalresearch.com/incubus---sucubbus-demon.html; wikipedia; http://mythicalcreatureslist.com/mythical-creature/Succubus; others
+	    .alluring()
 	    .encyclopedium(L"The word incubus comes from the Latin /incubāre/ (to lay\n"
       "upon), from Latin /incubō/ (nightmare). Even the most hedonistic\n"
       "of demonologist should think twice before engaging one. They have \n"
@@ -527,6 +534,7 @@ L"Merfolk do not like to stray outside the sea, and mermen less so. Having the\n
 	    .movement({speed::perturn, goTo::none, goBy::smart, 10}) // slow for a bird, but works better as we are likely to be charmed.
 	    .eats(materialType::fleshy)
 	    .eats(materialType::liquid)
+	    .alluring()
 	    // no throw or zap; they make you go to them
 	    .encyclopedium(
 L"Of all the birds of the sea, the sirens are the most beautiful and the most\n"
@@ -605,6 +613,7 @@ L"Be they creatures of immortality, creation, temptation, or hairstyle, snakes\n
 	    .corpseWeight(2713.415185333) // 610lb; average weight of Earth gravity human
 	    .eats(materialType::clothy) // ripping clothes off with its teeth...
 	    .eats(materialType::liquid)
+	    .alluring()
 	    .encyclopedium(
     //ref: http://www.chesterfieldparanormalresearch.com/incubus---sucubbus-demon.html; wikipedia; http://mythicalcreatureslist.com/mythical-creature/Succubus; others
     L"The word succubus comes from the Latin /succubāre/ (to lie\n"

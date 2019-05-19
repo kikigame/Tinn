@@ -1032,8 +1032,11 @@ public:
     basicItem(itemTypeRepo::instance()[itemTypeKey::corpse]),
     type_(of),
     maxDamage_(maxDamage) {
+    
     // TODO: should any monster types be proof against damage? Already (eg) wet?
-    // TODO: incubus & succubus should be sexy. After all, they are confident...
+    // some monsters (eg incubus & succubus) should be sexy. After all, they are confident...
+    if (of.alluring())
+      sexUp(true);
     // if (monsterType == monsterType::incubus || monsterType == monsterType::succubus) sexUp(true);
   }
   corpse (const monster &m) :
