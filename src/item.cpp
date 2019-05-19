@@ -2,6 +2,7 @@
 
 #include "items.hpp"
 #include "equippable.hpp"
+#include "random.hpp"
 
 extern std::vector<damageType> allDamageTypes;
 
@@ -133,8 +134,15 @@ std::vector<std::wstring> basicItem::adjectives() const {
 bool basicItem::strike(const damageType &type) {
   if (isProof(type)) return false;
   auto i = damageTrack_.find(type);
-  if (i == damageTrack_.end()) return false;
-  ++(i->second); // TODO: many items should be destroyed if they get too damaged. Do it here or transmute won't work.
+  // many items should be destroyed if they get too damaged. Do it here or transmute won't work.
+  if (i == damageTrack_.end()) {
+    if (highlight()) return false; // highlighted items can't be destroyed this way; they're need for quests.
+    int e = enchantment();
+    if (dPc() >=  50 + isBlessed() && enchantment() > 0 ? 10 * e : e)
+      destroy();
+    return false;
+  }
+  ++(i->second);
   return true;
 }
 
