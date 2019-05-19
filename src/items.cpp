@@ -221,6 +221,7 @@ public:
       item * it = dynamic_cast<item *>(holder);
       if (it) holder = &(it->holder());
     } while (m == nullptr);
+    if (!m) return false; // just in case
     optionalRef<monster> target;
     if (m->isPlayer()) {
       wchar_t dir;
@@ -241,7 +242,8 @@ public:
 	io.message(L"You don't hit even one monster.");
     } else {
       // select a monster to fire on
-      return false; // TODO
+      auto pMon = pickTarget<true>(*m);
+      if (pMon) target = optionalRef<monster>(*pMon);
     }
     if (!target)
       return false;

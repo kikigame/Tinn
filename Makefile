@@ -66,7 +66,7 @@ src/equippable.o : src/equippable.cpp src/action.hpp src/bonus.hpp src/damage.hp
 src/geometry.o : src/geometry.cpp src/coord.hpp src/geometry.hpp 
 	$(CXX) src/geometry.cpp -c -Wall -g -std=c++11 -o src/geometry.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/item.o : src/item.cpp src/action.hpp src/bonus.hpp src/damage.hpp src/equippable.hpp src/graphsearch.hpp src/hasAdjectives.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/materialType.hpp src/optionalRef.hpp src/renderable.hpp src/slots.hpp 
+src/item.o : src/item.cpp src/action.hpp src/bonus.hpp src/damage.hpp src/equippable.hpp src/graphsearch.hpp src/hasAdjectives.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/materialType.hpp src/optionalRef.hpp src/random.hpp src/renderable.hpp src/slots.hpp 
 	$(CXX) src/item.cpp -c -Wall -g -std=c++11 -o src/item.o -finput-charset=utf8 -fexec-charset=utf8
 
 src/itemholder.o : src/itemholder.cpp src/action.hpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/encyclopedia.hpp src/equippable.hpp src/graphsearch.hpp src/hasAdjectives.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/level.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/movement.hpp src/optionalRef.hpp src/output.hpp src/random.hpp src/ref.hpp src/renderable.hpp src/shop.hpp src/slots.hpp src/time.hpp src/zone.hpp 
