@@ -82,9 +82,9 @@ class sharedAction<monster, monster>{
     // heal by veggie food consumption
     heal_ray_veggie,
     // perform a random "funny" effect to detriment of target monster:
-    // comedy, TODO
+    comedy,
     // make the target "sad":
-    // tradgedy, TODO
+    tragedy,
     // move the target as far as possible from the source
     teleport_away,
     // move the target into a new rocky prison where there are no items or monsters
@@ -117,8 +117,6 @@ class sharedAction<monster, monster>{
     charm,
     // create a shop on the fly with the inventory of the given monster
     popup_shop,
-    // a variety of hilarious hijinks
-    comedy,
     // to sleep, perchance to dream
     dream,
     END
@@ -219,6 +217,10 @@ class sharedAction<item, monster>{
       slow_climb,
       speed,
       slow,
+      // perform a random "funny" effect to detriment of target monster:
+      comedy,
+      // make the target "sad":
+      tragedy,
     END
   };
 };

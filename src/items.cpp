@@ -504,8 +504,7 @@ public:
     if (type_ == it[itemTypeKey::water])
       return optionalRef<sharedAction<item, monster> >();
     else if (type_ == it[itemTypeKey::tears])
-      // TODO: tradgedy action
-      return optionalRef<sharedAction<item, monster> >();
+      return actionFactory<item, monster>::get(sharedAction<item, monster>::key::tragedy);
     else if (type_ == it[itemTypeKey:: heavy_water])
       return optionalRef<sharedAction<item, monster> >();
     else if (type_ == it[itemTypeKey:: fire_water]) {

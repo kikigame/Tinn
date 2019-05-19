@@ -217,7 +217,7 @@ public:
 class comedyAction : public renderedAction<monster, monster> {
 public:
   comedyAction(const wchar_t * const name, const wchar_t * const description) :
-    renderedAction(name, description) {};
+    renderedAction<monster, monster>(name, description) {}
   virtual ~comedyAction() {}
   virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
     auto &io = ioFactory::instance();
@@ -246,7 +246,7 @@ public:
       // no polymorphing objects yet, so let's just destroy it with a silly message:
       std::wstring name = weapon.value().name();
       if (weapon.value().destroy()) {
-	auto pronoun = (&source == &target) ? L"Your " : L"Their ";
+	auto pronoun = (target.isPlayer()) ? L"Your " : L"Their ";
 	io.longMsg(pronoun + name + L"\n\tbecomes a beautiful bouquet! Hahaha!");
 	return true;
       }
@@ -257,9 +257,14 @@ public:
       target.intrinsics().speedy(false);
       if (target.abilities().speedy() != speedy) {
 	target.fall(1);
-	// TODO: stunning for limited time?
-	std::wstring whowhat = (&source == &target) ? L"Your fall" : (target.name() + L" falls");
+	std::wstring whowhat = (target.isPlayer()) ? L"Your fall" : (target.name() + L" falls");
 	io.longMsg(L"Whoops! " + whowhat + L" over! Hahaha!");
+	// stun for 1-3 turns
+	if (!cursed)
+	  time::tick(false);
+	time::tick(false);
+	if (blessed)
+	  time::tick(false);
 	return true;
       }
     }
@@ -268,7 +273,7 @@ public:
       target.intrinsics().see(false);
       if (!target.intrinsics().see()) {
 	// TODO: equipped creampie of some sort? Too nethack to wipe off?
-	std::wstring msg = (&source == &target) ? L"cream pie to the eyes! Hahaha!" :
+	std::wstring msg = (target.isPlayer()) ? L"cream pie to the eyes! Hahaha!" :
 	  (target.name() + L": cream pie to the eyes! Hahaha!");
 	io.longMsg(msg);
 	return true;
@@ -278,7 +283,7 @@ public:
     if (!target.abilities().fly()) {
       target.intrinsics().fly(true);
       if (target.abilities().fly()) {
-	std::wstring msg = (&source == &target) ? (target.name() + L": come down at once! Hahaha!") :
+	std::wstring msg = (target.isPlayer()) ? (target.name() + L": come down at once! Hahaha!") :
 	  L"Come down from there at once! Hahaha!";
 	io.longMsg(msg);
 	return true;
@@ -304,7 +309,7 @@ public:
     auto &zombie = monsterTypeRepo::instance()[monsterTypeKey::zombie];
     b.type(zombie);
     auto mon = zombie.spawn(l, b);
-    l.moveTo(*mon, pos); // TODO: Chase somehow?
+    l.moveTo(*mon, pos); // it's a zombie; if it can attack the player, it'll chase them.
     io.longMsg(L"Yakety Sax! Hahaha!"); // Ref: Benny Hill (in turn referencing Keystone Cops)
     return true;
   }
@@ -314,12 +319,13 @@ public:
 };
 
 // make the target monster sad
-class tragedyAction : public renderedAction<monster, monster> {
+template <typename T>
+class tragedyAction : public renderedAction<T, monster> {
 public:
   tragedyAction(const wchar_t * const name, const wchar_t * const description) :
-    renderedAction(name, description) {};
+    renderedAction<T, monster>(name, description) {};
   virtual ~tragedyAction() {}
-  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(bool blessed, bool cursed, T &source, monster &target) {
     auto &io = ioFactory::instance();
     if (target.intrinsics().speedy() == bonus(false) &&
 	target.intrinsics().dblAttack() == bonus(false)) {
@@ -340,6 +346,9 @@ public:
   virtual bool aggressive() const { return true; } // use in combat
   virtual bool heals() const { return false; }
   virtual bool buffs() const { return false; }
+  virtual bool undo(bool blessed, bool cursed, T &source, monster &target) {
+    return false;
+  }
 };
 
 // move the target as far as possible (manhatten distance) from the source, 
@@ -674,13 +683,12 @@ L"Useful for getting out of a scrape, especially when trapped.\n"
 L"To somman another creature towards you along a line of movement."));
 	rtn[action::key::heal_ray_veggie] = std::unique_ptr<action>(new forceHealAction(L"Vegan food ray",
 L"Force-feeds a few sprouts. This can be a life-saver, but is also unpleasant."));
-	/*	rtn[action::key::comedy] = std::unique_ptr<action>(new comedyAction(L"comedy",
+	rtn[action::key::comedy] = std::unique_ptr<action>(new comedyAction(L"comedy",
 L"Comedy and Tragedy are two sides of the same coin. Neither is predictable,\n"
 "but like all social commentary, both can be effective when used carefully."));
-	rtn[action::key::comedy] = std::unique_ptr<action>(new tragedyAction(L"tragedy",
+	rtn[action::key::tragedy] = std::unique_ptr<action>(new tragedyAction<monster>(L"tragedy",
 L"Comedy and Tragedy are two sides of the same coin. Neither is predictable,\n"
 "but like all social commentary, both can be effective when used carefully."));
-	*/
 	rtn[action::key::teleport_away] = std::unique_ptr<action>(new teleportAwayAction(L"teleport away",
 L"Sometimes you just need to put some distance between yourself and an\n"
 "adversary. Teleport Away causes the target to move as far away from you as\n"
@@ -750,6 +758,9 @@ L"Charming a monster will make it less inclined to attack you, and more\n"
 "physical beauty."));
 	rtn[action::key::comedy] = std::unique_ptr<action>(new comedyAction(L"comedy",
 L"Always fun for a floor show. Use with caution"));
+	rtn[action::key::tragedy] = std::unique_ptr<action>(new tragedyAction<monster>(L"tragedy",
+L"Comedy and Tragedy are two sides of the same coin. Neither is predictable,\n"
+"but like all social commentary, both can be effective when used carefully."));
 	rtn[action::key::dream] = std::unique_ptr<action>(new dreamAction(L"slumber",
 L"The human carcadian rhythm will grant an adult human between 7 and 9 hours of"
 "nightly sleep, with younger people typically needing more. The truly lucky may"
@@ -1194,6 +1205,9 @@ L"When something with this property is equipped, you will be able to move twice\
 			   L"sloth",
 L"When something with this property is equipped, you will be able to move half\n"
 "as fast as normal."));    
+    rtn[action::key::tragedy] = std::unique_ptr<action>(new tragedyAction<item>(L"tragedy",
+L"Comedy and Tragedy are two sides of the same coin. Neither is predictable,\n"
+"but like all social commentary, both can be effective when used carefully."));
     return rtn;
   }
 };
