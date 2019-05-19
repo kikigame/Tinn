@@ -158,7 +158,6 @@ int monster::wound(const monster &by, unsigned char reductionPc, const damage & 
   damage *= reductionPc;
   damage /= 100;
   damage += 5 * by.abilities().extraDamage(type);
-  damage -= 5 * abilities().resist(type);
   damage = modDamage(damage, type);
   damage_ += static_cast<unsigned char>(damage);
   if (damage_.cur() == damage_.max()) death();
