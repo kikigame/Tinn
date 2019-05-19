@@ -53,8 +53,8 @@ size_t choicePrompt(const io &ios, const std::wstring &prompt, const std::wstrin
     if (hasMoreChoices)
       list += L"  9 - --MORE--\n";
     auto ch = ios.keyPrompt(msg, help + L"\n" + list + L"\n" + extraHelpMsg).c_str();
-    if (*ch == L'W' || *ch == L'w') highlight = (highlight == 0) ? 0 : highlight - 1;
-    if (*ch == L'S' || *ch == L's') highlight = (highlight == maxInput+1) ? 0 : highlight + 1;
+    if ((*ch == L'W' || *ch == L'w') && highlight > 0) highlight--;
+    if ((*ch == L'S' || *ch == L's') && highlight < maxInput-1) highlight++;
     if (*ch == L'\n') return offset + highlight + 1; // 1-based index in return
     try {
       res = std::stoi(ch);

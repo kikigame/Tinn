@@ -236,7 +236,23 @@ private:
     for (auto it : forSale_)
       choices.emplace_back(i++, it->name());
     const std::function<std::wstring(const int &)> extraHelp =
-      [this](const int &idx){return forSale_[idx-1]->description(); };
+      [this](const int &idx){ // 0-based
+      int numServices = services_.size();
+      if (idx < numServices)
+	switch (services_[idx]) {
+	case serviceType::enchantment:
+	  return std::wstring(L"Magical enchantments restore charges and improve effectiveness.");
+	case serviceType::proofing:
+	  return std::wstring(L"Preventing further damage of a given type.");
+	case serviceType::fixing:
+	  return std::wstring(L"Fixing damage of a given type.");
+	default:
+	  return std::wstring(L"");
+	}
+      else
+	return forSale_[idx-numServices]->description();
+	
+    };
     int idx = ioFactory::instance().choice(L"What would you like to buy?",
 			 L"Choose the item you want to add to your shopping basket",
 			 choices, extraHelp);
