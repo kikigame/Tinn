@@ -185,7 +185,6 @@ int equippable::strBonus() const {
   return rtn;
 }
 
-// TODO: shields. These occupy weapon slots, and allow for deflection rather than armour.
 // calculate the current strength bonus from equipment
 int equippable::dodBonus() const {
   int rtn = 0;
