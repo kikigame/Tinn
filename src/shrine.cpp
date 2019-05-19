@@ -86,7 +86,7 @@ bool shrine::onEnter(item &item, itemHolder &prev) {
   if (!p) return true; // okay, but not an offering as not from a monster
   if (item.render() != L'%') // okay, but not an offering as most creatures can't eat it
     return true;
-  // TODO: Should dropping bottles of water count as an offering?
+  // NB: dropping bottles of water doesn't count as an offering. They're consumable, but water is readily available to the needy (eg a water level, or water traps etc).
   deityRepo::instance().countAlign(p->align(), true);
   auto &ios = ioFactory::instance();
   ios.message(L"Your offering is accepted");

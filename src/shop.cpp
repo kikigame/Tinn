@@ -95,7 +95,6 @@ public:
     servicesBought_() {
     // What does the shop have to sell?
     restock();
-    // TODO: When does the shop get restocked? Or do we get new shops each time?
     // "enchanting" shops sell enchantments:
     if (adjective == L"Enchanting")
       services_.push_back(serviceType::enchantment);
