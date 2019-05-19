@@ -636,7 +636,8 @@ public:
   }
   virtual bool strike(const damageType &type) {
     bool rtn = basicItem::strike(type);
-    //TODO: smash the bottle if broken.
+    //bottles smash if broken.
+    if (rtn) destroy();
     return rtn;
   }
   // when a bottle is destroyed, its contents are revealed:
