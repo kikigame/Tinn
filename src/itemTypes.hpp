@@ -78,6 +78,7 @@ enum class itemTypeKey {
   ////
     bow, // worn by horses on their tail
     boots,
+    buckler, // secondary weapon that also provider armour
     cloak,
     crupper, // (horse rump armour)
     doublet,

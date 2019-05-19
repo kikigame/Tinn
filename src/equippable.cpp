@@ -177,6 +177,9 @@ int equippable::strBonus() const {
 	  else
 	    rtn += it.value().enchantment() / 2 + 1;
 	}
+    } else if (it && i.first == slotBy(slotType::secondary_weapon)) {
+      // secondary wearables == shields. aside from Roman tower shields, shields are basically active punching weapons.
+      rtn += it.value().enchantment() / 2 + 1;
     }
   }
   return rtn;

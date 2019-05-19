@@ -278,6 +278,13 @@ L"Someone stole the present!"
 L"A good pair of boots will protect your feet and ankles when walking.",
 L"Tall shoes"
 			     ));
+    emplace(itemTypeKey::buckler,
+	    new itemTypeImpl(100, materialType::metallic, L'[', L"buckler", // "a little over 10kg"
+L"This small, round (\"Type I\" in the Schmidt typology system) metal shield\n"
+"is useful to parry blows in defense, as a punching weapon, to shield your\n"
+"main weapon from view, and to push the opponent's weapon against their body..",
+L"Arm-mounted serving tray, circular."
+			     ));
     emplace(itemTypeKey::cloak, // http://www.cloakmaker.com/cloakfaq.html suggests 14-20lb for a lined cloak; we'll take 17lb
 	    new itemTypeImpl(75.6197676802653, materialType::clothy, L'[', L"cloak",
 L"Cloaks are one of the oldest forms of clothing, and likely began as a form\f"

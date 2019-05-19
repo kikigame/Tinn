@@ -1519,6 +1519,11 @@ template <> struct itemTypeTraits<itemTypeKey::boots> {
   template<typename type>
   static item *make(const itemType &t) { return new type(t,  slotType::shoes); }
 };
+template <> struct itemTypeTraits<itemTypeKey::buckler> {
+  typedef basicEquip<item::equipType::worn> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t,  slotType::secondary_weapon); }
+};
 template <> struct itemTypeTraits<itemTypeKey::cloak> {
   typedef basicEquip<item::equipType::worn> type;
   template<typename type>
@@ -2111,6 +2116,7 @@ item &createItem(const itemTypeKey &key) {
   case itemTypeKey::bolt: return createItem<itemTypeKey::bolt>();
   case itemTypeKey::bow: return createItem<itemTypeKey::bow>();
   case itemTypeKey::boots: return createItem<itemTypeKey::boots>();
+  case itemTypeKey::buckler: return createItem<itemTypeKey::buckler>();
   case itemTypeKey::cloak: return createItem<itemTypeKey::cloak>();
   case itemTypeKey::crupper: return createItem<itemTypeKey::crupper>();
   case itemTypeKey::doublet: return createItem<itemTypeKey::doublet>();
