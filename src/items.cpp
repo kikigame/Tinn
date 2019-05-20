@@ -1128,7 +1128,7 @@ private:
       };
   prep prep_;
 public:
-  steak(const itemType &it, const monsterType &of) :
+  steak(const itemType &it, const monsterType &of) : // TODO: we should ensure that "of" is of fleshy type.
     joint(it, of),
     prep_(static_cast<prep>(rndPickI(0,static_cast<int>(prep::END)))) {}
   virtual ~steak() {}
