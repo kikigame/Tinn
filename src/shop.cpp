@@ -249,9 +249,7 @@ private:
 	default:
 	  return std::wstring(L"");
 	}
-      else
-	return forSale_[idx-numServices]->description();
-	
+      else return forSale_[idx-1]->description();
     };
     int idx = ioFactory::instance().choice(L"What would you like to buy?",
 			 L"Choose the item you want to add to your shopping basket",
