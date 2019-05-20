@@ -336,7 +336,7 @@ L"The diminutive form of /helm/; a helmet covers only the head. Originally\n"
 L"A decorative pointy metal hat."
 			     )) ;
     emplace(itemTypeKey::gloves,
-	    new itemTypeImpl(0.97304848117988, materialType::leathery, L'[', L"gloves", // 3.5oz
+	    new itemTypeImpl(0.97304848117988, materialType::leathery, L'[', L"pair of gloves", // 3.5oz
 L"Hand protectors in soft deer leather, dyed during the tanning process to a\n"
 "dark brown colour. The leather is cut into tranks, thumbs, fourchettes,\n"
 " quirks and welt, then sewn together with decarative points on the back of\n"
@@ -349,10 +349,10 @@ L"The unstuffed hands of a mannequin. Stuffing seems to have fallen out of\n"
 	    new itemTypeImpl(6.950346294142, materialType::leathery, L'[', L"cestus", // so 25oz for cestus (probably on the light side, but joking that it's boxing gloves)
 L"A hand-held weapon made using leather straps, and filled with weighty items\n"
 "to improve the effectiveness of a punch. Th",
-L"Mittons for swollen hands."
+L"Mittons for swollen hands." // NB: uses I've found say "the cestus" for both, not "the pair of cestus"
 			     ));
     emplace(itemTypeKey::gauntlets,
-	    new itemTypeImpl(9.07115127649098, materialType::metallic, L'[', L"gauntlets", // 925g
+	    new itemTypeImpl(9.07115127649098, materialType::metallic, L'[', L"pair of gauntlets", // 925g
 L"Armoured hand protectors in metal. Wearing over bare skin is ill-advised. A\n"
 "person wearing these will find their punches hit harder and their hands and\n"
 "their lower arms are protected from glancing blows. Made from iron plate,\n"
@@ -659,7 +659,7 @@ L"Short length of pipe." // indistinguistable from anklet
 			     ));
     emplace(itemTypeKey::cloth_gloves, // clothy form of gloves
 	    // assuming 1 square foot of cotton drill @260gsm
-	    new itemTypeImpl(0.004503, materialType::clothy, L'*', L"cloth gloves",
+	    new itemTypeImpl(0.004503, materialType::clothy, L'*', L"pair of cloth gloves",
 L"White formal cloth gloves; these keep one's hands from becoming sweaty.\n"
 "These are easier to keep clean than leather gloves, and at a push can be worn\n"
 "under gauntlets to protect the hands.",
