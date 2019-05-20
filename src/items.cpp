@@ -1316,6 +1316,26 @@ public:
 };
 
 
+// can't be a template; we use this with dynamic type checking
+class weaponLauncher : public basicEquip<item::equipType::wielded> {
+private:
+  itemTypeKey forThrown_;
+  double mul_;
+public:
+  weaponLauncher(const itemType & it, itemTypeKey forThrown, double mul) :
+    basicEquip(it, slotType::primary_weapon, slotType::secondary_weapon),
+    forThrown_(forThrown), mul_(mul) {}
+  virtual ~weaponLauncher() {}
+  double multiplierFor(item &i) {
+    auto pItem = dynamic_cast<basicItem*>(&i);
+    if (pItem && pItem->getType() == itemTypeRepo::instance()[forThrown_]) return mul_;
+    // 2x damage if sling equipped (rock only)
+    // 4x damage if crossbow equipped (bolt only)
+    return 1;
+  }
+};
+
+
 template<bool singleShot, bool lineOfSight, unsigned char amount>
 class thrownWeapon : public basicWeapon, public useInCombat {
 public:
@@ -1335,8 +1355,22 @@ public:
     unsigned char dam = amount;
     if (isBlessed()) dam *= 1.5;
     if (isCursed()) dam /= 2;
-    // TODO: 2x damage if sling equipped (rock only)
-    // TODO: 4x damage if crossbow equipped (rock only)
+    optionalRef<item> pWeapon = source->inSlot(slotType::primary_weapon);
+    if (pWeapon) {
+      auto pLauncher = dynamic_cast<weaponLauncher*>(&(pWeapon.value()));
+      if (pLauncher)
+	dam *= pLauncher->multiplierFor(pWeapon.value());
+    }
+    // secondary weapon counts normally if you have double attack, half if you don't, none if you have reduced attacks
+    auto sWeapon = source->inSlot(slotType::secondary_weapon);
+    if (sWeapon) {
+      auto pLauncher = dynamic_cast<weaponLauncher*>(&(sWeapon.value()));
+      if (pLauncher) {
+	auto dbl = source->abilities().dblAttack();
+	if (dbl == bonus(true)) dam *= pLauncher->multiplierFor(pWeapon.value());
+	if (dbl != bonus(false)) dam *= (pLauncher->multiplierFor(pWeapon.value()) / 2);
+      }
+    }
     auto tName = target->name(); // copy the name in case target is destroyed
     auto &damType = damageRepo::instance()[weaponDamage(true)];
     auto rtn = target->wound(*source, dam, damType);
@@ -1492,7 +1526,12 @@ template <> struct itemTypeTraits<itemTypeKey::taser> {
 template <> struct itemTypeTraits<itemTypeKey::rock> {
   typedef thrownWeapon<false, true, 5> type;
   template<typename type>
-  static item *make(const itemType &t) { return new type(t, damageType::bashing); }
+  static item *make(const itemType &t) { return new type(t, damageType::bashing ); }
+};
+template <> struct itemTypeTraits<itemTypeKey::sling> {
+  typedef weaponLauncher type;
+  template <typename type>
+  static item *make(const itemType &t) { return new weaponLauncher(t, itemTypeKey::rock, 2); }
 };
 template <> struct itemTypeTraits<itemTypeKey::throwstick> {
   typedef thrownWeapon<false, true, 20> type;
@@ -1507,12 +1546,17 @@ template <> struct itemTypeTraits<itemTypeKey::dart> {
 template <> struct itemTypeTraits<itemTypeKey::percussion_grenade> {
   typedef thrownWeapon<true, true, 50> type;
   template<typename type>
-  static item *make(const itemType &t) { return new type(t, damageType::sonic); }
+  static item *make(const itemType &t) { return new type(t, damageType::sonic); } // TODO; grenade launcher?
 };
 template <> struct itemTypeTraits<itemTypeKey::bolt> {
   typedef thrownWeapon<false, true, 20> type;
   template<typename type>
-  static item *make(const itemType &t) { return new type(t, damageType::edged); }
+  static item *make(const itemType &t) { return new type(t, damageType::edged); };
+};
+template <> struct itemTypeTraits<itemTypeKey::crossbow> {
+  typedef weaponLauncher type;
+  template <typename type>
+  static item *make(const itemType &t) { return new weaponLauncher(t, itemTypeKey::bolt, 4); }
 };
 template <> struct itemTypeTraits<itemTypeKey::bow> {
   typedef basicEquip<item::equipType::worn> type;
@@ -2119,6 +2163,8 @@ item &createItem(const itemTypeKey &key) {
   case itemTypeKey::dart: return createItem<itemTypeKey::dart>();
   case itemTypeKey::percussion_grenade: return createItem<itemTypeKey::percussion_grenade>();
   case itemTypeKey::bolt: return createItem<itemTypeKey::bolt>();
+  case itemTypeKey::sling: return createItem<itemTypeKey::sling>();
+  case itemTypeKey::crossbow: return createItem<itemTypeKey::crossbow>();    
   case itemTypeKey::bow: return createItem<itemTypeKey::bow>();
   case itemTypeKey::boots: return createItem<itemTypeKey::boots>();
   case itemTypeKey::buckler: return createItem<itemTypeKey::buckler>();

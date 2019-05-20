@@ -73,6 +73,12 @@ enum class itemTypeKey {
   */
 
   ////
+  // Missile launchers (also '¬'; count as missiles in shops)
+  ////
+  sling, // fires rocks
+  crossbow, // fires bolts
+  
+  ////
   // Clothing types ('[' as nethack armour until we can improve on it)
   // Useful ref: http://medieval.stormthecastle.com/all-about-medieval-armor.htm
   ////

@@ -179,6 +179,7 @@ public:
   virtual void enchant(int enchantment);
   virtual std::set<slotType> slots();
   virtual long modDamage(long pc, const damage & type) const;
+  const itemType &getType() const { return type_; }
 };
 
 // create an item of the given type. io may be used later by that item, eg for prompts when using.

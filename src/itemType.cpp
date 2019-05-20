@@ -264,6 +264,26 @@ L"This G60 Stun Grenade is an incremental development of the Thunderflash\n"
 L"Metallic pineapple paperweight."
 			     ));
 
+    emplace(itemTypeKey::sling, // guessing 3oz
+	    new itemTypeImpl(0.83404155529704, materialType::clothy, L'¬', L"sling",
+L"The sling - not to be confused with a slingshot - is made from a strip of\n"
+"cloth, forming a looped strap. Slings are cheap and easy to master, and a\n"
+"skillful slinger may do well even against larger opponents. More advanced\n"
+" slingers use shaped stones, or metal or pottery slingstones, forming a\n"
+"devistaning weapon.\n\nBy wielding this weapon, firing stones will do more"
+"damage.",
+L"A half-cup with carry handle."
+			     ));
+    emplace(itemTypeKey::crossbow, // 11lb 2oz based on a hunting crossbow
+	    new itemTypeImpl(49.486465614291, materialType::metallic, L'¬', L"crossbow",
+L"The crossbow is the ultimate reduction of the principle of the shortbow; a\n"
+"string is pulled back gradually using mechanical advantage, to propell a\n"
+"bolt at high speed, with the pull of a trigger.\n\nBy wielding this weapon,\n"
+"firing bolts will do significantly more damage.",
+L"A part of a big metal machine, rubber band and all."
+			     ));
+			     
+    
     emplace(itemTypeKey::bow, // 25momme = mediumweight silk
 	    // http://lovasilk.com/guide-to-silk-bedding/momme-weight-explained/ - 1momme = lb weight of 100yds@45"
 	    // we want 8"x1" for a decemnt bow, so 25*8/(36*100*45) oz = 0.0012345679 oz
