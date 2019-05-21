@@ -1375,8 +1375,7 @@ public:
     return true; // all missiles are usable in combat.
   }
   virtual bool useForCombat() {
-    // nb: similar to actionMonsterMixin::fire()
-    // TODO: damage modifiers for blessed/cursed
+    // nb: similar to actionMonsterMixin::fire(), but different due to blessed/cursed rules on missing
     optionalRef<monster> m= whoHolds(*this);
     if (!m) return false; // just in case
     // select a monster to fire on
@@ -1388,6 +1387,7 @@ public:
       auto missileWeight = weight();
       // TODO: extra % chance of missing?
       bool success = (lvl.holder(lvl.posOf(*target)).addItem(*this));
+      if (isCursed() && dPc() < 50) success = false;
       if (success) {
 	if (target->isPlayer())
 	  ioFactory::instance().message(m.value().name() + L" throws " + missile + L" at you!");
@@ -1397,6 +1397,7 @@ public:
 	ioFactory::instance().message(m.value().name() + L" fumbles with " + missile);
       }
       unsigned char pc = static_cast<unsigned char>(100 * missileWeight / target->totalWeight());
+      if (isBlessed()) pc += pc / 2;
       int damage = target->wound(m.value(), pc, damageRepo::instance()[dt]);
       if (damage == 0)
 	ioFactory::instance().message(m.value().name() + L" misses!");
