@@ -92,11 +92,9 @@ class monsterType {
 private:
   const monsterTypeKey key_;
   const monsterCategory category_;
-  // TODO: food types
   // TODO: weapon damage types dealt bitset
   // TODO: weapon proofs / resistance
   // TODO: othir intrinsics
-  // TODO: starting inventory
   const std::vector<const wchar_t *> monsterNames_; // by experience
   const std::wstring encyclopedium_;
   const std::wstring className_; // for grouping
