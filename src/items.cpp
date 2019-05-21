@@ -1073,15 +1073,15 @@ public:
   }
 };
 
-// joints or steaks of an animal/monster
-class joint : public basicItem {
+class meatItem : public basicItem {
 private:
   const monsterType &type_;
-public:
-  joint(const itemType &it, const monsterType &of) :
+protected:
+  meatItem(const itemType &it, const monsterType &of) :
     basicItem(it),
     type_(of) {}
-  virtual ~joint() {}
+public:
+  virtual ~meatItem() {}
   virtual materialType material() const {
     // trolls are stony, bats are leathery, plants are veggy, etc.
     return type_.material();
@@ -1111,12 +1111,18 @@ public:
     adjectives.push_back(type_.names().at(0));
     adjectives.push_back(cut());
     return adjectives;    
-  }
+  }  
 };
 
-// TODO: steak fails the ISA test for joint, but we can't make it a private baseclass without
-// hiding "item". Should we rethink items in terms of composition?
-class steak : public joint {
+// joints or steaks of an animal/monster
+class joint : public meatItem {
+public:
+  joint(const itemType &it, const monsterType &of) :
+    meatItem(it, of) {}
+  virtual ~joint() {}
+};
+
+class steak : public meatItem {
 private:
   enum class prep {
     bleu,
@@ -1129,7 +1135,7 @@ private:
   prep prep_;
 public:
   steak(const itemType &it, const monsterType &of) : // TODO: we should ensure that "of" is of fleshy type.
-    joint(it, of),
+    meatItem(it, of),
     prep_(static_cast<prep>(rndPickI(0,static_cast<int>(prep::END)))) {}
   virtual ~steak() {}
   const wchar_t * const prepName() const {
@@ -1143,7 +1149,7 @@ public:
     }
   }
   virtual std::vector<std::wstring> adjectives() const {
-    auto baseAdjectives = joint::adjectives();
+    auto baseAdjectives = meatItem::adjectives();
     std::vector<std::wstring> adjectives;
     adjectives.push_back(prepName());
     adjectives.insert(adjectives.end(), baseAdjectives.begin(), baseAdjectives.end());
