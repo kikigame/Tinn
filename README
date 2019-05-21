@@ -21,7 +21,7 @@ Compilation
 
 If you want to compile Tinn yourself, you will need: (I use these):
 
-* A C++-11-standard compliant C++ compiler (GNU C++ 4.8.4 will do)
+* A C++-11-standard compliant C++ compiler (GNU C++ 7.4.0 will do)
 * A curses.h file to provide user input; must support wide characters (meaning version 5.4 or later; note that there are rumours of a version 11; this is an unofficial fork that does not support Unicode). I use ncursesw-5.
 * The src directory in this distribution.
 * A terminal supporting some basic Unicode characters (this means a Unicode-aware terminal with a Unicode-aware monospace font).
