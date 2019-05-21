@@ -214,41 +214,14 @@ public:
   virtual ~actionMonsterMixin(){}
   virtual std::wstring actionName() const { return action_.name(); }
   virtual bool fire() {
-    auto holder = &(shared_from_this()->holder());
-    monster *m;
-    do {
-      m = dynamic_cast<monster *>(holder);
-      item * it = dynamic_cast<item *>(holder);
-      if (it) holder = &(it->holder());
-    } while (m == nullptr);
+    optionalRef<monster> m = whoHolds(dynamic_cast<item&>(*this));
     if (!m) return false; // just in case
-    optionalRef<monster> target;
-    if (m->isPlayer()) {
-      wchar_t dir;
-      // prompt the user for a monster to fire on
-      auto &io = ioFactory::instance();
-      dir = io.dirPrompt();
-      switch (dir) {
-      case L'<': case L'>':
-	break; // you will miss
-      case L'.':
-	target = optionalRef<monster>(*m); // firing at onesself
-	break;
-      default:
-	target = m->curLevel().findMonster(*m, dir);
-	break;
-      }
-      if (!target)
-	io.message(L"You don't hit even one monster.");
-    } else {
-      // select a monster to fire on
-      auto pMon = pickTarget<true>(*m);
-      if (pMon) target = optionalRef<monster>(*pMon);
-    }
-    if (!target)
+    monster *target = pickTarget<true>(m.value());
+    if (target) {
+      auto pThis = shared_from_this();
+      return action_(pThis->isBlessed(), pThis->isCursed(), m.value(), *target);
+    } else
       return false;
-    auto pThis = shared_from_this();
-      return action_(pThis->isBlessed(), pThis->isCursed(), *m, target.value());
   }
   bool shouldUse(const monster &m) const {
     return action_.aggressive() ||
@@ -1404,55 +1377,37 @@ public:
   virtual bool useForCombat() {
     // nb: similar to actionMonsterMixin::fire()
     // TODO: damage modifiers for blessed/cursed
-    auto holder = &(shared_from_this()->holder());
-    monster *m;
-    do {
-      m = dynamic_cast<monster *>(holder);
-      item * it = dynamic_cast<item *>(holder);
-      if (it) holder = &(it->holder());
-    } while (m == nullptr);
-    optionalRef<monster> target;
-    if (m->isPlayer()) {
-      wchar_t dir;
-      // prompt the user for a monster to fire on
-      auto &io = ioFactory::instance();
-      dir = io.dirPrompt();
-      switch (dir) {
-      case L'<': case L'>':
-	break; // you will miss
-      case L'.':
-	target = optionalRef<monster>(*m); // firing at onesself
-	break;
-      default:
-	target = m->curLevel().findMonster(*m, dir);
-	break;
-      }
-      if (!target)
-	io.message(L"You don't hit even one monster.");
-    } else {
-      // select a monster to fire on
-      auto &lvl = m->curLevel();
-      auto target = lvl.lineOfSightTarget(*m);
+    optionalRef<monster> m= whoHolds(*this);
+    if (!m) return false; // just in case
+    // select a monster to fire on
+    monster *target = pickTarget<true>(m.value());
+    if (target) {
+      auto &lvl = m.value().curLevel();
       auto missile = name();
       auto dt = weaponDamage(false); // throwing doesn't consume charges.
       auto missileWeight = weight();
       // TODO: extra % chance of missing?
-      bool success = (lvl.holder(lvl.posOf(target.value())).addItem(*this));
+      bool success = (lvl.holder(lvl.posOf(*target)).addItem(*this));
       if (success) {
-	if (target.value().isPlayer())
-	  ioFactory::instance().message(m->name() + L" throws " + missile + L" at you!");
+	if (target->isPlayer())
+	  ioFactory::instance().message(m.value().name() + L" throws " + missile + L" at you!");
 	else
-	  ioFactory::instance().message(m->name() + L" throws " + missile + L" at " + target.value().name());
+	  ioFactory::instance().message(m.value().name() + L" throws " + missile + L" at " + target->name());
       } else {
-	ioFactory::instance().message(m->name() + L" fumbles with " + missile);
+	ioFactory::instance().message(m.value().name() + L" fumbles with " + missile);
       }
-      unsigned char pc = static_cast<unsigned char>(100 * missileWeight / target.value().totalWeight());
-      int damage = target.value().wound(*m, pc, damageRepo::instance()[dt]);
+      unsigned char pc = static_cast<unsigned char>(100 * missileWeight / target->totalWeight());
+      int damage = target->wound(m.value(), pc, damageRepo::instance()[dt]);
       if (damage == 0)
-	ioFactory::instance().message(m->name() + L" misses!");
+	ioFactory::instance().message(m.value().name() + L" misses!");
       else
-	ioFactory::instance().message(m->name() + L" hits!");
+	ioFactory::instance().message(m.value().name() + L" hits!");
       return success;
+    } else {
+      if (m.value().isPlayer())
+	ioFactory::instance().message(L"You can't see anything to hit");
+      else
+	ioFactory::instance().message(m.value().name() + L" can't see anything to hit");
     }
     return target;
   }
@@ -2143,6 +2098,7 @@ item &createRndItem(const int depth, bool allowLiquids) {
     return createItem(type->first); // already enrolled
   }
 }
+
 
 
 // giant switch ensures every case is compiled in, and means we can create items

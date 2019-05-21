@@ -212,3 +212,14 @@ item *itemHolder::pickItem(const std::wstring & prompt,
   return *(res.begin() + it);
 }
 
+optionalRef<monster> whoHolds(const item &i) {
+  auto holder = &(i.holder());
+  monster *m;
+  do {
+    m = dynamic_cast<monster *>(holder);
+    item * it = dynamic_cast<item *>(holder);
+    if (it) holder = &(it->holder());
+    if (!it && !m) return optionalRef<monster>();
+  } while (m == nullptr);
+  return m ? optionalRef<monster>(*m) : optionalRef<monster>();
+}

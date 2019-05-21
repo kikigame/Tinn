@@ -232,4 +232,6 @@ item & createIou(const double amount, const std::wstring &whom, const std::wstri
 // "to" must be an enrolled object not yet in a container.
 void transmutate(item & from, item &to);
 
+optionalRef<monster> whoHolds(const item &i);
+
 #endif // ndef ITEMS_HPP__
