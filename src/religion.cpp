@@ -169,8 +169,8 @@ public:
     return repo_.end();
   }
 private:
-  template <unsigned long T, typename E>
-  bool set(std::bitset<T> &bitset, E en, bool val) {
+  template <class T, typename E>
+  bool set(T &bitset, E en, bool val) {
     auto rtn = bitset[static_cast<size_t>(en)];
     bitset[static_cast<size_t>(en)] = val;
     return rtn;

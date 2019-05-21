@@ -70,8 +70,8 @@ public:
 	   const std::vector<std::pair<T, std::wstring>> &choices,
 	   const std::wstring &extraHelp = L"") const {
     return choice<T>(prompt, help, choices, [&extraHelp](const T&) { return extraHelp;});
-  }
-
+  }    
+  
   // prompt for gender, returning male % and female %.
   // this could be generalised in valious ways, but let's not do that until we need to prompt for
   // multiple values at once again
@@ -88,6 +88,14 @@ public:
   // interrogate the dungeon (or whatever is showing):
   virtual void interrogate(const renderByCoord &, const coord &c) const = 0;
 };
+
+// we're going to specialize the template, so declare in in the header.
+template <>
+wchar_t io::choice(const std::wstring &prompt, const std::wstring &help, 
+		   const std::vector<std::pair<wchar_t, std::wstring>> &choices,
+		   const std::wstring &extraHelp) const;
+
+
 
 class ioFactory {
 private:
