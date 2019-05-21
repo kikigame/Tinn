@@ -8,6 +8,51 @@
 
 bool isDamaged(const item &);
 
+double appraiseFairly(const itemType &type) {
+  
+  auto value = type.baseWeight();
+  // switch on category type
+  switch (type.render()) {
+    // food
+  case L'%': value *= 0.5; break;
+    // weapons
+  case L'!': value *= 10; break;
+    // missiles
+  case L'¬': value *= 3; break;
+    // clotype - worth much less if damaged
+  case L'[': /*if (isDamaged(type)) value *= 0.1;*/ break;
+    // stylii - worth lots if magical
+  case L'❘': /*if (type.enchantment() > 0) value *= 10;*/ break;
+    // bottles
+  case L'8': break;
+    // readables
+  case L'¶': break;
+    // containers
+  case L'=': break;
+    // Liquids
+  case L'~': break;
+    // jewellery - lightweight but more valuable
+  case L'*': value *= 30; break;
+    // valuables - inherantly valuable
+  case L'$': value *= 40; break;
+    // tools - utility value
+  case L'(': value *= 2; break;
+  }
+  /*
+  if (type.isBlessed()) value *= 2;
+  if (type.isCursed()) value *= 0.5;
+  if (type.isUnidentified()) value *= 0.9;
+  if (type.isSexy()) value *= 1.5;
+  {
+    int proofs = 0;
+    for (auto dt = damageRepo::instance().begin(); dt != damageRepo::instance().end(); ++dt) {
+      if (type.isProof(dt->first)) proofs++;
+    }
+    value += value * 0.2 * proofs;
+    }*/
+  return value;
+}
+
 double appraise(const monster &monster, const item &thing, transaction t) {
 
   auto value = thing.weight();

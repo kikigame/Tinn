@@ -14,6 +14,10 @@ enum class transaction {
     score // fair price (used for scoring)
 };
 
+// appraise an item for item generation
+double appraiseFairly(const itemType &typ);
+
+// appraise an item to buy or sell
 double appraise(const monster &monster, const item &thing, transaction t);
 
 #endif // ndef APPRAISE_HPP__

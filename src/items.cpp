@@ -2,6 +2,7 @@
 
 // Things and stuff
 
+#include "appraise.hpp"
 #include "action.hpp"
 #include "items.hpp"
 #include "monster.hpp"
@@ -2073,7 +2074,6 @@ item &createRndEquippable(const itemTypeKey &type) {
 
 
 // create a random item suitable for the given level depth
-// TODO: depth limitations
 item &createRndItem(const int depth, bool allowLiquids) {
   auto &r = itemTypeRepo::instance();
   while (true) {
@@ -2095,6 +2095,7 @@ item &createRndItem(const int depth, bool allowLiquids) {
     // some jewellery is magic:
     if (type->second->render() == L'*' && dPc() < depth)
       return createRndEquippable(type->first);
+    if (depth < 90 && appraiseFairly(*type->second) > 100 * depth) continue;
     // general case: call createItem():
     return createItem(type->first); // already enrolled
   }
