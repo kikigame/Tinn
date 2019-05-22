@@ -696,7 +696,7 @@ public:
   virtual void consumeBy(monster &m) {
     auto &fluid = content().value(); // we don't come in here unless we contain liquid
     const bool isPc = m.isPlayer();
-    const wchar_t * msg;
+    const wchar_t * msg = L"";
     optionalRef<sharedAction<item, monster> > action;
     if (dynamic_cast<water*>(&fluid)) {
       msg = L"Delicious and refreshing.";
