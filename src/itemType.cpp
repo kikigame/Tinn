@@ -84,7 +84,7 @@ itemTypeRepo::itemTypeRepo() {
     emplace(itemTypeKey::apple,
 	  new itemTypeImpl(1.0, materialType::veggy, L'%', L"apple", 
 L"The Apple is rumoured to provide knowledge, music, well-built hardware, and\n"
-"original sin. It is a fruit witn a fresh, crisp taste of gentle sweetness,\n"
+"original sin. It is a fruit with a fresh, crisp taste of gentle sweetness,\n"
 "to compliments cold white wine, pork, cinnamon or hot crumble.\n"
 "When struck on the head by an Apple, consider the gravity of the situation.",
 L"This is a greenish redish seed-bearing structure of a flowering plant. It is\n"
@@ -102,8 +102,8 @@ L"Thinking machine" // "use your loaf"
 L"Cake is associated with many rituals of life, from birthdays and marriages\n"
 "to funereal wakes. Unbaked bread dough is sweetened with honey or sugar and\n"
 "flavoured with many other ingredients to produce a range of sweet\n"
-"confectionary high in carbohydrates. A leaven, typically yeast, is used to\n"
-"produce a light constituancy. This one is a simple Victory Sponge.",
+"confectionery high in carbohydrates. A leaven, typically yeast, is used to\n"
+"produce a light consistency. This one is a simple Victory Sponge.",
 L"For use in case of famine." // ref: "Qu'ils mangent de la brioche", quote popularly misattributed to Mary Antoinette.
 			     ));
     emplace(itemTypeKey::pie, // 220g for a random Iceland (UK supermarket) frozen pie; single-serving
@@ -120,7 +120,7 @@ L"A pastry dough shell filled cooked with a sweet or savoury filling.\n"
 "\tPumpkin pie - a spiced, pumpkin-based custard filling\n"
 "\tShephard's pie - stewed apples mixed with sugar\n",
 "\tSteak and kidney pie - an excellent balance of flavour and texture"
-L"3.14159.... Easy!" // Pi (ratio of circumferance to diameter of a circle on a 2d plane); easy as pie (19th centuary American saying, as pies are easy to eat)
+L"3.14159.... Easy!" // Pi (ratio of circumference to diameter of a circle on a 2d plane); easy as pie (19th century American saying, as pies are easy to eat)
 			     ));
     emplace(itemTypeKey::joint, // 2.4kg based on a whole fillet
 	    new itemTypeImpl(23.53596, materialType::veggy, L'%', L"joint",
@@ -170,9 +170,9 @@ L"Heavy long bit of metal with a big handle."
 	    new itemTypeImpl(284.686184208058, materialType::metallic, L'!', L"Flamethrower",
 L"A flamethrower projects a deadly jet of flame a short distance. It needs\n"
 "refuelling or enchanting before use. This one is a Portable, No 2; it uses a\n"
-"coordite igniter to ignite the fuel, and pressurised nitrogen gas to propel\n"
-"it. As the nitrogen tank seems empty, the range is more limied.\n",
-L"Donut with injection nozzle."
+"cordite igniter to ignite the fuel, and pressurised nitrogen gas to propel\n"
+"it. As the nitrogen tank seems empty, the range is more limited.\n",
+L"Doughnut with injection nozzle."
 			     ));
     emplace(itemTypeKey::nitrogen_tank,
 	    // http://www.answers.com/Q/Weight_of_a_tank_of_liquid_nitrogen says 34.5lb for 10l (full)
@@ -194,7 +194,7 @@ L"Vape."
     emplace(itemTypeKey::sonic_cannon,
 		 // guessing at weight, ~1200g. Ref: Dr Who (Ice Warriors' weapon)
 new itemTypeImpl(11.76, materialType::metallic, L'!', L"Sonic Cannon",
-L"Designed as a non-leathel weapon to disable one's enemies with sound waves,"
+L"Designed as a non-lethal weapon to disable one's enemies with sound waves,"
 "this device proved to work far too well.  It's not light, and needs recharging,\n"
 "or at least enchanting, to be useful.",
 L"Some sort of dry bubble gun. Probably a toy."
@@ -211,7 +211,7 @@ L"Some sort of very dry bubble gun. Probably a toy."
 		 // guessing at weight, ~1200g.
 new itemTypeImpl(11.76, materialType::metallic, L'!', L"Taser",
 L"A Conducted Electrical Weapon (CEW) fires a short-range electric charge.\n"
-"This is intended as a non-leathal device, but remember to stop as soon as\n"
+"This is intended as a non-lethal device, but remember to stop as soon as\n"
 "you have disabled your opponent.",
 L"Portable cigarette lighter."
 			     ));
@@ -257,8 +257,8 @@ L"This looks fast."
     emplace(itemTypeKey::percussion_grenade, // 236g, based on M84 Stun grenade
 	    new itemTypeImpl(0.23143694067587804, materialType::metallic, L'¬', L"concussion grenade",
 L"This G60 Stun Grenade is an incremental development of the Thunderflash\n"
-"concussion greanade is a grenade with a precussion fuse.\n"
-"A simlpe metal shell explodes on impact with a deafening sound and blinding\n"
+"concussion grenade is a grenade with a percussion fuse.\n"
+"A simple metal shell explodes on impact with a deafening sound and blinding\n"
 "flash. Any monster experiencing this explosion will suffer significant\n"
 "acoustic injury.",
 L"Metallic pineapple paperweight."
@@ -269,15 +269,15 @@ L"Metallic pineapple paperweight."
 L"The sling - not to be confused with a slingshot - is made from a strip of\n"
 "cloth, forming a looped strap. Slings are cheap and easy to master, and a\n"
 "skillful slinger may do well even against larger opponents. More advanced\n"
-" slingers use shaped stones, or metal or pottery slingstones, forming a\n"
-"devistaning weapon.\n\nBy wielding this weapon, firing stones will do more"
+"slingers use shaped stones, or metal or pottery slingstones, forming a\n"
+"devastating weapon.\n\nBy wielding this weapon, firing stones will do more"
 "damage.",
 L"A half-cup with carry handle."
 			     ));
     emplace(itemTypeKey::crossbow, // 11lb 2oz based on a hunting crossbow
 	    new itemTypeImpl(49.486465614291, materialType::metallic, L'¬', L"crossbow",
 L"The crossbow is the ultimate reduction of the principle of the shortbow; a\n"
-"string is pulled back gradually using mechanical advantage, to propell a\n"
+"string is pulled back gradually using mechanical advantage, to propel a\n"
 "bolt at high speed, with the pull of a trigger.\n\nBy wielding this weapon,\n"
 "firing bolts will do significantly more damage.",
 L"A part of a big metal machine, rubber band and all."
@@ -301,17 +301,17 @@ L"Tall shoes"
     emplace(itemTypeKey::buckler,
 	    new itemTypeImpl(100, materialType::metallic, L'[', L"buckler", // "a little over 10kg"
 L"This small, round (\"Type I\" in the Schmidt typology system) metal shield\n"
-"is useful to parry blows in defense, as a punching weapon, to shield your\n"
+"is useful to parry blows in defence, as a punching weapon, to shield your\n"
 "main weapon from view, and to push the opponent's weapon against their body..",
 L"Arm-mounted serving tray, circular."
 			     ));
     emplace(itemTypeKey::cloak, // http://www.cloakmaker.com/cloakfaq.html suggests 14-20lb for a lined cloak; we'll take 17lb
 	    new itemTypeImpl(75.6197676802653, materialType::clothy, L'[', L"cloak",
 L"Cloaks are one of the oldest forms of clothing, and likely began as a form\f"
-"of artificial skins to wrap around onesself for warmth. This one is a semi-\n"
+"of artificial skins to wrap around oneself for warmth. This one is a semi-\n"
 "circle of fabric with a simple closing at the neck. Cloaks are excellent for\n"
 "keeping warm while travelling.",
-L"Some sort of roundded blanket."
+L"Some sort of rounded blanket."
 			     ));
     emplace(itemTypeKey::crupper, // https://en.wikipedia.org/wiki/Horses_in_the_Middle_Ages gives 70lbs total for horse armour; we'll split that equally between crupper, flanchard, peytral & saddle for now => 17.5 lb each
 	    new itemTypeImpl(77.8438784943908, materialType::metallic, L'[', L"crupper",
@@ -332,20 +332,20 @@ L"Flouncy shirty thing"
 L"The flanchards armour the flanks of a steed during combat.",
 L"Metal plates of organic shape"
 			     ));
-    emplace(itemTypeKey::haubergeon, // https://answers.yahoo.com/question/index?qid=20110825080532AAhi650 gives 11kg for a Haubergeon
-	    new itemTypeImpl(107.873150315028, materialType::metallic, L'[', L"haubergeon",
-L"This smaller, sleeveless version of the hauberk is a metallic shirt\n"
+    emplace(itemTypeKey::haubergeon, // https://answers.yahoo.com/question/index?qid=20110825080532AAhi650 gives 11kg for a Hauburgeon
+	    new itemTypeImpl(107.873150315028, materialType::metallic, L'[', L"hauburgeon",
+L"This smaller, sleeveless version of the hauburk is a metallic shirt\n"
 "offering reasonable protection at a relatively small weight.\n"
 "A shirt of chain-mail provides good protection from most kinds of weapon.\n"
 "If worn under plate mail, it covers the gaps between each plate, which would\n"
-"otherwise become leathal gaps in one's armour.\n",
+"otherwise become lethal gaps in one's armour.\n",
 L"Shiny tshirt"
 			     ));
-    emplace(itemTypeKey::hauberk, // https://answers.yahoo.com/question/index?qid=20110825080532AAhi650 gives 55lb for a "full mail covering". I think that's probably the upper end, but as weight is the only advantage for a haubergeon, I'll take it at 55lb.
-	    new itemTypeImpl(244.6521895538, materialType::metallic, L'[', L"hauberk",
+    emplace(itemTypeKey::hauberk, // https://answers.yahoo.com/question/index?qid=20110825080532AAhi650 gives 55lb for a "full mail covering". I think that's probably the upper end, but as weight is the only advantage for a hauburgeon, I'll take it at 55lb.
+	    new itemTypeImpl(244.6521895538, materialType::metallic, L'[', L"hauburk",
 L"A shirt of chain-mail provides good protection from most kinds of weapon.\n"
 "If worn under plate mail, it covers the gaps between each plate, which would\n"
-"otherwise become leathal gaps in one's armour.\n",
+"otherwise become lethal gaps in one's armour.\n",
 L"Shiny shirt"
 			     ));
     emplace(itemTypeKey::helmet, // https://www.medievalarmour.com/c-790-medieval-helmets.aspx
@@ -359,29 +359,29 @@ L"A decorative pointy metal hat."
 	    new itemTypeImpl(0.97304848117988, materialType::leathery, L'[', L"pair of gloves", // 3.5oz
 L"Hand protectors in soft deer leather, dyed during the tanning process to a\n"
 "dark brown colour. The leather is cut into tranks, thumbs, fourchettes,\n"
-" quirks and welt, then sewn together with decarative points on the back of\n"
+" quirks and welt, then sewn together with decorative points on the back of\n"
 " the hand. As well as providing some protection from minor cuts and grazes,\n"
 "gloves can also protect the hand from armoured metal gauntlets placed on top.",
 L"The unstuffed hands of a mannequin. Stuffing seems to have fallen out of\n"
 			     " the holes."
 			     ));
-    emplace(itemTypeKey::boxing_gloves, // 18oz is the heavist common weight of boxing glove, but I can't tell if that's 1 glove or 2.
+    emplace(itemTypeKey::boxing_gloves, // 18oz is the heaviest common weight of boxing glove, but I can't tell if that's 1 glove or 2.
 	    new itemTypeImpl(6.950346294142, materialType::leathery, L'[', L"cestus", // so 25oz for cestus (probably on the light side, but joking that it's boxing gloves)
 L"A hand-held weapon made using leather straps, and filled with weighty items\n"
 "to improve the effectiveness of a punch. Th",
-L"Mittons for swollen hands." // NB: uses I've found say "the cestus" for both, not "the pair of cestus"
+L"Mittens for swollen hands." // NB: uses I've found say "the cestus" for both, not "the pair of cestus"
 			     ));
     emplace(itemTypeKey::gauntlets,
 	    new itemTypeImpl(9.07115127649098, materialType::metallic, L'[', L"pair of gauntlets", // 925g
 L"Armoured hand protectors in metal. Wearing over bare skin is ill-advised. A\n"
 "person wearing these will find their punches hit harder and their hands and\n"
 "their lower arms are protected from glancing blows. Made from iron plate,\n"
-L"with linked fingers and rivoted lammellas.",
+L"with linked fingers and riveted lammellas.",
 L"Old novelty gloves in a dull metallic silver."
 			     ));
     emplace(itemTypeKey::jerkin, // I can't find a good reference, so I'm guessing 36oz for now (4 square feet; see scabbord)
 	    new itemTypeImpl(10.0084986635645, materialType::leathery, L'[', L"jerkin",
-L"Not a male gyrfalcon, but a close-fitting sleveless over-jacket worn over a\n"
+L"Not a male gyrfalcon, but a close-fitting sleeveless over-jacket worn over a\n"
 "doublet. This protects the doublet from the rain and helps to keep the core\n"
 "of the body warm, as well as providing some additional armour against\n"
 "glancing blows.\n",
@@ -404,21 +404,21 @@ L"Jedi costume"
 	    new itemTypeImpl(77.8438784943908, materialType::leathery, L'[', L"saddle",
 L"A saddle is attached to the back of the steed, and provides a platform for\n"
 "the rider to sit on. It is the attachment point for saddle-bags, peytrals\n"
-"and flanchards and so is indespensible for an armoured steed.\n",
+"and flanchards and so is indispensable for an armoured steed.\n",
 L"Leather step"
 			     ));
     emplace(itemTypeKey::scabbord,  // http://www.waterhouseleather.com/leather_buying_guide.htm suggests ~9oz per square foot roughly for leather. Let's say a belt is 6'x1" = 1sq ft, but doubled leather = 2sq ft => 18oz. Times 1.5 to allow for sword loop & metal fixings => 24oz
-	    new itemTypeImpl(6.67233244237632, materialType::leathery, L'[', L"scabbord",
-L"It is said that Excalibur's scabbord is worth ten of the sword, but this is\n"
+	    new itemTypeImpl(6.67233244237632, materialType::leathery, L'[', L"scabbard",
+L"It is said that Excalibur's scabbard is worth ten of the sword, but this is\n"
 "merely a convenient way to carry one's sword without having to wield it all\n"
 "the time.",
 L"Belt with decorative dangly bits"
 			     ));
-    emplace(itemTypeKey::shirt, // https://www.gentelle.com/blog/what-is-gsm-in-fabrics/ gives 130gsm for summer and 210 gsm for luxuary linen. I'm going with 210gsm, on the grounds that modern "luxuary" was probably more like (what would have passed for what we'd now call) year-round weight. Let's guess at 2m for a shirt (roughtly the area of human skin on the body, but shirts fit more loosely and that quickly adds up). =  420g
+    emplace(itemTypeKey::shirt, // https://www.gentelle.com/blog/what-is-gsm-in-fabrics/ gives 130gsm for summer and 210 gsm for luxury linen. I'm going with 210gsm, on the grounds that modern "luxury" was probably more like (what would have passed for what we'd now call) year-round weight. Let's guess at 2m for a shirt (roughly the area of human skin on the body, but shirts fit more loosely and that quickly adds up). =  420g
 	    new itemTypeImpl(4.11879301202834, materialType::clothy, L'[', L"shirt",
 L"The shirt is the most timeless wardrobe staple, and finds its place on all\n"
 "warriors, peasants and nobles alike. Only the material differs; this is a\n"
-"very servicable linen.",
+"very serviceable linen.",
 L"Cloth chainmail"
 			     ));
     emplace(itemTypeKey::shorts, // http://www.cockeyed.com/science/weight/weight_menu.html gives 22oz for US "pants" and 16oz for Jeans. Let's take 20oz for trousers and 16oz for shorts.
@@ -433,7 +433,7 @@ L"In tailoring or seamstering, the \"skirt\" is simply the bottom edge of any\n"
 "garment. Garments are often made with a long, straight section ending at a\n"
 "finished, mostly straight, edge. A garment worn between the waist and legs,\n"
 "consisting of a mostly straight section ending at a finished, mostly\n"
-"straight, edge, is often known simply as a skirt. This sikrt is cut short to\n"
+"straight, edge, is often known simply as a skirt. This skirt is cut short to\n"
 "the middle of the lower leg, protecting the modesty of the weather while\n"
 "guarding against hot weather.",
 L"small blanket"
@@ -441,12 +441,12 @@ L"small blanket"
     emplace(itemTypeKey::socks, // http://www.cockeyed.com/science/weight/weight_menu.html gives 2oz
 	    new itemTypeImpl(0.55602770353136, materialType::clothy, L'[', L"pair of socks",
 L"Worn between feet and shoes to protect the wearer from the effects of the\n"
-"leather and to provide warmnth.",
+"leather and to provide warmth.",
 L"Angled mittens"
 			     ));
     emplace(itemTypeKey::trousers,
 	    new itemTypeImpl(5.5602770353136, materialType::clothy, L'[', L"pair of trousers",
-L"A trouser is a tubular garmnt with two seams worn along the leg, as distict\n"
+L"A trouser is a tubular garment with two seams worn along the leg, as distinct\n"
 "from a trew, which has only one seam. This garment consists of two trousers\n"
 "joined by a crotch and seat.",
 L"Shirt for a tall headless person"
@@ -454,7 +454,7 @@ L"Shirt for a tall headless person"
     emplace(itemTypeKey::tshirt, // http://www.cockeyed.com/science/weight/weight_menu.html 5oz for undershirt
 	    new itemTypeImpl(1.3900692588284, materialType::clothy, L'[', L"tshirt",
 L"A mass-produced cotton undergarment. These are most notorious for political\n"
-"slogons being drawn or printed on them at political protests, but have\n"
+"slogans being drawn or printed on them at political protests, but have\n"
 "become a mainstream staple garment, even worn as outerwear during hot weather.",
 L"Holy Y-shaped cloth tube"
 			     ));
@@ -486,8 +486,8 @@ L"Soft drinks rot your teeth. At least remember to recycle your glassware."
 	    // measures 39x13x46cm, giving a mass of ~21kg
 	    new itemTypeImpl(205, materialType::papery, L'¶', L"codex",  // http://www.antithetical.org/restlesswind/plinth/bookbind2.html
 L"Unlike folios, which are mere sheets of vellum folded into verso and recto\n"
-" pages, the codex is bound on raised cords, breaking a scroll of text into\n"
-"multiple sectionts, allowing instant access to any part of the work.\n"
+"pages, the codex is bound on raised cords, breaking a scroll of text into\n"
+"multiple sections, allowing instant access to any part of the work.\n"
 "The codex is a great method to convey complex knowledge in a lasting form.\n",
 L"Book."
 			     ));
@@ -497,7 +497,7 @@ L"Book."
 	    new itemTypeImpl(205, materialType::metallic, L'¶', L"Hitch-Hiker's Guide",  //ref:Hitchhiker's Guide to the Galaxy
 L"\"Kindle\" is the collective noun for kittens. I don't know why I told you\n" //ref: Amazon's electronic book is called a "Kindle".
 "that, because this is an electronic book. Various flashy lights appear on it,\n"
-"and friendly life advice is displayed prominantly on the cover.\n",
+"and friendly life advice is displayed prominently on the cover.\n",
 L"Book."
 			     ));
     emplace(itemTypeKey::holy_book, // cheating and just copying the codex stats
@@ -505,8 +505,8 @@ L"Book."
 	    // measures 39x13x46cm, giving a mass of ~21kg
 	    new itemTypeImpl(205, materialType::papery, L'¶', L"Holy text",  // http://www.antithetical.org/restlesswind/plinth/bookbind2.html
 L"Unlike folios, which are mere sheets of vellum folded into verso and recto\n"
-" pages, the codex is bound on raised cords, breaking a scroll of text into\n"
-"multiple sectionts, allowing instant access to any part of the work.\n"
+"pages, the codex is bound on raised cords, breaking a scroll of text into\n"
+"multiple sections, allowing instant access to any part of the work.\n"
 "The codex is a great method to convey complex knowledge in a lasting form.\n",
 L"Book."
 			     ));
@@ -524,16 +524,16 @@ L"A large canvas bag, a little smaller than a sack. Useful for carrying items\n"
 L"One side of this pillow remains unsewn."
 			     ));
     emplace(itemTypeKey::napsack_of_consumption, // guessing at weight; can't find refs TODO
-	    new itemTypeImpl(5, materialType::leathery, L'=', L"napsack of consumption",
-L"A napsack must be worn to be useful. The rule is that it may only contain\n"
+	    new itemTypeImpl(5, materialType::leathery, L'=', L"knapsack of consumption",
+L"A knapsack must be worn to be useful. The rule is that it may only contain\n"
 "food, which will restore your life-force to condition green.",
 L"A leathery thing with buckles, like a harness."
 			     ));
     emplace(itemTypeKey::water,
 	    new itemTypeImpl(2.31585538520766, materialType::liquid, L'~', L"water",  // half a pint
-L"Above the ignition point, hydrogen explodes in the precence of oxygen; four\n"
+L"Above the ignition point, hydrogen explodes in the presence of oxygen; four\n"
 "times the mass of oxygen is consumed to the mass of hydrogen, and the\n"
-"resuting liquid has some fascinating properties.\n"
+"resulting liquid has some fascinating properties.\n"
 "Water is the only known liquid to expand as it freezes; it forms long spikes\n"
 "in its crystals (the root of snowflakes). It is tasteless, odourless and\n"
 "vital for all known organic life. It is an excellent solvent, especially\n"
@@ -543,7 +543,7 @@ L"Looks kind-of wet. It doesn't *smell* like gin..."
 			     ));
     emplace(itemTypeKey::tears, // (water + tear damage) // potion of sorrow (TODO)
 	    // http://www.answers.com/Q/What_is_the_density_of_saliva puts the density of saliva at 0.002.
-	    // I haven't yet found the density of tears, and haven't been happy/sad enough to measury my own.
+	    // I haven't yet found the density of tears, and haven't been happy/sad enough to measure my own.
 	    // So I'm just going to multiply half a pint of water by 0.002 and hope that's realistic.
 	    new itemTypeImpl(2.32048709597807532, materialType::liquid, L'~', L"tears",  // half a pint
 L"Canst thou bottle ones' sorrow? Canst thou drown it in tears?\n"
@@ -557,8 +557,8 @@ L"Looks all wet, sadly."
 			     // and D2O as 1.1059000244141 g/l
 			     //http://www.differencebetween.net/science/difference-between-water-and-heavy-water/
 L"With a pH of 7.41, heavy water is mildly alkaline. It has an identical\n"
-"chemical structure to water, with duterium isotopes of hydrogen atoms\n"
-"with a high occurance, having 2 neutrons in the nucleus instead of one.\n"
+"chemical structure to water, with deuterium isotopes of hydrogen atoms\n"
+"with a high occurrence, having 2 neutrons in the nucleus instead of one.\n"
 "The increased density is particularly useful in absorbing radioactive\n"
 "particles, making D₂O the fluid of choice for generating heat from nuclear\n"
 "reactors.",
@@ -567,15 +567,15 @@ L"This water is weighty."
     emplace(itemTypeKey::fire_water, // (water + fire)
 	    new itemTypeImpl(2.1730597421557556844, materialType::liquid, L'~', L"fire water",  // half a pint
 			     // 0.93834g/l as for whiskey (http://www.answers.com/Q/What_is_the_density_of_whiskey)
-L"A strong, alcoholic liquor. Advise caution when drinking. An inflammible,\n"
-"liquid good for sterilizing wounds.",
+L"A strong, alcoholic liquor. Advise caution when drinking. An inflammable,\n"
+"liquid good for sterilising wounds.",
 L"Smells boozy." // ref:Nethack - potion of booze
 			     ));
     emplace(itemTypeKey::pop,
 	    new itemTypeImpl(2.31585538520766, materialType::liquid, L'~', L"water",  // half a pint
 L"This looks like water and has a mild taste, but the container suggests it\n"
 "contains an assortment of healthy options in miniscule amounts.",
-L"If spilled, wash with copeous amounts of water." // ref: COSHH sheet safety guide for water
+L"If spilled, wash with copious amounts of water." // ref: COSHH sheet safety guide for water
 			     ));
     emplace(itemTypeKey::fizzy_pop, // (water + air)
 	    new itemTypeImpl(2.2926968313555834, materialType::liquid, L'~', L"fizzy pop",  // half a pint as water
@@ -589,7 +589,7 @@ L"The neck of the bottle is crimped to accommodate a free-floating marble,\n"
 L"There's a marble in this glass! Let's get it out and play a game?"
 			     ));
     emplace(itemTypeKey::dehydrated_water, // (water + time)
-	    new itemTypeImpl(1.15792769260383, materialType::liquid, L'~', L"dehydrated water",  // quater of a pint as water
+	    new itemTypeImpl(1.15792769260383, materialType::liquid, L'~', L"dehydrated water",  // quarter of a pint as water
 			     // http://www.instructables.com/id/Make-Your-Own-Dehydrated-Water/
 L"The process of dehydration, while it can be speeded up with heat, will\n"
 "occur naturally over time, if the air humidity is low. It's best to keep\n"
@@ -602,7 +602,7 @@ L"Just add water."
     emplace(itemTypeKey::spring_water, // (water + flora damage)
 	    new itemTypeImpl(2.31585538520766, materialType::liquid, L'~', L"spring water",  // half a pint as water
 L"Natural sources of water, such as lakes and streams, provide a habitat for\n"
-"all sorts of microscopic acquatic life, which can alter the balance of the\n"
+"all sorts of microscopic aquatic life, which can alter the balance of the\n"
 "water and introduce impurities. Spring water is filtered through many layers\n"
 "of rock, reducing impurities of this sort. The main impurity in spring water\n"
 "is trace amounts of rock salts, which are good for hydration and an\n"
@@ -615,9 +615,9 @@ L"When exposed to large tension (voltage) of electricity, it degrades into\n"
 "hydrogen and oxygen molecules, in a process known as cracking.\n"
 "Electro-pop is similar to normal carbonated pop, but is particularly useful\n"
 "in synthesis.",
-L"Popular music can be loosely destribed as modern music, usually with one\n"
+L"Popular music can be loosely described as modern music, usually with one\n"
 "instrument and one or two vocals. The simplicity of the musical composition\n"
-"allows a speedy production cycle, so allowing a great quanity of output and\n"
+"allows a speedy production cycle, so allowing a great quantity of output and\n"
 "so a large variety of subgenres. Synth-pop is a subgenre of pop music using\n"
 "electronic synthesisers as instruments. Electropop is a subgenre of synth-\n"
 "pop in which the synthesisers are deliberately configured to produce an\n"
@@ -642,13 +642,13 @@ L"An amulet is any stone, pendant or similar, worn around the neck, or\n"
 L"Stone with its own slingshot."
 			     ));
     emplace(itemTypeKey::necklace, // metallic, worn on neck
-	    // based on 15.3g gold chain neclace (14k) seen online
+	    // based on 15.3g gold chain necklace (14k) seen online
 	    new itemTypeImpl(0.151, materialType::metallic, L'*', L"necklace",
 L"One of the earliest forms of adornment used by humans, this necklace is a\n"
 "simple golden chain that can be worn around the neck.",
 L"Bicycle chain for a very small bicycle."
 			     ));
-    emplace(itemTypeKey::tikka, // pendant worn on short chain down the hair parting (india); headband slot
+    emplace(itemTypeKey::tikka, // pendant worn on short chain down the hair parting (India); headband slot
 	    // 1 carat
 	    new itemTypeImpl(0.002012291, materialType::metallic, L'*', L"tikka",
 L"A decorative pendant an a short chain, worn along the parting of the hair",
@@ -667,15 +667,15 @@ L"vessels for cold drinks." // glasses
 	    new itemTypeImpl(0.34323275, materialType::metallic, L'*', L"bracelet",
 L"A metal band worn around the lower arm. Bracelets are a diminutive of the\n"
 "armoured brace and have been worn since prehistory.",
-L"Short length of pipe." // indistinguistable from anklet
+L"Short length of pipe." // indistinguishable from anklet
 			     ));
     emplace(itemTypeKey::anklet, // metallic leg jewellery
-	    // let's take 35g again. Afterall, arms are just forelegs
+	    // let's take 35g again. After all, arms are just forelegs
 	    new itemTypeImpl(0.34323275, materialType::metallic, L'*', L"anklet",
 L"Anklets of different styles have been worn since prehistory, often by women\n"
-"but not exclusively. This type is a chain of gold links moven into a chain,\n"
+"but not exclusively. This type is a chain of gold links woven into a chain,\n"
 "to which small bells are attached to produce a pleasing sound while walking.",
-L"Short length of pipe." // indistinguistable from anklet
+L"Short length of pipe." // indistinguishable from anklet
 			     ));
     emplace(itemTypeKey::cloth_gloves, // clothy form of gloves
 	    // assuming 1 square foot of cotton drill @260gsm
@@ -688,7 +688,7 @@ L"Minimalist mime costume"
     emplace(itemTypeKey::armband, // black band worn for mourning; singular
 	    // assuming 1/2 square foot of cotton drill
 	    new itemTypeImpl(0.0175205, materialType::clothy, L'*', L"armband",
-L"A black armband, often worn singly as a symbol of mourning or rememberance.",
+L"A black armband, often worn singly as a symbol of mourning or remembrance.",
 L"Black bandana"
 			     ));
 
@@ -703,7 +703,7 @@ L"The acquisition of money is a greedy goal, but you can swap coins like this\n"
 "indeed anyone more greedy than you. This coin is made of a light and\n"
 "unfamiliar metal. Kalganids are also available as notes, but paper money is\n"
 "not used much around here.\n",
-L"A strangly irridessent disc of metal with a worn-out inscription."
+L"A straggly iridescent disc of metal with a worn-out inscription."
 			     ));
 constexpr auto latDef =
 L"Latinum is a silvery liquid, whose immensely complex chemical structure even\n"
@@ -754,9 +754,9 @@ L"These look like parts of some larger purpose."
     emplace(itemTypeKey::theremin,
 	    // http://www.thereminworld.com/Forums/T/27511/rca-cabinet-theremin-weight says 90lb
 	    new itemTypeImpl(400, materialType::metallic, L'♪', L"theremin",
-L"An electronic musical instrument using analogue capacitence to determine an\n"
+L"An electronic musical instrument using analogue capacitance to determine an\n"
 "artificial tone.\n\n"
-"When property enchanted, the electric power of the instrtument can be\n"
+"When property enchanted, the electric power of the instrument can be\n"
 "projected towards a target.",
 L"A cabinet with an antenna."
 			     ));
@@ -774,7 +774,7 @@ L"Some sort of trumpet, probably."
 	    // assuming 30kg for a zither (unreliable Google result
 	    new itemTypeImpl(294, materialType::woody,  L'♪', L"baliset",
 L"A baliset is a 9-stringed Zither, tuned to the Chusuk scale. It is\n"
-"notoriously difficult to play, but can be a great accompanyment to a\n"
+"notoriously difficult to play, but can be a great accompaniment to a\n"
 "good folk story.\n"
 "When properly enchanted, a baliset can transfer its enchantments over\n"
 "again.",
@@ -797,9 +797,9 @@ L"A wind instrument using enclosed reeds in a number of pipes to produce\n"
 "with holes keys for the melody, and two drones, tuned to 1 and 2 octaves\n"
 "below the chanter. Stocks (sockets) hold the drones and chanters to the bag.\n"
 "Playing bagpipes well requires great skill, as the player must continuously\n"
-"re-tune the drones to achive an exact tone.\n"
-"Bagpipes are also used as weapons of war, as when untuned their dischordiant\n"
-"sound can become terrifying and carry well accross a battlefield.\n"
+"re-tune the drones to achieve an exact tone.\n"
+"Bagpipes are also used as weapons of war, as when untuned their discordant\n"
+"sound can become terrifying and carry well across a battlefield.\n"
 "When properly enchanted, bagpipes can terrify one's enemies.\n",
 L"A taxidermically preserved haggis."
 			     ));
