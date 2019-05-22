@@ -2095,7 +2095,7 @@ item &createRndItem(const int depth, bool allowLiquids) {
     // some jewellery is magic:
     if (type->second->render() == L'*' && dPc() < depth)
       return createRndEquippable(type->first);
-    if (depth < 90 && appraiseFairly(*type->second) > 100 * depth) continue;
+    if (depth < 90 && appraiseFairly(*type->second) > 100 * (depth+1)) continue;
     // general case: call createItem():
     return createItem(type->first); // already enrolled
   }
