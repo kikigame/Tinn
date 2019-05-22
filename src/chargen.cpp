@@ -138,7 +138,7 @@ playerBuilder chargen() {
 
   { // race
     const monsterTypeKey choice = ios.choice<monsterTypeKey>
-      (L"CHARACTER GENERATION[6/7]> Your character'S race",
+      (L"CHARACTER GENERATION[6/7]> Your character's race",
        L"   Options are:",
       {
 	  { monsterTypeKey::troll, L"Troll: rock-eating stony beings, big and ugly" },
@@ -152,7 +152,7 @@ playerBuilder chargen() {
 
   { // role
     const roleType choice = ios.choice<roleType>
-      (L"CHARACTER GENERATION[7/7]> Your character'S role",
+      (L"CHARACTER GENERATION[7/7]> Your character's role",
        L"   Options are:",
       {
 	{ roleType::shopkeeper, L"Shopkeeper: has access to expensive equipment" },
