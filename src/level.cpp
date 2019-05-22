@@ -709,7 +709,9 @@ public:
     auto v = vehicleMovable(pos, m, t); // moving on to a vehicle
     if (!v) v = vehicleTransportable(oldPos, t, m);  // moving by vehicle
     if (v) {
-      dynamic_cast<transport&>(v.value()).onMonsterMove(oldPos, holder(pos), pos, t);
+      transport &tr = dynamic_cast<transport&>(v.value());
+      tr.isOnLevel(dungeon_[depth_]);
+      tr.onMonsterMove(oldPos, holder(pos), pos, t);
       return true;
     }
     if (!t.movable(m)) return false;
@@ -722,16 +724,18 @@ private:
   // determine any vehicles we're moving on to
   optionalRef<item> vehicleMovable(const coord &pos, const monster &m, const terrain &t) {
     auto &h = holder(pos);
-    return h.firstItem([&m, &t](item &i) { // returns true if finds any item
+    return h.firstItem([&m, &t, this](item &i) { // returns true if finds any item
 	auto pV = dynamic_cast<transport *>(&i);
+	if (pV) pV->isOnLevel(dungeon_[depth_]);
 	return pV && pV->terrainFor(t).movable(m); // returns item if movable
       });
   }
   // determine any vehicles that are moving us
   optionalRef<item> vehicleTransportable(const coord &oldPos, const terrain &t, const monster &m) {
     auto &h = holder(oldPos);
-    return h.firstItem([&m, &t](item &i) { // returns true if finds any item
+    return h.firstItem([&m, &t, this](item &i) { // returns true if finds any item
 	auto pV = dynamic_cast<transport *>(&i);
+	if (pV) pV->isOnLevel(dungeon_[depth_]);
 	return pV && pV->moveOnto(t) && pV->terrainFor(t).movable(m);
       });
   }
@@ -740,6 +744,7 @@ private:
     auto &h = holder(oldPos);
     h.forEachItem([&oldPos, &pos, &t, this](item &i, std::wstring) { // returns true if finds any item
 	auto pV = dynamic_cast<transport *>(&i);
+	if (pV) pV->isOnLevel(dungeon_[depth_]);
 	if(pV) pV->onMonsterMove(oldPos, holder(pos), pos, t);
       });
   }

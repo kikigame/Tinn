@@ -24,6 +24,8 @@ private:
   movementType movement_;
   // is the transport active?
   bool active_;
+  // current level, if known. (If not, either we can't move or nothing's moving on the level anyway).
+  level * lvl_;
 public:
   // create a transport that is usable on the "activate" terrain, allowing movement based on "allow"
   // if move.goTo == none, this trasport does not move
@@ -42,9 +44,11 @@ public:
   // can this vehicle move onto the given terrain type by its own power?
   bool moveOnto(const terrain &t) const;
 
+  void isOnLevel(level &);
 private:
   void activate(); // called by level when monster activates the transport
   void deactivate(); // called by level when monster steps off the transport
+  void selfMove();
 };
 
 #endif //ndef TRANSPORT_HPP__

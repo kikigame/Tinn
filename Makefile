@@ -147,6 +147,6 @@ src/terrain.o : src/terrain.cpp src/bonus.hpp src/characteristic.hpp src/coord.h
 src/time.o : src/time.cpp src/time.hpp 
 	$(CXX) src/time.cpp -c -Wall -g -std=c++11 -o src/time.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/transport.o : src/transport.cpp src/action.hpp src/bonus.hpp src/coord.hpp src/damage.hpp src/hasAdjectives.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/materialType.hpp src/movement.hpp src/optionalRef.hpp src/renderable.hpp src/slots.hpp src/terrain.hpp src/transport.hpp 
+src/transport.o : src/transport.cpp src/action.hpp src/bonus.hpp src/coord.hpp src/damage.hpp src/hasAdjectives.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/level.hpp src/materialType.hpp src/movement.hpp src/optionalRef.hpp src/pathfinder.hpp src/random.hpp src/ref.hpp src/renderable.hpp src/slots.hpp src/terrain.hpp src/time.hpp src/transport.hpp src/zone.hpp 
 	$(CXX) src/transport.cpp -c -Wall -g -std=c++11 -o src/transport.o -finput-charset=utf8 -fexec-charset=utf8
 

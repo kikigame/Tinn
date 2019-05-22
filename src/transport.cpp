@@ -2,6 +2,10 @@
 
 #include "transport.hpp"
 #include "coord.hpp"
+#include "time.hpp"
+#include "random.hpp"
+#include "level.hpp"
+#include "pathfinder.hpp"
 
 transport::transport(terrainType activate, 
 		     terrainType allow,
@@ -9,7 +13,8 @@ transport::transport(terrainType activate,
   terrainToActivate_(tFactory.get(activate)),
   terrainToAllow_(tFactory.get(allow)),
   movement_(move),
-  active_(false) {}
+  active_(false),
+  lvl_(0) {}
 
 transport::~transport() {}
 
@@ -40,23 +45,78 @@ void transport::onMonsterMove(const coord &oldPos, itemHolder &newPos, const coo
 
 void transport::activate() {
   active_ = true;
+  // TODO: call selfMove() each tick until deactivated
+}
+
+void transport::isOnLevel(level & lvl) {
+  lvl_ = &lvl;
+}
+
+// NB: This is similar to mobile.cpp's moveMobile<> method, but differs:
+// - goTo::player means player-controlled
+// - there is no jitter
+void transport::selfMove() {
+  auto pThis = shared_from_this();
+  auto curPos = lvl_->posOf(*pThis);
+  if (curPos.first < 0) {
+    // not on a level; perhaps carried?
+    deactivate();
+    return;
+  }
+
+  coord targetPos;
   switch (movement_.goTo_) {
   case goTo::none: return; // does not move
-  case goTo::wander:
-    // TODO: wander
+  case goTo::wander: {
+    std::vector<coord> opts;
+    for (int x = curPos.first - 1; x <= curPos.first +1; ++x)
+      for (int y = curPos.second - 1; y <= curPos.second +1; ++y)
+	if (x >= 0 && y >= 0 && x < level::MAX_WIDTH && y < level::MAX_HEIGHT) {
+	  coord nextCoord(x,y);
+	  if (nextCoord != curPos && lvl_->terrainAt(nextCoord) == terrainToAllow_)
+	    opts.emplace_back(x,y);
+	}
+    if (!opts.empty()) {
+      auto pNextPos = rndPick(opts.begin(), opts.end());
+      lvl_->holder(*pNextPos).addItem(*pThis);
+    }
     return;
+  }
   case goTo::coaligned:
   case goTo::unaligned:
   case goTo::player:
+  default:
     // player control; nothing to do here (handled by onPlayerMove())
     return;
   case goTo::up:
-    // TODO: seek out < (idea: escape pod on scifi level)
+    // seek out < (idea: escape pod on scifi level)
+    targetPos = lvl_->findTerrain(terrainType::UP);
     return;
   case goTo::down:
-    // TODO: seek out >
+    // seek out >
+    targetPos = lvl_->findTerrain(terrainType::DOWN);
     return;
   }
+
+  std::function<std::set<coord >(const coord &)> nextMoves([this] (const coord &c) {
+    std::set<coord> opts;
+    for (int x = c.first - 1; x <= c.first +1; ++x)
+      for (int y = c.second - 1; y <= c.second +1; ++y)
+	if (x >= 0 && y >= 0 && x < level::MAX_WIDTH && y < level::MAX_HEIGHT) {
+	  coord nextCoord(x,y);
+	  if (nextCoord != c && lvl_->terrainAt(nextCoord) == terrainToAllow_)
+	    opts.emplace(x,y);
+	}
+    return opts;
+    });
+  dir d;
+  // as per mobile.cpp: don't get an absdisnance unless we're close.
+  if (pathfinder<2>::absdistance(curPos, targetPos) < 4)
+    d = pathfinder<2>(nextMoves).find(curPos, targetPos);
+  else
+    d = pathfinder<6>(nextMoves).find(curPos, targetPos);
+
+  lvl_->holder(curPos.inDir(d)).addItem(*pThis);
 }
 
 // TODO: speed of movement
