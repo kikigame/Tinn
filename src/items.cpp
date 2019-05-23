@@ -947,7 +947,7 @@ public:
 
 // bottling kits can be wielded as a bashing weapon (ref:tinopener in nethack)
 // TODO: this will bottle liquid monsters when killed, instead of losing their liquid
-// you can use it with at item only when wielded, as bottling takes time (TODO)
+// you can use it with at item only when wielded, as bottling takes time
 // TODO: starting charges; check number of charges
 class bottlingKit : public basicWeapon, public burnChargeMixin {
 public:
@@ -984,6 +984,7 @@ public:
 	return false;
       });
     if (found) useCharge();
+    if (found && !isBlessed()) time::tick(false);
     return found ? item::useResult::SUCCESS : item::useResult::FAIL;
   }
   virtual std::wstring describeCharges() const {
