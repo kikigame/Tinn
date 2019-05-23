@@ -114,14 +114,24 @@ public:
     basket_(),
     damage_(rndPick(damageRepo::instance().begin(), damageRepo::instance().end())->second),
     align_(stock.align()),
-    isFriendly_(false),
+    isFriendly_(stock.type().alluring()),
     isGenerous_(false),
     disposer_(stock),
     servicesBought_() {
     stock.forEachItem([this](item &it, const std::wstring) {
 	forSale_.push_back(it.shared_from_this());
       });
-    // TODO: some monsters should provide services?
+    // some monsters should provide services, because of course they do...
+    switch (stock.type().type()) {
+    case monsterTypeKey::dragon:
+      services_.push_back(serviceType::proofing);
+      break;
+    case monsterTypeKey::dungeoneer:
+      services_.push_back(serviceType::fixing);
+      break;
+    default:
+      break;
+    }
   }
 
   const wchar_t * const name() const {
@@ -528,7 +538,7 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
   }
 
   void mend() {
-    auto prompt = std::wstring(L"What would you like to protect against ") + damage_.name();
+    auto prompt = std::wstring(L"What would you like to repair (for ") + damage_.name() + L" damage)?";
     prompt += L"?";
     auto *pItem = pickItem(prompt, L"Choose the item on which to repair",
 			   L"This will repair your item against " + std::wstring(damage_.name()) +
@@ -545,7 +555,7 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
 		 L" of your " + std::wstring(item.name()) +
 		 L" seems unchanged");
 
-    servicesBought_.emplace(std::wstring(damage_.mendName()) + L" reparation unto " + item.name(),
+    servicesBought_.emplace(std::wstring(damage_.mendName() + L" reparation unto " + item.name()),
 			    appraise(inventory_, item, transaction::buy));
   }
 
