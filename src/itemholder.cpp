@@ -208,6 +208,9 @@ item *itemHolder::pickItem(const std::wstring & prompt,
     choices.emplace_back(i++, L"Nothing");
     res.emplace_back(nullptr);
   }
+  // if we must choose something, but have nothing to choose, we arbitrarily don't.
+  // NB: this can happen when shopping for a repair service without anything to repair.
+  if (choices.size() == 0) return nullptr;
   int it = ioFactory::instance().choice(prompt, help, choices, extraHelp);
   return *(res.begin() + it);
 }

@@ -237,7 +237,7 @@ private:
 	choices.emplace_back(i++, proofName.c_str());
 	break;
       case serviceType::fixing:
-	choices.emplace_back(i++, damage_.mendName());
+	choices.emplace_back(i++, std::wstring(damage_.mendName()) + L" mending");
 	break;
       default:
 	throw s;
@@ -470,7 +470,6 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
   }
 
   // pick an item to be used below.
-  // TODO: filter out foo-proof and/or foo-undamaged items as appropriate
   item *pickItem(const std::wstring & prompt,
 		 const std::wstring & help,
 		 const std::wstring & extraHelp,
@@ -520,7 +519,8 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
 			  L"This will completely protect your item against " + 
 			  std::wstring(damage_.name()) +
 			  L" attacks, traps and effects. When you wear an item with this protection,"
-			  "it will also protect any items worn under it.");
+			  "it will also protect any items worn under it.",
+			  [this](const item &i){return !i.isProof(damage_.type());});
     if (!pItem) return;
     auto &item = *pItem;
     auto &ios = ioFactory::instance();
@@ -542,7 +542,8 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
     prompt += L"?";
     auto *pItem = pickItem(prompt, L"Choose the item on which to repair",
 			   L"This will repair your item against " + std::wstring(damage_.name()) +
-			   L"damage already taken.");
+			   L"damage already taken.",
+			   [this](const item &i){return i.damageOfType(damage_.type()) > 0;});
     if (!pItem) return;
     auto &item = *pItem;
     auto &ios = ioFactory::instance();
@@ -555,7 +556,7 @@ keeperName_ + L" will appraise the value of the items you offer, and decide if\n
 		 L" of your " + std::wstring(item.name()) +
 		 L" seems unchanged");
 
-    servicesBought_.emplace(std::wstring(damage_.mendName() + L" reparation unto " + item.name()),
+    servicesBought_.emplace((damage_.mendName() + std::wstring(L" reparation unto ") + item.name()),
 			    appraise(inventory_, item, transaction::buy));
   }
 
