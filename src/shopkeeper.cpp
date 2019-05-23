@@ -7,7 +7,6 @@
 
 // The names themselves are a simple list of publically available data compiled from other sources, and so is not
 // eligable for copyright protection. I've left the notes in as comments on my local system to allow for tweaking
-// if it gives a heavy bias, but TODO: i intend to remove them before publishing.
 
 // This is in a separate source file as we intend to reuse it for things other than shops at some point.
 
