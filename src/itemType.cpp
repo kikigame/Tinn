@@ -744,11 +744,10 @@ L"ID-1 standard cards are accepted by many shops as a form of payment,\n"
 "This one in particular is an older form called a \"charge\" card.\n",
 L"This looks like someone's ID, but there's no photo, just a line of numbers."
 			     ));
-    emplace(itemTypeKey::bottling_kit,
-	    // TODO: weight. I can't find a shipping weight online yet
+    emplace(itemTypeKey::bottling_kit, // 5lb based on Delux bottling kit by Craft A Brew (https://craftabrew.com/products/beer-bottling-kit)
 	    // charges are bottle caps
-	    new itemTypeImpl(10, materialType::metallic, L'(', L"bottling kit",
-L"Bottles not included",
+	    new itemTypeImpl(22.2411081412545, materialType::metallic, L'(', L"bottling kit",
+L"Bottles not included. This box contains a capper and has lots of space for caps.",
 L"These look like parts of some larger purpose."
 			     ));
     emplace(itemTypeKey::theremin,
