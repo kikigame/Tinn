@@ -200,7 +200,7 @@ item *itemHolder::pickItem(const std::wstring & prompt,
   const_cast<itemHolder *>(this)->
   forEachItem([&choices, &i, &res, f](item &it, std::wstring name) {
       if (f(it)) {
-	choices.emplace_back(i++, it.name()); // TODO: nice to use formatted name here?
+	choices.emplace_back(i++, it.name());
 	res.emplace_back(&it);
       }
     });

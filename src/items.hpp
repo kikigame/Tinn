@@ -54,7 +54,7 @@ public:
   virtual const wchar_t render() const = 0;
   // built up of itemType and adjectives etc.
   virtual std::wstring name() const = 0;
-  // built up of all visible properties.
+  // built up of all visible properties including encyclopedium
   virtual std::wstring description() const;
   // per-type description:
   virtual std::wstring typeDescription() const = 0;
