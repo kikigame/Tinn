@@ -384,7 +384,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .fighting(30)
 	    .dodge(10)
 	    .maxDamage(30)
-	    .gen(genderAssignType::mf) //TODO
+	    .gen(genderAssignType::indirect)
 	    .align(dr.begin(), dr.end())
 	    .saying(L"(mumble mumble) synergise (mumble muble) teamwork.") // clearly a manager...
 	    .saying(L"Have you seen my 'phone?") // something people say. They're obsessed with 'phones, but none in this game.
@@ -649,7 +649,7 @@ L"Be they creatures of immortality, creation, temptation, or hairstyle, snakes\n
 	    .maxDamage(50)
 	    .saying(L"Troll smash!") // ref:Hulk smash (Marvel comics)
 	    .saying(L"Mmmm rocks...")
-	    .gen(genderAssignType::mfn) //TODO
+	    .gen(genderAssignType::mfn)
 	    .material(materialType::stony)
 	    .align(dr.getExact(Element::earth, Domination::none, Outlook::cruel))
 	    .movement({speed::slow3, goTo::unaligned, goBy::beeline, 25})
