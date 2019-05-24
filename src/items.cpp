@@ -964,7 +964,6 @@ public:
 // bottling kits can be wielded as a bashing weapon (ref:tinopener in nethack)
 // TODO: this will bottle liquid monsters when killed, instead of losing their liquid
 // you can use it with at item only when wielded, as bottling takes time
-// TODO: starting charges; check number of charges
 class bottlingKit : public basicWeapon, public burnChargeMixin {
 public:
   bottlingKit(const itemType & type) :
@@ -1028,7 +1027,7 @@ public:
     // some monsters (eg incubus & succubus) should be sexy. After all, they are confident...
     if (of.alluring())
       sexUp(true);
-    // if (monsterType == monsterType::incubus || monsterType == monsterType::succubus) sexUp(true);
+    
   }
   corpse (const monster &m) :
     basicItem(itemTypeRepo::instance()[itemTypeKey::corpse]),
@@ -1043,7 +1042,7 @@ public:
     return type_.material();
   }
   virtual double weight() const {
-    return type_.corpseWeight(); // weight of average human in N Earth gravity (610lb). TODO: per type somehow
+    return type_.corpseWeight(); // weight of average human in N Earth gravity (610lb).
   }
   // if wielded, what damage does this weapon do?
   // list of all adjectives applicable to type
@@ -1130,7 +1129,7 @@ public:
     prep_(static_cast<prep>(rndPickI(0,static_cast<int>(prep::END)))) {}
   virtual ~steak() {}
   const wchar_t * const prepName() const {
-    switch (prep_) { // TODO: should this be based on fire damage?
+    switch (prep_) { // TODO: should this be based on fire damage? (best to do butchery first)
     case prep::bleu: return L"bleu";
     case prep::rare: return L"rare";
     case prep::medrare: return L"medium-rare";
@@ -1403,7 +1402,6 @@ public:
       auto missile = name();
       auto dt = weaponDamage(false); // throwing doesn't consume charges.
       auto missileWeight = weight();
-      // TODO: extra % chance of missing?
       bool success = (lvl.holder(lvl.posOf(*target)).addItem(*this));
       if (isCursed() && dPc() < 50) success = false;
       if (success) {
@@ -2012,7 +2010,7 @@ struct questItemTypeTraits<questItemType::grail>{
   static constexpr const wchar_t * const name_ = L"Holy Grail"; // must contain "Grail" (shop quest)
   static constexpr const wchar_t * const desc_ = L"";
   static constexpr const materialType mat_ = materialType::stony;
-  static constexpr const double weight_ = 100; // TODO
+  static constexpr const double weight_ = 100; // TODO: how much does a grail weigh anyway?
   static constexpr const damageType weaponDamage_ = damageType::bashing;
 };
 

@@ -138,7 +138,7 @@ enum class itemTypeKey {
   // Liquids ('~', the tail of a long worm in Nethack; don't know when we'd render this)
   ////
     water, // plain water
-    tears, // (water + tear damage) // potion of sorrow (TODO)
+    tears, // (water + tear damage) // potion of sorrow
     heavy_water, // (water + bashing/earth damage)
     fire_water, // (water + fire)
     pop, // (water + water)

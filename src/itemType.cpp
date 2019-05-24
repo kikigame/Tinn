@@ -541,7 +541,7 @@ L"Above the ignition point, hydrogen explodes in the presence of oxygen; four\n"
 "best kept in a bottle.",
 L"Looks kind-of wet. It doesn't *smell* like gin..."
 			     ));
-    emplace(itemTypeKey::tears, // (water + tear damage) // potion of sorrow (TODO)
+    emplace(itemTypeKey::tears, // (water + tear damage) // potion of sorrow
 	    // http://www.answers.com/Q/What_is_the_density_of_saliva puts the density of saliva at 0.002.
 	    // I haven't yet found the density of tears, and haven't been happy/sad enough to measure my own.
 	    // So I'm just going to multiply half a pint of water by 0.002 and hope that's realistic.
