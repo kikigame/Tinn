@@ -233,6 +233,16 @@ public:
 
 
 
+unsigned int coverDepth(const slot * sl) {
+  auto covered = sl->covered();
+  unsigned int rtn = 0;
+  for (auto csl : covered) {
+    auto d2 = coverDepth(csl);
+    if (rtn < rtn + d2) rtn = rtn + d2;
+  }
+  return rtn;
+}
+
 /*
  * Objects that can be equipped - worn, wielded, etc.
  * Except for 2-slot items; these use twoEquip
@@ -247,6 +257,12 @@ public:
   basicEquip(const itemType& type,  S... slots) :
     basicItem(type),
     supportedSlots_({slots...}) {
+    unsigned int minCoverDepth = 9999;
+    for (auto sl : supportedSlots_) {
+      auto dp = coverDepth(slotBy(sl));
+      if (minCoverDepth > dp) minCoverDepth = dp;
+    }
+    sexUp(dPc() < (1 + minCoverDepth) * 20);
   }
   virtual ~basicEquip() {}
   virtual bool equip(monster &owner) {
