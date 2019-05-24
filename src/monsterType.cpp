@@ -211,7 +211,25 @@ public:
 	    .eats(materialType::leathery) // definitely carnivores, but I'm guessing they'll eat some of your armour too
 	    .eats(materialType::liquid)
 	    .saying(L"Behold the Powerful Dragon") // should not actually say this; depends on the monster's specifics
-	    .encyclopedium(L"The dragon is a powerful creature shrouded in mystery.") // TODO: Better this
+	    .encyclopedium(
+L"Dragons are large serpentine creatures; highly intelligent and amongst the\n"
+"strongest of all. Even dragonets - the newly hatched young - should only be\n"
+"approached withe extreme caution, if at all. Their diet is exclusively meat,\n"
+"and preferred diets vary. Catalonians speak of dragons spitting acid, while\n"
+"the stories of fire-breathing are older than the written word. Planting a\n"
+"dragon's tooth may grow an arm; the blood of a dragon is such vile acid that\n"
+"the ground itself will reject it, and it can eat through iron. In Germany it\n"
+"is written that dragon's blood can render any skin bathed in it invincible,\n"
+"yet in Switzerland, Heinrich von Winkelreid died from the merest touch of\n"
+"the dripping blood of a wounded dragon.\n"
+"You can tell how powerful a dragon is by counting its claws; around Japan, 3\n"
+"claws are common; 4 around Mongolia. Chinese royalty is heralded by 9 great\n"
+"dragons, each having 81 yang scales, 36 yin scales, 9 forms and 9 sons.\n"
+"The dragon is a rare culinary delicary: eating their skins heal the wound\n"
+"of love; eating its head brings courage and bravery; and even planting its\n"
+"head can restore the condition of the land.\n"
+"They are rarely found: and usually seen in oceans, rivers, caves and tombs."
+			   )
 	    .throws()
 	    .zap()
             .fearless());
