@@ -159,11 +159,13 @@ public:
 
   void enter() {
     auto &ios = ioFactory::instance();
-    if (isFriendly_ && ios.ynPrompt(L"\"Welcome! May I interest you in a complimentary tea?\""))
+    if (isFriendly_ && ios.ynPrompt(L"\"Welcome! May I interest you in a complimentary tea?\"")) {
       ios.message(L"This takes almost but not quite entirely unlike tea"); // ref:h2g2, of course.
+      // Heal a touch of damage for the tea.
+      inventory_.injury() -= 2;
+    }
     if (isGenerous_)
       ios.longMsg(L"Special offer! Free delivery on everything in store!"); // ref:every supermarket deal ever. Looks good, but vacuous.
-    // TODO: Would be nice to heal a touch of damage for that. But then shops would need a way to become undamaged.
     if (handleDebts())
       handleSale();
   }
