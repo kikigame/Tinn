@@ -160,7 +160,7 @@ void player::takeInventory() {
       for (int i=2; i < wt; ++i) inv << L"really ";
       inv << "slowing you down!";
     }
-    ioFactory::instance().longMsg(inv.str()); // TODO: description hints
+    ioFactory::instance().longMsg(inv.str());
   }
 }
 
