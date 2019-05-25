@@ -145,6 +145,11 @@ bool basicItem::strike(const damageType &type) {
   ++(i->second);
   return true;
 }
+void basicItem::forceDamageOnly(const damageType &type, unsigned char d) {
+  auto i = damageTrack_.find(type);
+  if (i != damageTrack_.end())
+    (i->second)+=d;
+}
 
 // repair previous damage (return false only if no effect, eg undamaged)
 bool basicItem::repair(const damageType &type) {

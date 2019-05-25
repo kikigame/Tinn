@@ -75,6 +75,8 @@ public:
   virtual std::vector<std::wstring> adjectives() const = 0;
   // damage the item in some way (return false only if no effect)
   virtual bool strike(const damageType &type) = 0;
+  // force damage with no side-effects, eg for polymorphing
+  virtual void forceDamageOnly(const damageType &type, unsigned char d) = 0;
   // repair previous damage (return false only if no effect, eg undamaged)
   virtual bool repair(const damageType &type) = 0;
   // proof against dagage type  (return true only if no more effect possible, eg already proofed or n/a for material type)
@@ -164,6 +166,7 @@ public:
   virtual int damageOfType(const damageType &type) const;
   virtual std::vector<std::wstring> adjectives() const;
   virtual bool strike(const damageType &type);
+  virtual void forceDamageOnly(const damageType &type, unsigned char d);
   virtual bool repair(const damageType &type);
   virtual bool proof(const damageType &type);
   virtual bool isProof(const damageType &type) const;
@@ -233,5 +236,8 @@ item & createIou(const double amount, const std::wstring &whom, const std::wstri
 void transmutate(item & from, item &to);
 
 optionalRef<monster> whoHolds(const item &i);
+
+// destroy the item and create another of a new type
+bool polymorph(item &from, const itemType &to);
 
 #endif // ndef ITEMS_HPP__

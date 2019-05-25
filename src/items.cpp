@@ -649,6 +649,7 @@ public:
 	} else {
 	  std::wstring deity = align.name();
 	  ios.message(deity + L" bless this " + cname + L" and all who sail in her.");
+	  // TODO: bless the ship?
 	}
       } else {
 	itemHolder::destroyItem(c.value());
@@ -1984,6 +1985,7 @@ public:
   }
   // indestructibility:
   virtual bool strike(const damageType &) { return false; }
+  virtual void forceDamageOnly(const damageType &, unsigned char d) {}
   virtual bool repair(const damageType &) { return true; }
   virtual bool proof(const damageType &) { return true; }
   virtual bool isProof(const damageType &) const { return true; }

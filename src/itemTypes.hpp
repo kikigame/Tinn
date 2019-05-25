@@ -197,6 +197,15 @@ enum class itemTypeKey {
 
     bridge, // immobile tranport, allows ground creatures on water
     ship, // mobile transport, allows ground creatures on water. L'⍽' (shouldered open box), which I think looks better than the more usual L'␣' (&blank;/open box)
+
+  ////
+  // Flowers & plants '{' as per dnethack (plant monster)
+  ////
+  bouquet_mixed,
+  lily, // TODO: only generate in water; generate in water level
+  lotus, // TODO: only generate in water; generate in water level
+  sunflower,
+
 };
 
 
