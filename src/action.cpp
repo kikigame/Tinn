@@ -208,6 +208,8 @@ public:
     } else {
 	if (target.isPlayer())
 	  io.longMsg(L"You are dreaming.");
+	else 
+	  io.longMsg(target.name() + L" falls asleep. Time passes.");
       target.injury() -= 50;
       time::tick(false);
     }
