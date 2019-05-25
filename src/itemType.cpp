@@ -870,6 +870,47 @@ L"A galleon is a wooden tall-ship, complete with rudder, anchors, oar, masts,\n"
 "normally land-based creature on the open seas.",
 L"Scaled-up curio."
 			     ));
+
+
+    emplace(itemTypeKey::bouquet_mixed, // ~0.2kg for a largish bouquet
+	    new itemTypeImpl(2, materialType::woody, L'{', L"Bouquet of flowers", 
+L"Bouquet is one of the only collective nouns still in common usage in French.\n"
+"This 36-stem bouquet is made of roses, peonies, hydrangas, daisies and\n"
+"flowering mint."			     
+"",
+L"Planting set"
+			     ));
+
+    emplace(itemTypeKey::lily, // 1oz for water lily
+	    new itemTypeImpl(0.27801385176568, materialType::woody, L'{', L"lily", 
+L"This trumpet-shaped flower has often been the symbol of Upper Egypt, while\n"
+"in the Near East, its a symbol of creation, feltility and virginity.\n"
+"The herbaceous bulb-grown plant of the lillum family is known for its many\n"
+"varieties, each with prominent flowers.\n"
+"All flowers are a symbol of both life and death.",
+L"waterproof paper"
+			     ));
+
+    emplace(itemTypeKey::lotus,
+	    new itemTypeImpl(0.27801385176568, materialType::woody, L'{', L"lotus", 
+L"A water-blooming flower, representing fertility, birth, rebirth and\n"
+"female sexuality. The Hindu god Brahma was born from the lotus a the the\n"
+" navel of the universe, and Budda walks leaving lotus flowers in place of\n"
+"footprints. The nelumbo nucifera is identified by its delecate pink/white\n"
+"colour and pointed petals.",
+L"Vegetarian light fitting"
+			     ));
+
+    emplace(itemTypeKey::sunflower, // 1lb
+	    new itemTypeImpl(4.4482216282509, materialType::woody, L'{', L"sunflower", 
+L"The long-stemmed sunflower can grow sereral yards tall and turns its bright\n"			     
+"yellow head to follow the sun through the day.\n"
+"See also Clytie, the water nymph princess of the city of Babylon, who loved\n"
+"Apollo until he tired of her; the gods transformed her to a sunflower in pity.",
+L"Vegetarian light stand"
+			     ));
+
+    
 }
 
 void itemTypeRepo::emplace(itemTypeKey k, itemTypeImpl* impl) {

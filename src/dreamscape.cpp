@@ -407,20 +407,30 @@ namespace morpheus {
   private:
     std::shared_ptr<monster> bus_;
     static std::array<renderChar, 6> renders;
+    std::map<coord, std::reference_wrapper<item>> items_;
     bool warned_;
+  private:
+    coord transpose(const coord &c) const {
+      return nesw::n() ? c :
+	nesw::s() ? coord(c.first, 8 - c.second) :
+	nesw::e() ? coord(c.second, 8 - c.first) :
+	/*w*/ coord(c.second, c.first);
+    }
   public:
     boudoir(terrainType pass, terrainType wall, bool n, bool e, bool s, bool w, std::shared_ptr<monster> &bus) :
       dreamCard(pass, wall, n, e, s, w),
       bus_(bus),
-      warned_(false) {}
+      warned_(false) {
+      items_.emplace(coord(2,4), createItem(itemTypeKey::lotus));
+      items_.emplace(coord(8,4), createItem(itemTypeKey::lotus));
+      items_.emplace(coord(2,6), createItem(itemTypeKey::lotus));
+      items_.emplace(coord(8,6), createItem(itemTypeKey::lotus));
+    }
     virtual ~boudoir() {}
     virtual bool passable(const coord &c) const {
-      coord tc = nesw::n() ? c :
-	nesw::s() ? coord(c.first, 8 - c.second) :
-	nesw::e() ? coord(c.second, 8 - c.first) :
-	/*w*/ coord(c.second, c.first);
+      auto tc = transpose(c);
       auto x = tc.first;
-      switch (tc.second) {
+      switch (tc.second) { // see N diagram above
       case 0: return x >= 3 && x <= 5;
       case 1: return x == 4;
       case 2: return x >= 3 && x <= 5;
@@ -447,8 +457,27 @@ namespace morpheus {
       return dreamCard::render(c);
     }
     virtual void onMove(player &p, const coord &c) {
-      if (!bus_) return;
+
       const io &io = ioFactory::instance();
+
+      auto it = items_.find(transpose(c));
+      if (it != items_.end()) {
+	item &item = it->second;
+	// try to pick up item
+	auto name = item.name();
+	auto desc = item.description();
+	io.message(L"You dream of something...");
+	std::wstring prefix;
+	if (p.addItem(item))
+	  prefix = L"You hold: ";
+	else
+	  prefix = L"You see: ";
+	io.message(prefix + name);
+	io.longMsg(desc);
+	items_.erase(it);
+      }
+
+      if (!bus_) return;
       bool m = bus_->isMale();
       if (!warned_) {
 	io.message(L"You enter an opulant bedchamber.");
@@ -491,7 +520,7 @@ namespace morpheus {
       return terrainType::WATER;
     case Element::plant:
     default:
-      return terrainType::ROCK; // TODO: better to return a tree?
+      return terrainType::KNOTWEED;
     }
   }
 

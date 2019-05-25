@@ -1919,6 +1919,28 @@ template <> struct itemTypeTraits<itemTypeKey::ship> {
   static item *make(const itemType &t) { return new type(t, terrainType::WATER, terrainType::GROUND, 
 					    movementType({speed::slow3, goTo::player, goBy::avoid, 0})); }
 };
+template <> struct itemTypeTraits<itemTypeKey::bouquet_mixed> {
+  typedef basicItem type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t); }
+};
+template <> struct itemTypeTraits<itemTypeKey::lily> {
+  typedef basicItem type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t); }
+};
+template <> struct itemTypeTraits<itemTypeKey::lotus> {
+  typedef basicItem type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t); }
+};
+template <> struct itemTypeTraits<itemTypeKey::sunflower> {
+  typedef basicItem type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t); }
+};
+
+
 
 template <itemTypeKey t, class T>
 item &createItem();
@@ -2216,6 +2238,10 @@ item &createItem(const itemTypeKey &key) {
   case itemTypeKey::pianoforte: return createItem<itemTypeKey::pianoforte>();
   case itemTypeKey::bridge: return createItem<itemTypeKey::bridge>();
   case itemTypeKey::ship: return createItem<itemTypeKey::ship>();
+  case itemTypeKey::bouquet_mixed: return createItem<itemTypeKey::bouquet_mixed>();
+  case itemTypeKey::lily: return createItem<itemTypeKey::lily>();
+  case itemTypeKey::lotus: return createItem<itemTypeKey::lotus>();
+  case itemTypeKey::sunflower: return createItem<itemTypeKey::sunflower>();
   default: throw key;
   }
 }

@@ -238,6 +238,6 @@ void transmutate(item & from, item &to);
 optionalRef<monster> whoHolds(const item &i);
 
 // destroy the item and create another of a new type
-bool polymorph(item &from, const itemType &to);
+bool polymorph(item &from, const itemTypeKey &to);
 
 #endif // ndef ITEMS_HPP__

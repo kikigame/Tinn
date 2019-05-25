@@ -65,6 +65,10 @@ public:
     for (int i=0; i < 6; ++i)
       addMonster(monsterTypeKey::merfolk);
     addEnchantedItem(itemTypeKey::conch);
+    for (int i=0; i < 3; ++i) {
+      addWetItem(itemTypeKey::lily);
+      addWetItem(itemTypeKey::lotus);
+    }
   }
 
 private:
@@ -75,6 +79,11 @@ private:
       c.second = rndPickI(1, level::MAX_HEIGHT-1);
     } while (at(c) != terrainType::WATER);
     levelGen::addMonster(mtk, c);
+  }
+  void addWetItem(itemTypeKey itk) {
+    coord c = findRndTerrain(terrainType::WATER);
+    auto &it = createItem(itk);
+    pub_.holder(c).addItem(it);
   }
   void addEnchantedItem(itemTypeKey itk) {
     coord c = findRndTerrain(terrainType::GROUND);

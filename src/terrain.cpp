@@ -21,6 +21,7 @@ const wchar_t * const to_string(const terrainType & t) {
   case terrainType::SPACE: return L"SPACE";
   case terrainType::BULKHEAD: return L"BULKHEAD";
   case terrainType::DECK: return L"DECK";
+  case terrainType::KNOTWEED: return L"KNOTWEED";
   default: throw t;
   }
 }
@@ -77,6 +78,8 @@ bool terrain::movable(const monster &m) const {
     return false;
   case terrainType::DECK:
     return true;
+  case terrainType::KNOTWEED:
+    return true;
   default:
     throw type_; // missing type from enum
   }
@@ -101,7 +104,7 @@ bool terrain::entraps(const monster &m, bool includeHidden) const {
   case terrainType::SPACE:
   case terrainType::BULKHEAD:
   case terrainType::DECK:
-    return false;
+  case terrainType::KNOTWEED:
     return false;
   default:
     throw type_; // missing type from enum
@@ -138,7 +141,13 @@ public:
     store(new terrain(L'≀', L"Fire", L"Fire; most creatures avoid this due to the risk of burning.", terrainType::FIRE));
     store(new terrain(L' ', L"Deep Space", L"Distance can be an illusion. Bring your own oxygen and propulsion.", terrainType::SPACE));
     store(new terrain(L'□', L"Bulkhead", L"Bulkheads are partitions or walls forming the structural integrity of an\nembankment, ship, aircraft or spacecraft.", terrainType::BULKHEAD));
-     store(new terrain(L'.', L"Deck", L"Artificial platform for standing upon.", terrainType::DECK));
+    store(new terrain(L'.', L"Deck", L"Artificial platform for standing upon.", terrainType::DECK));
+    store(new terrain(L'{', L"Knotweed", L"This rhizomatous plant is native to Japan, but amongst the most invasive\n"
+"and destructive of all. It takes 2-3 years to kill a knotweed plant using\n"
+"conventional herbicide; growing up to 2-3m deep or more. It establishes for\n"
+"decades below ground before been seen in significant quantity in a matter of\n"
+"woeks. It can grow through the smallest cracks in concrete and regrow from\n"
+"the tiniest remaining fragment.", terrainType::KNOTWEED));
   }
   const terrain &get(terrainType type) const {
     return *(store_.at(type).get());

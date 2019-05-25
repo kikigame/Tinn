@@ -242,10 +242,8 @@ public:
     // - primary weapon turns to flowers (50% chance sexy, not normally equippable)
     auto weapon = target.inSlot(slotType::primary_weapon);
     if (weapon) {
-      // TODO: flowers & polymorphing objects
-      // no polymorphing objects yet, so let's just destroy it with a silly message:
       std::wstring name = weapon.value().name();
-      if (weapon.value().destroy()) {
+      if (polymorph(weapon.value(), itemTypeKey::bouquet_mixed)) {
 	auto pronoun = (target.isPlayer()) ? L"Your " : L"Their ";
 	io.longMsg(pronoun + name + L"\n\tbecomes a beautiful bouquet! Hahaha!");
 	return true;

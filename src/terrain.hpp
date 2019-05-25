@@ -27,6 +27,7 @@ enum class terrainType {
   WATER, // stream, river, moat, lake, sea
   SPACE, // vacuum, used with space zone. Chance of displaying as a L'*' for twinkling effect
   BULKHEAD,// outer hull of a ship or space station
+  KNOTWEED, // impassible undergrowth.
   DECK
 };
 
