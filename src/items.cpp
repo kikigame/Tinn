@@ -649,7 +649,7 @@ public:
 	} else {
 	  std::wstring deity = align.name();
 	  ios.message(deity + L" bless this " + cname + L" and all who sail in her.");
-	  // TODO: bless the ship?
+	  content().value().bless(true);
 	}
       } else {
 	itemHolder::destroyItem(c.value());
