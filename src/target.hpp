@@ -11,5 +11,6 @@ class monster;
 template <bool lineOfSight>
 monster *pickTarget(monster &src, bool allowOnSelf = false);
 
+bool viableTarget(monster &attacker, monster &test);
 
 #endif //ndef TARGET_HPP

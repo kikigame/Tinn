@@ -11,20 +11,23 @@
 
 // NB: No targeting method will return a monster that the target will refuse to fight
 
+bool viableTarget(monster &attacker, monster &test) {
+  auto &malign = test.align();
+  if (&attacker == &test) return false; // monsters don't usually fight themselves
+  if (attacker.align().coalignment(malign) >= 3) return false; // monsters don't usually fight other creautures of the same alignment
+  if (attacker.type() == test.type()) return false; // monsters don't usually fight other creatures of the same class
+  // TODO: charmed?
+  // TODO: zones
+  return true;
+}
+
 // pick a viable target for mon to attack, for which f returns true.
 monster *pickTarget(bool allowOnSelf, monster &mon, std::function<bool(const monster &)> f) {
   std::vector<monster*> targets;
   auto &level = mon.curLevel();
   const auto &malign = mon.align();
   level.forEachMonster([&mon, &targets, &malign, f, allowOnSelf](monster &en) {
-      // TODO: Duplicate code in mobile.cpp
-      if (!allowOnSelf) {
-	if (&en == &mon) return; // monsters don't usually fight themselves
-	if (en.align().coalignment(malign) >= 3) return; // monsters don't usually fight other creautures of the same alignment
-	if (en.type() == mon.type()) return; // monsters don't usually fight other creatures of the same class
-	// TODO: charmed?
-	// TODO: zones
-      }
+      if (!allowOnSelf && !viableTarget(en, mon)) return;
       if (!f(en)) return;
 
       targets.emplace_back(&en);

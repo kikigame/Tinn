@@ -10,6 +10,7 @@
 #include "terrain.hpp"
 #include "pathfinder.hpp"
 #include "output.hpp"
+#include "target.hpp"
 #include <sstream>
 
 
@@ -257,7 +258,6 @@ void monsterAttacks(monster &mon) {
 
   auto myPos = level.posOf(mon);
   auto &dam = mon.injury();
-  auto &malign = mon.align();
   // take a copy, in case (eg a monster dies) the collection changes
   // - make it a set, in case of big monsters
   std::map<ref<monster>, coord > monstersAt;
@@ -272,9 +272,7 @@ void monsterAttacks(monster &mon) {
     ref<monster> ref = ren.first;
     monster &en = ref.value();
     auto pos = ren.second;
-    if (&en == &mon) continue; // monsters don't usually fight themselves
-    if (en.align().coalignment(malign) >= 3) continue; // monsters don't usually fight other creautures of the same alignment
-    if (en.type() == mon.type()) continue; // monsters don't usually fight other creatures of the same class
+    if (!viableTarget(en, mon)) continue;
     std::wstringstream msg;
     msg << (mon.isPlayer() ? L"You" : mon.name())
 	<< myPos
