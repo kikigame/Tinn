@@ -185,7 +185,10 @@ public:
   virtual ~dreamAction() {}
   virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
     auto &io = ioFactory::instance();
-    // TODO: some monsters should not sleep
+    if (!target.type().sleeps()) {
+      io.message(target.name() + L" doesn't seem affected.");
+      return false;
+    }
     if (cursed) {
       if (blessed) {
 	if (target.isPlayer())
