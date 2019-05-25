@@ -200,8 +200,8 @@ public:
 	if (target.isPlayer())
 	  io.longMsg(L"You enter a dreamless slumber. Time passes.");
 	else 
-	  io.longMsg(target.name() + L" falls asleep. Time passes.");
-	time::tick(false);
+	  io.longMsg(target.name() + L" falls asleep.");
+	sleep(target, 10);
       }
       return true;
     }
@@ -212,9 +212,9 @@ public:
 	if (target.isPlayer())
 	  io.longMsg(L"You are dreaming.");
 	else 
-	  io.longMsg(target.name() + L" falls asleep. Time passes.");
+	  io.longMsg(target.name() + L" falls asleep.");
       target.injury() -= 50;
-      time::tick(false);
+      sleep(target, 5);
     }
     if (target.isPlayer()) {
       dream(target, blessed, cursed);
@@ -224,6 +224,11 @@ public:
   virtual bool aggressive() const { return true; }
   virtual bool heals() const { return false; } // don't use on self during combat
   virtual bool buffs() const { return false; } // don't use on self during combat
+private:
+  void sleep(monster &target, int ticks) {
+    if (target.isPlayer()) for (int i=0; i < ticks; ++i) time::tick(false);
+    else target.sleep(ticks);
+  }
 };
 
 // do something funny, and possibly slightly inconvenient, to the target

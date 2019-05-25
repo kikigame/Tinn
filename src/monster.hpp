@@ -39,13 +39,16 @@ struct attackResult {
   const wchar_t *const text_;
 };
 
+class monsterAlarm;
+
 // I'm not using pImpl here, because pain.
 // Sutter (in Effective C++) reminds me that nothing virtual should go in the pImpl, as the pImpl can't be
 // effectively used as a base or derrived class.
 class monster : public renderable, public itemHolder, public equippable, public virtual hasAdjectives {
+  friend class monsterAlarm;
 private:
   level *level_; // raw pointer to avoid cyclic reference; level owns its monsters
-  bool highlight_;
+  std::bitset<2> flags_;
   characteristic strength_;
   characteristic appearance_;
   characteristic fighting_;
@@ -212,6 +215,10 @@ public:
   // pick an action to attack with; called during combat.
   // return empty reference for conventional melee attack.
   virtual optionalRef<sharedAction<monster, monster>> attackAction();
+
+  bool sleeping() const;
+  bool sleep(int ticks);
+  bool awaken();
   
 protected:
 

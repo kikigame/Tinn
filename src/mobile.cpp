@@ -285,11 +285,7 @@ void monsterAttacks(monster &mon) {
     
     auto m = msg.str();
 	
-    auto &ios = ioFactory::instance();
-    if (m.find(L"\n") != m.npos)
-      ios.longMsg(m);
-    else
-      ios.message(m);
+    ioFactory::instance().message(m);
     
     if (dam.cur() == dam.max())
       return; // defensive coding against resistive attacks from other monsters

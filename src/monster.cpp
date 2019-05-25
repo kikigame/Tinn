@@ -17,7 +17,7 @@ unsigned char dPc() {
 monster::monster(monsterBuilder & b) :
   equippable(slotsFor(b.type_->category())),
   level_(b.iLevel()),
-  highlight_(b.isHighlight()),
+  flags_(b.isHighlight() ? 1 : 0),
   strength_(b.strength()),
   appearance_(b.appearance()),
   fighting_(b.fighting()),
@@ -35,7 +35,7 @@ monster::monster(monsterBuilder & b) :
 monster::monster(monsterBuilder & b, std::vector<const slot *>slots) :
   equippable(slots),
   level_(b.iLevel()),
-  highlight_(b.isHighlight()),
+  flags_(b.isHighlight() ? 1 : 0),
   strength_(b.strength()),
   appearance_(b.appearance()),
   fighting_(b.fighting()),
@@ -69,7 +69,7 @@ std::wstring monster::name() const {
 }
 
 bool monster::highlight() const {
-  return highlight_;
+  return flags_[0];
 }
 
 std::wstring monster::description() const {
@@ -229,6 +229,62 @@ const level & monster::curLevel() const {
   return *level_;
 }
 
+bool monster::sleeping() const {
+  return flags_[1];
+}
+
+class monsterAlarm {
+private:
+  monster &m_;
+  std::vector<std::function<void()>> &onDeath_;
+  int ticks_;
+  time::callback fn_;
+  std::vector<std::function<void()>>::iterator od_;
+public:
+  monsterAlarm(monster &m,
+	       std::vector<std::function<void()>> &onDeath,
+	       int ticks) :
+    m_(m),
+    onDeath_(onDeath),
+    ticks_(ticks), fn_(true, std::function<void()>([this]() {
+	  if (--ticks_ == 0) {
+	    m_.awaken();
+	    time::offTick(fn());
+	    m_.onDeath_.erase(od_);
+	    delete this;
+	  }    
+	})) {};
+  monsterAlarm(const monsterAlarm &) = delete;
+public:
+  time::callback &fn() { return fn_; }
+  void od(std::vector<std::function<void()>>::iterator &od) {
+    od_ = od;
+  }
+};
+
+bool monster::sleep(int ticks) {
+  if (!type().sleeps()) return false;
+  flags_[1] = 1;
+  //  time::onTick([th
+  monsterAlarm *ticker = new monsterAlarm(*this, onDeath_, ticks);
+  auto &fn = ticker->fn();
+  time::onTick(fn);
+  onDeath_.push_back([&fn,ticker]() {
+      time::offTick(fn);
+      delete ticker;
+    });
+  auto ode = onDeath_.end();
+  std::advance(ode, -1);
+  ticker->od(ode);
+  return true;
+}
+bool monster::awaken() {
+  bool rtn = flags_[1];
+  flags_[1] = 0;
+  return rtn;
+}
+
+
 bool monster::onMove(const coord &pos, const terrain &terrain) {
   if (intrinsics_.entrapped()) {
     intrinsics_.entrap(-1);
@@ -324,7 +380,7 @@ bool monster::operator == (const monster &rhs) { return this == &rhs; }
 
 // delegate to type by default, but overridden for special behiour
 const movementType & monster::movement() const {
-  return type_.movement();
+  return sleeping() ? stationary : type_.movement();
 }
 
 
