@@ -523,8 +523,8 @@ L"A large canvas bag, a little smaller than a sack. Useful for carrying items\n"
 "When ye proffer the pigge, open the poke.", // http://www.worldwidewords.org/qa/qa-pig2.htm
 L"One side of this pillow remains unsewn."
 			     ));
-    emplace(itemTypeKey::napsack_of_consumption, // guessing at weight; can't find refs TODO
-	    new itemTypeImpl(5, materialType::leathery, L'=', L"knapsack of consumption",
+    emplace(itemTypeKey::napsack_of_consumption, // 976g based on 14" leather satchel from leather satchel co
+	    new itemTypeImpl(9.57129042795157, materialType::leathery, L'=', L"knapsack of consumption",
 L"A knapsack must be worn to be useful. The rule is that it may only contain\n"
 "food, which will restore your life-force to condition green.",
 L"A leathery thing with buckles, like a harness."
