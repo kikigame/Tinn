@@ -185,12 +185,19 @@ public:
   virtual ~dreamAction() {}
   virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
     auto &io = ioFactory::instance();
+    // TODO: some monsters should not sleep
     if (cursed) {
       if (blessed) {
-	io.longMsg(L"You enter a dreamless slumber.");
+	if (target.isPlayer())
+	  io.longMsg(L"You enter a dreamless slumber.");
+	else
+	  io.longMsg(target.name() + L" falls asleep.");
 	target.injury() -= 10;
       } else {
-	io.longMsg(L"You enter a dreamless slumber. Time passes.");
+	if (target.isPlayer())
+	  io.longMsg(L"You enter a dreamless slumber. Time passes.");
+	else 
+	  io.longMsg(target.name() + L" falls asleep. Time passes.");
 	time::tick(false);
       }
       return true;
@@ -199,7 +206,8 @@ public:
       io.longMsg(L"Sweet dreams...");
       target.injury() -= 100;
     } else {
-      io.longMsg(L"You are dreaming.");
+	if (target.isPlayer())
+	  io.longMsg(L"You are dreaming.");
       target.injury() -= 50;
       time::tick(false);
     }
