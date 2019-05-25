@@ -217,7 +217,7 @@ public:
   virtual bool fire() {
     optionalRef<monster> m = whoHolds(dynamic_cast<item&>(*this));
     if (!m) return false; // just in case
-    monster *target = pickTarget<true>(m.value());
+    monster *target = pickTarget<true>(m.value(), true);
     if (target) {
       auto pThis = shared_from_this();
       return action_(pThis->isBlessed(), pThis->isCursed(), m.value(), *target);

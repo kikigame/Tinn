@@ -9,7 +9,7 @@ class monster;
 
 // pick a target
 template <bool lineOfSight>
-monster *pickTarget(monster &src);
+monster *pickTarget(monster &src, bool allowOnSelf = false);
 
 
 #endif //ndef TARGET_HPP
