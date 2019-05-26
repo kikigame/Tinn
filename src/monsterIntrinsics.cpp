@@ -12,13 +12,13 @@
 #include <bitset>
 
 enum class bonusType {
-  eatVeggie, // TODO
+  eatVeggie, // double benefit from eating veggies
     dblAttack, // TODO
     speedy, // 1 slot on speed
     hearing, // TODO
     seeing, // TODO
     flying,
-    swimming, // TODO (need water too)
+    swimming, // can mave on water terrain
     climbing, // fast at escaping pits
     fearless, // affected by petrify (or other fear) actions
     throws, //can the monster lob things at another
