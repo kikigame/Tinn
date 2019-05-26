@@ -7,6 +7,7 @@
 #include "terrain.hpp"
 #include "itemholder.hpp"
 #include "items.hpp"
+#include "monster.hpp"
 #include <map>
 #include <bitset>
 
@@ -348,12 +349,15 @@ const bonus monsterAbilityMods::speedy() const {
 // NB: For each 3000N (~1/3tonne, in Earth gravity) the monster carries,
 // rate is reduced by 1 slot. This means a human warrier can carry about a tonne.
 speed monsterAbilityMods::adjust(const speed & fastness) {
+  const monster* mon = dynamic_cast<const monster*>(&mon_);
+  auto w = mon ? mon->type().carryWeightN() : 3000;
   const bonus & s = speedy();
   auto rtn = adjustSpeed(s, fastness);
   double totalWeight=mon_.totalWeight();
-  while (totalWeight > 3000 && rtn != speed::stop) {
+  
+  while (totalWeight > w && rtn != speed::stop) {
     rtn = static_cast<speed>(static_cast<int>(rtn)-1);
-    totalWeight -= 3000;
+    totalWeight -= w;
   }
   return rtn;
 }

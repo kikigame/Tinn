@@ -46,6 +46,7 @@ private:
   monsterIntrinsics intrinsics_;
   bool alluring_;
   bool sleeps_;
+  unsigned int carryWeightN_;
 public:
   const monsterTypeKey key_;
   monsterTypeBuilder(monsterTypeKey key) : 
@@ -56,6 +57,7 @@ public:
     foodMaterials_(), sayings_(),
     movementType_ ({ speed::turn2, goTo::player, goBy::smart, 0 }),
     fearless_(), intrinsics_(), alluring_(false), sleeps_(false),
+    carryWeightN_(3000),
     key_(key) {}
     monsterTypeBuilder& category(monsterCategory category) { category_ = category; return *this; }
   monsterTypeBuilder& name(const wchar_t * name) { monsterNames_.push_back(name); return *this; }
@@ -86,6 +88,7 @@ public:
       alignment_.push_back(&(*i));
     return *this; 
   }
+  monsterTypeBuilder& carryWeight(unsigned int carryWeightN) { carryWeightN_ = carryWeightN; return *this; }
   monsterTypeBuilder& movement(movementType type) { movementType_ = type; return *this; }
   monsterTypeBuilder& fearless() { fearless_ = bonus(true); return *this; }
   monsterTypeBuilder& scardy() { fearless_ = bonus(false); return *this; }
@@ -121,6 +124,7 @@ monsterType::monsterType(const monsterTypeBuilder & b) :
   alignment_(b.alignment_),
   movementType_(b.movementType_),
   intrinsics_(b.intrinsics_),
+  carryWeightN_(b.carryWeightN_),
   flags_((b.sleeps_ ? 0b10 : 0) | (b.alluring_ ? 1 : 0)) {
 }
 
@@ -170,6 +174,9 @@ const wchar_t * monsterType::name(const unsigned char maxDamage) const {
 }
 const genderAssignType monsterType::gen() const {
   return gen_;
+}
+int monsterType::carryWeightN() const {
+  return carryWeightN_;
 }
 bool monsterType::alluring() const {
   return flags_[0];
@@ -238,6 +245,7 @@ L"Dragons are large serpentine creatures; highly intelligent and amongst the\n"
 	    .throws()
 	    .zap()
 	    .sleeps() // for centuries
+	    .carryWeight(300000) // the strength of 100 humans, seems about right
             .fearless());
 
     // unique feature: doesn't descend below level 3
@@ -270,6 +278,7 @@ L"Dragons are large serpentine creatures; highly intelligent and amongst the\n"
 	    .throws()
 	    .zap()
 	    .sleeps()
+	    .carryWeight(1000) // typically children; 1/3 of human
 	    .encyclopedium(
 L"Sometimes a human ventures into a Dungeon upon a quest. This is usually ill-\n"
 "advised."));
@@ -296,13 +305,14 @@ L"Sometimes a human ventures into a Dungeon upon a quest. This is usually ill-\n
 	    .gen(genderAssignType::mf)
 	    .align(dr.getExact(Element::earth, Domination::aggression, Outlook::kind))
 	    .saying(L"*poing*") // ref: Sluggy Freelance
-	    // ferrets weight 2-4lb (male) or 1-2lb (female), but we don't support discrimination,
+	    // ferrets weigh 2-4lb (male) or 1-2lb (female), but we don't support discrimination,
 	    // so we'll stick to 2lb.
 	    .corpseWeight(8.8964432306) //2lb
 	    .eats(materialType::fleshy) // obligate carnivores
 	    .eats(materialType::liquid)
 	    .movement({speed::turn2, goTo::player, goBy::smart, 75})
 	    .zap() // they lack the strength to throw stuff, but are curious enough to use a wand.
+	    .carryWeight(20)
 	    .encyclopedium(
 L"Meaning \"Little Thief\", ferrets are small, hyperflexible elongated mammels\n"
 "of the Mustela family. They are domesticated hunting working animals bread for\n"
@@ -347,6 +357,7 @@ L"Meaning \"Little Thief\", ferrets are small, hyperflexible elongated mammels\n
 	    .throws()
 	    .zap()
 	    .sleeps()
+	    .carryWeight(4000)
 	    .encyclopedium(
 L"The difference between a goblin and an orc is that orcs don't exist.\n"
 "Not all goblins are malevolent; some are merely mischievous. All are obsessed\n"
@@ -389,6 +400,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .saying(L"(howl)") // todo: woof for puppies & dogs
 	    .movement({speed::turn2, goTo::unaligned, goBy::smart, 50})
 	    .sleeps()
+	    .carryWeight(1000)
 	    .encyclopedium(L"Canines are furry, with four legs and a tail. They are easily excited, always\n"
 "hungry and pack hunters. They enjoy bones and some are known to bark or howl."));
 
@@ -424,6 +436,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .throws()
 	    .sleeps()
 	    .zap()
+	    .carryWeight(3000) // generous, but encumberance rules always suck anyway
 	    .encyclopedium(L"Amongst the smelliest of monsters, these strange creatures have a poor sense\n"
 " of smell. They lack in intelligece, cunning, learning, strength, power and\n"
 "speed - but are very adept at using tools and being unpredictable."));
@@ -455,6 +468,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .eats(materialType::clothy) // ripping clothes off with its teeth...
     //ref: http://www.chesterfieldparanormalresearch.com/incubus---sucubbus-demon.html; wikipedia; http://mythicalcreatureslist.com/mythical-creature/Succubus; others
 	    .alluring()
+	    .carryWeight(0) // does not carry stuff
 	    .encyclopedium(L"The word incubus comes from the Latin /incubāre/ (to lay\n"
       "upon), from Latin /incubō/ (nightmare). Even the most hedonistic\n"
       "of demonologist should think twice before engaging one. They have \n"
@@ -494,6 +508,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .eats(materialType::fleshy)
 	    .eats(materialType::liquid)
 	    .sleeps()
+	    .carryWeight(0) // does not carry stuff
 	    .encyclopedium(
 L"Kelpies live in rivers and streams, while the stronger Each-uisge prefers\n"
 "the sea - although there is some overlap. When in human form, either can be\n"
@@ -531,6 +546,7 @@ L"Kelpies live in rivers and streams, while the stronger Each-uisge prefers\n"
 	    .throws() // trydants traditionally
 	    .sleeps()
 	    .zap()
+	    .carryWeight(3500) // a little stronger than human
 	    .encyclopedium(
 L"Merfolk do not like to stray outside the sea, and mermen less so. Having the\n"
 "tail of a fish and the body of the beautiful human, albeit covered in tiny\n"
@@ -565,6 +581,7 @@ L"Merfolk do not like to stray outside the sea, and mermen less so. Having the\n
 	    .movement({speed::perturn, goTo::none, goBy::smart, 10}) // slow for a bird, but works better as we are likely to be charmed.
 	    .eats(materialType::fleshy)
 	    .eats(materialType::liquid)
+	    .carryWeight(0) // does not carry
 	    .sleeps()
 	    .alluring()
 	    // no throw or zap; they make you go to them
@@ -611,6 +628,7 @@ L"Of all the birds of the sea, the sirens are the most beautiful and the most\n"
 	    .align(dr.begin(), dr.end())
 	    .movement({speed::slow3, goTo::wander, goBy::smart})
 	    .sleeps() // with their eyes open
+	    .carryWeight(0) // does not carry
 	    .encyclopedium(
 L"Be they creatures of immortality, creation, temptation, or hairstyle, snakes\n"
 "and other serpants have often found themselves at the centre of mythology.\n"
@@ -647,6 +665,7 @@ L"Be they creatures of immortality, creation, temptation, or hairstyle, snakes\n
 	    .eats(materialType::clothy) // ripping clothes off with its teeth...
 	    .eats(materialType::liquid)
 	    .alluring()
+	    .carryWeight(0) // does not carry
 	    .encyclopedium(
     //ref: http://www.chesterfieldparanormalresearch.com/incubus---sucubbus-demon.html; wikipedia; http://mythicalcreatureslist.com/mythical-creature/Succubus; others
     L"The word succubus comes from the Latin /succubāre/ (to lie\n"
@@ -692,6 +711,7 @@ L"Be they creatures of immortality, creation, temptation, or hairstyle, snakes\n
 	    // Mostly based on http://www.mysticfiles.com/trolls-from-ancient-to-modern/
 	    .throws()
 	    .sleeps() // by day, usually
+	    .carryWeight(6000) // notoriously strong
 	    .encyclopedium(L"Dim-witted creatures of Norse and Scandinavian origin. Big and ugly, trolls\n"
 "are known for possessing magical objects and treasures - like gold, or\n"
 "princesses. They wander little and are fierecely territorial, but have been\n"
@@ -726,6 +746,7 @@ L"Be they creatures of immortality, creation, temptation, or hairstyle, snakes\n
 	    .eats(materialType::fleshy) // obligate carnivores
 	    // they may drink water, but they can't open a bottle of it
 	    .movement({speed::stop, goTo::none, goBy::avoid, 0})
+	    .carryWeight(0)
 	    .encyclopedium(
 L"There are a great number of creatures in the world, and not all sit neatly\n"
 "in their categories. The Venus trap is a deadly flora which allures its\n"
@@ -761,6 +782,7 @@ L"There are a great number of creatures in the world, and not all sit neatly\n"
 	    .material(materialType::fleshy)
 	    .align(dr.getExact(Element::time, Domination::aggression, Outlook::none))
 	    .movement({speed::slow3, goTo::player, goBy::zombeeline, 0})
+	    .carryWeight(0)
 	    // do not eat
 	    // ref: https://skeptoid.com/episodes/4262
 	    .encyclopedium(
@@ -805,6 +827,7 @@ L"There are a great number of creatures in the world, and not all sit neatly\n"
 	    .movement({speed::turn2, goTo::wander, goBy::avoid, 0})
 	    .eats(materialType::fleshy)
 	    .eats(materialType::liquid)
+	    .carryWeight(40) // a little heavier than a big rabbit
 	    .sleeps()
 	    // ref: https://skeptoid.com/episodes/4262
 	    .encyclopedium(

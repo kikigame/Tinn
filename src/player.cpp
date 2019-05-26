@@ -152,7 +152,8 @@ void player::takeInventory() {
     inv.precision(2);
     inv << std::scientific
 	<< L"Total weight: " << weight << L" Newtons. ";
-    int wt = weight / 3000;
+    //    int wt = weight / 3000;
+    int wt = weight / type().carryWeightN();
     switch (wt) {
     case 0: break;
     case 1: inv << L"\n\tThis stuff is heavy!"; break;
