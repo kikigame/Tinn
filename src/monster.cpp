@@ -333,6 +333,36 @@ bool monster::onMove(const coord &pos, const terrain &terrain) {
   }
 }
 void monster::postMove(const coord &pos, const terrain &terrain) {
+  if (!isPlayer()) {
+    // if we're injured and there's food, eat it.
+    auto &onFloor = curLevel().holder(pos);
+    bool eaten = false;
+    if (injury().cur() > 0) {
+      optionalRef<item> fud = onFloor.firstItem([this](item &i){
+	  return type().eats(i.material());
+	});
+      if (fud) {
+	eat(fud.value());
+	eaten = true;
+      }
+    }
+    // olse if we're bolew encumbrance weight, collect an item withitn weight limit
+    if (!eaten) {
+      int w; optionalRef<item> i;
+      do {
+	w = (totalWeight() < type().carryWeightN());
+	i = onFloor.firstItem([w](item &i) {
+	    return i.weight() < w;
+	  });
+	if (i) {
+	  auto &it = i.value();
+	  if (!addItem(it)) break;
+	  // if item is equippable, equip it.
+	  it.equip(*this); // returns false if fails
+	}
+      } while (w > 0 && i);
+    }
+  }
   switch (terrain.type()) {
   case terrainType::PIT: {
     bool flying(abilities().fly());

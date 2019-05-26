@@ -764,7 +764,6 @@ public:
     }
     if (!avoidTraps || !terrainAt(pos).entraps(m, false)) // avoid traps if we should & can see them
       moveTo(m, pos); // moveTo handles entrapped()
-    // TODO: monster items and inventory- collect the new stuff?
   }
   void removeMonster(const monster &m) {
     for (auto i = monsters_.begin(); i != monsters_.end(); ++i) {
