@@ -185,7 +185,7 @@ public:
   virtual ~dreamAction() {}
   virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
     auto &io = ioFactory::instance();
-    if (!target.type().sleeps()) {
+    if (!target.abilities().sleeps()) {
       io.message(target.name() + L" doesn't seem affected.");
       return false;
     }

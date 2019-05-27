@@ -23,6 +23,7 @@ enum class bonusType {
     fearless, // affected by petrify (or other fear) actions
     throws, //can the monster lob things at another
     zap, // can the monster zap another with a wand
+    sleeps, // affected by wand of slumber
     END
     };
 
@@ -48,6 +49,7 @@ public:
   std::map<damageType *, char> resistLevel_;
   std::map<damageType *, char> extraDamageLevel_;
   std::map<terrainType, bool> terrainMove_;
+  int carryWeightN_;
   monsterIntrinsicsImpl() :
     damageProof_(), turnsToEscape_(0), bonuses_(), resistLevel_(), extraDamageLevel_(), terrainMove_() {
     // all creatures move on ground by default:
@@ -218,13 +220,25 @@ void monsterIntrinsics::zap(const bool zap) {
 const bool monsterIntrinsics:: zap() const {
   return pImpl_->bonuses_[bonusType::zap] == bonus(true);
 }
+// can you zap wands at monsters?
+void monsterIntrinsics::sleeps(const bool snoozy) {
+  pImpl_->bonuses_[bonusType::sleeps] = bonus(snoozy);
+}
+const bool monsterIntrinsics::sleeps() const {
+  return pImpl_->bonuses_[bonusType::sleeps] == bonus(true);
+}
 
 // adjust the given enum based on the speed bonus/penalty
 speed monsterIntrinsics::adjust(const speed & fastness) {
   const bonus & s = speedy();
   return adjustSpeed(s, fastness);
 }
-
+void monsterIntrinsics::carryWeightN(const int n) {
+  pImpl_->carryWeightN_ = n;
+}
+const int monsterIntrinsics::carryWeightN() const {
+  return pImpl_->carryWeightN_;
+}
 
 
 monsterAbilityMods::monsterAbilityMods(itemHolder &mon, monsterIntrinsics &intrinsics) :
@@ -350,7 +364,7 @@ const bonus monsterAbilityMods::speedy() const {
 // rate is reduced by 1 slot. This means a human warrier can carry about a tonne.
 speed monsterAbilityMods::adjust(const speed & fastness) {
   const monster* mon = dynamic_cast<const monster*>(&mon_);
-  auto w = mon ? mon->type().carryWeightN() : 3000;
+  auto w = mon ? mon->abilities().carryWeightN() : 3000;
   const bonus & s = speedy();
   auto rtn = adjustSpeed(s, fastness);
   double totalWeight=mon_.totalWeight();
@@ -376,4 +390,15 @@ void monsterAbilityMods::zap(const bool zap) {
 const bool monsterAbilityMods:: zap() const {
   return intrinsics_.zap() || mod_->bonuses_[bonusType::zap] == bonus(true);
 }
-
+void monsterAbilityMods::sleeps(const bool snoozy) {
+  mod_->bonuses_[bonusType::sleeps] = bonus(snoozy);
+}
+const bool monsterAbilityMods::sleeps() const {
+  return mod_->bonuses_[bonusType::sleeps] == bonus(true);
+}
+void monsterAbilityMods::carryWeightN(const int n) {
+  intrinsics_.carryWeightN(n); // can't be bothered to make this transient. Will create flags if needed.
+}
+const int monsterAbilityMods::carryWeightN() const {
+  return intrinsics_.carryWeightN();
+}

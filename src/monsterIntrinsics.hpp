@@ -72,6 +72,12 @@ public:
   // can this monster use wands? (eg ranged attack / healing)
   virtual void zap(const bool useWands) = 0;
   virtual const bool zap() const = 0;
+  // can this monster rest?
+  virtual void sleeps(const bool snoozy) = 0;
+  virtual const bool sleeps() const = 0;
+  // how much weight can we comfortably carry?
+  virtual void carryWeightN(const int ) = 0;
+  virtual const int carryWeightN() const = 0;
 };
 
 class monsterIntrinsicsImpl;
@@ -139,6 +145,12 @@ public:
   // can this monster use wands? (eg ranged attack / healing)
   virtual void zap(const bool useWands);
   virtual const bool zap() const;
+  // can this monster rest?
+  virtual void sleeps(const bool snoozy);
+  virtual const bool sleeps() const;
+  // how much weight can we comfortably carry?
+  virtual void carryWeightN(const int );
+  virtual const int carryWeightN() const;
 };
 
 // abilites work the same as intrinsics, but may be granted by a more 
@@ -207,6 +219,12 @@ public:
   // can this monster use wands? (eg ranged attack / healing)
   virtual void zap(const bool useWands);
   virtual const bool zap() const;
+  // can this monster rest?
+  virtual void sleeps(const bool snoozy);
+  virtual const bool sleeps() const;
+  // how much weight can we comfortably carry?
+  virtual void carryWeightN(const int n); // NB: Mutator is permanent.
+  virtual const int carryWeightN() const;
 };
 
 

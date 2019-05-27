@@ -45,8 +45,6 @@ private:
   bonus fearless_;
   monsterIntrinsics intrinsics_;
   bool alluring_;
-  bool sleeps_;
-  unsigned int carryWeightN_;
 public:
   const monsterTypeKey key_;
   monsterTypeBuilder(monsterTypeKey key) : 
@@ -56,8 +54,7 @@ public:
     material_(materialType::fleshy), alignment_(),
     foodMaterials_(), sayings_(),
     movementType_ ({ speed::turn2, goTo::player, goBy::smart, 0 }),
-    fearless_(), intrinsics_(), alluring_(false), sleeps_(false),
-    carryWeightN_(3000),
+    fearless_(), intrinsics_(), alluring_(false),
     key_(key) {}
     monsterTypeBuilder& category(monsterCategory category) { category_ = category; return *this; }
   monsterTypeBuilder& name(const wchar_t * name) { monsterNames_.push_back(name); return *this; }
@@ -88,14 +85,14 @@ public:
       alignment_.push_back(&(*i));
     return *this; 
   }
-  monsterTypeBuilder& carryWeight(unsigned int carryWeightN) { carryWeightN_ = carryWeightN; return *this; }
+  monsterTypeBuilder& carryWeight(unsigned int carryWeightN) { intrinsics_.carryWeightN(carryWeightN); return *this; }
   monsterTypeBuilder& movement(movementType type) { movementType_ = type; return *this; }
   monsterTypeBuilder& fearless() { fearless_ = bonus(true); return *this; }
   monsterTypeBuilder& scardy() { fearless_ = bonus(false); return *this; }
   monsterTypeBuilder& throws() { intrinsics_.throws(true); return *this; }
   monsterTypeBuilder& zap() { intrinsics_.zap(true); return *this; }
   monsterTypeBuilder& alluring() { alluring_ = true; return *this; }
-  monsterTypeBuilder& sleeps() { sleeps_ = true; return *this; }
+  monsterTypeBuilder& sleeps() { intrinsics_.sleeps(); return *this; }
 };
 
 monsterType::monsterType(const monsterTypeBuilder & b) :
@@ -124,8 +121,7 @@ monsterType::monsterType(const monsterTypeBuilder & b) :
   alignment_(b.alignment_),
   movementType_(b.movementType_),
   intrinsics_(b.intrinsics_),
-  carryWeightN_(b.carryWeightN_),
-  flags_((b.sleeps_ ? 0b10 : 0) | (b.alluring_ ? 1 : 0)) {
+  alluring_(b.alluring_) {
 }
 
 const monsterTypeKey monsterType::type() const { return key_; }
@@ -175,14 +171,8 @@ const wchar_t * monsterType::name(const unsigned char maxDamage) const {
 const genderAssignType monsterType::gen() const {
   return gen_;
 }
-int monsterType::carryWeightN() const {
-  return carryWeightN_;
-}
 bool monsterType::alluring() const {
-  return flags_[0];
-}
-bool monsterType::sleeps() const {
-  return flags_[1];
+  return alluring_;
 }
 
 

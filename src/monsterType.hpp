@@ -147,11 +147,7 @@ private:
   // monster default flags
   const monsterIntrinsics intrinsics_;
 
-  // how much can this monster carry confortably (3000N typical for human)
-  const unsigned int carryWeightN_;
-  
-  // 0 = alluring, 1 = sleeps
-  const std::bitset<2> flags_;
+  const bool alluring_;
 public:
   monsterType(const monsterTypeBuilder &);
   monsterType(const monsterType &) 
@@ -160,7 +156,7 @@ public:
       xpOffset_(0), renderChar_('\0'), strength_(0), appearance_(0), fighting_(0),
       dodge_(0), maxDamage_(0), gen_(genderAssignType::f), corpseWeight_(0),
       material_(materialType::fleshy),  movementType_(stationary),
-      carryWeightN_(0), flags_(0) { 
+      alluring_(false) { 
     throw "needed for containers but shouldn't copy monster types!";};
 
   const monsterTypeKey type() const;
@@ -214,12 +210,6 @@ public:
   
   // is this monster type supernaturally alluring?
   bool alluring() const;
-
-  // can this monster rest?
-  bool sleeps() const;
-
-  // how much weight can we comfortably carry?
-  int carryWeightN() const;
 };
 
 /* singleton repository for monster types */

@@ -263,7 +263,7 @@ public:
 };
 
 bool monster::sleep(int ticks) {
-  if (!type().sleeps()) return false;
+  if (!abilities().sleeps()) return false;
   flags_[1] = 1;
   //  time::onTick([th
   monsterAlarm *ticker = new monsterAlarm(*this, onDeath_, ticks);
@@ -350,7 +350,7 @@ void monster::postMove(const coord &pos, const terrain &terrain) {
     if (!eaten) {
       int w; optionalRef<item> i;
       do {
-	w = (totalWeight() < type().carryWeightN());
+	w = (totalWeight() < abilities().carryWeightN());
 	i = onFloor.firstItem([w](item &i) {
 	    return i.weight() < w;
 	  });
