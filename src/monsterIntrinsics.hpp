@@ -66,8 +66,8 @@ public:
   virtual const bonus speedy() const = 0;
   // adjust the passed enum based on the speed bonus/penalty
   virtual speed adjust(const speed & fastness) = 0;
-  // can this monster use thrown weapons? (eg ranged attack / healing)
-  virtual void throws(const bool useWands) = 0;
+  // can this monster use thrown weapons?
+  virtual void throws(const bool lobs) = 0;
   virtual const bool throws() const = 0;
   // can this monster use wands? (eg ranged attack / healing)
   virtual void zap(const bool useWands) = 0;

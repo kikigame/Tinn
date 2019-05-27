@@ -657,6 +657,11 @@ Nethack has some monster types with elemental variants, eg Frost/Fire Giants, El
 
 
 Delegating monster types: just as "a dead <foo>" is an object that delegates some properties to monster type "<foo>", we could also have undead/augmented types (zombie <foo>, vampiric <foo>, cyber <foo> etc. By delegating, this would make polymorphing easier within these çlimited types. A <foo>/<bar> cross would have some properties of a <foo> and some of a <bar> (but this could get silly if <foo>/<bar> cross was itself a valid <foo>); a chaos <foo> would scramble the attributes of a <foo> and replace one ability with another. A were-<foo> would suffer from the disease of lycanthropy and turn into a <bar> at some designated or random time (ref: werewolf). Each of these should be determined at the time of spawning/polymorphing.
+This suggests a few new moster types:
+mite (from cyber-mite): symbol "," to hide easily; easily killed but in large quantities (annoying). Forms might incrude: micro-mite, mite, megamite. Doesn't move/carry/sleep, Low damage and health.
+mat (from cyber-mat): doormat, ?: sleeps, no carry, no damage but high health.
+bat (from vampieic-bat): cricket reference??
+- all cyber-creatures should move.
 
 
 Special Level ideas
