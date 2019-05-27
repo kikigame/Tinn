@@ -1266,7 +1266,7 @@ public:
     if (!dynamic_cast<monster*>(&holder()))
       return item::useResult::FAIL; // can only be used in main inventory
     if (!hasCharge()) {
-      if (dynamic_cast<monster&>(holder()).curLevel().dung().pc()->abilities().hear()) {
+      if (dynamic_cast<monster&>(holder()).curLevel().dung().pc()->abilities()->hear()) {
 	if (type_ == itemTypeRepo::instance()[itemTypeKey::bagpipes])
 	  ioFactory::instance().message(L"The beautiful sound of " + name() + L" fills the air");
 	else
@@ -1363,7 +1363,7 @@ public:
     if (sWeapon) {
       auto pLauncher = dynamic_cast<weaponLauncher*>(&(sWeapon.value()));
       if (pLauncher) {
-	auto dbl = source->abilities().dblAttack();
+	auto dbl = source->abilities()->dblAttack();
 	if (dbl == bonus(true)) dam *= pLauncher->multiplierFor(pWeapon.value());
 	if (dbl != bonus(false)) dam *= (pLauncher->multiplierFor(pWeapon.value()) / 2);
       }

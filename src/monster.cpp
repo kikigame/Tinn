@@ -7,6 +7,7 @@
 #include "items.hpp"
 #include "output.hpp"
 #include "terrain.hpp"
+#include "monstermutation.hpp"
 
 //Roll 2D52-2
 unsigned char dPc() {
@@ -29,8 +30,9 @@ monster::monster(monsterBuilder & b) :
   type_(*b.type_),
   align_(b.align_),
   intrinsics_(b.type_->intrinsics()),
-  abilities_(*this, intrinsics_),
-  onDeath_(b.onDeath()) {}
+  abilities_(std::make_shared<monsterAbilityMods>(*this, intrinsics_)),
+  onDeath_(b.onDeath()),
+  mutations_() {}
 
 monster::monster(monsterBuilder & b, std::vector<const slot *>slots) :
   equippable(slots),
@@ -46,9 +48,10 @@ monster::monster(monsterBuilder & b, std::vector<const slot *>slots) :
   eachTick_(),
   type_(*b.type_),
   align_(b.align_),
-  intrinsics_(),
-  abilities_(*this, intrinsics_),
-  onDeath_(b.onDeath()) {}
+  intrinsics_(b.type_->intrinsics()),
+  abilities_(std::make_shared<monsterAbilityMods>(*this, intrinsics_)),
+  onDeath_(b.onDeath()),
+  mutations_() {}
 
 void monster::eachTick(const std::function<void()> &callback) { 
   //  eachTick_.emplace_back(new time::callback(true, callback));
@@ -64,6 +67,9 @@ std::wstring monster::name() const {
   for (auto a : adjectives())
     buffer += a + L" ";
   auto damage = damage_.max();
+  for (auto &m : mutations_)
+    if (m.get().appliesTo(type()))
+      buffer += m.get().prefix();
   buffer += type_.name(damage);
   return buffer;
 }
@@ -157,7 +163,7 @@ int monster::wound(const monster &by, unsigned char reductionPc, const damage & 
   long damage = dPc();
   damage *= reductionPc;
   damage /= 100;
-  damage += 5 * by.abilities().extraDamage(type);
+  damage += 5 * by.abilities()->extraDamage(type);
   damage = modDamage(damage, type);
   damage_ += static_cast<unsigned char>(damage);
   if (damage_.cur() == damage_.max()) death();
@@ -177,7 +183,7 @@ bool monster::damageArmour(const damage &d) {
 }
 
 long monster::modDamage(/*by value*/long pc, const damage & type) const {
-  char delta = abilities().resist(type);
+  char delta = abilities()->resist(type);
   pc -= delta * 5; // NB: Can go positive, such is the goodness of magic
   return equippable::modDamage(pc, type);
 }
@@ -213,11 +219,11 @@ bool monster::isFemale() const {
   return target == characteristic::MAX_MAX || dPc() < target;
 }
 
-monsterIntrinsics & monster::intrinsics() {
+std::shared_ptr<monsterIntrinsics> monster::intrinsics() {
   return intrinsics_;
 }
 
-const monsterIntrinsics & monster::intrinsics() const {
+const std::shared_ptr<monsterIntrinsics> monster::intrinsics() const {
   return intrinsics_;
 }
 
@@ -263,7 +269,7 @@ public:
 };
 
 bool monster::sleep(int ticks) {
-  if (!abilities().sleeps()) return false;
+  if (!abilities()->sleeps()) return false;
   flags_[1] = 1;
   //  time::onTick([th
   monsterAlarm *ticker = new monsterAlarm(*this, onDeath_, ticks);
@@ -286,11 +292,11 @@ bool monster::awaken() {
 
 
 bool monster::onMove(const coord &pos, const terrain &terrain) {
-  if (intrinsics_.entrapped()) {
-    intrinsics_.entrap(-1);
+  if (intrinsics_->entrapped()) {
+    intrinsics_->entrap(-1);
     if (isPlayer()) {
       auto &ios = ioFactory::instance();
-      if (!intrinsics_.entrapped())
+      if (!intrinsics_->entrapped())
 	ios.message(L"You can move again now."); // next turn
       else 
 	ios.message(L"You try, but you can't move yet!");
@@ -305,10 +311,10 @@ bool monster::onMove(const coord &pos, const terrain &terrain) {
     return true; // you can move into a hidden pit
   case terrainType::PIT: {
     fall(dPc() / 10);
-    const auto climb = abilities().climb();
+    const auto climb = abilities()->climb();
     const int count=climb == bonus(false) ? 6 : climb == bonus() ? 4 : 2;
-    auto rtn = !intrinsics_.entrapped();
-    intrinsics_.entrap(count);
+    auto rtn = !intrinsics_->entrapped();
+    intrinsics_->entrap(count);
     return rtn;
   }
   case terrainType::PIANO_HIDDEN:
@@ -350,7 +356,7 @@ void monster::postMove(const coord &pos, const terrain &terrain) {
     if (!eaten) {
       int w; optionalRef<item> i;
       do {
-	w = (totalWeight() < abilities().carryWeightN());
+	w = (totalWeight() < abilities()->carryWeightN());
 	i = onFloor.firstItem([w](item &i) {
 	    return i.weight() < w;
 	  });
@@ -365,7 +371,7 @@ void monster::postMove(const coord &pos, const terrain &terrain) {
   }
   switch (terrain.type()) {
   case terrainType::PIT: {
-    bool flying(abilities().fly());
+    bool flying(abilities()->fly());
     if (flying) {
       if (isPlayer()) ioFactory::instance().message(L"You are now over a pit.");
     } else {
@@ -396,11 +402,20 @@ const wchar_t * monster::say() const {
   return *rndPick(type().sayingsBegin(), type().sayingsEnd());
 }
 
-monsterAbilities& monster::abilities() {
-  return abilities_;
+std::shared_ptr<monsterAbilities> monster::abilities() {
+  std::shared_ptr<monsterAbilities> rtn = abilities_;
+  for (const mutation &m : mutations_)
+    if (m.appliesTo(type()))
+      rtn = m.wrap(rtn);
+  return rtn;
 }
-const monsterAbilities& monster::abilities() const {
-  return abilities_;
+
+const std::shared_ptr<monsterAbilities> monster::abilities() const {
+  std::shared_ptr<monsterAbilities> rtn = abilities_;
+  for (const mutation &m : mutations_)
+    if (m.appliesTo(type()))
+      rtn = m.wrap(rtn);
+  return rtn;
 }
 
 monster::~monster() {}
@@ -468,7 +483,7 @@ bool monster::eat(item &item, bool force) {
   // some things can affect consumption:
   bonus bonus;
   if (item.material() == materialType::veggy) 
-    bonus = abilities().eatVeggie();
+    bonus = abilities()->eatVeggie();
   // TODO: Penalties for eating corpses?
   if (damage_.cur() == 0) {
     if (force && weight > 0) weight *= -1;
@@ -599,7 +614,7 @@ std::vector<std::wstring> monster::adjectives() const {
   auto &dr = damageRepo::instance();
   const materialType &m = material();
   for (auto dt : allDamageTypes) {
-    if (intrinsics().proof(dr[dt])) { // don't consider proof based on equipment, as they'll lose this as a corpse.
+    if (intrinsics()->proof(dr[dt])) { // don't consider proof based on equipment, as they'll lose this as a corpse.
       // adjective for being (this material) being proof to this damage type:
       auto ptr = dr[dt].proofAdj(m);
       if (ptr != nullptr)
@@ -631,6 +646,16 @@ void monster::addDescriptor(std::wstring desc) {
 optionalRef<sharedAction<monster, monster>> monster::attackAction() {
   // default: no action
   return optionalRef<sharedAction<monster, monster>>();
+}
+
+bool monster::isMutated(const mutationType &key) const {
+  return mutations_.count(mutationFactory::instance()[key]) > 0;
+}
+void monster::mutate(const mutationType &key) {
+  mutations_.emplace(mutationFactory::instance()[key]);
+}
+void monster::deMutate(const mutationType &key) {
+  mutations_.erase(mutationFactory::instance()[key]);  
 }
 
 movementType stationary = {speed::stop, goTo::none, goBy::avoid, 0 };

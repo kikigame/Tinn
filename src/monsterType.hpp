@@ -145,9 +145,13 @@ private:
   const movementType movementType_;
 
   // monster default flags
-  const monsterIntrinsics intrinsics_;
+  const std::shared_ptr<monsterIntrinsics> intrinsics_;
 
-  const bool alluring_;
+  enum class flag {
+    ALLURING = 0,
+    UNDEAD = 1
+  };
+  const std::bitset<2> flags_;
 public:
   monsterType(const monsterTypeBuilder &);
   monsterType(const monsterType &) 
@@ -156,7 +160,7 @@ public:
       xpOffset_(0), renderChar_('\0'), strength_(0), appearance_(0), fighting_(0),
       dodge_(0), maxDamage_(0), gen_(genderAssignType::f), corpseWeight_(0),
       material_(materialType::fleshy),  movementType_(stationary),
-      alluring_(false) { 
+      flags_(0) { 
     throw "needed for containers but shouldn't copy monster types!";};
 
   const monsterTypeKey type() const;
@@ -202,7 +206,7 @@ public:
   // spawn a space version of the monster:
   std::shared_ptr<monster> spawnSpace(level &, monsterBuilder &b) const;
 
-  const monsterIntrinsics & intrinsics() const;
+  const std::shared_ptr<monsterIntrinsics> intrinsics() const;
 
   /////////
   // Non-modifiable traits
@@ -210,6 +214,8 @@ public:
   
   // is this monster type supernaturally alluring?
   bool alluring() const;
+  // undead creatures notably can't become vampires
+  bool undead() const;
 };
 
 /* singleton repository for monster types */

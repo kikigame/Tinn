@@ -45,6 +45,7 @@ private:
   bonus fearless_;
   monsterIntrinsics intrinsics_;
   bool alluring_;
+  bool undead_;
 public:
   const monsterTypeKey key_;
   monsterTypeBuilder(monsterTypeKey key) : 
@@ -54,7 +55,7 @@ public:
     material_(materialType::fleshy), alignment_(),
     foodMaterials_(), sayings_(),
     movementType_ ({ speed::turn2, goTo::player, goBy::smart, 0 }),
-    fearless_(), intrinsics_(), alluring_(false),
+    fearless_(), intrinsics_(), alluring_(false), undead_(false),
     key_(key) {}
     monsterTypeBuilder& category(monsterCategory category) { category_ = category; return *this; }
   monsterTypeBuilder& name(const wchar_t * name) { monsterNames_.push_back(name); return *this; }
@@ -92,6 +93,7 @@ public:
   monsterTypeBuilder& throws() { intrinsics_.throws(true); return *this; }
   monsterTypeBuilder& zap() { intrinsics_.zap(true); return *this; }
   monsterTypeBuilder& alluring() { alluring_ = true; return *this; }
+  monsterTypeBuilder& undead() { undead_ = true; return *this; }
   monsterTypeBuilder& sleeps() { intrinsics_.sleeps(); return *this; }
 };
 
@@ -120,8 +122,11 @@ monsterType::monsterType(const monsterTypeBuilder & b) :
   sayings_(b.sayings_),
   alignment_(b.alignment_),
   movementType_(b.movementType_),
-  intrinsics_(b.intrinsics_),
-  alluring_(b.alluring_) {
+  intrinsics_(std::make_shared<monsterIntrinsics>(b.intrinsics_)),
+  flags_(
+	 ((b.alluring_? 1 : 0) << static_cast<size_t>(flag::ALLURING)) |
+	 ((b.undead_? 1 : 0) << static_cast<size_t>(flag::UNDEAD))
+	 ) {
 }
 
 const monsterTypeKey monsterType::type() const { return key_; }
@@ -172,7 +177,10 @@ const genderAssignType monsterType::gen() const {
   return gen_;
 }
 bool monsterType::alluring() const {
-  return alluring_;
+  return flags_[static_cast<int>(flag::ALLURING)];
+}
+bool monsterType::undead() const {
+  return flags_[static_cast<int>(flag::UNDEAD)];
 }
 
 
@@ -773,6 +781,7 @@ L"There are a great number of creatures in the world, and not all sit neatly\n"
 	    .align(dr.getExact(Element::time, Domination::aggression, Outlook::none))
 	    .movement({speed::slow3, goTo::player, goBy::zombeeline, 0})
 	    .carryWeight(0)
+	    .undead()
 	    // do not eat
 	    // ref: https://skeptoid.com/episodes/4262
 	    .encyclopedium(

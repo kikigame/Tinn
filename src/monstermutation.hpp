@@ -12,7 +12,8 @@
 enum class mutationType {
   VAMPIRE,
   CYBER,
-  WERE
+  WERE, // TODO: should swap to alternate form? reseach.
+  END
 };
 
 class mutationImpl;
@@ -38,7 +39,8 @@ public:
   const mutationType &type() const;
   const wchar_t *prefix() const;
   // adjust the intrinsics of the mosnster:
-  std::shared_ptr<monsterAbilities> wrap(const monsterIntrinsics &a);
+  std::shared_ptr<monsterAbilities> wrap(std::shared_ptr<monsterAbilities> &a) const;
+  bool appliesTo(const monsterType &t) const;
 };
 
 class mutationFactory {
@@ -47,7 +49,7 @@ private:
 public:
   static mutationFactory &instance();
   mutationFactory();
-  mutation &operator [](const mutationType &t);
+  const mutation &operator [](const mutationType &t);
 };
 
 #endif //ndef MONSTERMUTATION_HPP

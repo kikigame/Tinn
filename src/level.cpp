@@ -398,14 +398,14 @@ public:
   }
 
     optionalRef<item> thrownWeapon(monster &m) {
-    if (!m.abilities().throws()) return optionalRef<item>();
+    if (!m.abilities()->throws()) return optionalRef<item>();
     return m.firstItem([&m](item &i){
 	auto pUse = dynamic_cast<useInCombat*>(&i);
 	return pUse && i.render() == L'¬' && pUse->shouldUse(m);
       });
   }
   optionalRef<item> zapItem(monster &m) {
-    if (!m.abilities().zap()) return optionalRef<item>();
+    if (!m.abilities()->zap()) return optionalRef<item>();
     return m.firstItem([&m](item &i){
 	auto pUse = dynamic_cast<useInCombat*>(&i);
 	return pUse && pUse->shouldUse(m);
@@ -414,7 +414,7 @@ public:
 
 
   optionalRef<monster> lineOfSightTarget(monster &m, const coord  &mPos) {
-    if (!m.abilities().see()) return optionalRef<monster>(); // can't see targets
+    if (!m.abilities()->see()) return optionalRef<monster>(); // can't see targets
     for (auto it = monsters_.begin(); it != monsters_.end(); ++it) {
       const coord &tPos = it->first;
       std::shared_ptr<monster> t = it->second; // target monster
@@ -430,7 +430,7 @@ public:
       // check for a line of movement
       coord c;
       for (c = mPos; c != tPos; c = c.towards(tPos))
-	if (!m.abilities().move(terrainAt(c)))
+	if (!m.abilities()->move(terrainAt(c)))
 	  break; // give up
       if (c == tPos) return optionalRef<monster>(*t); // found one!
     }
@@ -538,7 +538,7 @@ public:
     case '<': { // up: find any flying monsters on the current square
       auto mAt = monstersAt(pos);
       for (auto i : mAt)
-	if (i.value().abilities().fly())
+	if (i.value().abilities()->fly())
 	  return optionalRef<monster>(i.value());
       return optionalRef<monster>();
     }
@@ -546,7 +546,7 @@ public:
       auto &rock = tFactory.get(terrainType::ROCK);
       auto mAt = monstersAt(pos);
       for (auto i : mAt)
-	if (i.value().abilities().move(rock))
+	if (i.value().abilities()->move(rock))
 	  return optionalRef<monster>(i.value());
       return optionalRef<monster>();
     }
@@ -657,7 +657,7 @@ public:
 	monsters_.emplace(::std::pair<coord, std::shared_ptr<monster> >(dest, pM));
       }
       // reveal any pits:
-      if (!pM->abilities().fly() && terrain_.at(dest).type() == terrainType::PIT_HIDDEN)
+      if (!pM->abilities()->fly() && terrain_.at(dest).type() == terrainType::PIT_HIDDEN)
 	terrain_[dest] = tFactory.get(terrainType::PIT);
       // any single-shot traps:
       if (terrain_.at(dest).type() == terrainType::PIANO_HIDDEN)

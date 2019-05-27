@@ -23,9 +23,9 @@ player::player(playerBuilder &b) :
   char nullResist = 0;
   switch (align().domination()) {
   case Domination::concentration:
-    intrinsics().speedy(intrinsics().speedy() + bonus(false));
+    intrinsics()->speedy(intrinsics()->speedy() + bonus(false));
     {auto dam = damageRepo::instance()[damageType::hot];
-    intrinsics().resist(&dam, -1);
+    intrinsics()->resist(&dam, -1);
     }
     break;
   case Domination::aggression:
@@ -36,45 +36,45 @@ player::player(playerBuilder &b) :
   }
   switch (align().element()) {
   case Element::earth:
-    intrinsics().eatVeggie(true);
+    intrinsics()->eatVeggie(true);
     {auto dam = damageRepo::instance()[damageType::edged];
-      intrinsics().resist(&dam, -2);
+      intrinsics()->resist(&dam, -2);
     }
     break;
   case Element::air:
-    intrinsics().speedy(true);
-    intrinsics().hear(true);
+    intrinsics()->speedy(true);
+    intrinsics()->hear(true);
     {auto dam = damageRepo::instance()[damageType::sonic];
-    intrinsics().extraDamage(&dam, +4);
+    intrinsics()->extraDamage(&dam, +4);
     }
     nullResist--;
     break;
   case Element::fire:
-    intrinsics().dblAttack(true);
+    intrinsics()->dblAttack(true);
     nullResist-=2;
     break;
   case Element::water:
-    intrinsics().swim(true);
-    intrinsics().speedy(false);
+    intrinsics()->swim(true);
+    intrinsics()->speedy(false);
     break;
   case Element::plant:
-    intrinsics().climb(true);
-    intrinsics().eatVeggie(true);
+    intrinsics()->climb(true);
+    intrinsics()->eatVeggie(true);
     {auto dam = damageRepo::instance()[damageType::bashing];
-    intrinsics().resist(&dam, -2);
+    intrinsics()->resist(&dam, -2);
     }
     break;
   case Element::time:
-    intrinsics().speedy(true);
-    intrinsics().dblAttack(true);    
+    intrinsics()->speedy(true);
+    intrinsics()->dblAttack(true);    
     {auto dam = damageRepo::instance()[damageType::disintegration];
-    intrinsics().resist(&dam, -4);
+    intrinsics()->resist(&dam, -4);
     }
     break;
   default:
     break; // nothing to do
   }
-  intrinsics().resist(nullptr, nullResist); // can't add directly
+  intrinsics()->resist(nullptr, nullResist); // can't add directly
 
   // starting inventory:
   // I feel a player should start with a deterministic inventory, perhaps based
@@ -153,7 +153,7 @@ void player::takeInventory() {
     inv << std::scientific
 	<< L"Total weight: " << weight << L" Newtons. ";
     //    int wt = weight / 3000;
-    int wt = weight / abilities().carryWeightN();
+    int wt = weight / abilities()->carryWeightN();
     switch (wt) {
     case 0: break;
     case 1: inv << L"\n\tThis stuff is heavy!"; break;

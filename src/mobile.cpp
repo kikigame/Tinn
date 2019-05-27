@@ -71,7 +71,7 @@ public:
 template <>
 struct movementTraits<monster> {
   // default: return the unmodified speed. For monsters, this is modified by the abilities (including encumbrance).
-  static speed adjust(monster &t, const movementType &type) { return t.abilities().adjust(type.speed_); }
+  static speed adjust(monster &t, const movementType &type) { return t.abilities()->adjust(type.speed_); }
   // default: get position by asking the level.
   static coord position(level &level, monster &t) { return level.posOf(t); }
 };

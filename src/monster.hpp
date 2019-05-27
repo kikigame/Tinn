@@ -17,6 +17,7 @@
 #include "damage.hpp"
 #include "equippable.hpp"
 #include "hasAdjectives.hpp"
+#include "monstermutation.hpp"
 
 #include <memory> // shared_ptr
 #include <list>
@@ -62,12 +63,13 @@ private:
   // Smart pointer is not needed as gods are effectively a bunch of create-on-demand singletons
   // (just like in real life?)
   deity const  *align_;
-  monsterIntrinsics intrinsics_;
-  monsterAbilityMods abilities_;
+  std::shared_ptr<monsterIntrinsics> intrinsics_;
+  std::shared_ptr<monsterAbilityMods> abilities_;
   // which monsters have charmed this one?
   std::list<monster*> charmedBy_;
   std::vector<std::function<void()>> onDeath_;
   std::vector<std::wstring> extraAdjectives_;//usually empty.
+  std::set<std::reference_wrapper<const mutation>, std::less<const mutation> > mutations_;
 protected:
   // create monster by builder, with specific weapon slots (used internally by dragons)
   monster(monsterBuilder & b, std::vector<const slot *>slots);
@@ -109,12 +111,12 @@ public:
 
   // what about the monster's intrinsics?
   // NB: This is only the intrinsic properties; a monster may also gain these powers from extrinsics (equipped items)
-  monsterIntrinsics & intrinsics();
-  const monsterIntrinsics & intrinsics() const;
+  std::shared_ptr<monsterIntrinsics> intrinsics();
+  const std::shared_ptr<monsterIntrinsics> intrinsics() const;
 
   // monster abilities. Based on intrinsics, but modified by items to add, remove or change things.
-  monsterAbilities & abilities();
-  const monsterAbilities & abilities() const;
+  std::shared_ptr<monsterAbilities> abilities();
+  const std::shared_ptr<monsterAbilities> abilities() const;
 
   // retrieve the current level; needed by moveMobile() function as monsters can switch levels.
   level & curLevel(); 
@@ -219,7 +221,11 @@ public:
   bool sleeping() const;
   bool sleep(int ticks);
   bool awaken();
-  
+
+  // test if a monster has a mutation; NB if the mutation doesn't apply to this monster it'll have no effect, but this will still return true.
+  bool isMutated(const mutationType &m) const;
+  void mutate(const mutationType &key);
+  void deMutate(const mutationType &key);
 protected:
 
   // given a damage figue of damage of a given type,

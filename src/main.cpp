@@ -18,7 +18,7 @@
 unsigned char dPc(); // avoid including all of random.hpp
 
 speed playerSpeed(dungeon &d) {
-  return d.pc()->abilities().adjust(d.pc()->movement().speed_);
+  return d.pc()->abilities()->adjust(d.pc()->movement().speed_);
 }
 
 bool validateSpeed(dungeon &d) {

@@ -158,10 +158,10 @@ public:
 class monsterAbilityMods : public monsterIntrinsics {
 private:
   const itemHolder &mon_;
-  monsterIntrinsics &intrinsics_;
+  std::shared_ptr<monsterIntrinsics> intrinsics_;
   std::shared_ptr<monsterIntrinsicsImpl> mod_;
 public:
-  monsterAbilityMods(itemHolder &mon, monsterIntrinsics &intrinsics);
+  monsterAbilityMods(itemHolder &mon, std::shared_ptr<monsterIntrinsics> intrinsics);
   virtual ~monsterAbilityMods() {}
   // monsters may be inherantly proof (bonus) against a damage type:
   virtual void proof(const damage & type, const bool isProof);

@@ -219,8 +219,8 @@ public:
   ferret(monsterBuilder &b) : 
     targetActionMonster(b, key::steal_small),
     away_({speed::turn2, goTo::player, goBy::avoid, 25}){
-    intrinsics().see(true);
-    intrinsics().hear(true);
+    intrinsics()->see(true);
+    intrinsics()->hear(true);
   }
   virtual ~ferret() {}
   const movementType & movement() const {
@@ -250,8 +250,8 @@ class hound : public monster {
 public:
   hound(monsterBuilder &b) : 
     monster(b) {
-    intrinsics().see(true);
-    intrinsics().hear(true);
+    intrinsics()->see(true);
+    intrinsics()->hear(true);
   }
   virtual ~hound() {}
   virtual const wchar_t *say() const {
@@ -276,10 +276,10 @@ public:
     monster(b),
     equineForm_(false),
     maxStrength_(strength().max()) {
-    intrinsics().see(true);
-    intrinsics().hear(true);
-    intrinsics().swim(true);
-    intrinsics().move(tFactory.get(terrainType::WATER), true);
+    intrinsics()->see(true);
+    intrinsics()->hear(true);
+    intrinsics()->swim(true);
+    intrinsics()->move(tFactory.get(terrainType::WATER), true);
   }
   virtual ~kelpie() {}
   virtual void shapeShift() {
@@ -303,7 +303,7 @@ public:
   virtual bool onMove(const coord &pos, const terrain &terrain) {
     if (!monster::onMove(pos, terrain)) return false;
     if (terrain.type() == terrainType::WATER && equineForm_ && (&curLevel() == &curLevel().dung().cur_level())
-	&& curLevel().dung().pc()->abilities().hear())
+	&& curLevel().dung().pc()->abilities()->hear())
       ioFactory::instance().message(L"You hear the sound of thunder as the " + name() + L"'s tail hits the water");
     if (dPc() <= 11) // ~3%
       shapeShift();
@@ -318,11 +318,11 @@ class siren : public monster {
 public:
   siren(monsterBuilder &b) :
     monster(b) {
-    intrinsics().see(true);
-    intrinsics().hear(true);
-    intrinsics().swim(true);
-    intrinsics().fly(true);
-    intrinsics().climb(true);
+    intrinsics()->see(true);
+    intrinsics()->hear(true);
+    intrinsics()->swim(true);
+    intrinsics()->fly(true);
+    intrinsics()->climb(true);
     eachTick([this]{
 	if (dPc() <= 30) // ~ 1 every 5 moves
 	  sirenCall();
@@ -333,12 +333,12 @@ public:
     auto &act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::attract);
     auto &l = curLevel();
     if (&(l.dung().cur_level()) != &l) return; // don't waste our voice if no Dungeoneer is around
-    if (l.dung().pc()->abilities().hear()) {
+    if (l.dung().pc()->abilities()->hear()) {
       ioFactory::instance().message(L"The " + name() + L" sings an attractive song");
     }
     l.forEachMonster([this,&act](monster &t){
 	if (t.type().type() != monsterTypeKey::siren &&
-	    t.abilities().hear()) 
+	    t.abilities()->hear()) 
 	  act(false,false,*this, t);
       });
   }
@@ -348,9 +348,9 @@ class merfolk : public monster {
 public:
   merfolk(monsterBuilder &b) :
     monster(b) {
-    intrinsics().see(true);
-    intrinsics().hear(true);
-    intrinsics().swim(true);
+    intrinsics()->see(true);
+    intrinsics()->hear(true);
+    intrinsics()->swim(true);
     eachTick([this]{
 	if (dPc() <= 30) // ~ 1 every 5 moves
 	  charm();
@@ -368,7 +368,7 @@ public:
     auto &act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::charm);
     auto &l = curLevel();
     if (&(l.dung().cur_level()) != &l) return; // don't waste our voice if no Dungeoneer is around
-    if (l.dung().pc()->abilities().see()) {
+    if (l.dung().pc()->abilities()->see()) {
       ioFactory::instance().message(L"The " + name() + L" seems very beguiling");
     }
     l.forEachMonster([this,&act](monster &t){
@@ -395,11 +395,11 @@ public:
     monster(roll(b), equipment(b)),
     western_(align().domination() == Domination::aggression) {
     // DRAGONS DON'T FLY! It's mythologically inaccurate...
-    intrinsics().speedy(true);
-    intrinsics().dblAttack(true);
-    intrinsics().see(true);
-    intrinsics().hear(true);
-    intrinsics().fearless(true);
+    intrinsics()->speedy(true);
+    intrinsics()->dblAttack(true);
+    intrinsics()->see(true);
+    intrinsics()->hear(true);
+    intrinsics()->fearless(true);
   }
   virtual ~dragon() {}
   // overridden to return a type-dependant saying:
@@ -560,8 +560,8 @@ class goblin : public targetActionMonster {
 public:
   goblin(monsterBuilder &b) :
     targetActionMonster(b, targetActionMonster::key::steal_shiny) {
-    intrinsics().see(true);
-    intrinsics().hear(true);
+    intrinsics()->see(true);
+    intrinsics()->hear(true);
   }
   virtual ~goblin() {};
 };
@@ -570,7 +570,7 @@ class dungeoneer : public trivialMonster {
 public:
   dungeoneer(monsterBuilder &b) :
     trivialMonster(b) {
-    intrinsics().hear(true); // can't see
+    intrinsics()->hear(true); // can't see
   }
   virtual bool highlight() const {
     return curLevel().dung().pc()->job().type() == roleType::shopkeeper;
@@ -589,9 +589,9 @@ class incubus : public targetActionRefMonster {
 public:
   incubus(monsterBuilder &b) :
     targetActionRefMonster(b, incubusAction()) {
-    intrinsics().see(true);
-    intrinsics().hear(true);
-    intrinsics().swim(true);
+    intrinsics()->see(true);
+    intrinsics()->hear(true);
+    intrinsics()->swim(true);
   }
   virtual ~incubus() {};
   virtual optionalRef<sharedAction<monster, monster>> attackAction() {
@@ -610,7 +610,7 @@ public:
     trivialMonster(b),
     segments_(),
     builder_(b) {
-    intrinsics().hear(true); // no ears; they hear through their jaws
+    intrinsics()->hear(true); // no ears; they hear through their jaws
   }
   virtual ~snake() {}
   virtual void death() {
@@ -672,9 +672,9 @@ class succubus : public targetActionRefMonster {
 public:
   succubus(monsterBuilder &b) :
     targetActionRefMonster(b, succubusAction()) {
-    intrinsics().see(true);
-    intrinsics().hear(true);
-    intrinsics().swim(true);
+    intrinsics()->see(true);
+    intrinsics()->hear(true);
+    intrinsics()->swim(true);
   }
   virtual ~succubus() {};
   virtual optionalRef<sharedAction<monster, monster>> attackAction() {
@@ -688,9 +688,9 @@ public:
     trivialMonster(b) {
   }
   virtual ~bird() {
-    intrinsics().see(true);
-    intrinsics().hear(true);
-    intrinsics().fly(true);
+    intrinsics()->see(true);
+    intrinsics()->hear(true);
+    intrinsics()->fly(true);
   };
 };
 
@@ -778,7 +778,7 @@ std::shared_ptr<monster> monsterType::spawnSpace(level & level, monsterBuilder &
   default: throw type();
   }
 }
-const monsterIntrinsics &monsterType::intrinsics() const {
+const std::shared_ptr<monsterIntrinsics> monsterType::intrinsics() const {
   return intrinsics_;
 }
 
@@ -803,6 +803,15 @@ std::shared_ptr<monster> ofType(level & level, monsterBuilder &b) {
   ptr->eachTick([&m]() {moveMobile<monster>(m);} );
   ptr->eachTick([&m]() {monsterAttacks(m);} );
   equipMonster(type.type(), level, *ptr);
+
+  if (!b.isHighlight() && level.depth() > 30) {
+      // dpc / 26 => 0..25 => 0; 26..51 => 1; 52..77 => 2; 78..100 => 3
+      constexpr int maxMut = (1+static_cast<int>(mutationType::END));
+      int val = (dPc() / ((80 / maxMut) + 1));
+      if (val < static_cast<int>(mutationType::END))
+	ptr->mutate(static_cast<mutationType>(val));
+    }
+  
   return ptr;
 }
 

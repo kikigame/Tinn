@@ -139,7 +139,7 @@ public:
     auto tPos = tLevel.posOf(target);
     bool rtn = false;
     for (; distance >= 0; --distance) {
-      if (target.abilities().entrapped()) return false;
+      if (target.abilities()->entrapped()) return false;
       coord cc = tPos;
       tPos = tPos.towards(sPos);
       if (tPos == sPos) return true;
@@ -185,7 +185,7 @@ public:
   virtual ~dreamAction() {}
   virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
     auto &io = ioFactory::instance();
-    if (!target.abilities().sleeps()) {
+    if (!target.abilities()->sleeps()) {
       io.message(target.name() + L" doesn't seem affected.");
       return false;
     }
@@ -268,10 +268,10 @@ public:
       }
     }
     // - fall over (1% damage, stun for 1 turn)
-    auto speedy = target.abilities().speedy();
+    auto speedy = target.abilities()->speedy();
     if (speedy != bonus(false)) {
-      target.intrinsics().speedy(false);
-      if (target.abilities().speedy() != speedy) {
+      target.intrinsics()->speedy(false);
+      if (target.abilities()->speedy() != speedy) {
 	target.fall(1);
 	std::wstring whowhat = (target.isPlayer()) ? L"Your fall" : (target.name() + L" falls");
 	io.longMsg(L"Whoops! " + whowhat + L" over! Hahaha!");
@@ -285,9 +285,9 @@ public:
       }
     }
     // - cream pie in face to blind them (ref:Nethack, keystone kops)
-    if (target.abilities().see()) {
-      target.intrinsics().see(false);
-      if (!target.intrinsics().see()) {
+    if (target.abilities()->see()) {
+      target.intrinsics()->see(false);
+      if (!target.intrinsics()->see()) {
 	// TODO: equipped creampie of some sort? Too nethack to wipe off?
 	std::wstring msg = (target.isPlayer()) ? L"cream pie to the eyes! Hahaha!" :
 	  (target.name() + L": cream pie to the eyes! Hahaha!");
@@ -296,9 +296,9 @@ public:
       }
     }
     // - levitation (ref: Mary Poppins)
-    if (!target.abilities().fly()) {
-      target.intrinsics().fly(true);
-      if (target.abilities().fly()) {
+    if (!target.abilities()->fly()) {
+      target.intrinsics()->fly(true);
+      if (target.abilities()->fly()) {
 	std::wstring msg = (target.isPlayer()) ? (target.name() + L": come down at once! Hahaha!") :
 	  L"Come down from there at once! Hahaha!";
 	io.longMsg(msg);
@@ -343,8 +343,8 @@ public:
   virtual ~tragedyAction() {}
   virtual bool operator ()(bool blessed, bool cursed, T &source, monster &target) {
     auto &io = ioFactory::instance();
-    if (target.intrinsics().speedy() == bonus(false) &&
-	target.intrinsics().dblAttack() == bonus(false)) {
+    if (target.intrinsics()->speedy() == bonus(false) &&
+	target.intrinsics()->dblAttack() == bonus(false)) {
       if (target.isPlayer()) io.message(L"You don't get any sadder.");
       else io.message(target.name() + L" doesn't get any sadder.");
       return false;
@@ -355,8 +355,8 @@ public:
       io.message(L"You are overwhelmed with sorrow.");
     else
       io.message(target.name() + L" doesn't seem as jolly now.");
-    target.intrinsics().speedy(false); // penalty
-    target.intrinsics().dblAttack(false); // penalty
+    target.intrinsics()->speedy(false); // penalty
+    target.intrinsics()->dblAttack(false); // penalty
     return true;
   }
   virtual bool aggressive() const { return true; } // use in combat
@@ -548,15 +548,15 @@ public:
     renderedAction(name, description) {}
   virtual ~petrifyAction() {}
   virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
-    auto &a = target.abilities();
-    if (a.fearless() == bonus(true))
+    auto a = target.abilities();
+    if (a->fearless() == bonus(true))
       return false; // monster is not susceptible
     int turns = 2;
-    if (target.abilities().fearless() == bonus(false)) turns *= 2;
+    if (target.abilities()->fearless() == bonus(false)) turns *= 2;
     if (blessed) turns += (turns / 2);
     if (cursed) turns /=2;
     ioFactory::instance().message(target.name() + L" is scared stiff!");
-    a.entrap(turns);
+    a->entrap(turns);
     return true; // even cursed is always 1 turn
   }
   virtual bool aggressive() const { return true; } // use in combat
@@ -801,11 +801,11 @@ public:
     renderedAction(name, description), dt_(dt) {}
   virtual ~proofAction() {}
   virtual bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
-    target.abilities().proof(damageRepo::instance()[dt_], true);
+    target.abilities()->proof(damageRepo::instance()[dt_], true);
     return true;
   }
   virtual bool undo(bool blessed, bool cursed, item &source, monster &target) {
-    target.abilities().proof(damageRepo::instance()[dt_], false);
+    target.abilities()->proof(damageRepo::instance()[dt_], false);
     return true;
   }
   virtual bool aggressive() const { return false; }
@@ -822,11 +822,11 @@ public:
     renderedAction(name, description), amount_(amount), dt_(dt) {}
   virtual ~resistAction() {}
   virtual bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
-    target.abilities().resist(&damageRepo::instance()[dt_], amount_);
+    target.abilities()->resist(&damageRepo::instance()[dt_], amount_);
     return true;
   }
   virtual bool undo(bool blessed, bool cursed, item &source, monster &target) {
-    target.abilities().resist(&damageRepo::instance()[dt_], amount_);
+    target.abilities()->resist(&damageRepo::instance()[dt_], amount_);
     return true;
   }
   virtual bool aggressive() const { return false; }
@@ -844,11 +844,11 @@ public:
     renderedAction(name, description), amount_(amount), dt_(dt) {}
   virtual ~extraDamageAction() {}
   virtual bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
-    target.abilities().extraDamage(&damageRepo::instance()[dt_], amount_);
+    target.abilities()->extraDamage(&damageRepo::instance()[dt_], amount_);
     return true;
   }
   virtual bool undo(bool blessed, bool cursed, item &source, monster &target) {
-    target.abilities().extraDamage(&damageRepo::instance()[dt_], amount_);
+    target.abilities()->extraDamage(&damageRepo::instance()[dt_], amount_);
     return true;
   }
   virtual bool aggressive() const { return false; }
@@ -870,13 +870,13 @@ public:
     method_(method), set_(set), clear_(clear) {}
   virtual ~intrinsicsBonusAction() {}
   virtual bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
-    auto &able = target.abilities();
-    (able.*method_)(set_);
+    auto able = target.abilities();
+    ((*able).*method_)(set_);
     return true;
   }
   bool undo(bool blessed, bool cursed, item &source, monster &target) {
-    auto &able = target.abilities();
-    (able.*method_)(clear_);
+    auto able = target.abilities();
+    ((*able).*method_)(clear_);
     return true;
   }
   virtual bool aggressive() const { return false; }
@@ -897,13 +897,13 @@ public:
     method_(method), set_(set) {}
   virtual ~intrinsicsBoolAction() {}
   virtual bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
-    auto &able = target.abilities();
-    (able.*method_)(set_);
+    auto able = target.abilities();
+    ((*able).*method_)(set_);
     return true;
   }
   bool undo(bool blessed, bool cursed, item &source, monster &target) {
-    auto &able = target.abilities();
-    (able.*method_)(!set_);
+    auto able = target.abilities();
+    ((*able).*method_)(!set_);
     return true;
   }
   virtual bool aggressive() const { return false; }
@@ -917,15 +917,15 @@ public:
     renderedAction(name, description) {}
   virtual ~tesseractAction() {}
   virtual bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
-    target.abilities().move(tFactory.get(terrainType::ALTAR), true);
-    target.abilities().move(tFactory.get(terrainType::GROUND), true);
-    target.abilities().move(tFactory.get(terrainType::BULKHEAD), true);
+    target.abilities()->move(tFactory.get(terrainType::ALTAR), true);
+    target.abilities()->move(tFactory.get(terrainType::GROUND), true);
+    target.abilities()->move(tFactory.get(terrainType::BULKHEAD), true);
     return true;
   }
   bool undo(bool blessed, bool cursed, item &source, monster &target) {
-    target.abilities().move(tFactory.get(terrainType::ALTAR), false);
-    target.abilities().move(tFactory.get(terrainType::GROUND), false);
-    target.abilities().move(tFactory.get(terrainType::BULKHEAD), false);
+    target.abilities()->move(tFactory.get(terrainType::ALTAR), false);
+    target.abilities()->move(tFactory.get(terrainType::GROUND), false);
+    target.abilities()->move(tFactory.get(terrainType::BULKHEAD), false);
     return true;
   }
   virtual bool aggressive() const { return false; }
@@ -940,11 +940,11 @@ public:
     renderedAction(name, description) {}
   virtual ~fireWalkerAction() {}
   virtual bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
-    target.abilities().move(tFactory.get(terrainType::FIRE), true);
+    target.abilities()->move(tFactory.get(terrainType::FIRE), true);
     return true;
   }
   bool undo(bool blessed, bool cursed, item &source, monster &target) {
-    target.abilities().move(tFactory.get(terrainType::FIRE), false);
+    target.abilities()->move(tFactory.get(terrainType::FIRE), false);
     return true;
   }
   virtual bool aggressive() const { return false; }

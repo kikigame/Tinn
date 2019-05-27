@@ -71,7 +71,7 @@ bool terrain::movable(const monster &m) const {
   case terrainType::FIRE:
     return false;
   case terrainType::WATER:
-    return m.abilities().swim();
+    return m.abilities()->swim();
   case terrainType::SPACE:
     return true; // although it may not be a good idea...
   case terrainType::BULKHEAD:
@@ -94,9 +94,9 @@ bool terrain::entraps(const monster &m, bool includeHidden) const {
   case terrainType::DOWN:
     return false;
   case terrainType::PIT:
-    return !(m.abilities().fly());
+    return !(m.abilities()->fly());
   case terrainType::PIT_HIDDEN:
-    return includeHidden && !(m.abilities().fly());
+    return includeHidden && !(m.abilities()->fly());
   case terrainType::PIANO_HIDDEN:
     return includeHidden;
   case terrainType::FIRE:
