@@ -804,7 +804,7 @@ std::shared_ptr<monster> ofType(level & level, monsterBuilder &b) {
   ptr->eachTick([&m]() {monsterAttacks(m);} );
   equipMonster(type.type(), level, *ptr);
 
-  if (!b.isHighlight() && level.depth() > 30) {
+  if (!b.isHighlight() && level.depth() > 30 && dPc() < level.depth()) {
       // dpc / 26 => 0..25 => 0; 26..51 => 1; 52..77 => 2; 78..100 => 3
       constexpr int maxMut = (1+static_cast<int>(mutationType::END));
       int val = (dPc() / ((80 / maxMut) + 1));
