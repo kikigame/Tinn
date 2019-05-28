@@ -834,48 +834,6 @@ L"There are a great number of creatures in the world, and not all sit neatly\n"
       "beware that they also effortlessly evade most traps."
 			   ));
 
-
-    /* TODO: each monster needs something unique. What can this have? Should we add mat-type gold & instakill?
-     * how about making it more powerful or more common on Cyber Monday? - Monday after Thinkgiving, which is itself the fourth Thursday in November
-    emplace(monsterTypeBuilder (monsterTypeKey::cyber)
-	    .category(monsterCategory::biped)
-	    .name(L"Cybermite") // TODO: cybermites should be category blob and mute
-	    .name(L"Cybermat")  // TODO: cybermatss should be category blob and mute
-	    .name(L"Cyberman")
-	    .name(L"Cyberleader")
-	    .name(L"Cybercontroller")
-	    .name(L"Mr Clever") // TODO: this shold be a named monster if we ever get them
-	    .className("Cyber")
-	    .levelFactor(10)
-	    .levelOffset(20)
-	    .minSpwn(1)
-	    .maxSpawn(20)
-	    .xpFactor(10)
-	    .xpOffset(20)
-	    .renderChar(L'C') // Hmmm; we're taking the Cockatrice symbol. That'll scare some Nethackers.
-	    .strength(20)
-	    .appearance(50)
-	    .fighting(60)
-	    .dodge(10)
-	    .maxDamage(75)
-	    .corpseWeight(5426.830370666) // 2 x 610lb; average weight of Earth gravity human
-	    .saying(L"Delete!")
-	    .saying(L"You will be Converted!")
-	    .saying(L"Resistance is useless!")
-	    .gen(genderAssignType::neuter) // gender has been removed along with the brain, and we'll assume sex has too. Mats & Mites get none anyway.
-	    // do not eat. We could let them eat metals, but then they'd not eat paper. Cybers recharge electrically I believe.
-	    .align(dr.getExact(Element::time, Domination::aggression, Outlook::neutral))
-	    .movement({speed::slow2, goTo::player, goBy::beeline, 10})
-            .throws()
-            .zaps()
-	    .encyclopedium(L"Mondas calls whence they hail; the twin planet of Earth,\n"
-      "driven hence to travel the Universe. The cyber folk are unique for\n"
-      "their method of reproduction, in which they take an otherwise\n"
-      "unremarkable living human and augment it with various technological\n"
-      "improvements until it becomes like them. Their lack of emotion seems\n"
-      "not to soften their militant silvery nature. Gold is known to affect\n"
-      "the respiratory system of older models.";
-    */
   }
   const monsterType& get(const monsterTypeKey & key) const {
     return r_.at(key);

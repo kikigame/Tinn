@@ -5,6 +5,7 @@
 #include "monstermutation.hpp"
 #include "damage.hpp"
 #include "monsterType.hpp"
+#include "renderable.hpp"
 
 class mutationImpl {
 private:
@@ -188,6 +189,7 @@ public:
   };
 };
 
+// TODO how about making it more powerful or more common on Cyber Monday? - Monday after Thinkgiving, which is itself the fourth Thursday in November
 class cyber : public mutationImpl {
 public:
   cyber() : mutationImpl(mutationType::CYBER) {}
@@ -250,11 +252,67 @@ mutationFactory &mutationFactory::instance() {
   return instance;
 }
 
+
+class mutationEncyclopedium : public renderable {
+ private:
+  const wchar_t render_;
+  const std::wstring name_;
+  const std::wstring desc_;
+ public:
+  mutationEncyclopedium(const wchar_t render,
+			const std::wstring name,
+			const std::wstring desc) :
+    render_(render),
+    name_(name),
+    desc_(desc) {}
+  virtual ~mutationEncyclopedium() {}
+  virtual const wchar_t render() const {
+    return render_;
+  }
+  virtual std::wstring name() const {
+    return name_;
+  }
+  virtual std::wstring description() const {
+    return desc_;
+  }
+};
+
+
 mutationFactory::mutationFactory() :
   map_() {
   map_.emplace(mutationType::VAMPIRE, std::unique_ptr<mutation>(new mutation(new vampire())));
   map_.emplace(mutationType::CYBER, std::unique_ptr<mutation>(new mutation(new cyber())));
   map_.emplace(mutationType::WERE, std::unique_ptr<mutation>(new mutation(new were())));
+  static mutationEncyclopedium encyclopedia[] = {
+    {'V',L"Vampyre",L"Vampyres feed on blood, the vital force of the living.\n"
+     "The term is a relatively modern nomenclanture given to supernatioral\n"
+     "revanants - the animated remains of the dead - of suicide victims or\n"
+     "other evildoers.\n"
+     "The best form of defence is mass public executions as they can be very\n"
+     "hard to detect. However, they may appear as per living beings, bloated\n"
+     "or ruddish in appearance, without the usual signs of vitality. The\n"
+     "disappearance of local livestock, neighbours, relatives or loved ones\n"
+     "may also be an early warning sign.\n"
+     "To destroy a vampire, pierce the skin with a stake with ash, hawthorne,\n"
+     "oak or aspen. Then bury it with the decapitated head between its feet.\n"
+    },
+    {'C',L"Cyber",L"Mondas calls whence they hail; the twin planet of Earth,\n"
+      "driven hence to travel the Universe. The cyber folk are unique for\n"
+      "their method of reproduction, in which they take an otherwise\n"
+      "unremarkable living human and augment it with various technological\n"
+      "improvements until it becomes like them. Their lack of emotion seems\n"
+      "not to soften their militant silvery nature. Gold is known to affect\n"
+      "the respiratory system of older models.\n"},
+    {'W',L"Lycanthrope",L"The lycanthrope, or werewolf, is the ultimate form\n"
+     "of the skills of wolf-charming and wolf-riding. The ability to change\n"
+     "ones' form into that of a lupine can be exceptionally useful.\n"
+     "In Turkey, for instance, shamen in wolf-form are reveared.\n"
+     "The symptoms of clinical lycanthropy provides lupine behavioural traits\n"
+     "and a ravenous appitite, but it is not to be confused with the original\n"
+     "meaning of wereworf.\n"
+     "Other forms of werecreatures are seen, such as the Asian werecats.\n"
+    },
+  };
 }
 
 const mutation &mutationFactory::operator[](const mutationType &t) {
