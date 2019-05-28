@@ -15,6 +15,7 @@
 #include "mobile.hpp"
 
 #include <cmath> // for std::ceil
+#include <ctime> // for dates
 
 monsterBuilder::monsterBuilder(bool allowRandom) : 
   level_(NULL),
@@ -782,6 +783,26 @@ const std::shared_ptr<monsterIntrinsics> monsterType::intrinsics() const {
   return intrinsics_;
 }
 
+// is it the Monday after American fThinkgiving, which is itself the fourth Thursday in November?
+bool isItCyberMonday() {
+    time_t tm = time(0);
+    auto pT = localtime(&tm);
+    auto &t = *pT;
+    if (t.tm_wday != 1) return false;
+    // it's Monday; what was last Thursday?
+    if (t.tm_mon < 10) return false; // < 10 not yet November,
+    t.tm_mday -= 4; if (t.tm_mday <0) {
+      t.tm_mon--;
+      t.tm_mday += 30; // 30 is correct only if November!
+    }
+    if (t.tm_mon != 10) return false;
+    // it is November!
+
+    // if the 1st is a Thursday, the 4th Thursday is 1,8,15,22
+    // if the 1st is a Friday, the 4th Thursday is 7,14,21,28
+    return (t.tm_mday >= 22 && t.tm_mday <= 28);
+}
+
 template<monsterTypeKey T, class M>
 std::shared_ptr<monster> ofType(level & level, monsterBuilder &b) {
   //  monsterBuilder b(true);
@@ -805,13 +826,19 @@ std::shared_ptr<monster> ofType(level & level, monsterBuilder &b) {
   equipMonster(type.type(), level, *ptr);
 
   if (!b.isHighlight() && level.depth() > 30 && dPc() < level.depth()) {
-      // dpc / 26 => 0..25 => 0; 26..51 => 1; 52..77 => 2; 78..100 => 3
-      constexpr int maxMut = (1+static_cast<int>(mutationType::END));
-      int val = (dPc() / ((80 / maxMut) + 1));
-      if (val < static_cast<int>(mutationType::END))
-	ptr->mutate(static_cast<mutationType>(val));
+    // dpc / 26 => 0..25 => 0; 26..51 => 1; 52..77 => 2; 78..100 => 3
+    constexpr int maxMut = (1+static_cast<int>(mutationType::END));
+    int val = (dPc() / ((80 / maxMut) + 1));
+    if (val < static_cast<int>(mutationType::END))
+      ptr->mutate(static_cast<mutationType>(val));
+  } else {
+    // more Cybers on Cyber Monday
+    static bool i(isItCyberMonday());
+    if (i && !b.isHighlight() && level.depth() > 15 && dPc() < 50) {
+      ptr->mutate(mutationType::CYBER);
     }
-  
+  }
+
   return ptr;
 }
 

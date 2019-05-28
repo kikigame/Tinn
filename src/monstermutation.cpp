@@ -189,7 +189,6 @@ public:
   };
 };
 
-// TODO how about making it more powerful or more common on Cyber Monday? - Monday after Thinkgiving, which is itself the fourth Thursday in November
 class cyber : public mutationImpl {
 public:
   cyber() : mutationImpl(mutationType::CYBER) {}
