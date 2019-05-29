@@ -1011,7 +1011,7 @@ public:
 };
 
 
-class corpse : public basicItem {
+class corpse : public basicItem, public monsterTypeProvider {
 private:
   // what was this in life?
   const monsterType &type_;
@@ -1061,6 +1061,9 @@ public:
     auto &ios = ioFactory::instance();
     ios.message(L"Please don't; it's not that kind of game.");
     return item::useResult::FAIL;
+  }
+  virtual monsterType getMonsterType() const {
+    return type_;
   }
 };
 

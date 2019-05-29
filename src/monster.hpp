@@ -222,7 +222,7 @@ public:
   bool sleep(int ticks);
   bool awaken();
 
-  // test if a monster has a mutation; NB if the mutation doesn't apply to this monster it'll have no effect, but this will still return true.
+  // test if a monster has a mutation; NB if the mutation doesn't apply to this monster it'll have no effect, and this will return false.
   bool isMutated(const mutationType &m) const;
   void mutate(const mutationType &key);
   void deMutate(const mutationType &key);
@@ -240,6 +240,8 @@ protected:
   // overridden to recalculate stats
   virtual void onEquip(item &item, const slot *s1, const slot *s2);
   virtual std::array<const slot *, 2> forceUnequip(item &);
+private:
+  bool raiseDead(const mutation &m, itemHolder &holder, const coord &pos);
 };
 
 // big monsters maintain their own position:
@@ -304,7 +306,7 @@ public:
   std::vector<std::function<void()>> &onDeath();
 };
 
-// create a reaming monster initially on the given level:
+// create a roaming monster initially on the given level:
 template<monsterTypeKey T>
 std::shared_ptr<monster> ofType(level & level, monsterBuilder &b = monsterBuilder(true));
 

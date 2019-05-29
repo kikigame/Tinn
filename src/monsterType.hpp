@@ -218,6 +218,12 @@ public:
   bool undead() const;
 };
 
+// interface for things that provide a monster type
+class monsterTypeProvider {
+public:
+  virtual monsterType getMonsterType() const = 0;
+};
+
 /* singleton repository for monster types */
 class monsterTypeRepo {
 private:

@@ -166,7 +166,22 @@ int monster::wound(const monster &by, unsigned char reductionPc, const damage & 
   damage += 5 * by.abilities()->extraDamage(type);
   damage = modDamage(damage, type);
   damage_ += static_cast<unsigned char>(damage);
-  if (damage_.cur() == damage_.max()) death();
+  if (damage_.cur() == damage_.max()) {
+    if (!isPlayer())
+      for (auto &mut : by.mutations_)
+	if (mut.get().spreadsOnKill(type_)) {
+	  mutate(mut.get().type());
+	  damage_ = static_cast<unsigned int>(0);
+	  return damage;
+	}
+    death();
+  } else if (!isPlayer() && damage > 0)
+    for (auto &mut : by.mutations_)
+      if (mut.get().spreadsOnAttack(type_)) {
+	mutate(mut.get().type());
+	damage_ -= static_cast<unsigned int>(damage / 2);
+	break;
+      }
   return damage;
 }
 
@@ -338,7 +353,39 @@ bool monster::onMove(const coord &pos, const terrain &terrain) {
     return true;
   }
 }
+
+bool monster::raiseDead(const mutation &m, itemHolder &items, const coord &pos) {
+  auto oI = items.firstItem([this, &m](item &i){
+      if (i.highlight()) return false;
+      auto pI = dynamic_cast<basicItem*>(&i);
+      if (pI && pI->getType() == itemTypeRepo::instance()[itemTypeKey::corpse]) {
+	auto pMt = dynamic_cast<monsterTypeProvider*>(&i);
+	return (pMt && m.spreadsOnCorpse(pMt->getMonsterType()));
+      }
+      return false;
+    });
+  if (oI) {
+    auto pMt = dynamic_cast<monsterTypeProvider*>(&(oI.value()));
+    std::shared_ptr<monster> t = pMt->getMonsterType().spawn(curLevel());
+    auto name = t->name();
+    t->mutate(m.type());
+    if (isMutated(m.type())) {
+      curLevel().addMonster(t, pos);
+      oI.value().destroy();
+    }
+    return true;
+  }
+  return false;
+}
+
 void monster::postMove(const coord &pos, const terrain &terrain) {
+  // do we raise the dead?
+  if (!mutations_.empty()) {
+    auto &items = curLevel().holder(pos);
+    for (const mutation &m : mutations_)
+      if (raiseDead(m, items, pos)) break;
+  }
+    
   if (!isPlayer()) {
     // if we're injured and there's food, eat it.
     auto &onFloor = curLevel().holder(pos);
@@ -649,7 +696,8 @@ optionalRef<sharedAction<monster, monster>> monster::attackAction() {
 }
 
 bool monster::isMutated(const mutationType &key) const {
-  return mutations_.count(mutationFactory::instance()[key]) > 0;
+  auto &m = mutationFactory::instance()[key];
+  return m.appliesTo(type_) && mutations_.count(m) > 0;
 }
 void monster::mutate(const mutationType &key) {
   mutations_.emplace(mutationFactory::instance()[key]);
