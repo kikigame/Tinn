@@ -467,17 +467,17 @@ public:
   }
   void up(monster &m) {
     coord c = posOf(m);
-    if (depth_ <= 1) {
-      auto &role = dung().pc()->job();
-      for (auto pQ = role.questsBegin(); pQ != role.questsEnd(); ++pQ) {
-	if (!pQ->isSuccessful() && !ioFactory::instance().ynPrompt(pQ->incompletePrompt()))
-	  return;
-	endGame();
-      }
-      return;
-    }
     switch (terrain_.at(c).type()) {
     case terrainType::UP:
+      if (depth_ <= 1) {
+	auto &role = dung().pc()->job();
+	for (auto pQ = role.questsBegin(); pQ != role.questsEnd(); ++pQ) {
+	  if (!pQ->isSuccessful() && !ioFactory::instance().ynPrompt(pQ->incompletePrompt()))
+	    return;
+	  endGame();
+	}
+	return;
+      }
       removeMonster(m);
       if (m.isPlayer())
 	dungeon_.upLevel();
