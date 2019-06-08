@@ -16,7 +16,10 @@ bool viableTarget(monster &attacker, monster &test) {
   if (&attacker == &test) return false; // monsters don't usually fight themselves
   if (attacker.align().coalignment(malign) >= 3) return false; // monsters don't usually fight other creautures of the same alignment
   if (attacker.type() == test.type()) return false; // monsters don't usually fight other creatures of the same class
-  // TODO: charmed?
+  auto end = attacker.charmedEnd();
+  for (auto pC = attacker.charmedBegin(); pC != end; ++pC)
+    if (*pC == &test)
+      return false;
   return true;
 }
 
