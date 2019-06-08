@@ -203,8 +203,8 @@ enum class itemTypeKey {
   // Flowers & plants '{' as per dnethack (plant monster)
   ////
   bouquet_mixed,
-  lily, // TODO: only generate in water; generate in water level
-  lotus, // TODO: only generate in water; generate in water level
+  lily, // TODO: generate in water level
+  lotus, // TODO: generate in water level
   sunflower,
 
 };

@@ -2239,6 +2239,9 @@ item &createRndItem(const int depth, bool allowLiquids) {
     // don't autogenerate water transport:
     if (type->first == itemTypeKey::bridge) continue;
     if (type->first == itemTypeKey::ship) continue;
+    // don't randomly create water plants:
+    if (type->first == itemTypeKey::lily) continue;
+    if (type->first == itemTypeKey::lotus) continue;
     // some jewellery is magic:
     if (type->second->render() == L'*' && dPc() < depth)
       return createRndEquippable(type->first);
