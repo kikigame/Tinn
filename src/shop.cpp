@@ -357,10 +357,10 @@ private:
   std::vector<std::shared_ptr<item> > suggestForSale(double q, std::vector<std::shared_ptr<item> > barter) {
     double t; // total appraised value
     do {
-      // TODO: rework this to try valuables first.
-      // find the most valuable item in inventory not already in barter, and add to selection
-      std::shared_ptr<item> found; double itemPrice=0;
-      inventory_.forEachItem([this, &found, &itemPrice, &barter](item &i, std::wstring) {
+      // find the most valuable ($, if any, else other) item in inventory not already in barter, and add to selection
+      std::shared_ptr<item> bestValuable; double valuablePrice=0;
+      std::shared_ptr<item> bestOther; double otherPrice=0;
+      inventory_.forEachItem([this, &bestValuable, &bestOther, &valuablePrice, &otherPrice, &barter](item &i, std::wstring) {
 	if (inventory_.slotsOf(i)[0] != nullptr) return; // skip clothing & wields
 	if (i.isCursed()) return; // skip cursed items, including ious!
 	auto adj = i.adjectives();
@@ -369,12 +369,14 @@ private:
 	auto end = barter.end();
 	if (std::find(barter.begin(), end, pi) == end) { // not already for barter
 	  double price = appraise(inventory_,i, transaction::sell);
-	  if (itemPrice < price) {
-	    found = pi;
-	    itemPrice = price;
+	  if (i.render() == '$' && price > valuablePrice) {
+	    bestValuable = pi; valuablePrice = price;
+	  } else if (price > valuablePrice) {
+	    bestOther = pi; otherPrice = price;
 	  }
 	}
 	});
+      auto found = bestValuable.get() ? bestValuable : bestOther;
       if (found == nullptr) { barter.clear(); return barter;} // not enough
       barter.push_back(found);
       t=0;

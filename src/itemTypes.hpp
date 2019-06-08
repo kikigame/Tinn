@@ -161,7 +161,7 @@ enum class itemTypeKey {
     armband, // black band worn for mourning; singular
 
   //// 
-  // Valuables ('$'; nethack uses this for coins (denominated in zorkmids) and '$' for gems.
+  // Valuables ('$'; nethack uses this for coins (denominated in zorkmids) and '*' for gems.
   //// // NB: We can have *different types* of coins, with different currency descriptions and value by weight...
     kalganid, // from Asimov's Foundation series
     gpl_slip, // Gold Pressed Latinum; ref: Star Trek: TNG & later. 
