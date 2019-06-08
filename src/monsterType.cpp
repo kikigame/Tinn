@@ -800,10 +800,10 @@ L"There are a great number of creatures in the world, and not all sit neatly\n"
     // unique features: flying
     emplace(monsterTypeBuilder(monsterTypeKey::raptor)
 	    .category(monsterCategory::raptor)
-	    .name(L"Falcon")
-	    .name(L"Eagle")
-	    .name(L"Big Bird") // TODO: Better bird names (ref:Sesame Stree for now)
-	    .className(L"bird of prey")
+	    .name(L"falcon")
+	    .name(L"eagle")
+	    .name(L"harpy eagle"
+	    .className(L"raptor")
 	    .levelFactor(4)
 	    .levelOffset(3)
 	    .minSpawn(1)
