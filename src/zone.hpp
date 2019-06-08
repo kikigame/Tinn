@@ -36,8 +36,6 @@ public:
   // called before moving between two squares in the zone; dest is the destination square
   virtual bool onMoveWithin(T &, const coord &dest); // implemented for monsters
   // called whenever the location is a coord within the zone and a tick passes
-  // TODO: Not sure how best to implement yet
-  //  virtual bool onStandWithin(std::shared_ptr<T>) = 0;  
 
 };
 
