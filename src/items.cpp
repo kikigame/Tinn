@@ -1024,6 +1024,87 @@ public:
   }
 };
 
+class portableHole : public basicContainer {
+public:
+  portableHole(const itemType &type) :
+    basicContainer(type) {}
+  virtual ~portableHole() {}
+  virtual double weight() const {
+    if (isCursed()) return basicContainer::weight();
+    else return basicItem::weight();
+  }
+  virtual item::useResult use() {
+    auto pUser = dynamic_cast<player*>(&holder());
+    if (!pUser) return useResult::FAIL;
+    auto &io = ioFactory::instance();
+    wchar_t d = io.dirPrompt();
+    if (d == L'.') return basicContainer::use();
+    if (!pUser) return useResult::FAIL;
+    auto &user = *pUser;
+    auto &level = user.curLevel();
+    auto pos = level.posOf(user);
+    const coord c = pos.inDir(dir(d));
+    if (c.first < 0 || c.second < 0 || c.first >= level::MAX_WIDTH ||
+	c.second >= level::MAX_HEIGHT) {
+      io.message(L"The hole won't stick there.");
+      return useResult::FAIL;
+    }
+    auto ter = level.terrainAt(c).type();
+    switch (ter) {
+    case terrainType::ALTAR: // TODO: alter the hole to a poke?
+      io.message(L"That's just not polite.");
+      return useResult::FAIL;
+    case terrainType::UP:
+    case terrainType::DOWN:
+      io.message(L"No cupboard here!");
+      return useResult::FAIL;
+    case terrainType::GROUND:
+    case terrainType::DECK:
+    case terrainType::PIANO_HIDDEN:
+      io.message(L"The hole is now stuck to the floor.");
+      level.changeTerrain(c, terrainType::PIT);
+      // reveal traps
+      for (auto m : level.monstersAt(c)) m.value().postMove(c, level.terrainAt(c));
+      // eject contents:
+      ejectContents(level, c);
+      return useResult::DONE;
+    case terrainType::PIT_HIDDEN:
+    case terrainType::PIT:
+      io.message(L"You make an escape.");
+      level.changeTerrain(c, terrainType::DOWN);
+      return useResult::DONE;      
+    case terrainType::FIRE:
+    case terrainType::WATER:
+      io.message(L"You find a fish!");
+      return useResult::DONE;      
+    case terrainType::SPACE:
+      io.message(L"Space is already a hole.");
+      return useResult::FAIL;
+    case terrainType::ROCK:
+    case terrainType::BULKHEAD:
+    case terrainType::KNOTWEED:
+      io.message(L"The hole is now stuck to the wall.");
+      level.changeTerrain(c, level.terrainAt(pos).type());
+      ejectContents(level, c);
+      return useResult::DONE;
+    default:
+      return useResult::FAIL;      
+    }
+  }
+  private:
+    void ejectContents(level &l, const coord &c) {
+      auto &dest = l.holder(c);
+      while (size() > 0) {
+	auto item = firstItem([](::item &){return true;});
+	if (item && !dest.addItem(item.value())) destroyItem(item.value());
+      }
+      if (isBlessed())
+	dest.addItem(*this);
+      else 
+	holder().destroyItem(*this);
+    }
+};
+
 
 class corpse : public basicItem, public monsterTypeProvider {
 private:
@@ -1849,6 +1930,11 @@ template <> struct itemTypeTraits<itemTypeKey::bottling_kit> {
   template<typename type>
   static item *make(const itemType &t) { return new type(t); }
 };
+template <> struct itemTypeTraits<itemTypeKey::portable_hole> {
+  typedef portableHole type;
+  template <typename type>
+  static item *make(const itemType &t) { return new type(t); }
+};
 template <> struct itemTypeTraits<itemTypeKey::theremin> {
   typedef instrument type;
   template<typename type>
@@ -2248,6 +2334,7 @@ item &createItem(const itemTypeKey &key) {
   case itemTypeKey::gpl_brick: return createItem<itemTypeKey::gpl_brick>();
   case itemTypeKey::shop_card: return createItem<itemTypeKey::shop_card>();
   case itemTypeKey::bottling_kit: return createItem<itemTypeKey::bottling_kit>();
+  case itemTypeKey::portable_hole: return createItem<itemTypeKey::portable_hole>();
   case itemTypeKey::theremin: return createItem<itemTypeKey::theremin>();
   case itemTypeKey::visi_sonor: return createItem<itemTypeKey::visi_sonor>();
   case itemTypeKey::baliset: return createItem<itemTypeKey::baliset>();

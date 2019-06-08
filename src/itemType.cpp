@@ -750,6 +750,13 @@ L"This looks like someone's ID, but there's no photo, just a line of numbers."
 L"Bottles not included. This box contains a capper and has lots of space for caps.",
 L"These look like parts of some larger purpose."
 			     ));
+    emplace(itemTypeKey::portable_hole, // ref: The Hole Idea (1955 animation)
+	    // ref: AberMUD has a portable hole for carrying equipment
+	    new itemTypeImpl(100, materialType::papery, L'(', L"portable hole",
+L"Invented by Calvin Q Calculus, the portable hole is a handy pocket-sized\n"
+"device to create passages or store objects for easy transportation.",
+L"There is a tear(rip) in this."
+			     ));
     emplace(itemTypeKey::theremin,
 	    // http://www.thereminworld.com/Forums/T/27511/rca-cabinet-theremin-weight says 90lb
 	    new itemTypeImpl(400, materialType::metallic, L'♪', L"theremin",

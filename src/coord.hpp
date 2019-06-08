@@ -16,6 +16,15 @@ public:
   dir(int x, int y) :
     std::pair<signed char, signed char>(x < 0 ? -1 : x > 0 ? +1 : 0,
 					y < 0 ? -1 : y > 0 ? +1 : 0) {}
+  dir(const wchar_t t) {
+    switch (t) {
+    case L'W': case L'w': first =  0; second = -1; break;
+    case L'A': case L'a': first = -1; second =  0; break;
+    case L'S': case L's': first =  0; second = +1; break;
+    case L'D': case L'd': first = +1; second =  0; break;
+    default: throw t;
+    }
+  }
   bool operator < (const dir &other) {
     return first < other.first || (first == other.first && second < other.second);
   }
