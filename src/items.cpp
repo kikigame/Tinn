@@ -1336,6 +1336,7 @@ public:
 };
 
 
+
 template<bool singleShot, bool lineOfSight, unsigned char amount>
 class thrownWeapon : public basicWeapon, public useInCombat {
 public:
@@ -1351,7 +1352,11 @@ public:
     auto &level = target->curLevel();
     // 2) get monster's location
     auto tPos = level.posOf(*target);
-    // 2) damage the monster
+    // 3) check zones
+    for (auto z : level.template zonesAt<monster>(tPos))
+      if (!z->onAttack(*source, *target))
+	return item::useResult::FAIL;
+    // 4) damage the monster
     unsigned char dam = amount;
     if (isBlessed()) dam *= 1.5;
     if (isCursed()) dam /= 2;
@@ -1385,7 +1390,7 @@ public:
       ios.message(source->name() + L" " + (rtn > 0 ? L" hits you with a " + name()
 					  : L" misses you with its " + name()));
     }
-    // 3) relocate item to monster's location, or consume
+    // 5) relocate item to monster's location, or consume
     if (singleShot)
       holder().destroyItem(*this);
     else

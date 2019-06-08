@@ -17,7 +17,6 @@ bool viableTarget(monster &attacker, monster &test) {
   if (attacker.align().coalignment(malign) >= 3) return false; // monsters don't usually fight other creautures of the same alignment
   if (attacker.type() == test.type()) return false; // monsters don't usually fight other creatures of the same class
   // TODO: charmed?
-  // TODO: zones
   return true;
 }
 

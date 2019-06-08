@@ -1341,11 +1341,11 @@ template <typename T>
 struct zoneTraits {};
 template<>
 struct zoneTraits<item>{ 
-  levelImpl::itemZoneIter zonesAt(levelImpl &p, const coord &c) { return p.zonesAt(c); } 
+  static levelImpl::itemZoneIter zonesAt(levelImpl &p, const coord &c) { return p.zonesAt(c); } 
 };
 template<>
 struct zoneTraits<monster>{ 
-  levelImpl::monsterZoneIter zonesAt(levelImpl &p, const coord &c) { return p.zonesAt(c, true); } 
+  static levelImpl::monsterZoneIter zonesAt(levelImpl &p, const coord &c) { return p.zonesAt(c, true); } 
 };
 
 template <typename T>
@@ -1462,3 +1462,6 @@ std::vector<level*>::iterator levelFactory::end() {
 const int level::MAX_WIDTH;
 const int level::MAX_HEIGHT;
 
+// instantiate templates
+void unused1(level &l) { l.template zonesAt<monster>(coord(0,0)); }
+void unused2(level &l) { l.template zonesAt<item>(coord(0,0)); }
