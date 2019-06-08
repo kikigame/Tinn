@@ -321,7 +321,7 @@ bool monster::onMove(const coord &pos, const terrain &terrain) {
   switch (terrain.type()) {
   case terrainType::PIT_HIDDEN:
     fall(dPc() / 10);
-    if (isPlayer()) // TODO: Pit traps should not be revealed by flying monsters, or should they?
+    if (isPlayer() && !abilities()->fly())
       ioFactory::instance().message(L"It's a (pit) trap!"); // ref: Admiral Ackbar, Star Wars film Episode VI: Return of the Jedi.
     return true; // you can move into a hidden pit
   case terrainType::PIT: {
@@ -346,7 +346,7 @@ bool monster::onMove(const coord &pos, const terrain &terrain) {
     }
     curLevel().holder(pos).addItem(createItem(itemTypeKey::pianoforte));
     if (damage_.cur() == damage_.max()) death();
-    if (isPlayer()) // TODO: Pit traps should not be revealed by flying monsters, or should they?
+    if (isPlayer())
       ioFactory::instance().message(L"Sudenly, a piano falls on you.");
     return true; // you can move into a hidden piano trap
   default:
