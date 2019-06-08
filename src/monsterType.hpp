@@ -32,7 +32,7 @@ enum class monsterCategory {
   // birds have wings, head and torso. "digits" are claws. (There's some debate online about whether all birds have talons, or whether claws are something separate. But I think colloquially we would talk about a song-bird's claws or a falcon's talons).
     bird,
   // as bird, but "digits" are talons.
-    birdOfPrey,
+    raptor,
   // merfolk: as biped, but tail instead of legs
     merfolk,
   // snake: basically just a tail.
@@ -62,7 +62,7 @@ enum class genderAssignType {
 
 enum class monsterTypeKey {
   //bird,
-  birdOfPrey,
+  raptor,
   dragon,
   dungeoneer, // low-level human, appears on levels 1-3. L3 has cloak. Always 2 random items (limited inventory), plus napsack of consumption & visorless helmet. Ref: Knightmare.
   ferret,

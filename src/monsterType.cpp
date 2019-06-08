@@ -798,8 +798,8 @@ L"There are a great number of creatures in the world, and not all sit neatly\n"
       .fearless()); // brainless implies fearless
 
     // unique features: flying
-    emplace(monsterTypeBuilder(monsterTypeKey::birdOfPrey)
-	    .category(monsterCategory::birdOfPrey)
+    emplace(monsterTypeBuilder(monsterTypeKey::raptor)
+	    .category(monsterCategory::raptor)
 	    .name(L"Falcon")
 	    .name(L"Eagle")
 	    .name(L"Big Bird") // TODO: Better bird names (ref:Sesame Stree for now)
