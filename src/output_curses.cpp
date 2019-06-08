@@ -92,7 +92,8 @@ public:
 
   // called when moving from one screen to another.
   virtual void clear() const {
-    flushLastMsg(L"");
+    flushLastMsg(L" "); // non-blank, to prompt if anything is outstanding
+    lastMsg = L""; // discard the empty string we just introduced
     ::erase();
   }
 
@@ -222,7 +223,7 @@ public:
     addwstr(fmt.str().c_str());
   }
   virtual void draw(const dungeon & d) const {
-    ::erase();
+    clear();
     draw(d.cur_level());
     draw(*(d.pc()));
     // don't flushLastMsg here; that'll be taken care of by the key prompt.
@@ -232,7 +233,7 @@ public:
   genderPrompt(const wchar_t * msg, const wchar_t * help,
 	       const wchar_t * female0help, const wchar_t * female100help,
 	       const wchar_t * male0help, const wchar_t * male100help) const {
-    ::erase();
+    clear();
     bool femaleCur = true;
     unsigned char male=0, female=0;
     const std::wstring blank(80, ' ');
@@ -291,10 +292,10 @@ private:
       mvaddwstr(0,0, std::wstring(L" ", 80).c_str()); // 80 bytes of ascii...
       mvaddwstr(0,0, lastMsg.c_str());
       blankToEol();
-      if (!msg.empty())
+      if (!msg.empty()) {
 	addwstr(L" -- MORE --"); // ascii...
-      if (!msg.empty())
 	getwch();
+      }
     }
     lastMsg = msg;
   }
@@ -321,8 +322,7 @@ private:
    * Aim to show help text in a consistent place; leave cursor after msg
    */
   void helpPrompt(const std::wstring &msg, const std::wstring &help) const {
-    flushLastMsg(L""); // output any buffered message before showing string
-    ::erase();
+    clear(); // output any buffered message before showing string
     mvaddwstr(3,0,help.c_str());
     mvaddwstr(0,0,msg.c_str());
   }
@@ -335,7 +335,7 @@ private:
   void interrogate(const renderByCoord &l, const coord &start) const {
     coord c = start;
     do {
-      ::erase();
+      clear();
       const renderable* toShow = 0;
       draw(l, [&c, &toShow] (const renderable &renderable, int x, int y) {
 	wchar_t r = renderable.render();
