@@ -806,7 +806,21 @@ public:
   readableItem(const itemType& type) :
     basicItem(type) {}
   virtual ~readableItem() {}
-   // TODO: Text, spells etc.
+  virtual item::useResult use() {
+    auto &ios = ioFactory::instance();
+    if (isBlessed()) {
+      if (isCursed())
+	ios.message(L"This beautiful tome is covered in ink-stains.");
+      else
+	ios.message(L"This beautiful tome has faintly ruled lines ready for the application of ink.");
+    } else {
+      if (isCursed())
+	ios.message(L"This tome is covered in inkblots.");
+      else
+	ios.message(L"This blank tome has plain pages.");
+    }
+    return useResult::SUCCESS;
+  }
 };
 
 class hitchGuide : public readableItem {

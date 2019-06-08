@@ -124,7 +124,6 @@ private:
   ::std::map<terrainType, ::std::unique_ptr<terrain>> store_;
 public:
   terrainFactoryImpl() {
-    // TODO: Yes I know altars and idols aren't the same thing; I want to keep it vague until I've figured out what, if anything, they do.
     store(new terrain(L'Π', L"Altar", L"Idol of worship; placed in shrines for vereration of the gods", terrainType::ALTAR));
     store(new terrain(L' ', L"Rock", L"Solid rock; too hard to dig through without tools", terrainType::ROCK));
     store(new terrain(L'.', L"Ground", L"Subterrainian earth; looks like a solid floor, but be careful or it may give way.", terrainType::GROUND));

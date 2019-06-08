@@ -200,7 +200,7 @@ public:
 	    .name(L"dragon")
 	    .name(L"dragon")
 	    .name(L"dragon")
-	    .className(L"Dragon") // TODO: Some dragons are serpants, others are lizards.
+	    .className(L"Dragon") // Some dragons are serpants, others are lizards. So they have their own class.
 	    // alignment of a dragon is overwritten in dragon constructor
 	    .align(dr.getExact(Element::none, Domination::none, Outlook::none))
 	    .levelFactor(10)
@@ -320,7 +320,7 @@ L"Meaning \"Little Thief\", ferrets are small, hyperflexible elongated mammels\n
 	    .sleeps() // a lot
             .scardy());
 
-    // unique feature: stealing treasure (TODO: magic)
+    // unique feature: stealing treasure
     emplace(monsterTypeBuilder (monsterTypeKey::goblin)
 	    .category(monsterCategory::biped)
 	    .name(L"goblin")
@@ -802,7 +802,7 @@ L"There are a great number of creatures in the world, and not all sit neatly\n"
 	    .category(monsterCategory::raptor)
 	    .name(L"falcon")
 	    .name(L"eagle")
-	    .name(L"harpy eagle"
+	    .name(L"harpy eagle")
 	    .className(L"raptor")
 	    .levelFactor(4)
 	    .levelOffset(3)
