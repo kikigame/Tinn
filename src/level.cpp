@@ -437,20 +437,22 @@ public:
       attack(m, *(mn->second)); // can't move into monster
       return;
     }
-    // if the monster can throw AND has a thrown item, or can zap AND has a wand, then we should check for monsters in line of sight.
-    // if there are any, then attack that way.
-    auto thrown = thrownWeapon(m);
-    auto zapped = zapItem(m);
-    auto target = lineOfSightTarget(m,c); // we only really care if any target exists at this point.
-    if ((thrown || zapped) && target && dPc() <= 40 /* ~ 33% chance */ ) {
-      if (thrown || (thrown && zapped && dPc() <= 50)) {
-	// lob/fire at the target:
-	dynamic_cast<useInCombat&>(thrown.value()).useForCombat();
-      } else {
-	// zap zapped.value() at a target
-	zapped.value().use();
+    if (!m.isPlayer()) {
+      // if the monster can throw AND has a thrown item, or can zap AND has a wand, then we should check for monsters in line of sight.
+      // if there are any, then attack that way.
+      auto thrown = thrownWeapon(m);
+      auto zapped = zapItem(m);
+      auto target = lineOfSightTarget(m,c); // we only really care if any target exists at this point.
+      if ((thrown || zapped) && target && dPc() <= 40 /* ~ 33% chance */ ) {
+	if (thrown || (thrown && zapped && dPc() <= 50)) {
+	  // lob/fire at the target:
+	  dynamic_cast<useInCombat&>(thrown.value()).useForCombat();
+	} else {
+	  // zap zapped.value() at a target
+	  zapped.value().use();
+	}
+	return;
       }
-      return;
     }
     move(m, dir, avoidTraps);
   }
