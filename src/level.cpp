@@ -250,7 +250,6 @@ public:
     level_(level), coord_(c) {}
   virtual bool addItem(item &item); // overridden to handle movement callbacks
   virtual bool removeItemForMove(item &item, itemHolder &next); // overridden to handle movement callbacks
-  virtual bool destroyItem(item &item); // overridden to clear the weak_ptr from the level.
   virtual ~itemHolderLevel() {}
 };
 
@@ -284,8 +283,6 @@ public:
   dungeon& dungeon_;
   // how many levels deep are we?
   const int depth_;
-  // map of coordinate to stack of items at that location - TODO: do we need this with holders_?
-  ::std::multimap<coord, ::std::weak_ptr<item> > items_;
   // map of coordinate to all monsters at that location
   ::std::multimap<coord, ::std::shared_ptr<monster> > monsters_;
   // terrain type by coordinate
@@ -328,16 +325,8 @@ public:
     auto mn = monsters_.equal_range(pos);
     if (mn.first != mn.second) return *(mn.first->second);
     // show items if any:
-    auto it = items_.equal_range(pos);
-    if (it.first != it.second) {
-      auto rtn = it.first->second.lock();
-      if (rtn) {
-	return *(rtn);	
-      }
-      else {
-	rtn = rtn;
-      }
-    }
+    auto it = holder(pos).firstItem();
+    if (it) return it.value();
     // show terrain if nothing else:
     return terrain_.at(pos).value();
   }
@@ -505,10 +494,9 @@ public:
     }
   }
   coord posOf(const item &it) const {
-    for (auto i = items_.begin(); i != items_.end(); ++i) {
-      if (&(*(i->second.lock())) == &it) {
-	return i->first;
-      }
+    for (auto &h : holders_) {
+      auto i = h.second->firstItem([&it](item &i) { return &i == &it; });
+      if (i) return h.first;
     }
     return coord(-1,-1);
   }
@@ -674,9 +662,10 @@ public:
     for (auto i = monsters.first; i != monsters.second; ++i)
       if (*(i->second) != m)
 	msg.emplace_back(L"live " + i->second->name());
-    auto items = items_.equal_range(pcLoc);
-    for (auto i = items.first; i != items.second; ++i)
-      msg.emplace_back(i->second.lock()->name());
+    auto items = holder(pcLoc);
+    items.forEachItem([&msg](const item&, std::wstring name) {
+	msg.emplace_back(name);
+      });
     
     std::wstring message;
     switch (msg.size()) {
@@ -828,11 +817,6 @@ public:
     }
   }
 
-  // called by itemHolderLevel; don't use directly
-  void addItem(item &item, const coord c) {
-    items_.emplace(c, item.shared_from_this()); // items may always occupy the same square
-  }
-
   void pickUp() {
     auto pos = pcPos();
     auto h = holder(pos);
@@ -842,7 +826,7 @@ public:
     h.forEachItem([this,pos](item &it, std::wstring name) {
       if (ioFactory::instance().ynPrompt(L"Do you want to collect: " + name + L"?")) {
 	dungeon_.pc()->addItem(it);
-	removeItem(pos, it);
+	//holder(pos).removeItem(pos, it);
       }});
   }
 
@@ -870,21 +854,10 @@ public:
     return *(holders_[c]);
   }
 
-  // used by itemHolderLevel:
-  std::vector<std::shared_ptr<item>> itemsAt(const coord & pos) const {
-    std::vector<std::shared_ptr<item>> rtn;
-    auto it = items_.equal_range(pos);
-    for (auto i = it.first; i != it.second; ++i) rtn.push_back(i->second.lock());
-    return rtn;
-  }
-  // used by itemHolderLevel:
-  void removeItem(const coord & pos, item &item) {
-    auto it = items_.equal_range(pos);
-    for (auto i = it.first; i != it.second; ++i)
-      if (i->first == pos && i->second.lock().get() == &item) {
-	items_.erase(i);
-	return;
-      }
+  const itemHolder &holder(const coord c) const {
+    // safe becase it's lazy-loaded.
+    // better than mutable because we only allow creating of blank holders.
+    return const_cast<levelImpl *>(this)->holder(c);
   }
 
   coord createPrison() {
@@ -1310,23 +1283,14 @@ bool itemHolderLevel::addItem(item &item) {
       if (!z->onEnter(item, item.holder())) return false;
   }
   itemHolder::addItem(item);
-  level_.addItem(item, coord_);
   return true;
 }
 bool itemHolderLevel::removeItemForMove(item &item, itemHolder &next) {
   auto pos = level_.posOf(item);
   for (auto z : level_.zonesAt(coord_))
     if (!z->onExit(item, next)) return false;
-  level_.removeItem(coord_, item);
   itemHolder::removeItemForMove(item, next);
   return true;
-}
-bool itemHolderLevel::destroyItem(item &item) {
-  if (itemHolder::destroyItem(item)) {
-    level_.removeItem(coord_, item);
-    return true;
-  }
-  return false;
 }
 
 // hack to pretend we implement a readonly version of the interface:

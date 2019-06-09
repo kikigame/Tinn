@@ -61,7 +61,7 @@ public:
   virtual void forEachItem(std::function<void(item&, std::wstring name)>);
   virtual void forEachItem(std::function<void(const item&, std::wstring name)>) const;
   // iterate over all items, stopping at first match:
-  virtual optionalRef<item> firstItem(std::function<bool(item&)>);
+  virtual optionalRef<item> firstItem(std::function<bool(item&)> fn = [](item &){ return true; }) const;
   // test if the item is in this container
   bool contains(const item &item) const;
   // test for an empty container

@@ -153,7 +153,7 @@ void itemHolder::forEachItem(const std::function<void(const item &, std::wstring
   }
 }
 
-optionalRef<item> itemHolder::firstItem(std::function<bool(item&)> f) {
+optionalRef<item> itemHolder::firstItem(std::function<bool(item&)> f) const {
   auto copy = contents_;
   for (auto i : copy) {
     std::shared_ptr<item> ii = i.lock();
