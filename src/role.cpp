@@ -63,6 +63,9 @@ public:
     emplace(new roleImpl(roleType::warrior, L"warrior",
 			 L"Contender Ready!" // ref: Gladiators (TV gameshow)
 			 ));
+    emplace(new roleImpl(roleType::thief, L"thief",
+			 L"Is there anybody hiding there in the dark?" // ref: Pink Panther
+			 ));
     emplace(new roleImpl(roleType::shopkeeper, L"shopkeeper",
 			 L"As if by magic, the shopkeeper appeared." // Ref: Mr Benn
 			 ));

@@ -2135,6 +2135,19 @@ public:
   }
 };
 
+template<questItemType it>
+class onPickupQuestItem : public basicQuestItem<it> {
+  std::function<void(const itemHolder&)> h_;
+public:
+  onPickupQuestItem(std::function<void(const itemHolder&)> &h)
+    : basicQuestItem<it>(), h_(h) {
+  }
+  virtual ~onPickupQuestItem() {}
+  virtual void onAdd(itemHolder &holder) const {
+    h_(holder);
+  }
+};
+
 template<>
 struct questItemTypeTraits<questItemType::grail>{
   typedef basicQuestItem<questItemType::grail> type;
@@ -2146,9 +2159,33 @@ struct questItemTypeTraits<questItemType::grail>{
   static constexpr const damageType weaponDamage_ = damageType::bashing;
 };
 
-template<questItemType it>
-item & createQuestItem() {
-  auto rtn = new typename questItemTypeTraits<it>::type;
+template<>
+struct questItemTypeTraits<questItemType::diamond>{
+  typedef onPickupQuestItem<questItemType::diamond> type;
+  static constexpr const wchar_t render_ = L'$'; // utility
+  static constexpr const wchar_t * const name_ = L"The Oppenheimer Blue"; // must contain "Grail" (shop quest)
+  static constexpr const wchar_t * const desc_ =
+    L"Shrouded in mystery, the Oppenheimer Blue is a 14.62-carrot emerald-cut\n"
+"vivid-blue diamond, almost certainly from the African diamond mines. It was\n"
+"once owned by the prestigious diamond merchant, Sir Phillip Oppenheimer of de\n"
+"Beers (who ran the london Diamond trading syndicate), and sold at auction for\n"
+"50.600.000,00 USD. It is the largest known diamond of the extremely rare\n"
+"vivid blue type, assessed by Christie's as having a perfect hue, impeccable\n"
+"proportions and a fabulous rectangular shape.";
+  static constexpr const materialType mat_ = materialType::stony;
+  static constexpr const double weight_ = 0.0286746446837404;
+  static constexpr const damageType weaponDamage_ = damageType::edged;
+};
+
+template<>
+item & createQuestItem<questItemType::grail>() {
+  auto rtn = new typename questItemTypeTraits<questItemType::grail>::type();
+  itemHolderMap::instance().enroll(*rtn);
+  return *rtn;
+}
+template<>
+item & createQuestItem<questItemType::diamond>(std::function<void(const itemHolder&)> &f) {
+  auto rtn = new typename questItemTypeTraits<questItemType::diamond>::type(f);
   itemHolderMap::instance().enroll(*rtn);
   return *rtn;
 }
@@ -2156,6 +2193,8 @@ item & createQuestItem() {
 // ensure object templates are created:
 void dummy() {
   createQuestItem<questItemType::grail>();
+  std::function<void(const itemHolder &)> *f = 0;
+  createQuestItem<questItemType::diamond>(*f);
 }
 
 item & createHolyBook(const deity &align) {

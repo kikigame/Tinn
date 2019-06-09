@@ -12,6 +12,7 @@
 
 enum class roleType {
   warrior,
+  thief,
   shopkeeper
 };
 

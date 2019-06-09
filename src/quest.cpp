@@ -1,7 +1,7 @@
 /* License and copyright go here*/
 
 // specific features for player roles.
-// I've kept this as the usual enum-key-and-repository pattern, as we may want monster roles in futurre.
+// I've kept this as the usual enum-key-and-repository pattern, as we may want monster roles in future.
 
 #include "quest.hpp"
 #include "player.hpp"
@@ -9,6 +9,11 @@
 #include "output.hpp"
 #include "action.hpp"
 #include "items.hpp"
+#include "random.hpp"
+
+std::uniform_int_distribution<int> xPosD(0,level::MAX_WIDTH - 1);
+std::uniform_int_distribution<int> yPosD(0,level::MAX_HEIGHT - 1);
+
 
 class questImpl {
 private:
@@ -27,8 +32,11 @@ public:
 	    const wchar_t* const incompletePrompt,
 	    const wchar_t* const completeMsg,
 	    int questLevel,
+	    // quest level generator:
 	    const std::function<levelGen*(questImpl &, levelImpl &, level &)> lg,
+	    // level setup filter
 	    const std::function<void(questImpl &, levelGen &, level &, int)> ls,
+	    // player equipment generator:
 	    const std::function<void(player &)> ps)
     : name_(name), questData_(questData), incompletePrompt_(incompletePrompt),
       completeMsg_(completeMsg),
@@ -139,6 +147,49 @@ public:
   }
 };
 
+class thiefQuestLevelGen : public levelGen {
+private:
+  questImpl &q_;
+public:
+  thiefQuestLevelGen(questImpl &q, levelImpl &li, level &l) :
+    levelGen(&li,l), q_(q) {}
+  virtual ~thiefQuestLevelGen() {}
+  virtual void negotiateRamps(optionalRef<levelGen> next) {}
+  virtual coord upRampPos() { return coord(0,0); }
+  virtual void build() {
+    for (int x=0; x<level::MAX_WIDTH; ++x)
+      for (int y=0; y<level::MAX_HEIGHT; ++y)
+	place(coord(x,y), terrainType::GROUND);
+    place(upRampPos(), terrainType::UP);
+    place(coord(level::MAX_WIDTH-2, level::MAX_HEIGHT-2), terrainType::DOWN);
+    std::vector<coord> coords;
+    for (int i=0; i < 50; ++i) {
+      coord c(xPosD(generator), yPosD(generator));
+      if (at(c) == terrainType::GROUND) {
+	coords.push_back(c);
+	place(c, terrainType::PIT);
+      }
+    }
+    constexpr auto nil = static_cast<std::vector<coord>::size_type>(0);
+    for (auto c : coords)
+      pub_.holder(coords[rndPickI(nil, coords.size())])
+	.addItem(createItem(static_cast<itemTypeKey>(rndPickI(static_cast<int>(itemTypeKey::kalganid), static_cast<int>(itemTypeKey::gpl_brick)))));
+    for (int i=0; i < 50; ++i) {
+      coord c(xPosD(generator), yPosD(generator));
+      if (at(c) == terrainType::GROUND)
+	place(c, terrainType::PIANO_HIDDEN);
+    }
+    // collecting qI completes quest
+    std::function<void(const itemHolder &)> f = [this](const itemHolder &holder) {
+      auto m = dynamic_cast<const player*>(&holder);
+      if (m) q_.complete();
+    };
+    auto &qI = createQuestItem<questItemType::diamond>(f);    
+    pub_.holder(coords[rndPickI(nil, coords.size())])
+      .addItem(qI);
+  }
+};
+
 
 std::vector<quest> questsForRole(roleType t) {
   std::vector<quest> rtn;
@@ -163,6 +214,60 @@ std::vector<quest> questsForRole(roleType t) {
        }
        ));
     break;
+  case roleType::thief:
+    rtn.emplace_back(new questImpl
+      (L"Steal the Oppenheimer Blue",
+       L"Amongst the traps in the deepest areas of adventure lies this mysterious\n"
+       "emerald-cut diamond. It is well guarded; will it be yours?",
+       L"The African treasure lies entombed; really leave it be?",
+       L"This is the stone you've been looking for.",
+       99,
+       [](questImpl &qI, levelImpl &li, level &l) { return new thiefQuestLevelGen(qI, li,l); },
+       [](questImpl &qI, levelGen &lg, level &l, int depth) {
+	 // reveal all hidden pit traps
+	 try {
+	   while (true) {
+	     coord c = l.findTerrain(terrainType::PIT_HIDDEN);
+	     l.changeTerrain(c, terrainType::PIT);
+	   }
+	 } catch (std::wstring) {} // no more; just break loop	 
+	 for (int i = 0 ; i < depth; ++i) {
+	   coord c(xPosD(generator), yPosD(generator));
+	   if (l.terrainAt(c).type() == terrainType::GROUND)
+	     l.changeTerrain(c, terrainType::PIT);
+	   else {
+	     c = coord(xPosD(generator), yPosD(generator));
+	     if (l.terrainAt(c).type() == terrainType::GROUND)
+	       l.changeTerrain(c, terrainType::PIANO_HIDDEN);
+	   }
+	 }
+       },
+       [](player &p) {
+	 // thief should be less tough. but faster
+	 p.intrinsics()->speedy(true);
+	 p.dodge().bonus(5);
+	 p.strength().cripple(10);
+	 p.fighting().cripple(10);
+	 // equip the player
+	 for (auto k : std::array<itemTypeKey, 8>{{
+	       itemTypeKey::sling, itemTypeKey::gloves, itemTypeKey::underpants,
+		 itemTypeKey::boots, itemTypeKey::shirt, itemTypeKey::shorts,
+		 itemTypeKey::socks, itemTypeKey::wooden_ring}}) {
+	   auto &it = createItem(k);
+	   p.addItem(it);
+	   it.equip(p);
+	 }
+	 p.addItem(createItem(itemTypeKey::pie));
+	 p.addItem(createItem(itemTypeKey::fizzy_pop));
+	 for (int i=0; i < 10; ++i)
+	   p.addItem(createItem(itemTypeKey::rock));
+	 p.addItem(createItem(itemTypeKey::bottling_kit));
+	 p.addItem(createItem(itemTypeKey::lyre));
+	 auto &wand = createItem(itemTypeKey::stick);
+	 p.addItem(wand);
+	 wand.enchant(5);
+       }
+       ));       
   case roleType::shopkeeper:
     rtn.emplace_back(new questImpl
       (L"Positive Trade",       

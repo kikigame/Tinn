@@ -156,6 +156,7 @@ playerBuilder chargen() {
        L"   Options are:",
       {
 	{ roleType::shopkeeper, L"Shopkeeper: has access to expensive equipment" },
+	{ roleType::thief, L"Thief: fast and good with traps" },
 	    // most generic option is always last
 	{ roleType::warrior, L"Warrior: a good choice against hostile monsters" }
       },

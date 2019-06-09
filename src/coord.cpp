@@ -1,8 +1,8 @@
 /* License and copyright go here*/
 
-// utility class to hord a coordinate pair
+// utility class to hold a coordinate pair
 
-#include "coord.hpp" 
+#include "coord.hpp"
 
 std::ostream & operator << (std::ostream & out, const coord & c) {
   out << '(' << c.first << ',' << c.second << ')';

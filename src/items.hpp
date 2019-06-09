@@ -132,6 +132,8 @@ public:
   // this base implementation simply returns the supplied value.
   virtual long modDamage(long pc, const damage & type) const = 0;
 
+  // callback to identify when an item has been added to a holder.
+  virtual void onAdd(itemHolder &holder) const {}
 };
 
 // class for items with no especial behaviour:
@@ -192,6 +194,8 @@ item & createItem(const itemTypeKey & key);
 // craete a quest item:
 template<questItemType it>
 item & createQuestItem();
+template<questItemType it>
+item & createQuestItem(std::function<void(const itemHolder&)> &);
 
 class deity;
 // create a holy book with specific alignment

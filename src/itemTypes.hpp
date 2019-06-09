@@ -216,6 +216,7 @@ enum class itemTypeKey {
  */
 enum class questItemType {
   grail, // shop quest item
+  diamond, // thief quest item
 };
 
 

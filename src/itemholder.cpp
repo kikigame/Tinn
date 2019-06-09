@@ -105,6 +105,7 @@ bool itemHolder::addItem(item &item) {
   }
   map.move(item, *this);
   contents_.push_back(pi);
+  pi->onAdd(*this);
   return true;
 }
 
@@ -174,6 +175,7 @@ bool itemHolder::replaceItem(item &from, item &to) {
     if (i->lock().get() == &from) {
       i = contents_.erase(i);
       contents_.insert(i, to.shared_from_this());
+      to.onAdd(*this);
       return true;
     }
   return false;
