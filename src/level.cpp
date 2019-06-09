@@ -841,8 +841,12 @@ public:
   }
 
   void forEachMonster(std::function<void(monster &)> f) {
-    for (auto p : monsters_)
-      f(*(p.second));
+    // iterate over a copy, in case a monster moves (eg charmed)
+    std::vector<::std::shared_ptr<monster>> monsters;
+    for (auto &p : monsters_)
+      monsters.emplace_back(p.second);
+    for (auto &p : monsters)
+      f(*p);
   }
 
   dungeon & dung() { return dungeon_; }
