@@ -57,7 +57,7 @@ public:
     movementType_ ({ speed::turn2, goTo::player, goBy::smart, 0 }),
     fearless_(), intrinsics_(), alluring_(false), undead_(false),
     key_(key) {}
-    monsterTypeBuilder& category(monsterCategory category) { category_ = category; return *this; }
+  monsterTypeBuilder& category(monsterCategory category) { category_ = category; return *this; }
   monsterTypeBuilder& name(const wchar_t * name) { monsterNames_.push_back(name); return *this; }
   monsterTypeBuilder& className(const std::wstring & className) { className_ = className; return *this; }
   monsterTypeBuilder& levelFactor(int levelFactor) { levelFactor_ =levelFactor ; return *this; }
@@ -319,6 +319,47 @@ L"Meaning \"Little Thief\", ferrets are small, hyperflexible elongated mammels\n
 "and smell, is how they mostly investigate the world.")
 	    .sleeps() // a lot
             .scardy());
+
+    // unique feature: chinese foxes can ignite fires (TODO: shapeshift?)
+    // chinese fox can take the form of a young girl, old man, or academic.
+    emplace(monsterTypeBuilder(monsterTypeKey::fox)
+	    .category(monsterCategory::quadruped)
+	    .name(L"fox")
+	    .name(L"fox")
+	    .name(L"huli jing")
+	    .className(L"small hunting mammels")
+	    .levelFactor(1)
+	    .levelOffset(-1)
+	    .minSpawn(1)
+	    .maxSpawn(1)
+	    .xpFactor(10)
+	    .xpOffset(10)
+	    .renderChar(L'f') // felines in nethack
+	    .strength(20)
+	    .appearance(75)
+	    .fighting(40)
+	    .dodge(60)
+	    .maxDamage(35) // not very vicious, except against rabbits
+	    .gen(genderAssignType::mf)
+	    .align(dr.getExact(Element::earth, Domination::concentration, Outlook::cruel))
+	    .saying(L"GekGekGekGek!")
+	    // foxes weigh 6.5 - 24 lbs
+	    // so we'll stick to 20lb.
+	    .corpseWeight(88.964432306) //20lb
+	    .eats(materialType::fleshy) // obligate carnivores
+	    .eats(materialType::liquid)
+	    .movement({speed::perturn, goTo::player, goBy::avoid, 25})
+	    .alluring()
+	    .carryWeight(2000) // less than a human
+	    .encyclopedium(
+L"Vulpine animals get a mixed reaction; these charming, beautiful creatures\n"
+"are known for both chicken-rustling and hunting smaller pests. In China,\n"
+"when these creatures are not killed, they can live for up to ten centuries,\n"
+"learning how to start fires with a strike of their tail, and even to change\n"
+"form at will.")
+	    .sleeps()
+            .scardy());
+    
 
     // unique feature: stealing treasure
     emplace(monsterTypeBuilder (monsterTypeKey::goblin)

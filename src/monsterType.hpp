@@ -66,6 +66,7 @@ enum class monsterTypeKey {
   dragon,
   dungeoneer, // low-level human, appears on levels 1-3. L3 has cloak. Always 2 random items (limited inventory), plus napsack of consumption & visorless helmet. Ref: Knightmare.
   ferret,
+  fox,
   goblin,
   hound,
   human, 

@@ -156,6 +156,33 @@ public:
   virtual bool buffs() const { return false; }
 };
 
+class fireTailAction : public renderedAction<monster, monster> {
+public:
+  fireTailAction(const wchar_t * const name, const wchar_t * const description) :
+    renderedAction(name, description) {};
+  virtual ~fireTailAction() {}
+  virtual bool operator()(bool blessed, bool cursed, monster &source, monster &target) {
+    auto &level = source.curLevel();
+    if (&target.curLevel() != &level) return false;
+    auto sPos = level.posOf(source);
+    auto tPos = level.posOf(target);
+    if (sPos.towards(tPos) != tPos) return false; // too far away
+    auto dPos = sPos.away(tPos);
+    if (dPos.first < 0 || dPos.second < 0 || dPos.first >= level::MAX_WIDTH
+	|| dPos.second >= level::MAX_HEIGHT) return false; // off the map
+    if (level.terrainAt(dPos).type() != terrainType::GROUND) // tail not on the ground
+      return false;
+    auto m = level.monstersAt(tPos);
+    if (m.begin() != m.end()) return false; // tricksy, not evil; or no space...
+    ioFactory::instance().message(name() + L"'s tail slams on the ground!");
+    level.changeTerrain(tPos, terrainType::FIRE);
+    return true;
+  }
+  virtual bool aggressive() const { return true; }
+  virtual bool heals() const { return false; }
+  virtual bool buffs() const { return false; }
+};
+
 // forcably cause the target monster to consume some sprouts
 class forceHealAction : public renderedAction<monster, monster> {
 public:
@@ -695,6 +722,9 @@ damageType::electric));
 L"Useful for getting out of a scrape, especially when trapped.\n"
 "The effect of an exchange ray is to swap places with everyone and everything\n"
 "at the target's location."));
+	rtn[action::key::fire_tail] = std::unique_ptr<action>(new fireTailAction(L"fire tail slam",
+L"The ancient foxes of china have a trick in their tail; when striking the\n"
+"ground, it can ignite fires."));
 	rtn[action::key::attract] = std::unique_ptr<action>(new attractAction(L"monster attraction",
 L"To somman another creature towards you along a line of movement."));
 	rtn[action::key::heal_ray_veggie] = std::unique_ptr<action>(new forceHealAction(L"Vegan food ray",

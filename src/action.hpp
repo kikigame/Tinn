@@ -77,6 +77,8 @@ class sharedAction<monster, monster>{
     death_ray_electric,
     // swap places
     exchange_ray,
+    // chinese fox action: fire when striking ground
+    fire_tail,
     // pull towards
     attract,
     // heal by veggie food consumption

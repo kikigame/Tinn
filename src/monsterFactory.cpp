@@ -221,7 +221,7 @@ public:
     targetActionMonster(b, key::steal_small),
     away_({speed::turn2, goTo::player, goBy::avoid, 25}){
     intrinsics()->see(true);
-    intrinsics()->hear(true);
+    intrinsics()->hear(true); // TODO: pass intrinsics via builder
   }
   virtual ~ferret() {}
   const movementType & movement() const {
@@ -229,6 +229,25 @@ public:
       return type().movement(); // go to player; they might have sometihng fun!
     else // I've got it! Run away!
       return away_;
+  }
+};
+
+class fox : public monster {
+private:
+  renderedAction<monster, monster> &fireTailAction_;
+public:
+  fox(monsterBuilder &b) :
+    monster(b),
+    fireTailAction_(actionFactory<monster, monster>::get(sharedAction<monster, monster>::key::fire_tail)) {
+    intrinsics()->see(true);
+    intrinsics()->hear(true);
+  }
+  virtual ~fox() {}
+  virtual optionalRef<sharedAction<monster, monster>> attackAction() {
+    if (name().find(L"huli jing") != std::wstring::npos && dPc() < 10) {
+      return fireTailAction_;
+    }
+    return monster::attackAction();
   }
 };
 
@@ -701,6 +720,7 @@ struct monsterTypeTraits {
 };
 template<> struct monsterTypeTraits<monsterTypeKey::dungeoneer> { typedef dungeoneer type; };
 template<> struct monsterTypeTraits<monsterTypeKey::ferret> { typedef ferret type; };
+template<> struct monsterTypeTraits<monsterTypeKey::fox> { typedef fox type; };
 template<> struct monsterTypeTraits<monsterTypeKey::goblin> { typedef goblin type; };
 template<> struct monsterTypeTraits<monsterTypeKey::hound> { typedef hound type; };
 template<> struct monsterTypeTraits<monsterTypeKey::incubus> { typedef incubus type; };
@@ -743,6 +763,7 @@ std::shared_ptr<monster> monsterType::spawn(level & level, monsterBuilder &b) co
   case monsterTypeKey::dragon: return ofTypeImpl<monsterTypeKey::dragon>(level,b);
   case monsterTypeKey::dungeoneer: return ofTypeImpl<monsterTypeKey::dungeoneer>(level,b); 
   case monsterTypeKey::ferret: return ofTypeImpl<monsterTypeKey::ferret>(level,b);
+  case monsterTypeKey::fox: return ofTypeImpl<monsterTypeKey::fox>(level,b);
   case monsterTypeKey::goblin: return ofTypeImpl<monsterTypeKey::goblin>(level,b);
   case monsterTypeKey::hound: return ofTypeImpl<monsterTypeKey::hound>(level,b);
   case monsterTypeKey::human: return ofTypeImpl<monsterTypeKey::human>(level,b); 
@@ -758,6 +779,7 @@ std::shared_ptr<monster> monsterType::spawn(level & level, monsterBuilder &b) co
   default: throw type();
   }
 }
+// TODO: should "space" be a non-random mutation?
 std::shared_ptr<monster> monsterType::spawnSpace(level & level, monsterBuilder &b) const {
   switch (type()) {
     //  case monsterTypeKey::bird: return ofSpaceType<monsterTypeKey::bird>(level,b);
@@ -765,6 +787,7 @@ std::shared_ptr<monster> monsterType::spawnSpace(level & level, monsterBuilder &
   case monsterTypeKey::dragon: return ofSpaceType<monsterTypeKey::dragon>(level,b);
   case monsterTypeKey::dungeoneer: return ofSpaceType<monsterTypeKey::dungeoneer>(level,b); 
   case monsterTypeKey::ferret: return ofSpaceType<monsterTypeKey::ferret>(level,b);
+  case monsterTypeKey::fox: return ofSpaceType<monsterTypeKey::fox>(level,b);
   case monsterTypeKey::goblin: return ofSpaceType<monsterTypeKey::goblin>(level,b);
   case monsterTypeKey::hound: return ofSpaceType<monsterTypeKey::hound>(level,b);
   case monsterTypeKey::human: return ofSpaceType<monsterTypeKey::human>(level,b); 
