@@ -180,22 +180,26 @@ void processInput(dungeon & d, const std::wstring &c, const std::shared_ptr<io> 
       d.cur_level().moveOrFight(*(d.pc()), ::dir(+1,0), true);
     doTick(d);
     break;
-  case 256+L'w': case 256+L'W': // north
+  case 320+L'w': case 320+L'W': // alt north (unicode)
+  case 256+L'w': case 256+L'W': // alt north (combined keys)
     if (validateSpeed(d))
       d.cur_level().moveOrFight(*(d.pc()), ::dir(0,-1), false);
     doTick(d);
     break;
-  case 256+L'a': case 256+L'A': // west
+  case 320+L'a': case 320+L'A': // alt west (unicode)
+  case 256+L'a': case 256+L'A': // alt west (combined keys)
     if (validateSpeed(d))
       d.cur_level().moveOrFight(*(d.pc()), ::dir(-1,0), false);
     doTick(d);
     break;
-  case 256+L's': case 256+L'S': // south
+  case 320+L's': case 320+L'S': // alt south (unicode)
+  case 256+L's': case 256+L'S': // alt south (combined keys)
     if (validateSpeed(d))
       d.cur_level().moveOrFight(*(d.pc()), ::dir(0,+1), false);
     doTick(d);
     break;
-  case 256+L'd': case 256+L'D': // east
+  case 320+L'd': case 320+L'D': // alt east (unicode)
+  case 256+L'd': case 256+L'D': // alt east (combined keys)
     if (validateSpeed(d))
       d.cur_level().moveOrFight(*(d.pc()), ::dir(+1,0), false);
     doTick(d);

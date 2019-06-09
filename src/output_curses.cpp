@@ -416,9 +416,9 @@ private:
    */
   wchar_t getwch() const {
     ::refresh();
-    auto key = getch();
+    wchar_t key = getch();
 
-    if (key == 27) // Alt modifier
+    if (key == 27 || key == 195) // Alt modifier
       key = 256 + getch();
 
     return key;
