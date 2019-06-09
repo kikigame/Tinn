@@ -220,8 +220,6 @@ public:
   ferret(monsterBuilder &b) : 
     targetActionMonster(b, key::steal_small),
     away_({speed::turn2, goTo::player, goBy::avoid, 25}){
-    intrinsics()->see(true);
-    intrinsics()->hear(true); // TODO: pass intrinsics via builder
   }
   virtual ~ferret() {}
   const movementType & movement() const {
@@ -239,8 +237,6 @@ public:
   fox(monsterBuilder &b) :
     monster(b),
     fireTailAction_(actionFactory<monster, monster>::get(sharedAction<monster, monster>::key::fire_tail)) {
-    intrinsics()->see(true);
-    intrinsics()->hear(true);
   }
   virtual ~fox() {}
   virtual optionalRef<sharedAction<monster, monster>> attackAction() {
@@ -269,10 +265,7 @@ public:
 class hound : public monster {
 public:
   hound(monsterBuilder &b) : 
-    monster(b) {
-    intrinsics()->see(true);
-    intrinsics()->hear(true);
-  }
+    monster(b) {}
   virtual ~hound() {}
   virtual const wchar_t *say() const {
     const std::wstring nm = name();
@@ -295,12 +288,7 @@ public:
   kelpie(monsterBuilder &b) :
     monster(b),
     equineForm_(false),
-    maxStrength_(strength().max()) {
-    intrinsics()->see(true);
-    intrinsics()->hear(true);
-    intrinsics()->swim(true);
-    intrinsics()->move(tFactory.get(terrainType::WATER), true);
-  }
+    maxStrength_(strength().max()) {}
   virtual ~kelpie() {}
   virtual void shapeShift() {
     equineForm_ = !equineForm_;
@@ -338,11 +326,6 @@ class siren : public monster {
 public:
   siren(monsterBuilder &b) :
     monster(b) {
-    intrinsics()->see(true);
-    intrinsics()->hear(true);
-    intrinsics()->swim(true);
-    intrinsics()->fly(true);
-    intrinsics()->climb(true);
     eachTick([this]{
 	if (dPc() <= 30) // ~ 1 every 5 moves
 	  sirenCall();
@@ -368,9 +351,6 @@ class merfolk : public monster {
 public:
   merfolk(monsterBuilder &b) :
     monster(b) {
-    intrinsics()->see(true);
-    intrinsics()->hear(true);
-    intrinsics()->swim(true);
     eachTick([this]{
 	if (dPc() <= 30) // ~ 1 every 5 moves
 	  charm();
@@ -413,14 +393,7 @@ private:
 public:
   dragon(monsterBuilder &b) : 
     monster(roll(b), equipment(b)),
-    western_(align().domination() == Domination::aggression) {
-    // DRAGONS DON'T FLY! It's mythologically inaccurate...
-    intrinsics()->speedy(true);
-    intrinsics()->dblAttack(true);
-    intrinsics()->see(true);
-    intrinsics()->hear(true);
-    intrinsics()->fearless(true);
-  }
+    western_(align().domination() == Domination::aggression) {}
   virtual ~dragon() {}
   // overridden to return a type-dependant saying:
   virtual const wchar_t * say() const {
@@ -579,19 +552,14 @@ void equipMonster(const monsterTypeKey &type, level &level, monster &m) {
 class goblin : public targetActionMonster {
 public:
   goblin(monsterBuilder &b) :
-    targetActionMonster(b, targetActionMonster::key::steal_shiny) {
-    intrinsics()->see(true);
-    intrinsics()->hear(true);
-  }
+    targetActionMonster(b, targetActionMonster::key::steal_shiny) {}
   virtual ~goblin() {};
 };
 
 class dungeoneer : public trivialMonster {
 public:
   dungeoneer(monsterBuilder &b) :
-    trivialMonster(b) {
-    intrinsics()->hear(true); // can't see
-  }
+    trivialMonster(b) {}
   virtual bool highlight() const {
     return curLevel().dung().pc()->job().type() == roleType::shopkeeper;
   }
@@ -608,10 +576,7 @@ public:
 class bull : public trivialMonster {
 public:
   bull(monsterBuilder &b) :
-    trivialMonster(b) {
-    intrinsics()->see(true);
-    intrinsics()->hear(true);
-  }
+    trivialMonster(b) {}
   virtual ~bull() {};
   virtual std::wstring name() const {
     std::wstring name = trivialMonster::name();
@@ -630,11 +595,7 @@ public:
 class incubus : public targetActionRefMonster {
 public:
   incubus(monsterBuilder &b) :
-    targetActionRefMonster(b, incubusAction()) {
-    intrinsics()->see(true);
-    intrinsics()->hear(true);
-    intrinsics()->swim(true);
-  }
+    targetActionRefMonster(b, incubusAction()) {}
   virtual ~incubus() {};
   virtual optionalRef<sharedAction<monster, monster>> attackAction() {
     return optionalRef<sharedAction<monster, monster>>(incubusAction());
@@ -651,9 +612,7 @@ public:
   snake(monsterBuilder &b) :
     trivialMonster(b),
     segments_(),
-    builder_(b) {
-    intrinsics()->hear(true); // no ears; they hear through their jaws
-  }
+    builder_(b) {}
   virtual ~snake() {}
   virtual void death() {
     snakeToLength();
@@ -713,11 +672,7 @@ private:
 class succubus : public targetActionRefMonster {
 public:
   succubus(monsterBuilder &b) :
-    targetActionRefMonster(b, succubusAction()) {
-    intrinsics()->see(true);
-    intrinsics()->hear(true);
-    intrinsics()->swim(true);
-  }
+    targetActionRefMonster(b, succubusAction()) {}
   virtual ~succubus() {};
   virtual optionalRef<sharedAction<monster, monster>> attackAction() {
     return optionalRef<sharedAction<monster, monster>>(succubusAction());
@@ -729,11 +684,7 @@ public:
   bird(monsterBuilder &b) :
     trivialMonster(b) {
   }
-  virtual ~bird() {
-    intrinsics()->see(true);
-    intrinsics()->hear(true);
-    intrinsics()->fly(true);
-  };
+  virtual ~bird() {}
 };
 
 template <monsterTypeKey T>

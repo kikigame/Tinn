@@ -16,7 +16,7 @@ const int NUM_LEVELS = 100;
 // initialise the dungeon:
 dungeon::dungeon() 
   : alive_(true),
-    cur_level_(1) {
+    cur_level_() {
   // NB: Dependency order provides some oddities here.
   // player needs a level, and level needs a level factory, and level
   // factory needs a role (to build role-specific levels).

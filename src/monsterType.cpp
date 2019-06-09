@@ -10,7 +10,7 @@
 #include "level.hpp"
 #include "religion.hpp"
 #include "role.hpp"
-
+#include "terrain.hpp"
 
 
 std::unique_ptr<monsterTypeRepo> monsterTypeRepo::instance_;
@@ -90,6 +90,7 @@ public:
   }
   monsterTypeBuilder& carryWeight(unsigned int carryWeightN) { intrinsics_.carryWeightN(carryWeightN); return *this; }
   monsterTypeBuilder& movement(movementType type) { movementType_ = type; return *this; }
+  monsterTypeBuilder& movesThrough(terrainType type) { intrinsics_.move(tFactory.get(type), true); return *this; }
   monsterTypeBuilder& fearless() { fearless_ = bonus(true); return *this; }
   monsterTypeBuilder& scardy() { fearless_ = bonus(false); return *this; }
   monsterTypeBuilder& throws() { intrinsics_.throws(true); return *this; }
@@ -97,6 +98,13 @@ public:
   monsterTypeBuilder& alluring() { alluring_ = true; return *this; }
   monsterTypeBuilder& undead() { undead_ = true; return *this; }
   monsterTypeBuilder& sleeps() { intrinsics_.sleeps(); return *this; }
+  monsterTypeBuilder& see() { intrinsics_.see(true); return *this; }
+  monsterTypeBuilder& hear() { intrinsics_.hear(true); return *this; }
+  monsterTypeBuilder& speedy() { intrinsics_.speedy(true); return *this; }
+  monsterTypeBuilder& dblAttack() { intrinsics_.dblAttack(true); return *this; }
+  monsterTypeBuilder& swim() { intrinsics_.swim(true); return *this; }
+  monsterTypeBuilder& fly() { intrinsics_.fly(true); return *this; }
+  monsterTypeBuilder& climb() { intrinsics_.climb(true); return *this; }
 };
 
 monsterType::monsterType(const monsterTypeBuilder & b) :
@@ -223,6 +231,12 @@ public:
 	    .eats(materialType::leathery) // definitely carnivores, but I'm guessing they'll eat some of your armour too
 	    .eats(materialType::liquid)
 	    .saying(L"Behold the Powerful Dragon") // should not actually say this; depends on the monster's specifics
+	    // DRAGONS DON'T FLY! It's mythologically inaccurate...
+	    .speedy()
+	    .dblAttack()
+	    .see()
+	    .hear()
+	    .fearless()
 	    .encyclopedium(
 L"Dragons are large serpentine creatures; highly intelligent and amongst the\n"
 "strongest of all. Even dragonets - the newly hatched young - should only be\n"
@@ -276,6 +290,8 @@ L"Dragons are large serpentine creatures; highly intelligent and amongst the\n"
 	    .movement({speed::slow2, goTo::player, goBy::avoid, 10})
 	    .fearless()
 	    .sleeps()
+	    .see()
+	    .hear()
 	    .encyclopedium(
 L"Bovines are farmed for their meat and milk. One of the largest are the\n"
 "bonnacon, a reddish-brown to black creature with ram-like horns, which curl\n"
@@ -313,6 +329,7 @@ L"Bovines are farmed for their meat and milk. One of the largest are the\n"
 	    .throws()
 	    .zap()
 	    .sleeps()
+	    .hear() // can't see
 	    .carryWeight(1000) // typically children; 1/3 of human
 	    .encyclopedium(
 L"Sometimes a human ventures into a Dungeon upon a quest. This is usually ill-\n"
@@ -354,6 +371,8 @@ L"Meaning \"Little Thief\", ferrets are small, hyperflexible elongated mammels\n
 "hunting rabbit. While they don't burrow, they love running through tunnels,\n"
 "playing with whatever comes to hand, and biting - which, with poor eyesight\n"
 "and smell, is how they mostly investigate the world.")
+	    .see()
+	    .hear()
 	    .sleeps() // a lot
             .scardy());
 
@@ -395,7 +414,10 @@ L"Vulpine animals get a mixed reaction; these charming, beautiful creatures\n"
 "learning how to start fires with a strike of their tail, and even to change\n"
 "form at will.")
 	    .sleeps()
-            .scardy());
+            .scardy()
+	    .see()
+	    .hear()
+	    );
     
 
     // unique feature: stealing treasure
@@ -434,6 +456,8 @@ L"Vulpine animals get a mixed reaction; these charming, beautiful creatures\n"
 	    .zap()
 	    .sleeps()
 	    .carryWeight(4000)
+	    .see()
+	    .hear()
 	    .encyclopedium(
 L"The difference between a goblin and an orc is that orcs don't exist.\n"
 "Not all goblins are malevolent; some are merely mischievous. All are obsessed\n"
@@ -477,6 +501,8 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .movement({speed::turn2, goTo::unaligned, goBy::smart, 50})
 	    .sleeps()
 	    .carryWeight(1000)
+	    .see()
+	    .hear()
 	    .encyclopedium(L"Canines are furry, with four legs and a tail. They are easily excited, always\n"
 "hungry and pack hunters. They enjoy bones and some are known to bark or howl."));
 
@@ -544,6 +570,9 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .eats(materialType::clothy) // ripping clothes off with its teeth...
     //ref: http://www.chesterfieldparanormalresearch.com/incubus---sucubbus-demon.html; wikipedia; http://mythicalcreatureslist.com/mythical-creature/Succubus; others
 	    .alluring()
+	    .see()
+	    .hear()
+	    .swim()
 	    .carryWeight(0) // does not carry stuff
 	    .encyclopedium(L"The word incubus comes from the Latin /incubāre/ (to lay\n"
       "upon), from Latin /incubō/ (nightmare). Even the most hedonistic\n"
@@ -585,6 +614,10 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .eats(materialType::liquid)
 	    .sleeps()
 	    .carryWeight(0) // does not carry stuff
+	    .see()
+	    .hear()
+	    .swim()
+	    .movesThrough(terrainType::WATER)
 	    .encyclopedium(
 L"Kelpies live in rivers and streams, while the stronger Each-uisge prefers\n"
 "the sea - although there is some overlap. When in human form, either can be\n"
@@ -623,6 +656,9 @@ L"Kelpies live in rivers and streams, while the stronger Each-uisge prefers\n"
 	    .sleeps()
 	    .zap()
 	    .carryWeight(3500) // a little stronger than human
+	    .see()
+	    .hear()
+	    .swim()
 	    .encyclopedium(
 L"Merfolk do not like to stray outside the sea, and mermen less so. Having the\n"
 "tail of a fish and the body of the beautiful human, albeit covered in tiny\n"
@@ -659,6 +695,11 @@ L"Merfolk do not like to stray outside the sea, and mermen less so. Having the\n
 	    .eats(materialType::liquid)
 	    .carryWeight(0) // does not carry
 	    .sleeps()
+	    .see()
+	    .hear()
+	    .swim()
+	    .fly()
+	    .climb()
 	    .alluring()
 	    // no throw or zap; they make you go to them
 	    .encyclopedium(
@@ -705,6 +746,8 @@ L"Of all the birds of the sea, the sirens are the most beautiful and the most\n"
 	    .movement({speed::slow3, goTo::wander, goBy::smart})
 	    .sleeps() // with their eyes open
 	    .carryWeight(0) // does not carry
+	    .see()
+	    .hear() // no ears; they hear through their jaws
 	    .encyclopedium(
 L"Be they creatures of immortality, creation, temptation, or hairstyle, snakes\n"
 "and other serpants have often found themselves at the centre of mythology.\n"
@@ -742,6 +785,9 @@ L"Be they creatures of immortality, creation, temptation, or hairstyle, snakes\n
 	    .eats(materialType::liquid)
 	    .alluring()
 	    .carryWeight(0) // does not carry
+	    .see()
+	    .hear()
+	    .swim()
 	    .encyclopedium(
     //ref: http://www.chesterfieldparanormalresearch.com/incubus---sucubbus-demon.html; wikipedia; http://mythicalcreatureslist.com/mythical-creature/Succubus; others
     L"The word succubus comes from the Latin /succubāre/ (to lie\n"
