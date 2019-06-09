@@ -380,8 +380,8 @@ L"Meaning \"Little Thief\", ferrets are small, hyperflexible elongated mammels\n
     // chinese fox can take the form of a young girl, old man, or academic.
     emplace(monsterTypeBuilder(monsterTypeKey::fox)
 	    .category(monsterCategory::quadruped)
-	    .name(L"fox")
-	    .name(L"fox")
+	    .name(L"fox") // no shapsifting
+	    .name(L"kitsuni")
 	    .name(L"huli jing")
 	    .className(L"small hunting mammels")
 	    .levelFactor(1)

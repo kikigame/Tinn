@@ -233,17 +233,32 @@ public:
 class fox : public monster {
 private:
   renderedAction<monster, monster> &fireTailAction_;
+  bool polymorphed_;
 public:
   fox(monsterBuilder &b) :
     monster(b),
-    fireTailAction_(actionFactory<monster, monster>::get(sharedAction<monster, monster>::key::fire_tail)) {
-  }
+    fireTailAction_(actionFactory<monster, monster>::get(sharedAction<monster, monster>::key::fire_tail)),
+    polymorphed_(false) {}
   virtual ~fox() {}
   virtual optionalRef<sharedAction<monster, monster>> attackAction() {
     if (name().find(L"huli jing") != std::wstring::npos && dPc() < 10) {
       return fireTailAction_;
     }
     return monster::attackAction();
+  }
+  virtual void postMove(const coord &, const terrain &) {
+    auto roll = dPc();
+    if (name().find(L"fox") == std::wstring::npos && roll < 10) {
+      polymorphed_ = !polymorphed_;
+      const auto &ios = ioFactory::instance();
+      polymorphCategory(polymorphed_ ? monsterCategory::quadruped : monsterCategory::biped);
+      if (polymorphed_)
+	ios.message(L"The " + name() + L" takes on a vulipine visage");
+      else {
+	ios.message(L"The " + name() + L" takes the shape of " +
+	 (roll < 5 ? L"a scholar" : isMale() ? L"an old man" : L"a young girl") );
+      }
+    }
   }
 };
 
