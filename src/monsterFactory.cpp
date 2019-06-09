@@ -605,6 +605,28 @@ public:
   virtual ~dungeoneer() {};
 };
 
+class bull : public trivialMonster {
+public:
+  bull(monsterBuilder &b) :
+    trivialMonster(b) {
+    intrinsics()->see(true);
+    intrinsics()->hear(true);
+  }
+  virtual ~bull() {};
+  virtual std::wstring name() const {
+    std::wstring name = trivialMonster::name();
+    auto pos = name.find(L"bull");
+    if (pos != std::wstring::npos && isFemale())
+      name.replace(pos, pos+4, L"cow");
+    return name;
+  }
+  virtual damageType unarmedDamageType() const {
+    if (name().find(L"bonnacon") != std::wstring::npos)
+      return trivialMonster::unarmedDamageType();
+    return damageType::hot; // (fire) noxious anal excretions, according to Pliny the Elder
+  }
+};
+
 class incubus : public targetActionRefMonster {
 public:
   incubus(monsterBuilder &b) :
@@ -718,6 +740,7 @@ template <monsterTypeKey T>
 struct monsterTypeTraits {
   typedef bird type; // default
 };
+template<> struct monsterTypeTraits<monsterTypeKey::bull> { typedef bull type; };
 template<> struct monsterTypeTraits<monsterTypeKey::dungeoneer> { typedef dungeoneer type; };
 template<> struct monsterTypeTraits<monsterTypeKey::ferret> { typedef ferret type; };
 template<> struct monsterTypeTraits<monsterTypeKey::fox> { typedef fox type; };
@@ -759,6 +782,7 @@ std::shared_ptr<monster> monsterType::spawn(level & level) const {
 std::shared_ptr<monster> monsterType::spawn(level & level, monsterBuilder &b) const {
   switch (type()) {
     //  case monsterTypeKey::bird: return ofTypeImpl<monsterTypeKey::bird>(level,b);
+  case monsterTypeKey::bull: return ofTypeImpl<monsterTypeKey::bull>(level,b);
   case monsterTypeKey::raptor: return ofTypeImpl<monsterTypeKey::raptor>(level,b);
   case monsterTypeKey::dragon: return ofTypeImpl<monsterTypeKey::dragon>(level,b);
   case monsterTypeKey::dungeoneer: return ofTypeImpl<monsterTypeKey::dungeoneer>(level,b); 
@@ -783,6 +807,7 @@ std::shared_ptr<monster> monsterType::spawn(level & level, monsterBuilder &b) co
 std::shared_ptr<monster> monsterType::spawnSpace(level & level, monsterBuilder &b) const {
   switch (type()) {
     //  case monsterTypeKey::bird: return ofSpaceType<monsterTypeKey::bird>(level,b);
+  case monsterTypeKey::bull: return ofSpaceType<monsterTypeKey::bull>(level,b);
   case monsterTypeKey::raptor: return ofSpaceType<monsterTypeKey::raptor>(level,b);
   case monsterTypeKey::dragon: return ofSpaceType<monsterTypeKey::dragon>(level,b);
   case monsterTypeKey::dungeoneer: return ofSpaceType<monsterTypeKey::dungeoneer>(level,b); 

@@ -60,7 +60,9 @@ public:
   monsterTypeBuilder& category(monsterCategory category) { category_ = category; return *this; }
   monsterTypeBuilder& name(const wchar_t * name) { monsterNames_.push_back(name); return *this; }
   monsterTypeBuilder& className(const std::wstring & className) { className_ = className; return *this; }
+  // how quickly does the monster progress as we get below levelOffset?:
   monsterTypeBuilder& levelFactor(int levelFactor) { levelFactor_ =levelFactor ; return *this; }
+  // on which level does this monster start?
   monsterTypeBuilder& levelOffset(int levelOffset) { levelOffset_ =levelOffset ; return *this; }
   monsterTypeBuilder& minSpawn(int minSpawn) {       minSpawn_   = minSpawn  ; return *this; }
   monsterTypeBuilder& maxSpawn(int maxSpawn) {       maxSpawn_   = maxSpawn  ; return *this; }
@@ -191,8 +193,8 @@ private:
   std::vector<monsterType *> pr_;
 public:
   monsterTypeRepoImpl() {
-    deityRepo &dr = deityRepo::instance();
-
+    deityRepo &dr = deityRepo::instance();	    
+    
     // unique features: change equipment slots based on size.
     emplace(monsterTypeBuilder (monsterTypeKey::dragon)
 	    .category(monsterCategory::dragon) // TODO: Western dragons should also have wings. All should have claws. Not sure if "flank" is right.
@@ -246,6 +248,41 @@ L"Dragons are large serpentine creatures; highly intelligent and amongst the\n"
 	    .carryWeight(300000) // the strength of 100 humans, seems about right
             .fearless());
 
+    // unique feature: noxious excrement
+    emplace(monsterTypeBuilder(monsterTypeKey::bull)
+	    .category(monsterCategory::quadruped)
+	    .name(L"bull")
+	    .name(L"bull")
+	    .name(L"bonnacon")
+	    .className(L"large herbivorous mammals")
+	    .levelFactor(5)
+	    .levelOffset(30)
+	    .minSpawn(1)
+	    .maxSpawn(1)
+	    .xpFactor(10)
+	    .xpOffset(30)
+	    .renderChar(L'q') // as slash'em
+	    .strength(15) // between snake and human
+	    .appearance(20)
+	    .fighting(75)
+	    .dodge(10)
+	    .maxDamage(30)
+	    .gen(genderAssignType::mf)
+	    .corpseWeight(13344.6648847527) // 3000lb, on the heavy side
+	    .align(dr.getExact(Element::earth, Domination::aggression, Outlook::cruel))
+	    .saying(L"Mooo!")
+	    .eats(materialType::veggy)
+	    .carryWeight(60000) // 2 humans' worth
+	    .movement({speed::slow2, goTo::player, goBy::avoid, 10})
+	    .fearless()
+	    .sleeps()
+	    .encyclopedium(
+L"Bovines are farmed for their meat and milk. One of the largest are the\n"
+"bonnacon, a reddish-brown to black creature with ram-like horns, which curl\n"
+"back - making them useless for combat. As a consequence, they instead rely\n"
+"on a noxious, caustis fecal defence."));
+	    
+    
     // unique feature: doesn't descend below level 3
     emplace(monsterTypeBuilder(monsterTypeKey::dungeoneer)
 	    .category(monsterCategory::biped)
