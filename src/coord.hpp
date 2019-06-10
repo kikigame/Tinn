@@ -25,10 +25,10 @@ public:
     default: throw t;
     }
   }
-  bool operator < (const dir &other) {
+  bool operator < (const dir &other) const {
     return first < other.first || (first == other.first && second < other.second);
   }
-  bool operator == (const dir &other) {
+  bool operator == (const dir &other) const {
     return first == other.first && second == other.second;
   }
 };
