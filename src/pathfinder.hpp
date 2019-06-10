@@ -7,6 +7,7 @@
 
 #include <climits>
 #include <set>
+#include <iostream>
 #include "coord.hpp" // coordinates
 
 /*
@@ -45,6 +46,7 @@ public:
 	lowestCost = cst;
 	best = nextC;
       }
+      if (cst == 0) break; // found the min-cost route
     }
     return dir(static_cast<char>(best.first - start.first), 
 	       static_cast<char>(best.second - start.second));
@@ -83,14 +85,18 @@ private:
     coord bestNext;
     for (coord cc : availableMoves) {
       unsigned long cst = cost(cc, end, depth+1);
+      /*      if (maxDistance == 6)
+	std::cerr << depth << "<=>" << (cst - ULONG_MAX/2) << std::endl;
+      */
       if (cst < lowestCost) {
 	cst = lowestCost;
 	bestNext = cc;
       }
+      if (cst == 0) break; // best possible match
     }
     visited_.erase(c); // remove this coord
     return lowestCost; // depth = number of moves
   }
-};
+ };
 
 #endif //ndef PATHFINDER_HPP
