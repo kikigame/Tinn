@@ -376,7 +376,7 @@ L"Meaning \"Little Thief\", ferrets are small, hyperflexible elongated mammels\n
 	    .sleeps() // a lot
             .scardy());
 
-    // unique feature: chinese foxes can ignite fires (TODO: shapeshift?)
+    // unique feature: chinese foxes can ignite fires
     // chinese fox can take the form of a young girl, old man, or academic.
     emplace(monsterTypeBuilder(monsterTypeKey::fox)
 	    .category(monsterCategory::quadruped)
