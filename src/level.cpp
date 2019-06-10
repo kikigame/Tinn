@@ -415,7 +415,8 @@ public:
       auto zones = zonesAt(posOf(*t), true);
       if (zones.begin() != zones.end()) continue;
       // skip anyone charming
-      if (std::find(m.charmedBegin(), m.charmedEnd(), &(*t)) != m.charmedEnd()) continue;
+      if (std::find_if(m.charmedBegin(), m.charmedEnd(),
+		       [&t](const std::pair<const monster*, const monster*> &p){return p.second == &(*t);}) != m.charmedEnd()) continue;
       // check for a line of movement
       coord c;
       for (c = mPos; c != tPos; c = c.towards(tPos))

@@ -107,8 +107,8 @@ void moveMobile(T &mon) {
     bool charmed = false;
     if (mon.charmedBegin() != mon.charmedEnd()) {
       auto pM = rndPick(mon.charmedBegin(), mon.charmedEnd());
-      if (dPc() < (*pM)->appearance().cur()) {
-	targetPos = level.posOf(**pM);
+      if (dPc() < pM->second->appearance().cur()) {
+	targetPos = level.posOf(*pM->second);
 	dir.first = myPos.first < targetPos.first ? 1 : myPos.first == targetPos.first ? 0 : -1;
 	dir.second = myPos.second < targetPos.second ? 1 : myPos.second == targetPos.second ? 0 : -1;
 	charmed = true;

@@ -14,6 +14,12 @@ unsigned char dPc() {
   return static_cast<unsigned char>(d51() + d51() - 2);
 }
 
+// store the charmed monsters outside of the object, otherwise we get
+// into all sorts of shenanigans trying to clear up pointers when the
+// monsters die.
+std::multimap<const monster*, const monster*> charmedMonsters;
+std::multimap<const monster*, const monster*> charmedMonstersReverse;
+
 
 monster::monster(monsterBuilder & b) :
   equippable(slotsFor(b.type_->category())),
@@ -109,7 +115,7 @@ const deity &monster::align() const { return *align_; }
  * For other monsters, we should also consider any applicable item attacks.
  */
 const attackResult monster::attack(monster &target) {
-  if (std::find(charmedBegin(), charmedEnd(), &target) != charmedEnd()
+  if (std::find_if(charmedBegin(), charmedEnd(), [&target](const std::pair<const monster*, const monster*> &m){return m.second == &target;}) != charmedEnd()
       && dPc() < target.appearance().cur())
     return attackResult(0, L"seems to be under a charm");
 
@@ -204,9 +210,40 @@ long monster::modDamage(/*by value*/long pc, const damage & type) const {
 }
 
 
+// when a monster dies, clear its charms:
+void clearMonsterCharms(monster *mon) {
+  std::list<const monster*> charmees; // everyone mon charms
+  auto iCharmees = charmedMonsters.equal_range(mon);
+  for (auto i = iCharmees.first; i != iCharmees.second; ++i)
+    charmees.emplace_back(i->second);
+  for (auto m : charmees) {
+    auto c = charmedMonstersReverse.equal_range(m);
+    auto iter = c.first;
+    while (iter != c.second) {
+      if (iter->second == mon) iter = charmedMonstersReverse.erase(iter);
+      else ++iter;
+    }
+  }
+  charmedMonsters.erase(iCharmees.first, iCharmees.second);
+  std::list<const monster*> charmers; // everyone charming mon...
+  auto iCharmers = charmedMonstersReverse.equal_range(mon);
+  for (auto i = iCharmers.first; i != iCharmers.second; ++i)
+    charmers.emplace_back(i->second);
+  for (auto m : charmers) {
+    auto c = charmedMonsters.equal_range(m);
+    auto iter = c.first;
+    while (iter != c.second) {
+      if (iter->second == mon) iter = charmedMonsters.erase(iter);
+      else ++iter;
+    }
+  }
+  charmedMonstersReverse.erase(iCharmers.first, iCharmers.second);
+}
+
 // called upon death...
 void monster::death() {
   for (auto f : onDeath_) f();
+  clearMonsterCharms(this);
   level_->removeDeadMonster(*this);
 }
 
@@ -587,22 +624,22 @@ void monster::eat() {
 bool monster::setCharmedBy(monster & mon) {
   auto m = &mon;
   if (m == this) return false;
-  if (std::find(charmedBy_.begin(), charmedBy_.end(), m) != charmedBy_.end()) return false;
-  charmedBy_.push_back(m);
-  // if the monster dies, we must no longer be charmed by it, as the pointer becomes invalid.
-  // NB: we can still remove an invalid pointer by value.
-  mon.onDeath_.emplace_back(([this, m]() {
-      // m in invalid pointer, so we can't referenece it, but can remove it:.
-	charmedBy_.erase(std::remove(charmedBy_.begin(), charmedBy_.end(), m), charmedBy_.end());
-      }));
+  auto c = charmedMonsters.equal_range(&mon); // what mon charms
+  if (std::find_if(c.first, c.second, [&m](const std::pair<const monster*, const monster*> &p){return p.second == m;}) == c.second) return false; // mon charms us already
+  charmedMonsters.insert(std::pair<const monster*, const monster*>(this, &mon));
+  charmedMonstersReverse.emplace(&mon, this);
+  // if mon monster dies, we must no longer be charmed by it, as the pointer becomes invalid.
+  // if *this dies, we must clear the callback from mon, as the "this" pointer will become invalid.
   return true;
 }
 
-std::list<monster*>::const_iterator monster::charmedBegin() const {
-  return charmedBy_.begin();
+std::multimap<const monster*, const monster*>::const_iterator
+monster::charmedBegin() const {
+  return charmedMonstersReverse.equal_range(this).first;
 }
-std::list<monster*>::const_iterator monster::charmedEnd() const {
-  return charmedBy_.end();
+std::multimap<const monster*, const monster*>::const_iterator
+monster::charmedEnd() const {
+  return charmedMonstersReverse.equal_range(this).second;
 }
 
 void monster::onEquip(item &item, const slot *s1, const slot *s2) {

@@ -66,7 +66,7 @@ private:
   std::shared_ptr<monsterIntrinsics> intrinsics_;
   std::shared_ptr<monsterAbilityMods> abilities_;
   // which monsters have charmed this one?
-  std::list<monster*> charmedBy_;
+  //std::list<monster*> charmedBy_;
   std::vector<std::function<void()>> onDeath_;
   std::vector<std::wstring> extraAdjectives_;//usually empty.
   std::set<std::reference_wrapper<const mutation>, std::less<const mutation> > mutations_;
@@ -202,8 +202,10 @@ public:
   // this will be less aggressive towards m (dPc() < m.appearance().cur() to skip attack)
   bool setCharmedBy(monster &m);
 
-  std::list<monster *>::const_iterator charmedBegin() const;
-  std::list<monster *>::const_iterator charmedEnd() const;
+  std::multimap<const monster*, const monster*>::const_iterator
+  charmedBegin() const;
+  std::multimap<const monster*, const monster*>::const_iterator
+  charmedEnd() const;
 
   // overridden to recalculate stats
   virtual bool unequip(item &item);

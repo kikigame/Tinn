@@ -18,7 +18,7 @@ bool viableTarget(monster &attacker, monster &test) {
   if (attacker.type() == test.type()) return false; // monsters don't usually fight other creatures of the same class
   auto end = attacker.charmedEnd();
   for (auto pC = attacker.charmedBegin(); pC != end; ++pC)
-    if (*pC == &test)
+    if (pC->second == &test)
       return false;
   return true;
 }
