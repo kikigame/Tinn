@@ -1,0 +1,47 @@
+A new pathfindr algorithm.
+
+There are a few algorithms out there, most of which assume you are starting from a graph of waypoints.
+
+My current implementation works, but treatns each square as a waypoint, making long-distance searches (> 3 or 4 squares) exponentially slow.
+The problem is that we try all combinations, so for a distance of 7 squares, we try 8 ^ 7 combinations (~2 million), instead of simply calculating the cost for 14^2 tiles (196)
+
+
+Radial approach:
+
+ 
+432222234
+432111234
+4321*1234
+432111234
+432222234
+
+Pass 1: (8 goes)
+
+Consider the current square and its 8 surrounding #1 squares. Enter the final cost of each square: 1 for adjacent passable squares, max/2 for impassible.
+
+Pass 2:
+Consider all 16 #2 squares surrounding the 8 #1 squares.
+For X = each #1 square, set the adjacent #2 squares to cost X+1 (unless it already has a lower cost)
+
+Pass N:
+For X = each #(N-1) square, set the adjacent #N square to cost X+1.
+
+Once we reach the target square, we find its cost X.
+Work backwards from the target square, picking cost X-1 square each time.
+
+
+Depth-first version:
+
+
+We know the direction of the target, so we can consider the 3 #1 squares in that direction first, then check the 3 adjacent #2 squares, and so on.
+
+   BBBAA                        DCBAA
+   B221A                        D321A
+   B2*1B                        E4*1B
+   B221B                        D321B
+   BBBBB (order: 1,A,2,B)   vs  DCBBB (order, 1,A,2,B,3,C,4,D,E)
+
+The left model is simple optimism: try the most direct approach first, then fill in other squares.
+The right model is more structured: try the most direct approach first, then fill in adjacent squares in order.
+
+

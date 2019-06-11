@@ -98,23 +98,13 @@ void transport::selfMove() {
     return;
   }
 
-  std::function<std::set<coord >(const coord &)> nextMoves([this] (const coord &c) {
-    std::set<coord> opts;
-    for (int x = c.first - 1; x <= c.first +1; ++x)
-      for (int y = c.second - 1; y <= c.second +1; ++y)
-	if (x >= 0 && y >= 0 && x < level::MAX_WIDTH && y < level::MAX_HEIGHT) {
-	  coord nextCoord(x,y);
-	  if (nextCoord != c && lvl_->terrainAt(nextCoord) == terrainToAllow_)
-	    opts.emplace(x,y);
-	}
-    return opts;
-    });
-  dir d;
-  // as per mobile.cpp: don't get an absdisnance unless we're close.
-  if (pathfinder<2>::absdistance(curPos, targetPos) < 4)
-    d = pathfinder<2>(nextMoves).find(curPos, targetPos);
-  else
-    d = pathfinder<6>(nextMoves).find(curPos, targetPos);
+  dir d = pathfinder<12>([this](const coord &c){
+      if (c.first < 0 || c.second < 0 ||
+	  c.first > level::MAX_WIDTH ||
+	  c.second > level::MAX_HEIGHT)
+	return false;
+      return lvl_->terrainAt(c) == terrainToAllow_;
+    }).find(curPos, targetPos);
 
   lvl_->holder(curPos.inDir(d)).addItem(*pThis);
 }

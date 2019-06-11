@@ -16,33 +16,6 @@
 
 /*
  * Algorithm to find next available moves within a level.
- */
-template<bool avoidTraps, bool avoidHiddenTraps>
-class nextLevelMoves {
-private:
-  const monster &mon_;
-  const level &level_;
-public:
-  nextLevelMoves(monster &mon) :
-    mon_(mon), level_(mon.curLevel()) {};
-  std::set<coord> operator()(const coord &c) const {
-    std::set<coord> rtn;
-    for (int x=c.first-1; x<=c.first+1; ++x)
-      for (int y=c.second-1; y<=c.second+1; ++y) {
-	coord pos(x,y);
-	if (pos == c) continue; // same square
-	if (pos.first < 0 || pos.second < 0 ||
-	    pos.first >= level::MAX_WIDTH || pos.second >= level::MAX_HEIGHT)
-	  continue; // off the map; here be monsters...
-	if (level_.movable(pos, pos, mon_, avoidTraps, avoidHiddenTraps)) 
-	  rtn.emplace(pos);
-      }	
-    return rtn;
-  }
-};
-
-/*
- * Algorithm to find next available moves within a level.
  * Returns only cardinal moves; faster for longer distances but may miss some monster-only paths.
  */
 template<bool avoidTraps, bool avoidHiddenTraps>
@@ -178,17 +151,13 @@ void moveMobile(T &mon) {
 
     // special case: work out best direction before applying jitter; ignore dir worked out above
     if (type.goBy_ == goBy::smart) {
-      if (pathfinder<2>::absdistance(myPos, pcPos) < 4) {
-	// very close; use a more accurate pathfinder
-	auto nlm = nextLevelMoves<true, true>(mon); // up to 8 options
-	std::function<std::set<coord >(const coord &)> nextMoves = nlm;
-	dir = pathfinder<2>(nextMoves).find(myPos, targetPos); // order: 8 ^ 2 = 64
-      } else {
-	// only consider cardinal moves. Jitter may still help.
-	auto nlm = nextLevelCardMoves<true, true>(mon); // up to 4 options
-	std::function<std::set<coord >(const coord &)> nextMoves = nlm;
-	dir = pathfinder<6>(nextMoves).find(myPos, targetPos); // order: 4 ^ 6 = 4096
-      }
+      dir = pathfinder<12>([&level, &mon](const coord &c){
+	  if (c.first < 0 || c.second < 0 ||
+	      c.first >= level::MAX_WIDTH ||
+	      c.second >= level::MAX_HEIGHT)
+	    return false;
+	  return level.movable(c,c,mon,true,false);
+	}).find(myPos, targetPos);
     }
 
 
