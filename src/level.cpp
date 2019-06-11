@@ -688,8 +688,8 @@ public:
   void sanitiseCoords(coord &pos) const {
     if (pos.first < 0) pos.first = 0;
     if (pos.second < 0) pos.second = 0;
-    if (pos.first >= level::MAX_WIDTH) pos.first = level::MAX_WIDTH;
-    if (pos.second >= level::MAX_HEIGHT) pos.second = level::MAX_HEIGHT;
+    if (pos.first >= level::MAX_WIDTH) pos.first = level::MAX_WIDTH-1;
+    if (pos.second >= level::MAX_HEIGHT) pos.second = level::MAX_HEIGHT-1;
   }
 
   void changeTerrain(const coord &c, terrainType t) {
