@@ -757,6 +757,15 @@ L"Invented by Calvin Q Calculus, the portable hole is a handy pocket-sized\n"
 "device to create passages or store objects for easy transportation.",
 L"There is a tear(rip) in this."
 			     ));
+    emplace(itemTypeKey::fruit_machine, // ref: Pubs. 65kg according to https://www.pennymachines.co.uk/Forum/viewtopic.php?f=5&t=4791
+	    new itemTypeImpl(637.432251861529, materialType::metallic, L'(', L"fruit machine",
+L"The original slot machine was invented by Charles Fey around the turn of\n"
+"the century, although the original machine has now been relegated to a\n"
+"restauraunt. The lemons, plumbs and cherries were added by Liberty Bell."
+"Gambling may seriously damage your wealth, and the noise often attracts\n"
+"unwanted attention. Take my advice: just don't.",
+L"Some sort of dispenser; only a part of a properly balanced diet."
+			     ));
     emplace(itemTypeKey::theremin,
 	    // http://www.thereminworld.com/Forums/T/27511/rca-cabinet-theremin-weight says 90lb
 	    new itemTypeImpl(400, materialType::metallic, L'♪', L"theremin",

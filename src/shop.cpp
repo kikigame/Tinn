@@ -19,6 +19,8 @@ extern const wchar_t * const shopAdjectives[]; // defined in adjectives.cpp
 extern const int numShopAdjectives;
 
 
+// fruit.cpp:
+void playSlots(monster &p, bool blessed, bool cursed);
 
 const wchar_t * shopName(const shopType & type) {
   switch (type) {
@@ -72,6 +74,7 @@ private:
   const deity & align_;
   const bool isFriendly_;
   const bool isGenerous_;
+  const bool hasSlots_;
   itemHolder &disposer_;
   std::map<std::wstring, double> servicesBought_;
 public:
@@ -91,6 +94,7 @@ public:
     align_(*rndPick(deityRepo::instance().begin(), deityRepo::instance().end())),
     isFriendly_(adjective == L"Friendly"),
     isGenerous_(adjective == L"Generous"),
+    hasSlots_(type == shopType::gambling),
     disposer_(itemDestroyer::instance), // shop gets traded items to sell on via the trading network, but we won't keep the shop.
     servicesBought_() {
     // What does the shop have to sell?
@@ -116,6 +120,7 @@ public:
     align_(stock.align()),
     isFriendly_(stock.type().alluring()),
     isGenerous_(false),
+    hasSlots_(stock.type().type() == monsterTypeKey::goblin),
     disposer_(stock),
     servicesBought_() {
     stock.forEachItem([this](item &it, const std::wstring) {
@@ -166,6 +171,9 @@ public:
     }
     if (isGenerous_)
       ios.longMsg(L"Special offer! Free delivery on everything in store!"); // ref:every supermarket deal ever. Looks good, but vacuous.
+    if (hasSlots_ && ios.ynPrompt(L"Hit the slots?"))
+      playSlots(inventory_, false, false);
+      
     if (handleDebts())
       handleSale();
   }

@@ -22,7 +22,7 @@ extern std::vector<damageType> allDamageTypes;
 template <itemTypeKey it>
 item & createItem();
 
-
+void playSlots(monster &p, bool blessed, bool cursed); // fruit.cpp
 
 // mixin class for things that apply  an action when equipped / unequipped
 // everything where you can equip an item should extend this
@@ -1105,6 +1105,26 @@ public:
     }
 };
 
+class fruitMachine : public basicItem {
+public:
+  fruitMachine(const itemType &t) :
+    basicItem(t) {}
+  virtual std::wstring simpleName() {
+    if (isCursed())
+      return L"one-armed bandit";
+    return basicItem::simpleName();
+  }
+  virtual item::useResult use() {
+    optionalRef<monster> m = whoHolds(*this);
+    if (!m) {
+      // TODO: find the user; we shouldn't have to pick this up to use.
+      return item::useResult::FAIL;
+    }
+    playSlots(m.value(), isBlessed(), isCursed());
+    return item::useResult::DONE;
+  }
+};
+
 
 class corpse : public basicItem, public monsterTypeProvider {
 private:
@@ -1935,6 +1955,11 @@ template <> struct itemTypeTraits<itemTypeKey::portable_hole> {
   template <typename type>
   static item *make(const itemType &t) { return new type(t); }
 };
+template <> struct itemTypeTraits<itemTypeKey::fruit_machine> {
+  typedef fruitMachine type;
+  template <typename type>
+  static item *make(const itemType &t) { return new type(t); }
+};
 template <> struct itemTypeTraits<itemTypeKey::theremin> {
   typedef instrument type;
   template<typename type>
@@ -2377,6 +2402,7 @@ item &createItem(const itemTypeKey &key) {
   case itemTypeKey::shop_card: return createItem<itemTypeKey::shop_card>();
   case itemTypeKey::bottling_kit: return createItem<itemTypeKey::bottling_kit>();
   case itemTypeKey::portable_hole: return createItem<itemTypeKey::portable_hole>();
+  case itemTypeKey::fruit_machine: return createItem<itemTypeKey::fruit_machine>();
   case itemTypeKey::theremin: return createItem<itemTypeKey::theremin>();
   case itemTypeKey::visi_sonor: return createItem<itemTypeKey::visi_sonor>();
   case itemTypeKey::baliset: return createItem<itemTypeKey::baliset>();

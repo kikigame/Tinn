@@ -726,6 +726,8 @@ Lightning: Electro pop (assuming this is difficult to generate, this could besto
 
 * Property: Size. All items start as normal size (which makes no sense, but becomes funny). Items may scale big-normal-small, or perhaps more divisions. Larger items have a 1.5 multiplier to weight and bashing/cutting damage, and a .75 multiplier to value and to-hit. Only a blessed bottling kit can put a larger item into a smaller bottle. (The hilarity comes from putting a galleon into a bottle, but a large stone won't fit). Some objects may change name with size (eg hatchet->axe->battleaxe), but should still show the prefix.
 
+* Fruit machine. Replace the screen with an ASCII animation; symbols are chaacters for monsters or items; user can keep entering coins (any non-highlighted item containing "coin" will do) for more spins. Rewards include bars of latinum, edibles and potions. Each monster that appears will be spawned close by when the animation disappears. Blessing will make found items also spawn on the level; cursing will double or incresae the level of monsters spawned.
+
 
 Character Class ideas
 ---------------------

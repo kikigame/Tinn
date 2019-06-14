@@ -175,6 +175,7 @@ enum class itemTypeKey {
     shop_card, // activate to go shopping.
     bottling_kit, // for putting things into bottles
     portable_hole, // for moving through walls/floors or carrying things
+    fruit_machine, // for gambling. Summons monsters. Dangerous.
 
   ////
   // Instruments ('♪'; Nethack uses '(' for all tools)
