@@ -225,12 +225,9 @@ std::vector<quest> questsForRole(roleType t) {
        [](questImpl &qI, levelImpl &li, level &l) { return new thiefQuestLevelGen(qI, li,l); },
        [](questImpl &qI, levelGen &lg, level &l, int depth) {
 	 // reveal all hidden pit traps
-	 try {
-	   while (true) {
-	     coord c = l.findTerrain(terrainType::PIT_HIDDEN);
-	     l.changeTerrain(c, terrainType::PIT);
-	   }
-	 } catch (std::wstring) {} // no more; just break loop	 
+	 std::vector<coord> cs = l.findAllTerrain(terrainType::PIT_HIDDEN);
+	 for (coord c : cs)
+	   l.changeTerrain(c, terrainType::PIT);
 	 for (int i = 0 ; i < depth; ++i) {
 	   coord c(xPosD(generator), yPosD(generator));
 	   if (l.terrainAt(c).type() == terrainType::GROUND)

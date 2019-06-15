@@ -335,7 +335,7 @@ public:
     return terrain_.at(c).value();
   }
 
-  coord findTerrain(const terrainType type) const {
+  coord findTerrain(const terrainType &type) const {
     using namespace std;
     for (coord c : coordRectIterator(0,0,level::MAX_WIDTH-1, level::MAX_HEIGHT - 1))
       if (terrain_.at(c).type() == type) 
@@ -343,6 +343,15 @@ public:
     throw wstring(L"Terrain type ") + to_string(type) + wstring(L" not found on level ") + to_wstring(depth_);
   }
 
+  std::vector<coord> findAllTerrain(const terrainType &type) const {
+    using namespace std;
+    vector<coord> rtn;
+    for (coord c : coordRectIterator(0,0,level::MAX_WIDTH-1, level::MAX_HEIGHT - 1))
+      if (terrain_.at(c).type() == type) 
+	rtn.emplace_back(c);
+    return rtn;;
+  }
+  
   coord findTerrain(const terrainType t, const int width, const int height) const {
     bool found = false;
     int xPos, yPos;
@@ -1203,8 +1212,12 @@ const terrain &level::terrainAt(const coord & c) const {
   return pImpl_->terrainAt(c);
 }
 
-coord level::findTerrain(const terrainType type) const {
+coord level::findTerrain(const terrainType &type) const {
   return pImpl_->findTerrain(type);
+}
+
+std::vector<coord> level::findAllTerrain(const terrainType &type) const {
+  return pImpl_->findAllTerrain(type);
 }
 
 void level::moveOrFight(monster &m, const ::dir &dir, bool at) {

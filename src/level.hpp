@@ -62,7 +62,11 @@ public:
    * Find any coordinate (probably deterministicly)
    * with the given terrain type. not a "posOf" as it may not be unique.
    */
-  coord findTerrain(const terrainType type) const;
+  coord findTerrain(const terrainType &type) const;
+  /*
+   * Find all the terrain of a given type
+   */
+  std::vector<coord> findAllTerrain(const terrainType &type) const;
   /*
    * Return the postiion of a monster, which may be the player.
    */
