@@ -109,6 +109,4 @@ const slot* slotBy(slotType slot);
 
 const std::vector<const slot*>& slotsFor(monsterCategory cat);
 
-const std::set<const slot*> weaponSlots();
-
 #endif // ndef SLOTS
