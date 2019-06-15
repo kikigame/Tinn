@@ -151,6 +151,34 @@ wchar_t io::choice<wchar_t>(const std::wstring &prompt, const std::wstring &help
   }
 }
 
+template <typename T>
+T* io::choice(const std::wstring &prompt, const std::wstring &help,
+	      const std::vector<T*> &opts,
+	      const bool allowNone,
+	      const std::function<std::wstring(const T&)> namer,
+	      const std::function<bool(const T&)> f,
+	      const std::wstring &extraHelp) const {
+  if (opts.empty()) return nullptr;
+  std::vector<std::pair<int, std::wstring>> choices;
+  std::vector<T *> res;
+  int i=0;
+  for (auto &t : opts)
+    if (f(*t)) {
+      choices.emplace_back(i++, namer(*t));
+      res.emplace_back(t);
+    }
+  if (allowNone) {
+    choices.emplace_back(i++, L"Nothing");
+    res.emplace_back(nullptr);
+  }
+  // if we must choose something, but have nothing to choose, we arbitrarily don't.
+  // NB: this can happen when shopping for a repair service without anything to repair.
+  if (choices.size() == 0) return nullptr;
+  int it = choice(prompt, help, choices, extraHelp);
+  return *(res.begin() + it);
+}
+
+
 
 // workaround for linker wibbles
 #include "religion.hpp"
@@ -170,4 +198,7 @@ void junk(const io &ios) { // this method is not used.
   std::function<std::wstring (wchar_t const&)> fn = [](wchar_t){return L"";};
   std::vector<std::pair<wchar_t, std::wstring>> v;
   ios.choice<wchar_t>(L"", L"", v, fn);
+  std::vector<item*> v2;
+  std::function<std::wstring(const item &i)> namer;
+  ios.choice<item>(L"", L"", v2, false, namer);
 }

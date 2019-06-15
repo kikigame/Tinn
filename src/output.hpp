@@ -67,10 +67,19 @@ public:
   // T is the type
   template <typename T>
   T choice(const std::wstring &prompt, const std::wstring &help, 
-	   const std::vector<std::pair<T, std::wstring>> &choices,
-	   const std::wstring &extraHelp = L"") const {
+	    const std::vector<std::pair<T, std::wstring>> &choices,
+	    const std::wstring &extraHelp = L"") const {
     return choice<T>(prompt, help, choices, [&extraHelp](const T&) { return extraHelp;});
-  }    
+  }
+
+  // pick one from a list, by index
+  template <typename T>
+  T* choice(const std::wstring &prompt, const std::wstring &help,
+	    const std::vector<T*> &choices,
+	    const bool allowNone,
+	    const std::function<std::wstring(const T&)> namer,
+	    const std::function<bool(const T&)> f = [](const T&){return true;},
+	    const std::wstring &extraHelp = L"") const;
   
   // prompt for gender, returning male % and female %.
   // this could be generalised in valious ways, but let's not do that until we need to prompt for

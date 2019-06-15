@@ -194,28 +194,14 @@ item *itemHolder::pickItem(const std::wstring & prompt,
 			   const std::wstring & extraHelp,
 			   const std::function<bool(const item &)> f,
 			   const bool allowNone) const {
-  if (empty()) return nullptr;
-  std::vector<std::pair<int, std::wstring>> choices;
-  std::vector<item *> res;
-  int i=0;
-  // pinkie-swear not to change anything:
-  const_cast<itemHolder *>(this)->
-  forEachItem([&choices, &i, &res, f](item &it, std::wstring name) {
-      if (f(it)) {
-	choices.emplace_back(i++, it.name());
-	res.emplace_back(&it);
-      }
-    });
-  if (allowNone) {
-    choices.emplace_back(i++, L"Nothing");
-    res.emplace_back(nullptr);
-  }
-  // if we must choose something, but have nothing to choose, we arbitrarily don't.
-  // NB: this can happen when shopping for a repair service without anything to repair.
-  if (choices.size() == 0) return nullptr;
-  int it = ioFactory::instance().choice(prompt, help, choices, extraHelp);
-  return *(res.begin() + it);
+  std::vector<item *> c;
+  std::function<std::wstring(const item &i)> namer = [](const item &i) {
+    return i.name();
+  };
+  for (auto pI : contents_) c.emplace_back(pI.lock().get());
+  return ioFactory::instance().choice<item>(prompt, help, c, allowNone, namer, f, extraHelp);
 }
+
 
 optionalRef<monster> whoHolds(const item &i) {
   auto holder = &(i.holder());

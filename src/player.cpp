@@ -190,16 +190,80 @@ void player::equip() {
     ios.message(L"Nothing to equip");
 }
 
+/*
+ * Drop an item.
+ ***
+ * Originally, this prompted the player to drop each item in turn,
+ * giving one chance to drop each item.
+ * This meant hitting "N" a lot, and missing the item you wanted.
+ * So now we do a custom choice prompt.
+ */
 void player::drop(level &lvl) {
-  auto c = lvl.pcPos();
-  std::function<void(item&, std::wstring)> f = 
-    [this, &lvl, &c](item& i, std::wstring name){
-    auto &ios = ioFactory::instance();
-    if (ios.ynPrompt(L"Drop " + name + L"?"))
-      if (!monster::drop(i, c))
-	ios.message(L"You cannot drop the " + i.name());
-  };
-  forEachItem(f);
+  auto pos = lvl.pcPos();
+  std::vector<item *> worn;
+  std::vector<item *> wielded;
+  std::vector<item *> other;
+  std::map<wchar_t, std::vector<item *>> byChar;
+  forEachItem([this, &worn, &wielded, &other, &byChar](item &i,
+						       std::wstring name) {
+    auto s = slotsOf(i);
+    if (s[0] == nullptr && s[1] == nullptr) other.emplace_back(&i);
+    else if (i.equippable() == item::equipType::wielded)
+	wielded.emplace_back(&i);
+    else worn.emplace_back(&i);
+    byChar[i.render()].emplace_back(&i);
+  });
+
+  std::vector<std::pair<wchar_t, std::wstring>> choices =
+    {
+      { L'W', L"Weapon" },
+      { L'A', L"Apparel/Armour" },
+      { L'U', L"Unequipped" },
+    };
+
+  for (auto c : byChar)
+    choices.emplace_back(c.first, std::wstring({c.first}));
+
+  choices.emplace_back(L'D', L"Done");
+
+  auto &ios = ioFactory::instance();
+  while (byChar.size() > 0) {
+    wchar_t c = ios.choice<wchar_t>(L"Leave:",L"Select what you want to drop", choices);
+    if (c == L'q' || c == L'Q') return;
+
+    std::vector<item*> itemSet;
+    
+    switch (c) {
+    case L'W':
+      std::copy(wielded.begin(), wielded.end(), back_inserter(itemSet));
+      break;
+    case L'A':
+      std::copy(worn.begin(), worn.end(), back_inserter(itemSet));
+      break;
+    case L'U':
+      std::copy(other.begin(), other.end(), back_inserter(itemSet));
+      break;
+    default:
+      std::copy(byChar[c].begin(), byChar[c].end(), back_inserter(itemSet));
+    }
+
+    std::function<std::wstring(const item &i)> namer = [](const item &i) {
+      return i.name();
+    };
+
+    item *sel = ios.choice(L"Leave", L"Emplace in this location:",
+			   itemSet, true, namer);
+    if (sel == nullptr) return;
+
+    worn.erase(std::remove(worn.begin(), worn.end(), sel), worn.end());
+    wielded.erase(std::remove(wielded.begin(), wielded.end(), sel), wielded.end());
+    other.erase(std::remove(other.begin(), other.end(), sel), other.end());
+    for (auto i : byChar)
+      i.second.erase(std::remove(i.second.begin(), i.second.end(), sel), i.second.end());
+
+    if (!monster::drop(*sel, pos))
+      ios.message(L"You cannot drop the " + sel->name());
+  }
 }
 
 void player::use() {
