@@ -57,6 +57,8 @@ public:
   dir find(const coord & start, const coord & end) {
     using std::abs;
 
+    if (start == end) return dir(0,0);
+    
     coord target;
     auto adx = abs(end.first - start.first);
     auto ady = abs(end.second - start.second);
