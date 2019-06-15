@@ -409,6 +409,7 @@ namespace morpheus {
     static std::array<renderChar, 6> renders;
     std::map<coord, std::reference_wrapper<item>> items_;
     bool warned_;
+    const bool blessed_, cursed_;
   private:
     coord transpose(const coord &c) const {
       return nesw::n() ? c :
@@ -417,10 +418,12 @@ namespace morpheus {
 	/*w*/ coord(c.second, c.first);
     }
   public:
-    boudoir(terrainType pass, terrainType wall, bool n, bool e, bool s, bool w, std::shared_ptr<monster> &bus) :
+    boudoir(terrainType pass, terrainType wall, bool n, bool e, bool s, bool w, std::shared_ptr<monster> &bus, bool blessed, bool cursed) :
       dreamCard(pass, wall, n, e, s, w),
       bus_(bus),
-      warned_(false) {
+      warned_(false),
+      blessed_(blessed),
+      cursed_(cursed) {
       items_.emplace(coord(2,4), createItem(itemTypeKey::lotus));
       items_.emplace(coord(8,4), createItem(itemTypeKey::lotus));
       items_.emplace(coord(2,6), createItem(itemTypeKey::lotus));
@@ -489,8 +492,7 @@ namespace morpheus {
       }
       if (c == coord(4,4)) {
 	auto &action = m ? incubusAction() : succubusAction();
-	// TODO: should blessed and cursed be passed through from the original action?
-	if (action(false, false, *bus_, p)) {
+	if (action(blessed_, cursed_, *bus_, p)) {
 	  io.message(L"The vividness of this dream will stay with you for a long time.");
 	  throw awaken();
 	} else {
@@ -536,6 +538,7 @@ namespace morpheus {
     std::shared_ptr<dreamCard> cards_[3][3]; 
     int offsetX_, offsetY_; // coords of the top-left of the first card
     terrainType pass_; terrainType wall_;
+    const bool blessed_, cursed_;
     void newCard(std::size_t x, std::size_t y) {
       auto roll = dPc();
       if (roll <= 10) {
@@ -551,18 +554,19 @@ namespace morpheus {
 	auto &mt = monsterTypeRepo::instance()[roll %2 == 0 ? monsterTypeKey::incubus : monsterTypeKey::succubus];
 	auto monster = mt.spawn(level);
 	cards_[x][y] = std::make_shared<boudoir>
-	  (pass_, wall_,y == 2, x == 0, y == 0, x == 2, monster);
+	  (pass_, wall_,y == 2, x == 0, y == 0, x == 2, monster, blessed_, cursed_);
       } else
 	cards_[x][y] = std::make_shared<dreamRoom>
 	  (pass_, wall_,y == 2, x == 0, y == 0, x == 2, 2, p_);
     }
   public:
-    dreamscape (player &p) :
+    dreamscape (player &p, bool blessed, bool cursed) :
       p_(p),
       cards_(),
       offsetX_(PLAYER_X - 13), offsetY_(PLAYER_Y - 13),
       pass_(terrainType::GROUND),
-      wall_(impassable(p.align())) {
+      wall_(impassable(p.align())),
+      blessed_(blessed), cursed_(cursed) {
       cards_[1][1] = std::make_shared<dreamCorridor>(pass_, wall_, true, true, true, true, 4); // center
       // start with corridors
       cards_[1][0] = std::make_shared<dreamCorridor>(pass_, wall_, false, false, true, false, 2); // n
@@ -672,7 +676,7 @@ namespace morpheus {
 void dream(monster &m, bool blessed, bool cursed) {
   player &p = dynamic_cast<player&>(m);
   const io &io = ioFactory::instance();
-  morpheus::dreamscape d(p);
+  morpheus::dreamscape d(p, blessed, cursed);
   try {
     for (int i=0; i < 100; ++i) {
       io.draw(d);

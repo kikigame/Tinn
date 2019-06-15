@@ -1300,10 +1300,10 @@ bool foocubusAction<incubus>::operator () (bool blessed, bool cursed, monster &s
       target.strength() += 5; target.dodge() += 5;
       source.dodge() += 1;
       sharedAction<monster,monster> &act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::sex_up_item);
-      act(false, false, source, target);
-      (act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::uncurse_item))(false, false, source, target) ||
-	(act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::bless_item))(false, false, source, target) ||
-	(act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::enchant_item))(false, false, source, target);
+      act(blessed, cursed, source, target);
+      (act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::uncurse_item))(blessed, cursed, source, target) ||
+	(act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::bless_item))(blessed, cursed, source, target) ||
+	(act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::enchant_item))(blessed, cursed, source, target);
     } else {
       // bad outcome
       ios.message(target.isPlayer() ? L"You are violated by the "  + source.name() + L'!'
@@ -1314,10 +1314,10 @@ bool foocubusAction<incubus>::operator () (bool blessed, bool cursed, monster &s
       source.strength() += 5;
       target.dodge() -= 10; target.strength() -= 10;
       sharedAction<monster,monster> &act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::sex_up_item);
-      act(false, false, target, source);
-      (act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::uncurse_item))(false, false, target, source) ||
-	(act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::bless_item))(false, false, target, source) ||
-	(act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::enchant_item))(false, false, target, source);
+      act(blessed, cursed, target, source);
+      (act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::uncurse_item))(blessed, cursed, target, source) ||
+	(act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::bless_item))(blessed, cursed, target, source) ||
+	(act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::enchant_item))(blessed, cursed, target, source);
     }
     return true;
 }
