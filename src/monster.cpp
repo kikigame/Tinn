@@ -126,7 +126,7 @@ const attackResult monster::attack(monster &target) {
   // non-player monsters may choose to use a monster ability instead
   auto attack = attackAction();
   if (attack) {
-    if (!attack.value()(false, false, *this, target))
+    if (!attack.value()(bcu(), *this, target))
       return attackResult(0, L"failed");
     damage = target.injury().cur() - cur;
   } else {

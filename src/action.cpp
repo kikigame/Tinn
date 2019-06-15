@@ -16,7 +16,7 @@ public:
   steal(const wchar_t * const name, const wchar_t * const description, std::function<bool(item &)> f) : 
     renderedAction(name, description), f_(f) {};
   virtual ~steal() {};
-  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(const bcu &bcu, monster &source, monster &target) {
     auto &io = ioFactory::instance();
     auto pitem = target.firstItem(f_);
     if (pitem) {
@@ -61,7 +61,7 @@ public:
   attackRay(const wchar_t * const name, const wchar_t * const description, damageType type) :
     renderedAction(name, description), damageType_(type) {};
   virtual ~attackRay() {};
-  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(const bcu &, monster &source, monster &target) {
     auto &d = damageRepo::instance()[damageType_];
     auto name = target.name();
     int damage = target.wound(source, damagePc, d);
@@ -84,7 +84,7 @@ public:
   exchangeAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description) {};
   virtual ~exchangeAction() {}
-  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(const bcu &, monster &source, monster &target) {
     auto &sLevel = source.curLevel();
     auto sPos = sLevel.posOf(source);
 
@@ -127,10 +127,10 @@ public:
   attractAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description) {};
   virtual ~attractAction() {}
-  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(const bcu &bcu, monster &source, monster &target) {
     char distance = 5;
-    if (blessed) distance *= 2;
-    if (cursed) distance /= 3;
+    if (bcu.blessed()) distance *= 2;
+    if (bcu.cursed()) distance /= 3;
     auto &sLevel = source.curLevel();
     auto &tLevel = target.curLevel();
 
@@ -161,7 +161,7 @@ public:
   fireTailAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description) {};
   virtual ~fireTailAction() {}
-  virtual bool operator()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator()(const bcu &bcu, monster &source, monster &target) {
     auto &level = source.curLevel();
     if (&target.curLevel() != &level) return false;
     auto sPos = level.posOf(source);
@@ -189,7 +189,7 @@ public:
   forceHealAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description) {};
   virtual ~forceHealAction() {}
-  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(const bcu &bce, monster &source, monster &target) {
     auto &sprouts = createItem(itemTypeKey::apple);
     source.addItem(sprouts);
     return target.eat(sprouts, true);
@@ -199,7 +199,7 @@ public:
   virtual bool buffs() const { return false; }
 };
 
-extern void dream(monster &p, bool blessed, bool cursed); // defined in dreamscape.cpp
+extern void dream(monster &, const bcu &); // defined in dreamscape.cpp
 
 // run the dream action.
 //if blessed, you will heal fully (unless cursed) and the action will take no time.
@@ -210,14 +210,14 @@ public:
   dreamAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description) {};
   virtual ~dreamAction() {}
-  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(const bcu &bcu, monster &source, monster &target) {
     auto &io = ioFactory::instance();
     if (!target.abilities()->sleeps()) {
       io.message(target.name() + L" doesn't seem affected.");
       return false;
     }
-    if (cursed) {
-      if (blessed) {
+    if (bcu.cursed()) {
+      if (bcu.blessed()) {
 	if (target.isPlayer())
 	  io.longMsg(L"You enter a dreamless slumber.");
 	else
@@ -232,7 +232,7 @@ public:
       }
       return true;
     }
-    if (blessed) {
+    if (bcu.blessed()) {
       io.longMsg(L"Sweet dreams...");
       target.injury() -= 100;
     } else {
@@ -244,7 +244,7 @@ public:
       sleep(target, 5);
     }
     if (target.isPlayer()) {
-      dream(target, blessed, cursed);
+      dream(target, bcu);
     }
     return true;
   }
@@ -264,7 +264,7 @@ public:
   comedyAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction<monster, monster>(name, description) {}
   virtual ~comedyAction() {}
-  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(const bcu &bcu, monster &source, monster &target) {
     auto &io = ioFactory::instance();
     const bool onSelf = &source == &target;
     // perform the first applicable effect:
@@ -273,11 +273,11 @@ public:
     if (trousers) {
       target.unequip(trousers.value());
       std::wstring msg = L"Falling " + (trousers.value().name() + L"! Hahaha!");
-      if (cursed && onSelf)
+      if (bcu.cursed() && onSelf)
 	trousers.value().sexUp(false);
       else
 	target.drop(trousers.value());
-      if (blessed && !onSelf) {
+      if (bcu.blessed() && !onSelf) {
 	trousers.value().strike(damageType::edged);
 	msg += L" Rrrrippp!";
       }
@@ -303,10 +303,10 @@ public:
 	std::wstring whowhat = (target.isPlayer()) ? L"Your fall" : (target.name() + L" falls");
 	io.longMsg(L"Whoops! " + whowhat + L" over! Hahaha!");
 	// stun for 1-3 turns
-	if (!cursed)
+	if (!bcu.cursed())
 	  time::tick(false);
 	time::tick(false);
-	if (blessed)
+	if (bcu.blessed())
 	  time::tick(false);
 	return true;
       }
@@ -368,7 +368,7 @@ public:
   tragedyAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction<T, monster>(name, description) {};
   virtual ~tragedyAction() {}
-  virtual bool operator ()(bool blessed, bool cursed, T &source, monster &target) {
+  virtual bool operator ()(const bcu &bcu, T &source, monster &target) {
     auto &io = ioFactory::instance();
     if (target.intrinsics()->speedy() == bonus(false) &&
 	target.intrinsics()->dblAttack() == bonus(false)) {
@@ -389,7 +389,7 @@ public:
   virtual bool aggressive() const { return true; } // use in combat
   virtual bool heals() const { return false; }
   virtual bool buffs() const { return false; }
-  virtual bool undo(bool blessed, bool cursed, T &source, monster &target) {
+  virtual bool undo(const bcu &bcu, T &source, monster &target) {
     return false;
   }
 };
@@ -401,7 +401,7 @@ public:
   teleportAwayAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description) {};
   virtual ~teleportAwayAction() {}
-  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(const bcu &bcu, monster &source, monster &target) {
     auto sPos = source.curLevel().posOf(source);
     auto &level = target.curLevel();
     auto tPos = level.posOf(target);
@@ -434,7 +434,7 @@ public:
   lockAwayAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description) {};
   virtual ~lockAwayAction() {}
-  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(const bcu &bcu, monster &source, monster &target) {
     // Look for a 3x3 solid ground
     try {
       auto &l = target.curLevel();
@@ -457,10 +457,10 @@ public:
   repulsionAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description) {};
   virtual ~repulsionAction() {}
-  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(const bcu &bcu, monster &source, monster &target) {
     auto &tLevel = target.curLevel();
     auto tSpeed = target.movement().speed_;
-    const int maxDist = (cursed ? 0 : 1) + static_cast<int>(tSpeed);
+    const int maxDist = (bcu.cursed() ? 0 : 1) + static_cast<int>(tSpeed);
     coord sPos = source.curLevel().posOf(source);
     coord tPos = tLevel.posOf(target);
     coord pos = tPos;
@@ -468,7 +468,7 @@ public:
     for (int i=0; i < maxDist; ++i) {
       coord cc = tPos;
       pos = tPos.away(sPos);
-      if (!tLevel.movable(cc,pos,target,blessed,blessed))
+      if (!tLevel.movable(cc,pos,target,bcu.blessed(),bcu.blessed()))
 	break;
       else tPos = pos;
     }
@@ -485,7 +485,7 @@ template <bool incubus>
 class foocubusAction : public sharedAction<monster, monster> {
 public:
   virtual ~foocubusAction() {}
-  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target);
+  virtual bool operator ()(const bcu &bcu, monster &source, monster &target);
   virtual bool aggressive() const { return true; } // use in combat
   virtual bool heals() const { return true; } // use if injured
   virtual bool buffs() const { return true; } // sometimes
@@ -510,7 +510,7 @@ public:
     flags_[2] = buffs;
   }
   virtual ~monsterItemAction() {}
-  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(const bcu &bcu, monster &source, monster &target) {
     auto t = target.firstItem(filter_);
     if (!t) return false;
     apply_(t.value());
@@ -529,7 +529,7 @@ public:
   popupShopAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description) {}
   virtual ~popupShopAction() {}
-  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(const bcu &bcu, monster &source, monster &target) {
     if (target.isPlayer()) {
       // Reverse shop; Monsters demand to shop with the player!
       auto &io = ioFactory::instance();
@@ -574,14 +574,14 @@ public:
   petrifyAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description) {}
   virtual ~petrifyAction() {}
-  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(const bcu &bcu, monster &source, monster &target) {
     auto a = target.abilities();
     if (a->fearless() == bonus(true))
       return false; // monster is not susceptible
     int turns = 2;
     if (target.abilities()->fearless() == bonus(false)) turns *= 2;
-    if (blessed) turns += (turns / 2);
-    if (cursed) turns /=2;
+    if (bcu.blessed()) turns += (turns / 2);
+    if (bcu.cursed()) turns /=2;
     ioFactory::instance().message(target.name() + L" is scared stiff!");
     a->entrap(turns);
     return true; // even cursed is always 1 turn
@@ -596,7 +596,7 @@ public:
   charmAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description) {}
   virtual ~charmAction() {}
-  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) {
+  virtual bool operator ()(const bcu &bcu, monster &source, monster &target) {
     if (source.isPlayer() && target.isPlayer()) {
       ioFactory::instance().message(L"Charming!");
       return true;
@@ -830,11 +830,11 @@ public:
   proofAction(damageType dt, const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description), dt_(dt) {}
   virtual ~proofAction() {}
-  virtual bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
+  virtual bool operator ()(const bcu &bcu, item &source, monster &target) {
     target.abilities()->proof(damageRepo::instance()[dt_], true);
     return true;
   }
-  virtual bool undo(bool blessed, bool cursed, item &source, monster &target) {
+  virtual bool undo(const bcu &bcu, item &source, monster &target) {
     target.abilities()->proof(damageRepo::instance()[dt_], false);
     return true;
   }
@@ -851,11 +851,11 @@ public:
   resistAction(int amount, damageType dt, const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description), amount_(amount), dt_(dt) {}
   virtual ~resistAction() {}
-  virtual bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
+  virtual bool operator ()(const bcu &bcu, item &source, monster &target) {
     target.abilities()->resist(&damageRepo::instance()[dt_], amount_);
     return true;
   }
-  virtual bool undo(bool blessed, bool cursed, item &source, monster &target) {
+  virtual bool undo(const bcu &bcu, item &source, monster &target) {
     target.abilities()->resist(&damageRepo::instance()[dt_], amount_);
     return true;
   }
@@ -873,11 +873,11 @@ public:
   extraDamageAction(int amount, damageType dt, const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description), amount_(amount), dt_(dt) {}
   virtual ~extraDamageAction() {}
-  virtual bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
+  virtual bool operator ()(const bcu &bcu, item &source, monster &target) {
     target.abilities()->extraDamage(&damageRepo::instance()[dt_], amount_);
     return true;
   }
-  virtual bool undo(bool blessed, bool cursed, item &source, monster &target) {
+  virtual bool undo(const bcu &bcu, item &source, monster &target) {
     target.abilities()->extraDamage(&damageRepo::instance()[dt_], amount_);
     return true;
   }
@@ -899,12 +899,12 @@ public:
     renderedAction(name, description),
     method_(method), set_(set), clear_(clear) {}
   virtual ~intrinsicsBonusAction() {}
-  virtual bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
+  virtual bool operator ()(const bcu &bcu, item &source, monster &target) {
     auto able = target.abilities();
     ((*able).*method_)(set_);
     return true;
   }
-  bool undo(bool blessed, bool cursed, item &source, monster &target) {
+  bool undo(const bcu &bcu, item &source, monster &target) {
     auto able = target.abilities();
     ((*able).*method_)(clear_);
     return true;
@@ -926,12 +926,12 @@ public:
     renderedAction(name, description),
     method_(method), set_(set) {}
   virtual ~intrinsicsBoolAction() {}
-  virtual bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
+  virtual bool operator ()(const bcu &bcu, item &source, monster &target) {
     auto able = target.abilities();
     ((*able).*method_)(set_);
     return true;
   }
-  bool undo(bool blessed, bool cursed, item &source, monster &target) {
+  bool undo(const bcu &bcu, item &source, monster &target) {
     auto able = target.abilities();
     ((*able).*method_)(!set_);
     return true;
@@ -946,13 +946,13 @@ public:
   tesseractAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description) {}
   virtual ~tesseractAction() {}
-  virtual bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
+  virtual bool operator ()(const bcu &bcu, item &source, monster &target) {
     target.abilities()->move(tFactory.get(terrainType::ALTAR), true);
     target.abilities()->move(tFactory.get(terrainType::GROUND), true);
     target.abilities()->move(tFactory.get(terrainType::BULKHEAD), true);
     return true;
   }
-  bool undo(bool blessed, bool cursed, item &source, monster &target) {
+  bool undo(const bcu &bcu, item &source, monster &target) {
     target.abilities()->move(tFactory.get(terrainType::ALTAR), false);
     target.abilities()->move(tFactory.get(terrainType::GROUND), false);
     target.abilities()->move(tFactory.get(terrainType::BULKHEAD), false);
@@ -969,11 +969,11 @@ public:
   fireWalkerAction(const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description) {}
   virtual ~fireWalkerAction() {}
-  virtual bool operator ()(bool blessed, bool cursed, item &source, monster &target) {
+  virtual bool operator ()(const bcu &bcu, item &source, monster &target) {
     target.abilities()->move(tFactory.get(terrainType::FIRE), true);
     return true;
   }
-  bool undo(bool blessed, bool cursed, item &source, monster &target) {
+  bool undo(const bcu &bcu, item &source, monster &target) {
     target.abilities()->move(tFactory.get(terrainType::FIRE), false);
     return true;
   }
@@ -1266,7 +1266,7 @@ void ignored() {
 
 // uses template, so define acter specialisation:
 template<bool incubus>
-bool foocubusAction<incubus>::operator () (bool blessed, bool cursed, monster &source, monster &target) {
+bool foocubusAction<incubus>::operator () (const bcu &bcu, monster &source, monster &target) {
     /*
      * Let's think about this. *cubi are very bad demons who basically rape people in their dreams.
      * BUT, we don't want to say that sex is bad. So, in homage to Nethack, and to make gender have
@@ -1300,10 +1300,10 @@ bool foocubusAction<incubus>::operator () (bool blessed, bool cursed, monster &s
       target.strength() += 5; target.dodge() += 5;
       source.dodge() += 1;
       sharedAction<monster,monster> &act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::sex_up_item);
-      act(blessed, cursed, source, target);
-      (act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::uncurse_item))(blessed, cursed, source, target) ||
-	(act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::bless_item))(blessed, cursed, source, target) ||
-	(act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::enchant_item))(blessed, cursed, source, target);
+      act(bcu, source, target);
+      (act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::uncurse_item))(bcu, source, target) ||
+	(act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::bless_item))(bcu, source, target) ||
+	(act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::enchant_item))(bcu, source, target);
     } else {
       // bad outcome
       ios.message(target.isPlayer() ? L"You are violated by the "  + source.name() + L'!'
@@ -1314,10 +1314,10 @@ bool foocubusAction<incubus>::operator () (bool blessed, bool cursed, monster &s
       source.strength() += 5;
       target.dodge() -= 10; target.strength() -= 10;
       sharedAction<monster,monster> &act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::sex_up_item);
-      act(blessed, cursed, target, source);
-      (act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::uncurse_item))(blessed, cursed, target, source) ||
-	(act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::bless_item))(blessed, cursed, target, source) ||
-	(act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::enchant_item))(blessed, cursed, target, source);
+      act(bcu, target, source);
+      (act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::uncurse_item))(bcu, target, source) ||
+	(act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::bless_item))(bcu, target, source) ||
+	(act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::enchant_item))(bcu, target, source);
     }
     return true;
 }

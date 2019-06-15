@@ -11,6 +11,7 @@
 #include "slots.hpp"
 #include "action.hpp"
 #include "hasAdjectives.hpp"
+#include "beitude.hpp"
 #include <algorithm>
 #include <memory>
 #include <bitset>
@@ -88,6 +89,7 @@ public:
   virtual bool isBlessed() const = 0; virtual void bless(bool blessed) = 0;
   // cursed items can't be unequipped, and have lesser effect
   virtual bool isCursed() const = 0; virtual void curse(bool cursed) = 0;
+  ::bcu bcu() { return ::bcu(isBlessed(), isCursed()); }
   // unidentified itemsdon't provide a hint, may show another name
 
   virtual bool isUnidentified() const = 0; virtual void unidentify(bool forget) = 0;

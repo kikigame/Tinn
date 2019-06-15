@@ -196,7 +196,7 @@ public:
   targetActionMonster(monsterBuilder &b, key actionKey) :
     monster(b), actionKey_(actionKey) {}
   virtual void onHit(monster &opponent, int) {
-    actionFactory<monster,monster>::get(actionKey_)(false, false, *this, opponent);
+    actionFactory<monster,monster>::get(actionKey_)(bcu(), *this, opponent);
   }
 };
 
@@ -208,7 +208,7 @@ public:
   targetActionRefMonster(monsterBuilder &b, sharedAction<monster,monster> &action) :
     monster(b), act_(action) {}
   virtual void onHit(monster &opponent, int) {
-    act_(false, false, *this, opponent);
+    act_(bcu(), *this, opponent);
   }
 };
 
@@ -357,7 +357,7 @@ public:
     l.forEachMonster([this,&act](monster &t){
 	if (t.type().type() != monsterTypeKey::siren &&
 	    t.abilities()->hear()) 
-	  act(false,false,*this, t);
+	  act(bcu(),*this, t);
       });
   }
 };
@@ -388,7 +388,7 @@ public:
     }
     l.forEachMonster([this,&act](monster &t){
 	if (t.type().type() != monsterTypeKey::merfolk) 
-	  act(false,false,*this, t);
+	  act(bcu(), *this, t);
       });
   }
   // can't move off water

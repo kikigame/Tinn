@@ -39,13 +39,13 @@ public:
 protected:
   void onEquip(monster &m) {
     auto t = shared_from_this();
-    for (auto i : onEquip_) (*i)(t->isBlessed(), t->isCursed(), *t, m);
+    for (auto i : onEquip_) (*i)(t->bcu(), *t, m);
   }
   void onUnequipImpl(monster &m) {
     auto t = shared_from_this();
     for (auto i : onEquip_)
       if (!m.isEquipped(*i))
-	i->undo(t->isBlessed(), t->isCursed(), *t, m);
+	i->undo(t->bcu(), *t, m);
   }
   std::wstring ofName() const {
     auto onEq = renderedActions();
@@ -220,7 +220,7 @@ public:
     monster *target = pickTarget<true>(m.value(), true);
     if (target) {
       auto pThis = shared_from_this();
-      return action_(pThis->isBlessed(), pThis->isCursed(), m.value(), *target);
+      return action_(pThis->bcu(), m.value(), *target);
     } else
       return false;
   }
@@ -723,7 +723,7 @@ public:
       action = tw.useAction();
     }
     if (isPc) ioFactory::instance().message(msg);
-    if (action) action.value()(isBlessed(), isCursed(), *this, m);
+    if (action) action.value()(bcu(), *this, m);
     if (enchantment() > 1) enchant(-1);
     else itemHolder::destroyItem(fluid);
   }

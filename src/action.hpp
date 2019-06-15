@@ -8,6 +8,7 @@
 
 #include "renderable.hpp"
 #include "bonus.hpp"
+#include "beitude.hpp"
 
 class item;
 class monster;
@@ -18,7 +19,7 @@ class sharedAction {
 public:
   virtual ~sharedAction() {};
   // takes targets; returns true if action was successful, false if blocked or failed.
-  virtual bool operator ()(bool blessed, bool cursed, T & ... ) = 0;
+  virtual bool operator ()(const bcu &, T & ... ) = 0;
   // is the action aggressive? (use by monsters only in combat)
   virtual bool aggressive() const = 0;
   // is the action healing? (use by monsters only with low HP)
@@ -36,7 +37,7 @@ bool operator ==(sharedAction<T...> &a, sharedAction<T...> &b) {
 template<>
 class sharedAction<monster, monster>{
  public:  
-  virtual bool operator ()(bool blessed, bool cursed, monster &source, monster &target) = 0;
+  virtual bool operator ()(const bcu &, monster &source, monster &target) = 0;
   virtual bool aggressive() const = 0;
   virtual bool heals() const = 0;
   virtual bool buffs() const = 0;
@@ -129,7 +130,7 @@ class sharedAction<monster, monster>{
 template<>
 class sharedAction<monster, item>{
  public:  
-  virtual bool operator ()(bool blessed, bool cursed, monster &source, item &target) = 0;
+  virtual bool operator ()(const bcu &, monster &source, item &target) = 0;
   virtual bool aggressive() const = 0;
   virtual bool heals() const = 0;
   virtual bool buffs() const = 0;
@@ -148,8 +149,8 @@ class sharedAction<monster, item>{
 template<>
 class sharedAction<item, monster>{
  public:  
-  virtual bool operator ()(bool blessed, bool cursed, item &source, monster &target) = 0;
-  virtual bool undo(bool blessed, bool cursed, item &source, monster &target) = 0;
+  virtual bool operator ()(const bcu &, item &source, monster &target) = 0;
+  virtual bool undo(const bcu &, item &source, monster &target) = 0;
   virtual bool aggressive() const = 0;
   virtual bool heals() const = 0;
   virtual bool buffs() const = 0;
@@ -237,7 +238,7 @@ private:
 public:
 renderedAction(const wchar_t * const name, const wchar_t * const description) :
   sharedAction<T...>(), name_(name), description_(description) {}
-  virtual bool operator()(bool, bool, T &...) = 0;
+  virtual bool operator()(const bcu &, T &...) = 0;
   virtual const wchar_t render() const { return L'☇'; } // lightning bolt for magic
   virtual std::wstring name() const { return name_; };
   virtual std::wstring description() const { return description_; };
