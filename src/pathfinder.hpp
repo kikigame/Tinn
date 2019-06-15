@@ -98,9 +98,19 @@ public:
       } while (!(abs(start.first - end.first) < maxDistance) ||
 	       !(abs(start.second - end.second) < maxDistance));
 	       }*/
+    unsigned char c;
     int cursorX = target.first - start.first + maxDistance;
     int cursorY = target.second - start.second + maxDistance;
-    unsigned char c = cost(cursorX, cursorY);
+    while (true) {
+      c = cost(cursorX, cursorY);
+      if (c > 127) { // can't move to target, so try each quare closer until we can
+	coord cc = coord(cursorX, cursorY).towards(start);
+	if (cc == start)
+	  return dir(0,0); // can't move any closer
+	cursorX = cc.first;
+	cursorY = cc.second;
+      } else break;
+    }
     // then work backwards by the next-lowest cost to find the route.
     int prevCursorX, prevCursorY;
     while (c > 0) {
@@ -160,43 +170,43 @@ public:
     coord c;
     // top-left corner
     cost(-d,-d) = pass_(c = coord(start.first-d, start.second-d)) ?
-      cost(-d+1, -d+1)+1 : LONG_MAX/2;
+      cost(-d+1, -d+1)+1 : 128;
     if (c == end) return true;
     // top-right corner
     cost(+d,-d) = pass_(c = coord(start.first+d, start.second-d)) ?
-      cost(+d-1, -d+1)+1 : LONG_MAX/2;
+      cost(+d-1, -d+1)+1 : 128;
     if (c == end) return true;
     // btm-left corner
     cost(-d,+d) = pass_(c = coord(start.first-d, start.second+d)) ?
-      cost(-d+1, +d-1)+1 : LONG_MAX/2;
+      cost(-d+1, +d-1)+1 : 128;
     if (c == end) return true;
     // btm-right corner
     cost(+d,+d) = pass_(c = coord(start.first+d, start.second+d)) ?
-      cost(+d-1, +d-1)+1 : LONG_MAX/2;
+      cost(+d-1, +d-1)+1 : 128;
     if (c == end) return true;
     
     for (int x = 1- d; x < +d; ++x) {
       // top row
       cost(x,-d) = pass_(c = coord(start.first+x, start.second-d)) ?
 	min(icost(x-1, 1-d), icost(x, 1-d), icost(x+1, 1-d))+1
-	: LONG_MAX/2;
+	: 128;
       if (c == end) return true;
       // bottom row
       cost(x,+d) = pass_(c = coord(start.first+x, start.second+d)) ?
 	min(icost(x-1, d-1), icost(x, d-1), icost(x+1, d-1))+1
-	: LONG_MAX/2;
+	: 128;
       if (c == end) return true;
     }
     for (int y = - d+1; y < +d; ++y) {
-      // left row
+      // left col
       cost(-d,y) = pass_(c = coord(start.first-d, start.second+y)) ?
 	min(icost(1-d, y-1), icost(1-d, y), icost(1-d, y+1))+1
-	: LONG_MAX/2;
+	: 128;
       if (c == end) return true;
-      // right row
+      // right col
       cost(+d,y) = pass_(c = coord(start.first+d, start.second+y)) ?
 	min(icost(d-1, y-1), icost(d-1, y), icost(d-1, y+1))+1
-	: LONG_MAX/2;
+	: 128;
       if (c == end) return true;
     }
     return false;
