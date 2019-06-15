@@ -6,6 +6,7 @@
 #include "damage.hpp"
 #include "monsterType.hpp"
 #include "renderable.hpp"
+#include "terrain.hpp"
 
 class mutationImpl {
 private:
@@ -155,8 +156,8 @@ class wereAbilities : public delegatingAbilities {
  public:
   wereAbilities(std::shared_ptr<monsterAbilities> &delegate) : delegatingAbilities(delegate) {}
   virtual ~wereAbilities() {}
-  virtual const bool fearless() { return true; }
-  virtual const bool swim() { return false; } // cannot cross water
+  virtual const bonus fearless() const { return true; }
+  virtual const bool swim() const { return false; } // cannot cross water
   virtual const bonus eatVeggie() const { return bonus(false); } // eat meat
   virtual const char resist(const damage & type) const {
     if (type.type() == damageType::hot) return -50;
@@ -175,6 +176,17 @@ class wereAbilities : public delegatingAbilities {
     speed f = delegatingAbilities::adjust(fastness);
     return f == speed::stop || f == speed::slow3 || f == speed::slow2  || f == speed::perturn ?
       speed::perturn : f;
+  }
+};
+
+class spaceAbilities : public delegatingAbilities {
+public:
+  spaceAbilities(std::shared_ptr<monsterAbilities> &delegate) : delegatingAbilities(delegate) {}
+  virtual ~spaceAbilities() {}
+  virtual const bool fly() const { return true; }
+  virtual const bool move(const terrain & type) const {
+    if (type.type() == terrainType::SPACE) return true;
+    return delegatingAbilities::move(type);
   }
 };
 
@@ -209,6 +221,17 @@ public:
   virtual std::shared_ptr<monsterAbilities> wrap(std::shared_ptr<monsterAbilities> &a) const {
     return std::make_shared<wereAbilities>(a);
   };
+};
+
+class space : public mutationImpl {
+public:
+  space() : mutationImpl(mutationType::SPACE) {}
+  virtual ~space() {}
+  virtual const wchar_t *prefix() const { return L"space ";}
+  // non-contagious
+  virtual std::shared_ptr<monsterAbilities> wrap(std::shared_ptr<monsterAbilities> &a) const {
+    return std::make_shared<spaceAbilities>(a);
+  };  
 };
 
 mutation::mutation(mutationImpl *other) :
@@ -282,6 +305,7 @@ mutationFactory::mutationFactory() :
   map_.emplace(mutationType::VAMPIRE, std::unique_ptr<mutation>(new mutation(new vampire())));
   map_.emplace(mutationType::CYBER, std::unique_ptr<mutation>(new mutation(new cyber())));
   map_.emplace(mutationType::WERE, std::unique_ptr<mutation>(new mutation(new were())));
+  map_.emplace(mutationType::SPACE, std::unique_ptr<mutation>(new mutation(new space())));
   static mutationEncyclopedium encyclopedia[] = {
     {'V',L"Vampyre",L"Vampyres feed on blood, the vital force of the living.\n"
      "The term is a relatively modern nomenclanture given to supernatioral\n"
@@ -311,9 +335,15 @@ mutationFactory::mutationFactory() :
      "meaning of wereworf.\n"
      "Other forms of werecreatures are seen, such as the Asian werecats.\n"
     },
+    {'S',L"Space",L"Space creatures are much like their gravity-bound\n"
+     "counterparts, except that they seem to have developed a knack for\n"
+     "flying, and seem quite at home in the inhospitable wasteland of space.\n"
+    }
   };
 }
 
-const mutation &mutationFactory::operator[](const mutationType &t) {
-  return *map_[t];
+const mutation &mutationFactory::operator[](const mutationType &t) const {
+  if (map_.find(t) == map_.end())
+    throw t;
+  return *map_.at(t);
 };

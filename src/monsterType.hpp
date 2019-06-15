@@ -205,8 +205,6 @@ public:
   // spawn the usual monster type:
   std::shared_ptr<monster> spawn(level &, monsterBuilder &b) const;
   std::shared_ptr<monster> spawn(level &) const;
-  // spawn a space version of the monster:
-  std::shared_ptr<monster> spawnSpace(level &, monsterBuilder &b) const;
 
   const std::shared_ptr<monsterIntrinsics> intrinsics() const;
 

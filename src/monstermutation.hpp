@@ -13,6 +13,7 @@ enum class mutationType {
   VAMPIRE,
   CYBER,
   WERE, // TODO: should swap to alternate form? reseach.
+  SPACE,
   END
 };
 
@@ -49,7 +50,7 @@ private:
 public:
   static mutationFactory &instance();
   mutationFactory();
-  const mutation &operator [](const mutationType &t);
+  const mutation &operator [](const mutationType &t) const;
 };
 
 #endif //ndef MONSTERMUTATION_HPP

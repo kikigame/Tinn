@@ -526,25 +526,6 @@ private:
   }
 };
 
-template <typename T>
-class spaceMonster : public T {
-private:
-  std::shared_ptr<monster> delegate_;
-public:
-  template<typename ...A>
-  spaceMonster(A... a) : T(a...) {};
-  virtual ~spaceMonster() {};
-  virtual std::wstring name() const {
-    return L"space " + T::name();
-  }
-  virtual std::wstring description() const {
-    return 
-      L"Space creatures are much like their gravity-bound counterparts, except that\n"
-      "they seem to have developed a knack for flying, and seem quite at home in\n"
-      "the inhospitable wasteland of space.";
-  }
-};
-
 
 void equipMonster(const monsterTypeKey &type, level &level, monster &m) {
   switch (type) {
@@ -728,11 +709,6 @@ std::shared_ptr<monster> ofTypeImpl(level & level, monsterBuilder &b) {
   return ofType<T,typename monsterTypeTraits<T>::type>(level,b);
 }
 
-template<monsterTypeKey T>
-std::shared_ptr<monster> ofSpaceType(level &level, monsterBuilder &b) {
-  return ofType<T,spaceMonster<typename monsterTypeTraits<T>::type> >(level, b);
-}
-
 std::unique_ptr<monsterBuilder> monsterType::builder(bool allowRandom) const {
   auto rtn = std::unique_ptr<monsterBuilder>(new monsterBuilder(allowRandom));
   rtn->type(*this);
@@ -766,30 +742,6 @@ std::shared_ptr<monster> monsterType::spawn(level & level, monsterBuilder &b) co
   case monsterTypeKey::troll: return ofTypeImpl<monsterTypeKey::troll>(level,b); 
   case monsterTypeKey::venusTrap: return ofTypeImpl<monsterTypeKey::venusTrap>(level,b);
   case monsterTypeKey::zombie: return ofTypeImpl<monsterTypeKey::zombie>(level,b);
-  default: throw type();
-  }
-}
-// TODO: should "space" be a non-random mutation?
-std::shared_ptr<monster> monsterType::spawnSpace(level & level, monsterBuilder &b) const {
-  switch (type()) {
-    //  case monsterTypeKey::bird: return ofSpaceType<monsterTypeKey::bird>(level,b);
-  case monsterTypeKey::bull: return ofSpaceType<monsterTypeKey::bull>(level,b);
-  case monsterTypeKey::raptor: return ofSpaceType<monsterTypeKey::raptor>(level,b);
-  case monsterTypeKey::dragon: return ofSpaceType<monsterTypeKey::dragon>(level,b);
-  case monsterTypeKey::dungeoneer: return ofSpaceType<monsterTypeKey::dungeoneer>(level,b); 
-  case monsterTypeKey::ferret: return ofSpaceType<monsterTypeKey::ferret>(level,b);
-  case monsterTypeKey::fox: return ofSpaceType<monsterTypeKey::fox>(level,b);
-  case monsterTypeKey::goblin: return ofSpaceType<monsterTypeKey::goblin>(level,b);
-  case monsterTypeKey::hound: return ofSpaceType<monsterTypeKey::hound>(level,b);
-  case monsterTypeKey::human: return ofSpaceType<monsterTypeKey::human>(level,b); 
-  case monsterTypeKey::incubus: return ofSpaceType<monsterTypeKey::incubus>(level,b); 
-  case monsterTypeKey::kelpie: return ofSpaceType<monsterTypeKey::kelpie>(level,b); 
-  case monsterTypeKey::merfolk: return ofSpaceType<monsterTypeKey::merfolk>(level,b);
-  case monsterTypeKey::siren: return ofSpaceType<monsterTypeKey::siren>(level,b); 
-  case monsterTypeKey::succubus: return ofSpaceType<monsterTypeKey::succubus>(level,b); 
-  case monsterTypeKey::troll: return ofSpaceType<monsterTypeKey::troll>(level,b); 
-  case monsterTypeKey::venusTrap: return ofSpaceType<monsterTypeKey::venusTrap>(level,b);
-  case monsterTypeKey::zombie: return ofSpaceType<monsterTypeKey::zombie>(level,b);
   default: throw type();
   }
 }

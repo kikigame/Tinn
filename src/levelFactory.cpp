@@ -152,7 +152,9 @@ public:
     place(coord(beta,10), terrainType::DOWN);
 
     auto &ft = monsterTypeRepo::instance()[monsterTypeKey::ferret];
-    levelGen::addMonster(ft.spawnSpace(pub_, *ft.builder()), findRndTerrain(terrainType::SPACE));
+    std::shared_ptr<monster> pMon = ft.spawn(pub_, *ft.builder());
+    pMon->mutate(mutationType::SPACE);
+    levelGen::addMonster(pMon, findRndTerrain(terrainType::SPACE));
 
     // hide an item in the starfield:
     pub_.holder(findRndTerrain(terrainType::SPACE))
