@@ -767,10 +767,13 @@ public:
       moveTo(m, pos); // moveTo handles entrapped()
   }
   void removeMonster(const monster &m) {
-    for (auto i = monsters_.begin(); i != monsters_.end(); ++i) {
-      if (*(i->second) == m) {
-	monsters_.erase(i);
-	return; // iterator is now invalid, but we found it.
+    bool isBig = dynamic_cast<const ::bigMonster*>(&m);
+    for (auto i = monsters_.begin(); i != monsters_.end();) {
+      auto erIter = i++; // erased iter would become invalid, so increment first
+      if (*(erIter->second) == m) {
+	monsters_.erase(erIter);
+	if (!isBig)
+	  return;
       }
     }
   }

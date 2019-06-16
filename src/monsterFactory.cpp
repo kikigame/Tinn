@@ -212,6 +212,54 @@ public:
   }
 };
 
+// blobs start on one square and blob outwards {
+class blob : public trivialMonster, public bigMonster, private temporal::callback {
+private:
+  std::vector<coord> pos_;
+public:
+  blob(monsterBuilder &b) :
+    trivialMonster(b),
+    bigMonster(),
+    temporal::callback(true, [this](){
+	dir nsew;
+	switch (dPc() % 4) {
+	default: nsew = dir(-1,0); break;
+	case 1: nsew = dir(1,0); break;
+	case 2: nsew = dir(0,-1); break;
+	case 3: nsew = dir(0,1); break;
+	}
+	std::vector<coord> newPos;
+	for (coord c : pos_) {
+	  coord cc = c.inDir(nsew);
+	  if (cc.first < 0 || cc.second < 0 ||
+	      cc.first >= level::MAX_WIDTH || cc.second >= level::MAX_HEIGHT)
+	    return;
+	  if (std::find(pos_.begin(), pos_.end(), cc) == pos_.end() &&
+	      abilities()->move(curLevel().terrainAt(cc)))
+	    newPos.push_back(cc);
+	}
+	std::copy(newPos.begin(), newPos.end(), back_inserter(pos_));
+	curLevel().bigMonster(*this, pos_);
+      }),
+    pos_() {
+    time::onTick(*this);
+  }
+  virtual ~blob() {}
+  // INTERFACE bigMonster
+  // called when position is first set, or on teleport:
+  virtual void setPos(const coord &c) {
+    pos_.clear();
+    pos_.push_back(c);
+    curLevel().bigMonster(*this, pos_);
+  }
+  // return the position of the "main" element:
+  virtual coord mainPos() const {
+    return pos_.at(0);
+  }
+  // INTERFACE bigMonster ends
+};
+
+
 // ferrets steal little things then run away
 class ferret : public targetActionMonster {
 private:
@@ -687,6 +735,7 @@ template <monsterTypeKey T>
 struct monsterTypeTraits {
   typedef bird type; // default
 };
+template<> struct monsterTypeTraits<monsterTypeKey::blob> { typedef blob type; };
 template<> struct monsterTypeTraits<monsterTypeKey::bull> { typedef bull type; };
 template<> struct monsterTypeTraits<monsterTypeKey::dungeoneer> { typedef dungeoneer type; };
 template<> struct monsterTypeTraits<monsterTypeKey::ferret> { typedef ferret type; };
@@ -724,6 +773,7 @@ std::shared_ptr<monster> monsterType::spawn(level & level) const {
 std::shared_ptr<monster> monsterType::spawn(level & level, monsterBuilder &b) const {
   switch (type()) {
     //  case monsterTypeKey::bird: return ofTypeImpl<monsterTypeKey::bird>(level,b);
+  case monsterTypeKey::blob: return ofTypeImpl<monsterTypeKey::blob>(level,b);
   case monsterTypeKey::bull: return ofTypeImpl<monsterTypeKey::bull>(level,b);
   case monsterTypeKey::raptor: return ofTypeImpl<monsterTypeKey::raptor>(level,b);
   case monsterTypeKey::dragon: return ofTypeImpl<monsterTypeKey::dragon>(level,b);

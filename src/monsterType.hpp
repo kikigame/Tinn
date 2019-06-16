@@ -62,6 +62,7 @@ enum class genderAssignType {
 
 enum class monsterTypeKey {
   //bird,
+  blob,
   bull,
   raptor,
   dragon,

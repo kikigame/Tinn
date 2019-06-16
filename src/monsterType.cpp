@@ -262,6 +262,64 @@ L"Dragons are large serpentine creatures; highly intelligent and amongst the\n"
 	    .carryWeight(300000) // the strength of 100 humans, seems about right
             .fearless());
 
+    // unique feature: grows continuously
+    emplace(monsterTypeBuilder(monsterTypeKey::blob)
+	    .category(monsterCategory::blob)
+	    .name(L"small blob")
+	    .name(L"blob")
+	    .name(L"big blob")
+	    .name(L"huge blob")
+	    .className(L"blobs")
+	    .levelFactor(10)
+	    .levelOffset(50)
+	    .minSpawn(1)
+	    .maxSpawn(1)
+	    .xpFactor(10)
+	    .xpOffset(50)
+	    .renderChar(L'P') // grey ooze in Nethack
+	    .strength(25)
+	    .appearance(0)
+	    .fighting(25)
+	    .dodge(25)
+	    .maxDamage(50)
+	    .material(materialType::waxy)
+	    .corpseWeight(20000)
+	    .align(dr.nonaligned())
+	    .saying(L"blob")
+	    .eats(materialType::clothy)
+	    .eats(materialType::fleshy)
+	    .eats(materialType::glassy)
+	    .eats(materialType::leathery)
+	    .eats(materialType::liquid)
+	    .eats(materialType::metallic)
+	    .eats(materialType::papery)
+	    .eats(materialType::veggy)
+	    .eats(materialType::waxy)
+	    .eats(materialType::woody) // doesn't eat stone. So there.
+	    .carryWeight(0)
+	    .movement(stationary) // TODO: grows instead of moving
+	    .movesThrough(terrainType::ALTAR)
+	    .movesThrough(terrainType::ROCK)
+	    .movesThrough(terrainType::GROUND)
+	    .movesThrough(terrainType::UP)
+	    .movesThrough(terrainType::DOWN)
+	    //.movesThrough(terrainType::PIT_HIDDEN) // inately avoids all traps
+	    //.movesThrough(terrainType::PIT)
+	    //.movesThrough(terrainType::PIANO_HIDDEN)
+	    .movesThrough(terrainType::FIRE)
+	    .movesThrough(terrainType::WATER)
+	    .movesThrough(terrainType::SPACE)
+	    .movesThrough(terrainType::KNOTWEED)
+	    .movesThrough(terrainType::DECK)
+	    .fearless()
+	    .dblAttack() // can't move, and deep in the game, so let's give it a chance
+	    .encyclopedium(
+L"Blobs grow rapidly, consuming most things in their path. On the other hand,\n"
+"at least they present a large target."
+			   ));
+
+	    
+
     // unique feature: noxious excrement
     emplace(monsterTypeBuilder(monsterTypeKey::bull)
 	    .category(monsterCategory::quadruped)
