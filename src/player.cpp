@@ -214,22 +214,28 @@ void player::drop(level &lvl) {
     byChar[i.render()].emplace_back(&i);
   });
 
-  std::vector<std::pair<wchar_t, std::wstring>> choices =
-    {
-      { L'W', L"Weapon" },
-      { L'A', L"Apparel/Armour" },
-      { L'U', L"Unequipped" },
-    };
-
-  for (auto c : byChar)
-    choices.emplace_back(c.first, std::wstring({c.first}));
-
-  choices.emplace_back(L'D', L"Done");
-
   auto &ios = ioFactory::instance();
   while (byChar.size() > 0) {
-    wchar_t c = ios.choice<wchar_t>(L"Leave:",L"Select what you want to drop", choices);
-    if (c == L'q' || c == L'Q') return;
+
+    std::vector<std::pair<wchar_t, std::wstring>> choices;
+    
+    if (!wielded.empty())
+      choices.emplace_back(L'W', L"Weapon");
+    if (!worn.empty())
+      choices.emplace_back(L'A', L"Apparel/Armour");
+    if (!other.empty())
+      choices.emplace_back(L'U', L"Unequipped");
+    
+    for (auto c : byChar)
+      if (!c.second.empty())
+	choices.emplace_back(c.first, std::wstring({c.first}));
+
+    if (choices.empty()) return; // nothing left to drop
+    
+    choices.emplace_back(L'D', L"Done");
+
+    wchar_t c = ios.choice<wchar_t>(L"Leave",L"Select what you want to drop", choices);
+    if (c == L'd' || c == L'D') return;
 
     std::vector<item*> itemSet;
     
@@ -253,16 +259,17 @@ void player::drop(level &lvl) {
 
     item *sel = ios.choice(L"Leave", L"Emplace in this location:",
 			   itemSet, true, namer);
-    if (sel == nullptr) return;
+    if (sel != nullptr) {
 
-    worn.erase(std::remove(worn.begin(), worn.end(), sel), worn.end());
-    wielded.erase(std::remove(wielded.begin(), wielded.end(), sel), wielded.end());
-    other.erase(std::remove(other.begin(), other.end(), sel), other.end());
-    for (auto i : byChar)
-      i.second.erase(std::remove(i.second.begin(), i.second.end(), sel), i.second.end());
+      worn.erase(std::remove(worn.begin(), worn.end(), sel), worn.end());
+      wielded.erase(std::remove(wielded.begin(), wielded.end(), sel), wielded.end());
+      other.erase(std::remove(other.begin(), other.end(), sel), other.end());
+      for (auto &i : byChar)
+	i.second.erase(std::remove(i.second.begin(), i.second.end(), sel), i.second.end());
 
-    if (!monster::drop(*sel, pos))
-      ios.message(L"You cannot drop the " + sel->name());
+      if (!monster::drop(*sel, pos))
+	ios.message(L"You cannot drop the " + sel->name());
+    }
   }
 }
 
