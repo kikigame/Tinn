@@ -573,7 +573,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .name(L"elder human")
 	    .className(L"humanoid")
 	    .levelFactor(1)
-	    .levelOffset(101) // do not randomly generate
+	    .levelOffset(-1)
 	    .minSpawn(1)
 	    .maxSpawn(10)
 	    .xpFactor(5)
