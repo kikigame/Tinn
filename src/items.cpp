@@ -262,7 +262,8 @@ public:
       auto dp = coverDepth(slotBy(sl));
       if (minCoverDepth > dp) minCoverDepth = dp;
     }
-    sexUp(dPc() < (1 + minCoverDepth) * 20);
+    if (equipTyp == item::equipType::worn)
+      sexUp(dPc() < (1 + minCoverDepth) * 20);
   }
   virtual ~basicEquip() {}
   virtual bool equip(monster &owner) {
