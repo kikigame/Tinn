@@ -122,6 +122,8 @@ class sharedAction<monster, monster>{
     popup_shop,
     // to sleep, perchance to dream
     dream,
+    // change religion
+    conversion,
     END
   };
 };

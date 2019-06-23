@@ -6,6 +6,7 @@
 #include "output.hpp"
 #include "random.hpp"
 #include "terrain.hpp"
+#include "religion.hpp"
 #include <map>
 
 // source steals an item from target
@@ -613,6 +614,33 @@ public:
   virtual bool buffs() const { return false; }
 };
 
+class convertAction : public renderedAction<monster, monster> {
+public:
+  convertAction(const wchar_t * const name, const wchar_t * const description) :
+    renderedAction(name, description) {}
+  virtual ~convertAction() {}
+  virtual bool operator ()(const bcu &bcu, monster &source, monster &target) {
+    // blessed: target becomes aligned to source
+    // cursed: target becomes nonaligned
+    // blessed&cursed: source and target become nonaligned
+    // plain: target changes to a different random alignment
+    const deity *newPath;
+    if (bcu.cursed()) newPath = &(deityRepo::instance().nonaligned());
+    else if (bcu.blessed()) newPath = &source.align();
+    else do {
+	newPath = &(rndAlign());
+      } while (*newPath == target.align());
+
+    bool success = target.align(*newPath);
+    if (bcu.blessed() && bcu.cursed())
+      source.align(*newPath);
+    return success;
+  }
+  virtual bool aggressive() const { return false; }
+  virtual bool heals() const { return false; }
+  virtual bool buffs() const { return false; }
+};
+
 template<>
 class actionFactory<monster, monster> {
 public:
@@ -808,11 +836,14 @@ L"Always fun for a floor show. Use with caution"));
 L"Comedy and Tragedy are two sides of the same coin. Neither is predictable,\n"
 "but like all social commentary, both can be effective when used carefully."));
 	rtn[action::key::dream] = std::unique_ptr<action>(new dreamAction(L"slumber",
-L"The human carcadian rhythm will grant an adult human between 7 and 9 hours of"
-"nightly sleep, with younger people typically needing more. The truly lucky may"
-"be visited by the Sandman, whose rheum deposits can provide pleasant dreams."
-"Be warned: nightmares are all to prevalent during times of stress, a prone"
+L"The human carcadian rhythm will grant an adult human between 7 and 9 hours of\n"
+"nightly sleep, with younger people typically needing more. The truly lucky may\n"
+"be visited by the Sandman, whose rheum deposits can provide pleasant dreams.\n"
+"Be warned: nightmares are all to prevalent during times of stress, a prone\n"
 "body is always at risk and past performance is no guarantee of future returns.")); // ref:common investment disclaimer. Sleep can be seen as investing time for future productivity.
+	rtn[action::key::conversion] = std::unique_ptr<action>(new convertAction(L"conversion",
+L"Religion and spirituality are very personal things. This device can be used,\n"
+"with sufficient caution, to play god with the beliefs of others."));
 	return rtn;
   }
   static action &get(const typename action::key k) {
