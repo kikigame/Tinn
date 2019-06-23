@@ -92,7 +92,8 @@ const unsigned char safesub(const unsigned char value, const unsigned char amoun
 unsigned char progressStat(unsigned char from, int p) {
   int progress = std::min(100, p); // just in case
   progress = std::max(1, progress); // just in case
-  return static_cast<unsigned char>(std::min(100.,from * (100. + progress - 1) / 100.));
+  // on level 101, all stats would be 100%
+  return from + static_cast<unsigned char>(std::min(100.,(100. - from) * (progress -1) / 100));
 }
 
 void monsterBuilder::calcFinalStats() {
