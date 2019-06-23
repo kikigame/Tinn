@@ -108,6 +108,10 @@ materialType monster::material() const { return type_.material(); }
 const monsterType& monster::type() const { return type_; }
 
 const deity &monster::align() const { return *align_; }
+bool monster::align(const deity &d) {
+  align_ = &d;
+  return &d == &align();
+}
 
 /*
  * This is the public method called whenever one monster attacks another.

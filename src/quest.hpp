@@ -13,7 +13,8 @@
 enum class roleType {
   warrior,
   thief,
-  shopkeeper
+  shopkeeper,
+  crusader
 };
 
 
@@ -23,6 +24,7 @@ class levelImpl;
 class levelGen;
 class player;
 class questImpl;
+class deity;
 
 class quest {
 private:
@@ -49,6 +51,6 @@ public:
 };
 
 // create the quests, used by role.cpp
-std::vector<quest> questsForRole(roleType);
+std::vector<quest> questsForRole(const deity &, roleType);
 
 #endif // ndef  __QUEST_HPP

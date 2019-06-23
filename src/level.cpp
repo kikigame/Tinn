@@ -994,6 +994,26 @@ void levelGen::addShrine(const coord &topLeft, const coord &btmRight, optionalRe
   }
 }
 
+void levelGen::addShrine(std::unique_ptr<geometry> &&loc, optionalRef<deity> d) {
+  int count=0;
+  deity &path = d ? d.value() : rndAlign();
+  auto &ground = tFactory.get(terrainType::GROUND);
+  for (int x=0; x < level::MAX_WIDTH; ++x)
+    for (int y=0; y < level::MAX_HEIGHT; ++y) {
+      coord c(x,y);
+      if (loc->contains(c)) {
+	level_->terrain_.at(c) = ground;
+	if (++count == 2)
+	  level_->holder(c).addItem(createHolyBook(d.value()));      
+      }
+    }
+  auto shr = std::make_shared<shrine>(std::move(loc), path);
+  itemZone(shr);
+  monsterZone(shr);
+}
+
+
+
 void levelGen::itemZone(std::shared_ptr<zoneArea<item>> z) {
   level_->itemZones_.push_back(z);
 }
@@ -1041,10 +1061,11 @@ monster &levelGen::addMonster(monsterBuilder &b, const coord &c) {
   return *mon;
 }
 
-void levelGen::addMonsters(std::vector<std::pair<coord,coord>> coords /*by value*/) {
+std::vector<monster *> levelGen::addMonsters(std::vector<std::pair<coord,coord>> coords /*by value*/) {
   std::vector<std::pair<unsigned int, monsterType*>> types =
     spawnMonsters(level_->depth(), coords.size());
-
+  std::vector<monster *> rtn;
+  
   for (auto i : types) {
     if (coords.begin() == coords.end()) break;
     auto room = rndPick(coords.begin(), coords.end());
@@ -1055,11 +1076,13 @@ void levelGen::addMonsters(std::vector<std::pair<coord,coord>> coords /*by value
     for (unsigned int c=0; c < i.first; ++c) {
       auto &mt = *(i.second);
       //auto m = ofType<mt>(pub_);
-      auto m = mt.spawn(pub_);
+      std::shared_ptr<monster> m = mt.spawn(pub_);
       addMonster(m, midPoint, *room);
+      if (m) rtn.emplace_back(&*m);
     }
     coords.erase(room); // don't use the same room twice; tend to avoid the packs of monsters starting together
   }
+  return rtn;
 }
 
 void levelGen::addMonster(std::shared_ptr<monster> mon, const coord &m, const std::pair<coord, coord> & coords) {

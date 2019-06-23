@@ -16,9 +16,11 @@ private:
 public:
   roleImpl(const roleType &type, 
 	   const wchar_t* const name,
-	   const wchar_t* const startGameMessage) :
+	   const wchar_t* const startGameMessage,
+	   const deity &align) :
     type_(type), name_(name),
-    startGameMessage_(startGameMessage),quests_(questsForRole(type)) {}
+    startGameMessage_(startGameMessage),
+    quests_(questsForRole(align, type)) {}
   roleImpl(const roleImpl &) = delete;
   roleImpl(roleImpl &&) = delete;
   const roleType type() const {
@@ -59,15 +61,22 @@ class roleRepoImpl {
 private:
   std::map<roleType,role> repo_;
 public:
-  roleRepoImpl() {
+  roleRepoImpl(const deity &pcAlign) {
     emplace(new roleImpl(roleType::warrior, L"warrior",
-			 L"Contender Ready!" // ref: Gladiators (TV gameshow)
+			 L"Contender Ready!", // ref: Gladiators (TV gameshow)
+			 pcAlign
 			 ));
     emplace(new roleImpl(roleType::thief, L"thief",
-			 L"Is there anybody hiding there in the dark?" // ref: Pink Panther
+			 L"Is there anybody hiding there in the dark?", // ref: Pink Panther
+			 pcAlign
+			 ));
+    emplace(new roleImpl(roleType::crusader, L"crusader",
+			 L"Once the mission's over, you could come back here, have yourself a home.", // ref: Crusade (B5 spinoff)
+			 pcAlign
 			 ));
     emplace(new roleImpl(roleType::shopkeeper, L"shopkeeper",
-			 L"As if by magic, the shopkeeper appeared." // Ref: Mr Benn
+			 L"As if by magic, the shopkeeper appeared.", // Ref: Mr Benn
+			 pcAlign
 			 ));
   }
   void emplace(roleImpl *r) {
@@ -81,17 +90,17 @@ public:
 std::unique_ptr<roleRepo> roleRepo::instance_;
 
 
-roleRepo::roleRepo()
-  : pImpl_(new roleRepoImpl()) {};
+roleRepo::roleRepo(const deity &align)
+  : pImpl_(new roleRepoImpl(align)) {};
 
   
 role & roleRepo::operator[](const roleType &r) {
   return pImpl_->get(r);
 }
 
-roleRepo& roleRepo::instance() {
+roleRepo& roleRepo::instance(const deity &align) {
   if (!instance_)
-    instance_.reset(new roleRepo()); // was empty
+    instance_.reset(new roleRepo(align)); // was empty
   return *instance_;
 }
 

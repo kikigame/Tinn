@@ -121,4 +121,6 @@ public:
   virtual const deity& align() const = 0;
 };
 
+deity &rndAlign(); // defined in shrine.cpp
+
 #endif //ndef RELIGION_HPP__

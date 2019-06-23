@@ -124,6 +124,7 @@ public:
 
   // Spiritual alignment
   virtual const deity& align() const;
+  bool align(const deity &);
 
   // fighting...
   const attackResult attack(monster &target);

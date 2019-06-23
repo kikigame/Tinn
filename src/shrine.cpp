@@ -20,6 +20,12 @@ deity &rndAlign() {
   return *pDeity;
 }
 
+shrine::shrine(std::unique_ptr<geometry> &&area) :
+  area_(std::move(area)), align_(rndAlign()) {};
+
+shrine::shrine(std::unique_ptr<geometry> &&area, const deity &align) :
+  area_(std::move(area)), align_(align) {};
+
 shrine::shrine(const coord &ul, const coord &lr) :
   area_(rectarea::create(ul, lr)), align_(rndAlign()) {
 };

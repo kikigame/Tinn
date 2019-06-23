@@ -7,6 +7,7 @@
 #define __ROLE_HPP
 
 #include "quest.hpp"
+#include "religion.hpp"
 #include <memory>
 
 class level;
@@ -39,10 +40,10 @@ class roleRepo {
 private:
   std::unique_ptr<roleRepoImpl> pImpl_;
   static std::unique_ptr<roleRepo> instance_;
-  roleRepo();
+  roleRepo(const deity &align);
 public:
   role & operator[](const roleType &);
-  static roleRepo& instance();
+  static roleRepo& instance(const deity &deity);
   static void close();
 };
 

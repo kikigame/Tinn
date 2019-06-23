@@ -15,6 +15,7 @@ class level;
 class levelImpl;
 class monster;
 class deity;
+class geometry;
 
 // helper class to generate a random layout of a level
 class levelGen {
@@ -44,6 +45,7 @@ public:
   // place a shrine at given position (pass empty d for random)
   // NB: Does not place an altar, as its placement depends on the access direction
   void addShrine(const coord &tl, const coord &br, optionalRef<deity> d = optionalRef<deity>());
+  void addShrine(std::unique_ptr<geometry> && loc, optionalRef<deity> d = optionalRef<deity>());
 
   // register zones:
   void itemZone(std::shared_ptr<zoneArea<item> >);
@@ -53,7 +55,7 @@ public:
   void addTraps(const std::pair<coord,coord> &coords);
 
   // possibly add some monsters to the room:
-  void addMonsters(std::vector<std::pair<coord,coord>>);
+  std::vector<monster *> addMonsters(std::vector<std::pair<coord,coord>>);
 
   // possibly add some items to the room:
   void addItems(const std::pair<coord,coord> &);

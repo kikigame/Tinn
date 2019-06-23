@@ -155,6 +155,7 @@ playerBuilder chargen() {
       (L"CHARACTER GENERATION[7/7]> Your character's role",
        L"   Options are:",
       {
+	{ roleType::crusader, L"Crusader: fighter with religious powers" },
 	{ roleType::shopkeeper, L"Shopkeeper: has access to expensive equipment" },
 	{ roleType::thief, L"Thief: fast and good with traps" },
 	    // most generic option is always last
@@ -162,7 +163,7 @@ playerBuilder chargen() {
       },
        L"Your job defines most of your starting inventory and defines your\n"
        "   quest within the Areas of Adventure.\n");
-    b.job(roleRepo::instance()[choice]);
+    b.job(roleRepo::instance(b.align())[choice]);
   }
 
   return b;

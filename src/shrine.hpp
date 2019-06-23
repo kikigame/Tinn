@@ -27,8 +27,10 @@ public:
   // construct a new shrine with the given rectangular coordinates
   // with random alignment
   shrine(const coord &ul, const coord &lr);
+  shrine(std::unique_ptr<geometry> &&area);
   // construct a new shrine with the given rectangular coordinates:
   shrine(const coord &ul, const coord &lr, const deity &);
+  shrine(std::unique_ptr<geometry> &&area, const deity &);
 
   virtual ~shrine();
 

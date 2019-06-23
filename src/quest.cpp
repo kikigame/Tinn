@@ -10,6 +10,9 @@
 #include "action.hpp"
 #include "items.hpp"
 #include "random.hpp"
+#include "dungeon.hpp"
+#include "religion.hpp"
+#include "geometry.hpp"
 
 std::uniform_int_distribution<int> xPosD(0,level::MAX_WIDTH - 1);
 std::uniform_int_distribution<int> yPosD(0,level::MAX_HEIGHT - 1);
@@ -190,8 +193,211 @@ public:
   }
 };
 
+template <bool lowerLevel>
+class crusadeQuestLevelGen {};
 
-std::vector<quest> questsForRole(roleType t) {
+template <>
+class crusadeQuestLevelGen<false> : public levelGen {
+private:
+  questImpl &q_;
+  const deity &pcAlign_;
+public:
+  crusadeQuestLevelGen(questImpl &q, levelImpl &li, level &l, const deity & pcAlign) :
+    levelGen(&li,l), q_(q), pcAlign_(pcAlign) {}
+  virtual ~crusadeQuestLevelGen() {}
+  virtual coord upRampPos() { return coord(60,10); } // TODO: ramp negotiation
+  virtual coord downRampPos() { return coord(35,10); }
+  virtual void negotiateRamps(optionalRef<levelGen> next) {}
+  virtual void build() {
+    for (int x=1; x<level::MAX_WIDTH; ++x)
+      for (int y=1; y<level::MAX_HEIGHT; ++y)
+	place(coord(x,y), terrainType::ROCK);
+
+    auto &dr = deityRepo::instance();
+    auto &opposed = dr.getOpposed(pcAlign_);
+
+    // place a non-aligned, non-opposed shrine, to ensure the game is winnable.
+    dir downRight(1,1);
+    coord shrineTopLeft(dPc() / 10, dPc() / 10);
+    coord shrineCenter = shrineTopLeft.inDir(downRight);
+    coord shrineBotRight = shrineCenter.inDir(downRight);
+    for (coord c : coordRectIterator(shrineTopLeft, shrineBotRight))
+      place(c, terrainType::GROUND);
+    deity *d = &(dr.nonaligned());
+    do {
+      d = &*rndPick(dr.begin(), dr.end());
+    } while (d == &pcAlign_ || d == &opposed || d->nonaligned());
+    addShrine(shrineTopLeft,shrineBotRight, optionalRef<deity>(*d));
+    
+    // create a big temple; opposite alignment to player
+    coord templeTopLeft(20,5);
+    coord templeBtmRight(50,15);
+    for (coord c : coordRectIterator(templeTopLeft, templeBtmRight))
+      place(c, terrainType::GROUND);
+    addShrine(templeTopLeft, templeBtmRight, optionalRef<deity>(opposed));
+
+    // collecting icon completes quest
+    std::function<void(const itemHolder &)> f = [this](const itemHolder &holder) {
+      auto m = dynamic_cast<const player*>(&holder);
+      if (m) q_.complete();
+    };
+    // NB: Icon is aligned to player, as it's been stolen.
+    item & ic=createQuestItem<questItemType::icon>(f, pcAlign_);
+    ic.highlight();
+    ic.bless(true);
+    pub_.holder(coord(rndPickI(21, 49), rndPickI(6,14)))
+      .addItem(ic);
+    
+    coord c = addCorridor(shrineCenter, upRampPos());
+    std::vector<coord> nodes;
+    nodes.emplace_back(upRampPos());
+    for (int i=0; i< 5; ++i) nodes.emplace_back(mid(addRoom()));
+    for (auto i = nodes.begin(), j =i+1; j < nodes.end(); ++i, ++j)
+      addCorridor(*i,*j);
+
+    place(shrineCenter.away(c), terrainType::ALTAR);
+    place(coord(29,20), terrainType::ALTAR);
+
+    place(upRampPos(), terrainType::UP);
+    place(downRampPos(), terrainType::DOWN);
+
+    // Some monsters.
+    // TODO: Should we make these acolytes?
+    std::vector<std::pair<coord, coord>> vec({{templeTopLeft, templeBtmRight},
+	  {shrineTopLeft, shrineBotRight}});
+    for (auto &m : addMonsters(vec))
+      if (m->render() == L'&') m->wound(*m, 100, damageRepo::instance()[damageType::electric]); // discard demons in the temple
+  }
+};
+
+template <>
+class crusadeQuestLevelGen<true> : public levelGen {
+private:
+  questImpl &q_;
+  const deity &pcAlign_;
+public:
+  crusadeQuestLevelGen(questImpl &q, levelImpl &li, level &l, const deity & pcAlign) :
+    levelGen(&li,l), q_(q), pcAlign_(pcAlign) {}
+  virtual ~crusadeQuestLevelGen() {}
+  virtual coord upRampPos() { return coord(35,10); }
+  virtual void negotiateRamps(optionalRef<levelGen> next) {}
+  virtual void build() {
+    for (int x=1; x<level::MAX_WIDTH; ++x)
+      for (int y=1; y<level::MAX_HEIGHT; ++y)
+	place(coord(x,y), terrainType::ROCK);
+
+    deity &opp= deityRepo::instance().getOpposed(pcAlign_);
+    
+    std::vector<std::pair<coord,coord>> rooms({
+    // main area
+	{{20,5},{49,14}},
+    // some rooms
+	{{3,1},{9,3}},
+	{{11,1},{17,3}},
+	{{19,1},{25,3}},
+	{{27,1},{33,3}},
+	{{35,1},{41,3}},
+	{{43,1},{49,3}},
+	{{51,1},{68,2}},{{51,3},{60,3}},
+
+        {{1,5},{7,7}},
+        {{9,5},{16,7}},
+        {{61,4},{69,11}},
+        {{61,12},{69,18}},
+        {{1,9},{3,16}},
+      });
+
+    for (auto &p : rooms)
+      for (int x = p.first.first; x <= p.second.first; ++x)
+	for (int y = p.first.second; y <= p.second.second; ++y)
+	  place(coord(x,y), terrainType::GROUND);
+    auto monsters = addMonsters(rooms);
+    for (auto pM : monsters) {
+      if (pM->render() == L'&') {
+	auto &dt = damageRepo::instance()[damageType::electric];
+	pM->wound(*pM, 100, dt); // discard demons in the temple
+      }
+      else pM->align(opp);
+    }
+    
+    // corridors
+    rect(17,5,20,5);
+    rect(16,6,18,6);
+    rect(50,5,53,5);
+    rect(53,6,61,6);
+    rect(4,12,16,12);
+    rect(16,13,18,13);
+    rect(18,14,19,14);
+    rect(50,14,53,14);
+    rect(53,13,61,13);
+
+    // doors
+    place(coord(18,2), terrainType::GROUND);
+    place(coord(50,2), terrainType::GROUND);
+    place(coord(5,4), terrainType::GROUND);
+    place(coord(22,4), terrainType::GROUND);
+    place(coord(30,4), terrainType::GROUND);
+    place(coord(38,4), terrainType::GROUND);
+    place(coord(46,4), terrainType::GROUND);
+    place(coord(8,6), terrainType::GROUND);
+    place(coord(11,68), terrainType::GROUND);
+
+   
+    //shrine zone on whole level except up staircase; opposite alignment to player
+    addShrine(shape::subtract(rectarea::create(0,0,69,19),
+			      rectarea::create(upRampPos(), upRampPos())),
+	      opp);
+    
+
+    // antipriest
+    monsterBuilder mb(false);
+    mb.startOn(pub_);
+    mb.type(monsterTypeRepo::instance()[monsterTypeKey::human]);
+    mb.alignAgainst(pcAlign_);
+    mb.highlight();
+    mb.progress(100);
+    auto &m = addMonster(mb, coord(1,10));
+    // quest is completed when the player has their original alignment,
+    // and the anti-priest is converted to the same alignment.
+    m.eachTick([this, &m]{
+	if (m.align() == pcAlign_ &&
+	    m.curLevel().dung().pc()->align() == pcAlign_) {
+	  q_.complete();
+	}
+      });
+    
+    place(upRampPos(), terrainType::UP);
+  }
+private:
+  void rect(int x1, int y1, int x2, int y2, terrainType t = terrainType::GROUND) {
+    for (int x = x1; x <= x2; ++x)
+      for (int y = y1; y <= y2; ++y)
+	place(coord(x,y), t);
+  }
+};
+
+/*********************************************************************
+***       *       *       *       *       *       *                  *1
+***       *               *       *       *                          *2
+***       *       *       *       *       *       *          *********3
+***** **************** ******* ******* ******* ***************       *4
+*       *       *                                     ********       *5
+*                  *                              ***                *6
+*       *       ****                              ************       *7
+********************                              ************       *8
+*   ****************                              ************       *9
+*   ****************               <              ************       *10
+*   ****************                              ****************** *11
+*   ****************                              ************       *
+*                ***                              ************       *
+*   ************   *                              ***                *
+*   **************                                    ********       *
+**************************************************************       *
+**************************************************************       *
+**************************************************************       *
+*********************************************************************/
+
+std::vector<quest> questsForRole(const deity & pcAlign, roleType t) {
   std::vector<quest> rtn;
   switch (t) {
   case roleType::warrior:
@@ -264,7 +470,58 @@ std::vector<quest> questsForRole(roleType t) {
 	 p.addItem(wand);
 	 wand.enchant(5);
        }
+       ));
+    break;
+  case roleType::crusader:
+    rtn.emplace_back(new questImpl
+      (L"Convert the anti-priest",
+       L"In the deepest area of adventures, protected by a temple you cannot enter,\n"
+       "dwells the mortal representative of your deity's nemesis. Slay not this\n"
+       "priest, but explain the error of their ways.\n",
+       L"Really abandon the unbeliever still walks the wrong path?",
+       L"The priest joins you on your path.",
+       100,
+       [&pcAlign](questImpl &qI, levelImpl &li, level &l) { return new crusadeQuestLevelGen<true>(qI, li, l, pcAlign); },
+       [](questImpl &qI, levelGen &lg, level &l, int depth) {
+       },
+       [&pcAlign](player &p) { // TODO: should starting inventory be done in role.cpp?
+	 for (auto k : std::array<itemTypeKey, 7>{{
+	       itemTypeKey::helmet,
+	       itemTypeKey::jerkin, itemTypeKey::underpants,
+		 itemTypeKey::boots, itemTypeKey::shirt,
+		 itemTypeKey::hauberk, itemTypeKey::doublet}}) {
+	   auto &it = createItem(k);
+	   p.addItem(it);
+	   it.equip(p);
+	 }
+	 auto &it = createItem(itemTypeKey::two_sword);
+	 it.bless(true);
+	 p.addItem(it);
+	 it.equip(p);
+	 
+	 auto &wand = createWand(sharedAction<monster,monster>::key::conversion);
+	 wand.bless(true);
+	 wand.enchant(10);
+	 p.addItem(wand);
+
+	 auto &book = createHolyBook(pcAlign);
+	 book.bless(true);
+	 p.addItem(book);
+       }
+       ));
+    rtn.emplace_back(new questImpl
+      (L"Retrieve the stolen artifact",
+       L"In a temple you cannot enter lies a stolen idol aligned to your deity's path.\n" // TODO: name the deity?
+       "Retrive it so it can be returned to your own temple.",
+       L"Really abandon the stolen idol?",
+       L"You have retrieved the idol.",
+       99,
+       [&pcAlign](questImpl &qI, levelImpl &li, level &l) { return new crusadeQuestLevelGen<false>(qI, li, l, pcAlign); },
+       [](questImpl &qI, levelGen &lg, level &l, int depth) {
+       },
+       [](player &p) {}
        ));       
+  break;
   case roleType::shopkeeper:
     rtn.emplace_back(new questImpl
       (L"Positive Trade",       

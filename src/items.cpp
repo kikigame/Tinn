@@ -2173,6 +2173,22 @@ public:
   }
 };
 
+class icon : public onPickupQuestItem<questItemType::icon>,
+	     public hasAlign {
+private:
+  const deity *align_;
+public:
+  icon(std::function<void(const itemHolder&)> &h, const deity &align)
+    : onPickupQuestItem<questItemType::icon>(h),
+    align_(&align) {
+  }
+  virtual std::wstring name() const {
+    return basicQuestItem::name() + align_->name();
+  }
+  virtual ~icon() {}
+  virtual const deity &align() const { return *align_;}
+};
+
 template<>
 struct questItemTypeTraits<questItemType::grail>{
   typedef basicQuestItem<questItemType::grail> type;
@@ -2203,6 +2219,22 @@ struct questItemTypeTraits<questItemType::diamond>{
 };
 
 template<>
+struct questItemTypeTraits<questItemType::icon>{
+  typedef icon type;
+  static constexpr const wchar_t render_ = L'*'; // valuable
+  static constexpr const wchar_t * const name_ = L"Icon of "; // must contain "Icon of" (shop quest)
+  static constexpr const wchar_t * const desc_ =
+    L"This classic work of art follows a long tradition of religions icons that\n"
+    "began with Luke the Evalgelist, or arguably with pagan images of the Green\n"
+    "Man. This icon is a relatively small but highly prized sanctioned image\n"
+    "of the deity for whose glory you embarked upon your quest. Retrieving this\n"
+    "will assure honour for your temple - if you can get it out.";
+  static constexpr const materialType mat_ = materialType::stony;
+  static constexpr const double weight_ = 0.0286746446837404;
+  static constexpr const damageType weaponDamage_ = damageType::edged;
+};
+
+template<>
 item & createQuestItem<questItemType::grail>() {
   auto rtn = new typename questItemTypeTraits<questItemType::grail>::type();
   itemHolderMap::instance().enroll(*rtn);
@@ -2211,6 +2243,12 @@ item & createQuestItem<questItemType::grail>() {
 template<>
 item & createQuestItem<questItemType::diamond>(std::function<void(const itemHolder&)> &f) {
   auto rtn = new typename questItemTypeTraits<questItemType::diamond>::type(f);
+  itemHolderMap::instance().enroll(*rtn);
+  return *rtn;
+}
+template<>
+item & createQuestItem<questItemType::icon>(std::function<void(const itemHolder&)> &f, const deity &d) {
+  auto rtn = new typename questItemTypeTraits<questItemType::icon>::type(f, d);
   itemHolderMap::instance().enroll(*rtn);
   return *rtn;
 }

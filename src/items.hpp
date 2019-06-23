@@ -23,6 +23,7 @@ class level;
 class coord;
 
 class item;
+class deity;
 
 // when using Multiple Inheritance with shared_from_this, you need to use a common virtual base-class
 // for shared_from_this, so that any derived class can create shared pointers in one group.
@@ -198,8 +199,9 @@ template<questItemType it>
 item & createQuestItem();
 template<questItemType it>
 item & createQuestItem(std::function<void(const itemHolder&)> &);
+template<questItemType it>
+item & createQuestItem(std::function<void(const itemHolder&)> &, const deity &);
 
-class deity;
 // create a holy book with specific alignment
 item & createHolyBook(const deity &align);
 
