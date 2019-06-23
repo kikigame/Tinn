@@ -151,7 +151,7 @@ const attackResult monster::attack(monster &target) {
 
     // Now to see if the opponent dodged it...
     unsigned char d = target.dodge().cur();
-    if (dHit < d) {
+    if (dHit < d/2) {
       target.damageArmour(dt); // always damage armour on unsuccessful attack, unless proofed.
       return attackResult(injury(), L"evaded");
     }
