@@ -70,13 +70,16 @@ const wchar_t monster::render() const { // delegate to type by default
 
 std::wstring monster::name() const {
   std::wstring buffer;
+  auto damage = damage_.max();
+  auto &name = type_.name(damage);
   for (auto a : adjectives())
     buffer += a + L" ";
-  auto damage = damage_.max();
+  for (auto a : name) // monster type adjectives
+    buffer += std::wstring(a) + L" ";
   for (auto &m : mutations_)
     if (m.get().appliesTo(type()))
       buffer += m.get().prefix();
-  buffer += type_.name(damage);
+  buffer += name.name();
   return buffer;
 }
 

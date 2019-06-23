@@ -90,6 +90,19 @@ class deity;
 class monsterTypeRepoImpl;
 class level;
 
+class monsterTypeName {
+private:
+  const std::vector<const wchar_t *> adjectives_;
+  const wchar_t * name_;
+public:
+  monsterTypeName(const wchar_t * name);
+  monsterTypeName(std::initializer_list<const wchar_t *>, const wchar_t *);
+public:
+  const wchar_t * name() const;
+  std::vector<const wchar_t *>::const_iterator begin() const;
+  std::vector<const wchar_t *>::const_iterator end() const;
+};
+
 // types of monster
 class monsterType {
 private:
@@ -98,7 +111,7 @@ private:
   // TODO: weapon damage types dealt bitset
   // TODO: weapon proofs / resistance
   // TODO: othir intrinsics
-  const std::vector<const wchar_t *> monsterNames_; // by experience
+  const std::vector<monsterTypeName> monsterNames_; // by experience
   const std::wstring encyclopedium_;
   const std::wstring className_; // for grouping
   const int levelFactor_;
@@ -179,8 +192,8 @@ public:
   const int iMaxDamage() const;
 
   const wchar_t renderChar() const;
-  const std::vector<const wchar_t *> & names() const;
-  const wchar_t * name(unsigned char maxDamage) const; // look up based on how advanced this creature is
+  const std::vector<monsterTypeName> & names() const;
+  const monsterTypeName &name(unsigned char maxDamage) const; // look up based on how advanced this creature is; TODO: split out adjectives so "were-giant troll" becomes "giant were-troll"
   const std::vector<deity *> & alignment() const;
   const movementType & movement() const;
 

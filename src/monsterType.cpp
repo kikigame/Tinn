@@ -13,6 +13,26 @@
 #include "terrain.hpp"
 
 
+monsterTypeName::monsterTypeName(const wchar_t * name) :
+  adjectives_(),
+  name_(name) {};
+
+monsterTypeName::monsterTypeName(std::initializer_list<const wchar_t *> adjectives,
+				 const wchar_t * name) :
+  adjectives_(adjectives),
+  name_(name) {};
+
+const wchar_t * monsterTypeName::name() const {
+  return name_;
+}
+std::vector<const wchar_t *>::const_iterator monsterTypeName::begin() const {
+  return adjectives_.begin();
+}
+std::vector<const wchar_t *>::const_iterator monsterTypeName::end() const {
+  return adjectives_.end();
+}
+
+
 std::unique_ptr<monsterTypeRepo> monsterTypeRepo::instance_;
 
 class monsterTypeBuilder {
@@ -20,7 +40,7 @@ class monsterTypeBuilder {
   friend class monsterType; // our builder
 private:
   monsterCategory category_;
-  std::vector<const wchar_t *> monsterNames_; // by experience
+  std::vector<monsterTypeName> monsterNames_; // by experience
   std::wstring className_; // for grouping
   int levelFactor_;
   int levelOffset_;
@@ -59,6 +79,7 @@ public:
     key_(key) {}
   monsterTypeBuilder& category(monsterCategory category) { category_ = category; return *this; }
   monsterTypeBuilder& name(const wchar_t * name) { monsterNames_.push_back(name); return *this; }
+  monsterTypeBuilder& name(std::initializer_list<const wchar_t *> adjectives, const wchar_t * name) { monsterNames_.emplace_back(adjectives, name); return *this; }
   monsterTypeBuilder& className(const std::wstring & className) { className_ = className; return *this; }
   // how quickly does the monster progress as we get below levelOffset?:
   monsterTypeBuilder& levelFactor(int levelFactor) { levelFactor_ =levelFactor ; return *this; }
@@ -150,7 +171,7 @@ const int monsterType::iMaxDamage() const { return maxDamage_; }
 const double monsterType::corpseWeight() const { return corpseWeight_; }
 const materialType monsterType::material() const { return material_; }
 const wchar_t monsterType::renderChar() const { return renderChar_; }
-const std::vector<const wchar_t*>& monsterType::names() const { return monsterNames_; }
+const std::vector<monsterTypeName>& monsterType::names() const { return monsterNames_; }
 const std::vector<deity*>& monsterType::alignment() const { return alignment_; }
 const movementType& monsterType::movement() const { return movementType_; }
 const int monsterType::getLevelFactor() const { return levelFactor_; }
@@ -169,7 +190,7 @@ const bool monsterType::eats(const materialType foodType) const { return foodMat
 bool monsterType::operator == (const monsterType & rhs) const {
   return key_ == rhs.key_;
 }
-const wchar_t * monsterType::name(const unsigned char maxDamage) const {
+const monsterTypeName &monsterType::name(const unsigned char maxDamage) const {
   auto numNames = monsterNames_.size();
   if (numNames == 1) return monsterNames_.at(0); // optimisation
   if (maxDamage < iMaxDamage()) return monsterNames_.at(0); // safety
@@ -265,10 +286,10 @@ L"Dragons are large serpentine creatures; highly intelligent and amongst the\n"
     // unique feature: grows continuously
     emplace(monsterTypeBuilder(monsterTypeKey::blob)
 	    .category(monsterCategory::blob)
-	    .name(L"small blob")
+	    .name({L"small"}, L"blob")
 	    .name(L"blob")
-	    .name(L"big blob")
-	    .name(L"huge blob")
+	    .name({L"big"}, L"blob")
+	    .name({L"huge"}, L"blob")
 	    .className(L"blobs")
 	    .levelFactor(10)
 	    .levelOffset(50)
@@ -567,10 +588,10 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
     // unique feature: uniquely, no unique features
     emplace(monsterTypeBuilder (monsterTypeKey::human)
 	    .category(monsterCategory::biped)
-	    .name(L"inexperienced human")
+	    .name({L"inexperienced"}, L"human")
 	    .name(L"human")
-	    .name(L"wise human")
-	    .name(L"elder human")
+	    .name({L"wise"}, L"human")
+	    .name({L"elder"}, L"human")
 	    .className(L"humanoid")
 	    .levelFactor(1)
 	    .levelOffset(-1)
@@ -938,8 +959,8 @@ L"There are a great number of creatures in the world, and not all sit neatly\n"
     // unique feature: beeline approach ignoring all traps. Instant death on pin traps
     emplace(monsterTypeBuilder (monsterTypeKey::zombie)
 	    .category(monsterCategory::biped)
-	    .name(L"rotting zombie")
-	    .name(L"elderly zombie")
+	    .name({L"rotting"}, L"zombie")
+	    .name({L"elderly"}, L"zombie")
 	    .name(L"human zombie")
 	    .name(L"warrior zombie")
 	    .name(L"giant zombie")

@@ -1170,7 +1170,7 @@ public:
     return adjectives;
   }
   virtual std::wstring simpleName() const {
-    return type_.name(maxDamage_); // overridden to change type_ from itemType to monsterType.
+    return type_.name(maxDamage_).name(); // overridden to change type_ from itemType to monsterType.
   }
   virtual item::useResult use() {
     auto &ios = ioFactory::instance();
@@ -1217,7 +1217,7 @@ public:
   virtual std::vector<std::wstring> adjectives() const {
     auto adjectives = basicItem::adjectives();
     if (enchantment() > 14 || isBlessed()) adjectives.push_back(L"finest");
-    adjectives.push_back(type_.names().at(0));
+    adjectives.push_back(type_.names().at(0).name());
     adjectives.push_back(cut());
     return adjectives;    
   }  
