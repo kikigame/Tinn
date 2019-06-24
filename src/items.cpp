@@ -1088,6 +1088,8 @@ public:
       level.changeTerrain(c, level.terrainAt(pos).type());
       ejectContents(level, c);
       return useResult::DONE;
+    case terrainType::CRACK:
+      io.message(L"The hole won't stick to the crack.");
     default:
       return useResult::FAIL;      
     }

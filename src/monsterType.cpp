@@ -332,6 +332,7 @@ L"Dragons are large serpentine creatures; highly intelligent and amongst the\n"
 	    .movesThrough(terrainType::SPACE)
 	    .movesThrough(terrainType::KNOTWEED)
 	    .movesThrough(terrainType::DECK)
+	    .movesThrough(terrainType::CRACK)
 	    .fearless()
 	    .dblAttack() // can't move, and deep in the game, so let's give it a chance
 	    .encyclopedium(
@@ -504,7 +505,7 @@ L"Vulpine animals get a mixed reaction; these charming, beautiful creatures\n"
 	    .category(monsterCategory::biped)
 	    .name(L"goblin")
 	    .name(L"red-cap goblin")
-	    .className(L"goblin")
+	    .className(L"Elfins")
 	    .levelFactor(1)
 	    .levelOffset(5)
 	    .minSpawn(1)
@@ -707,6 +708,50 @@ L"Kelpies live in rivers and streams, while the stronger Each-uisge prefers\n"
 "Kelpies are often known to enact retribution for bad behaviour conducted\n"
 "on a Sunday."));
 
+    // unique feature: teleports between cracks
+    emplace(monsterTypeBuilder(monsterTypeKey::mokumokuren)
+	    .category(monsterCategory::biped)
+	    .name(L"Mokumokuren")
+	    .className(L"Elfins")
+	    .levelFactor(2)
+	    .levelOffset(50)
+	    .minSpawn(1)
+	    .maxSpawn(10)
+	    .xpFactor(2)
+	    .xpOffset(30)
+	    .renderChar(L'o') // as goblin, but it just fits
+	    .strength(5)
+	    .appearance(10) // as goblin
+	    .fighting(0) // non-combative as a rule
+	    .dodge(30)
+	    .maxDamage(10)
+	    .gen(genderAssignType::neuter)
+	    .align(dr.getExact(Element::earth, Domination::concentration, Outlook::none))
+	    .align(dr.getExact(Element::plant, Domination::concentration, Outlook::none))
+	    .align(dr.getExact(Element::time, Domination::concentration, Outlook::none))
+	    .corpseWeight(1.25)
+	    .saying(L"Shhh")
+	    .eats(materialType::papery)
+	    .carryWeight(2)
+	    .movement({speed::slow3, goTo::crack, goBy::teleport})
+	    .movesThrough(terrainType::CRACK)
+	    .movesThrough(terrainType::GROUND)
+	    .movesThrough(terrainType::DECK)
+	    .scardy()
+	    .see()
+	    .hear()
+	    .speedy()
+	    .swim()
+	    .fly()
+	    .climb()
+	    .encyclopedium(
+L"An infestation of mokumokuren may often be attributed to poor maintenance of\n"
+"household shōji. They may be a sign of a more general yokai infestation. If\n"
+"you find one in your clothing or baggage, be worried for they are seen as bad\n"
+"omens. They have an incredible memory and are immune to most forms of damage,\n"
+"although they are rarely aggressive, they can spit acid or feed on your dreams."
+));
+    
     // unique feature: charms enemies, watery attacks
     emplace(monsterTypeBuilder(monsterTypeKey::merfolk)
 	    .category(monsterCategory::merfolk)

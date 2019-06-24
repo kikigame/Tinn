@@ -386,6 +386,14 @@ public:
   }
 };
 
+// TODO: spit acid or drain mind in defence
+class mokumokuren : public monster {
+public:
+  mokumokuren(monsterBuilder &b) :
+    monster(b) {}
+  virtual ~mokumokuren() {}
+};
+
 class siren : public monster {
 public:
   siren(monsterBuilder &b) :
@@ -745,6 +753,7 @@ template<> struct monsterTypeTraits<monsterTypeKey::goblin> { typedef goblin typ
 template<> struct monsterTypeTraits<monsterTypeKey::hound> { typedef hound type; };
 template<> struct monsterTypeTraits<monsterTypeKey::incubus> { typedef incubus type; };
 template<> struct monsterTypeTraits<monsterTypeKey::kelpie> { typedef kelpie type; };
+template<> struct monsterTypeTraits<monsterTypeKey::mokumokuren> { typedef mokumokuren type; };
 template<> struct monsterTypeTraits<monsterTypeKey::merfolk> { typedef merfolk type; };
 template<> struct monsterTypeTraits<monsterTypeKey::siren> { typedef siren type; };
 template<> struct monsterTypeTraits<monsterTypeKey::snake> { typedef snake type; };
@@ -786,6 +795,7 @@ std::shared_ptr<monster> monsterType::spawn(level & level, monsterBuilder &b) co
   case monsterTypeKey::human: return ofTypeImpl<monsterTypeKey::human>(level,b); 
   case monsterTypeKey::incubus: return ofTypeImpl<monsterTypeKey::incubus>(level,b); 
   case monsterTypeKey::kelpie: return ofTypeImpl<monsterTypeKey::kelpie>(level,b); 
+  case monsterTypeKey::mokumokuren: return ofTypeImpl<monsterTypeKey::mokumokuren>(level,b); 
   case monsterTypeKey::merfolk: return ofTypeImpl<monsterTypeKey::merfolk>(level,b);
   case monsterTypeKey::siren: return ofTypeImpl<monsterTypeKey::siren>(level,b); 
   case monsterTypeKey::snake: return ofTypeImpl<monsterTypeKey::snake>(level,b); 
