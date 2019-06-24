@@ -28,6 +28,7 @@ enum class terrainType {
   SPACE, // vacuum, used with space zone. Chance of displaying as a L'*' for twinkling effect
   BULKHEAD,// outer hull of a ship or space station
   KNOTWEED, // impassible undergrowth.
+  CRACK, // cracks in the wall; home to mokumokuren & portable holes won't stick
   DECK
 };
 

@@ -22,6 +22,7 @@ enum class goTo {
   unaligned, // seek out the player if unaligned, or any unaligned monster, elso stay put.
   up, // find an up ramp and sit on it
   down, // find a down ramp and sit on it
+  crack, // find any crack terran at random, not necessarily the one we're on
 };
 
 enum class goBy {

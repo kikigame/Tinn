@@ -145,6 +145,16 @@ void moveMobile(T &mon) {
       dir.second = myPos.second < targetPos.second ? 1 : myPos.second == targetPos.second ? 0 : -1;     
       }
       break;
+    case goTo::crack: {
+      auto vec = level.findAllTerrain(terrainType::CRACK);
+      auto pTarget = rndPick(vec.begin(), vec.end());
+      if (pTarget == vec.end()) return;
+      targetPos = *pTarget;
+      {
+      dir.first = myPos.first < targetPos.first ? 1 : myPos.first == targetPos.first ? 0 : -1;
+      dir.second = myPos.second < targetPos.second ? 1 : myPos.second == targetPos.second ? 0 : -1;     
+      }
+      break; }
     default:
       throw type.goTo_;
     }
