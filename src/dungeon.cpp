@@ -12,6 +12,7 @@
 #include <sstream>
 
 const int NUM_LEVELS = 100;
+int dPc(); // defined in random.cpp
 
 // initialise the dungeon:
 dungeon::dungeon() 
@@ -27,8 +28,12 @@ dungeon::dungeon()
   playerBuilder pb = chargen();
 
   levelFactory factory(*this, NUM_LEVELS, pb.job());
-  for (auto l : factory)
+  for (auto l : factory) {
     level_.emplace_back(l);
+    auto pL = level_.rbegin()->get();
+    if (pL->depth() > 50 && dPc() < pL->depth() - 50)
+      pL->crack();
+  }
 
   level &start = *(level_[cur_level_]);
   pb.startOn(start);
