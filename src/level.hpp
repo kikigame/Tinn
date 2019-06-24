@@ -169,6 +169,9 @@ public:
 
   // find a non-coaligned monster in line of sight:
   optionalRef<monster> lineOfSightTarget(monster &m);
+
+  // crack the level, eg for an earthquake
+  void crack();
 };
 
 # endif // ndef  LEVEL_HPP__

@@ -908,6 +908,26 @@ public:
     throw std::wstring(L"Too many rocky things to create a prison!");
   }
 
+  void crack(level &pub) {
+    auto rocks = findAllTerrain(terrainType::ROCK);
+    auto grounds = findAllTerrain(terrainType::GROUND);
+    int crackCounter=0;
+    for (coord r : rocks)
+      // are we adjacent to a ground?
+      for (coord g : grounds) {
+	if (r.towards(g) == g)
+	  if (dPc() < 10) {
+	    terrain_[r] = tFactory.get(terrainType::CRACK);
+	    if (++crackCounter == 10) {
+	      auto mok = monsterTypeRepo::instance()[monsterTypeKey::mokumokuren].spawn(pub);
+	      addMonster(mok, r);
+	      crackCounter = 0;
+	    }
+	  }
+	break; // consider next rock square
+      }
+  }
+  
 private:
   void endGame() {
     auto &ios = ioFactory::instance();
@@ -1370,7 +1390,9 @@ bool level::stillOnLevel(const monster *mon) const {
 optionalRef<monster> level::lineOfSightTarget(monster &m) {
   return pImpl_->lineOfSightTarget(m, posOf(m));
 }
-
+void level::crack() {
+  return pImpl_->crack(*this);
+}
 
 
 class levelFactoryImpl {
