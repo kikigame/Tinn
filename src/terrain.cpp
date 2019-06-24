@@ -81,6 +81,8 @@ bool terrain::movable(const monster &m) const {
     return true;
   case terrainType::KNOTWEED:
     return true;
+  case terrainType::CRACK:
+    return false;
   default:
     throw type_; // missing type from enum
   }

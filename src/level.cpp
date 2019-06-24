@@ -916,7 +916,7 @@ public:
       // are we adjacent to a ground?
       for (coord g : grounds) {
 	if (r.towards(g) == g)
-	  if (dPc() < 10) {
+	  if (dPc() <= 10) {
 	    terrain_[r] = tFactory.get(terrainType::CRACK);
 	    if (++crackCounter == 10) {
 	      auto mok = monsterTypeRepo::instance()[monsterTypeKey::mokumokuren].spawn(pub);
@@ -924,7 +924,6 @@ public:
 	      crackCounter = 0;
 	    }
 	  }
-	break; // consider next rock square
       }
   }
   

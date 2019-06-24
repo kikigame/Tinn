@@ -313,7 +313,7 @@ public:
 	  place(coord(x,y), terrainType::GROUND);
     auto monsters = addMonsters(rooms);
     for (auto pM : monsters) {
-      if (pM->render() == L'&') {
+      if (pM && pM->render() == L'&') {
 	auto &dt = damageRepo::instance()[damageType::electric];
 	pM->wound(*pM, 100, dt); // discard demons in the temple
       }
