@@ -12,7 +12,7 @@
 enum class mutationType {
   VAMPIRE,
   CYBER,
-  WERE, // TODO: should swap to alternate form? reseach.
+  WERE, // TODO: should swap to alternate form?
   SPACE,
   END
 };

@@ -262,10 +262,9 @@ public:
     place(downRampPos(), terrainType::DOWN);
 
     // Some monsters (no demons in the temple please).
-    // TODO: Should we make these acolytes?
     std::vector<std::pair<coord, coord>> vec({{templeTopLeft, templeBtmRight},
 	  {shrineTopLeft, shrineBotRight}});
-    addMonsters(vec, [](const monsterType *t) {return t->renderChar() != L'&';});
+    auto ms = addMonsters(vec, [](const monsterType *t) {return t->renderChar() != L'&';});
   }
 };
 

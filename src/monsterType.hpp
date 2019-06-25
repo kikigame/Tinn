@@ -111,7 +111,6 @@ private:
   const monsterCategory category_;
   // TODO: weapon damage types dealt bitset
   // TODO: weapon proofs / resistance
-  // TODO: othir intrinsics
   const std::vector<monsterTypeName> monsterNames_; // by experience
   const std::wstring encyclopedium_;
   const std::wstring className_; // for grouping
@@ -194,7 +193,7 @@ public:
 
   const wchar_t renderChar() const;
   const std::vector<monsterTypeName> & names() const;
-  const monsterTypeName &name(unsigned char maxDamage) const; // look up based on how advanced this creature is; TODO: split out adjectives so "were-giant troll" becomes "giant were-troll"
+  const monsterTypeName &name(unsigned char maxDamage) const; // look up based on how advanced this creature is
   const std::vector<deity *> & alignment() const;
   const movementType & movement() const;
 

@@ -332,7 +332,7 @@ mutationFactory::mutationFactory() :
      "In Turkey, for instance, shamen in wolf-form are reveared.\n"
      "The symptoms of clinical lycanthropy provides lupine behavioural traits\n"
      "and a ravenous appitite, but it is not to be confused with the original\n"
-     "meaning of wereworf.\n"
+     "meaning of werewolf.\n"
      "Other forms of werecreatures are seen, such as the Asian werecats.\n"
     },
     {'S',L"Space",L"Space creatures are much like their gravity-bound\n"
