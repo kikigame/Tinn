@@ -878,7 +878,9 @@ std::vector<std::pair<unsigned int, monsterType*>> spawnMonsters(int depth, int 
       // don't randomnly generate sirens; they must be on watery levels, on the rocks:
       mt->type() != monsterTypeKey::siren &&
       // likewise, don't generate merfolk outside the water:
-      mt->type() != monsterTypeKey::merfolk;
+      mt->type() != monsterTypeKey::merfolk &&
+      // likewise, don't generate mokumokuren; they come from cracked levels
+      mt->type() != monsterTypeKey::mokumokuren;
   };
   auto ffrom = make_filtered_iterator(filter, from, to);
   auto tto = make_filtered_iterator(filter, to, to);
