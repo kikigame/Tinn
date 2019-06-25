@@ -9,6 +9,7 @@
 #include "coord.hpp"
 #include "terrain.hpp"
 #include "optionalRef.hpp"
+#include "zone.hpp"
 #include <vector>
 
 class level;

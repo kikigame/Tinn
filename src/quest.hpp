@@ -22,7 +22,6 @@ enum class roleType {
 class level;
 class levelImpl;
 class levelGen;
-class player;
 class questImpl;
 class deity;
 
@@ -40,8 +39,6 @@ public:
   levelGen * newQuestLevelGen(levelImpl &, level &) const; // returns new instance
   // called for each level:
   void setupLevel(levelGen &lg, level &l, int depth);
-  // callon on the starting player:
-  void setupPlayer(player &);
   // is the quest successful?
   bool isSuccessful() const;
   // Y/N confirm prompt used in case quest is incomplete.

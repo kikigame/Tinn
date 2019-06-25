@@ -4,7 +4,6 @@
 // I've kept this as the usual enum-key-and-repository pattern, as we may want monster roles in future.
 
 #include "quest.hpp"
-#include "player.hpp"
 #include "levelGen.hpp"
 #include "output.hpp"
 #include "action.hpp"
@@ -28,7 +27,6 @@ private:
   bool isComplete_;
   const std::function<levelGen*(questImpl &, levelImpl &, level &)> lg_;
   const std::function<void(questImpl &, levelGen &, level &, int)> ls_;
-  const std::function<void(player &)> ps_;
 public:
   questImpl(const wchar_t* const name,
 	    const wchar_t* const questData,
@@ -38,12 +36,10 @@ public:
 	    // quest level generator:
 	    const std::function<levelGen*(questImpl &, levelImpl &, level &)> lg,
 	    // level setup filter
-	    const std::function<void(questImpl &, levelGen &, level &, int)> ls,
-	    // player equipment generator:
-	    const std::function<void(player &)> ps)
+	    const std::function<void(questImpl &, levelGen &, level &, int)> ls)
     : name_(name), questData_(questData), incompletePrompt_(incompletePrompt),
       completeMsg_(completeMsg),
-      questLevel_(questLevel), isComplete_(false), lg_(lg), ls_(ls), ps_(ps) {}
+      questLevel_(questLevel), isComplete_(false), lg_(lg), ls_(ls) {}
   questImpl(const questImpl &) = delete;
   questImpl(questImpl &&) = delete;
   const wchar_t * const name() const {
@@ -65,7 +61,6 @@ public:
     return lg_(*this, li, l);
   }
   void setupLevel(levelGen &lg, level &l, int depth) { ls_(*this,lg,l,depth); }
-  void setupPlayer(player &p) { ps_(p); }
   bool isSuccessful() const {
     return isComplete_;
   }
@@ -88,7 +83,6 @@ levelGen *quest::newQuestLevelGen(levelImpl &li, level &l) const {
   return pImpl_->newQuestLevelGen(li,l);
 }
 void quest::setupLevel(levelGen &lg, level &l, int depth) { return pImpl_->setupLevel(lg,l,depth); }
-void quest::setupPlayer(player &p) { return pImpl_->setupPlayer(p); }
 bool quest::isSuccessful() const { return pImpl_->isSuccessful(); }
 
 
@@ -402,16 +396,7 @@ std::vector<quest> questsForRole(const deity & pcAlign, roleType t) {
        L"You slew the greatest dragon!",
        100,
        [](questImpl &qI, levelImpl &li, level &l) { return new warriorQuestLevelGen(qI, li,l); },
-       [](questImpl &qI, levelGen &lg, level &l, int depth) {},
-       [](player &p) {
-	 for (auto k : std::array<itemTypeKey, 5>{{
-	       itemTypeKey::mace, itemTypeKey::jerkin, itemTypeKey::underpants,
-		 itemTypeKey::boots, itemTypeKey::shirt}}) {
-	   auto &it = createItem(k);
-	   p.addItem(it);
-	   it.equip(p);
-	 }
-       }
+       [](questImpl &qI, levelGen &lg, level &l, int depth) {}
        ));
     break;
   case roleType::thief:
@@ -438,33 +423,7 @@ std::vector<quest> questsForRole(const deity & pcAlign, roleType t) {
 	       l.changeTerrain(c, terrainType::PIANO_HIDDEN);
 	   }
 	 }
-       },
-       [](player &p) {
-	 // thief should be less tough. but faster
-	 p.intrinsics()->speedy(true);
-	 p.dodge().bonus(5);
-	 p.strength().cripple(10);
-	 p.fighting().cripple(10);
-	 // equip the player
-	 for (auto k : std::array<itemTypeKey, 8>{{
-	       itemTypeKey::sling, itemTypeKey::gloves, itemTypeKey::underpants,
-		 itemTypeKey::boots, itemTypeKey::shirt, itemTypeKey::shorts,
-		 itemTypeKey::socks, itemTypeKey::wooden_ring}}) {
-	   auto &it = createItem(k);
-	   p.addItem(it);
-	   it.equip(p);
-	 }
-	 p.addItem(createItem(itemTypeKey::pie));
-	 p.addItem(createItem(itemTypeKey::fizzy_pop));
-	 for (int i=0; i < 10; ++i)
-	   p.addItem(createItem(itemTypeKey::rock));
-	 p.addItem(createItem(itemTypeKey::bottling_kit));
-	 p.addItem(createItem(itemTypeKey::lyre));
-	 auto &wand = createItem(itemTypeKey::stick);
-	 p.addItem(wand);
-	 wand.enchant(5);
-       }
-       ));
+       }));
     break;
   case roleType::crusader:
     rtn.emplace_back(new questImpl
@@ -477,32 +436,7 @@ std::vector<quest> questsForRole(const deity & pcAlign, roleType t) {
        100,
        [&pcAlign](questImpl &qI, levelImpl &li, level &l) { return new crusadeQuestLevelGen<true>(qI, li, l, pcAlign); },
        [](questImpl &qI, levelGen &lg, level &l, int depth) {
-       },
-       [&pcAlign](player &p) { // TODO: should starting inventory be done in role.cpp?
-	 for (auto k : std::array<itemTypeKey, 7>{{
-	       itemTypeKey::helmet,
-	       itemTypeKey::jerkin, itemTypeKey::underpants,
-		 itemTypeKey::boots, itemTypeKey::shirt,
-		 itemTypeKey::hauberk, itemTypeKey::doublet}}) {
-	   auto &it = createItem(k);
-	   p.addItem(it);
-	   it.equip(p);
-	 }
-	 auto &it = createItem(itemTypeKey::two_sword);
-	 it.bless(true);
-	 p.addItem(it);
-	 it.equip(p);
-	 
-	 auto &wand = createWand(sharedAction<monster,monster>::key::conversion);
-	 wand.bless(true);
-	 wand.enchant(10);
-	 p.addItem(wand);
-
-	 auto &book = createHolyBook(pcAlign);
-	 book.bless(true);
-	 p.addItem(book);
-       }
-       ));
+       }));
     rtn.emplace_back(new questImpl
       (L"Retrieve the stolen artifact",
        L"In a temple you cannot enter lies a stolen idol aligned to your deity's path.\n" // TODO: name the deity?
@@ -512,9 +446,7 @@ std::vector<quest> questsForRole(const deity & pcAlign, roleType t) {
        99,
        [&pcAlign](questImpl &qI, levelImpl &li, level &l) { return new crusadeQuestLevelGen<false>(qI, li, l, pcAlign); },
        [](questImpl &qI, levelGen &lg, level &l, int depth) {
-       },
-       [](player &p) {}
-       ));       
+       }));       
   break;
   case roleType::shopkeeper:
     rtn.emplace_back(new questImpl
@@ -538,17 +470,7 @@ std::vector<quest> questsForRole(const deity & pcAlign, roleType t) {
 		     });
 		 });
 	   });
-       },
-       [](player &p) {
-	 p.addItem(createItem(itemTypeKey::apple));
-	 p.addItem(createItem(itemTypeKey::shop_card));
-	 p.addItem(createItem(itemTypeKey::hitch_guide));
-	 auto &bow = createItem(itemTypeKey::bow);
-	 bow.sexUp(true);
-	 p.addItem(bow);
-	 bow.equip(p);
-       }
-       ));
+       }));
     break;
   default: throw t;
   };

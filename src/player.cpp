@@ -79,10 +79,7 @@ player::player(playerBuilder &b) :
   // starting inventory:
   // I feel a player should start with a deterministic inventory, perhaps based
   // on their class and race.
-  auto begin = job().questsBegin();
-  auto end = job().questsEnd();
-  for (auto pQ = begin; pQ != end; ++pQ)
-    pQ->setupPlayer(*this);
+  job().setupPlayer(*this);
 
   // proper cheat mode: if you have the player name of "Taqris" (deity of trees), you get one of each stick:
   if (name() == L"Taqris")

@@ -27,7 +27,7 @@ lint:
 clean:
 	rm -f   src/action.o src/adjectives.o src/appraise.o src/bonus.o src/characteristic.o src/chargen.o src/coord.o src/damage.o src/dreamscape.o src/dungeon.o src/encyclopedia.o src/equippable.o src/fruit.o src/gardenZone.o src/geometry.o src/item.o src/itemholder.o src/items.o src/itemType.o src/level.o src/levelFactory.o src/main.o src/mobile.o src/monster.o src/monsterFactory.o src/monsterIntrinsics.o src/monstermutation.o src/monsterType.o src/output.o src/output_curses.o src/output_term.o src/player.o src/polymorph.o src/quest.o src/religion.o src/role.o src/shop.o src/shopkeeper.o src/shrine.o src/slots.o src/spaceZone.o src/target.o src/terrain.o src/time.o src/transport.o 
 
-src/action.o : src/action.cpp src/action.hpp src/beitude.hpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/equippable.hpp src/graphsearch.hpp src/hasAdjectives.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/level.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/monstermutation.hpp src/movement.hpp src/optionalRef.hpp src/output.hpp src/random.hpp src/ref.hpp src/renderable.hpp src/slots.hpp src/terrain.hpp src/time.hpp src/zone.hpp 
+src/action.o : src/action.cpp src/action.hpp src/beitude.hpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/equippable.hpp src/graphsearch.hpp src/hasAdjectives.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/level.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/monstermutation.hpp src/movement.hpp src/optionalRef.hpp src/output.hpp src/random.hpp src/ref.hpp src/religion.hpp src/renderable.hpp src/slots.hpp src/terrain.hpp src/time.hpp src/zone.hpp 
 	$(CXX) src/action.cpp -c -Wall -g -std=c++11 -o src/action.o -finput-charset=utf8 -fexec-charset=utf8
 
 src/adjectives.o : src/adjectives.cpp 
@@ -132,7 +132,7 @@ src/quest.o : src/quest.cpp src/action.hpp src/beitude.hpp src/bonus.hpp src/cha
 src/religion.o : src/religion.cpp src/religion.hpp src/renderable.hpp 
 	$(CXX) src/religion.cpp -c -Wall -g -std=c++11 -o src/religion.o -finput-charset=utf8 -fexec-charset=utf8
 
-src/role.o : src/role.cpp src/quest.hpp src/religion.hpp src/renderable.hpp src/role.hpp 
+src/role.o : src/role.cpp src/action.hpp src/beitude.hpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/equippable.hpp src/graphsearch.hpp src/hasAdjectives.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/level.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/monstermutation.hpp src/movement.hpp src/optionalRef.hpp src/player.hpp src/quest.hpp src/ref.hpp src/religion.hpp src/renderable.hpp src/role.hpp src/slots.hpp src/time.hpp src/zone.hpp 
 	$(CXX) src/role.cpp -c -Wall -g -std=c++11 -o src/role.o -finput-charset=utf8 -fexec-charset=utf8
 
 src/shop.o : src/shop.cpp src/action.hpp src/appraise.hpp src/beitude.hpp src/bonus.hpp src/characteristic.hpp src/coord.hpp src/damage.hpp src/equippable.hpp src/graphsearch.hpp src/hasAdjectives.hpp src/itemTypes.hpp src/itemholder.hpp src/items.hpp src/iterable.hpp src/level.hpp src/materialType.hpp src/monster.hpp src/monsterIntrinsics.hpp src/monsterType.hpp src/monstermutation.hpp src/movement.hpp src/optionalRef.hpp src/output.hpp src/random.hpp src/ref.hpp src/religion.hpp src/renderable.hpp src/shop.hpp src/slots.hpp src/time.hpp src/zone.hpp 

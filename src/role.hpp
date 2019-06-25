@@ -14,6 +14,7 @@ class level;
 class levelImpl;
 class levelGen;
 class roleImpl;
+class player;
 
 // roleType enum defined in quest.hpp to avoid cyclic dependency
 
@@ -32,6 +33,8 @@ public:
   std::vector<quest>::iterator questsEnd();
   std::vector<quest>::const_iterator questsEnd() const;
   roleType type() const;
+  // called on on the starting player:
+  void setupPlayer(player &);
 };
 
 class roleRepoImpl;
