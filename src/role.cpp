@@ -181,3 +181,17 @@ void roleRepo::close() {
   instance_.reset(NULL);
 }
 
+std::wstring role::questText() const {
+  std::wstring rtn(L"Quests:-\n======\n\n");
+  auto qe = questsEnd();
+  for (auto q = questsBegin(); q != qe; ++q) {
+    std::wstring name(q->name());
+    rtn += name + L"\n";
+    rtn += std::wstring(name.length(), L'-') + L"\n";
+    rtn += L"Status: ";
+    rtn += (q->isSuccessful() ? L"complete\n\n" : L"active\n\n");
+    rtn += q->questData();
+    rtn += L"\n\n";
+  }
+  return rtn;
+}

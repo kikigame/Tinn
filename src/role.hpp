@@ -35,6 +35,8 @@ public:
   roleType type() const;
   // called on on the starting player:
   void setupPlayer(player &);
+  // inform the user about their quests
+  std::wstring questText() const;
 };
 
 class roleRepoImpl;

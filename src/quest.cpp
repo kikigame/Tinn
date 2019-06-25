@@ -20,7 +20,7 @@ std::uniform_int_distribution<int> yPosD(0,level::MAX_HEIGHT - 1);
 class questImpl {
 private:
   const wchar_t * const name_;
-  const wchar_t * const questData_;
+  const std::wstring questData_;
   const wchar_t * const incompletePrompt_;
   const wchar_t * const completeMsg_;
   const int questLevel_;
@@ -29,7 +29,7 @@ private:
   const std::function<void(questImpl &, levelGen &, level &, int)> ls_;
 public:
   questImpl(const wchar_t* const name,
-	    const wchar_t* const questData,
+	    const std::wstring questData,
 	    const wchar_t* const incompletePrompt,
 	    const wchar_t* const completeMsg,
 	    int questLevel,
@@ -46,7 +46,7 @@ public:
     return name_;
   }
   const wchar_t * const questData() const {
-    return questData_;
+    return questData_.c_str();
   }
   const wchar_t * const incompletePrompt() const { 
     return incompletePrompt_;
@@ -439,7 +439,7 @@ std::vector<quest> questsForRole(const deity & pcAlign, roleType t) {
        }));
     rtn.emplace_back(new questImpl
       (L"Retrieve the stolen artifact",
-       L"In a temple you cannot enter lies a stolen idol aligned to your deity's path.\n" // TODO: name the deity?
+       L"In a temple you cannot enter lies a stolen idol aligned to your the path of " + pcAlign.name() + L"\n"
        "Retrive it so it can be returned to your own temple.",
        L"Really abandon the stolen idol?",
        L"You have retrieved the idol.",

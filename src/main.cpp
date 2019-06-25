@@ -111,6 +111,7 @@ const wchar_t * help() {
     "l) Leave (drop) items\n"
     "u) Use an individual item\n"
     "c) Consume something\n"
+    "o) View objectives\n"
     "\n"
     "Have fun!";
 }
@@ -241,6 +242,8 @@ void processInput(dungeon & d, const std::wstring &c, const std::shared_ptr<io> 
     d.pc()->eat();
     time::tick(true); // always 1 extra turn to eat an item
     break;
+  case L'o': case L'O':
+    ios->longMsg(d.pc()->job().questText());
   }
 }
 
