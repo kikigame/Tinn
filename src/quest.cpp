@@ -261,12 +261,11 @@ public:
     place(upRampPos(), terrainType::UP);
     place(downRampPos(), terrainType::DOWN);
 
-    // Some monsters.
+    // Some monsters (no demons in the temple please).
     // TODO: Should we make these acolytes?
     std::vector<std::pair<coord, coord>> vec({{templeTopLeft, templeBtmRight},
 	  {shrineTopLeft, shrineBotRight}});
-    for (auto &m : addMonsters(vec))
-      if (m->render() == L'&') m->wound(*m, 100, damageRepo::instance()[damageType::electric]); // discard demons in the temple
+    addMonsters(vec, [](const monsterType *t) {return t->renderChar() != L'&';});
   }
 };
 
@@ -311,14 +310,10 @@ public:
       for (int x = p.first.first; x <= p.second.first; ++x)
 	for (int y = p.first.second; y <= p.second.second; ++y)
 	  place(coord(x,y), terrainType::GROUND);
-    auto monsters = addMonsters(rooms);
-    for (auto pM : monsters) {
-      if (pM && pM->render() == L'&') {
-	auto &dt = damageRepo::instance()[damageType::electric];
-	pM->wound(*pM, 100, dt); // discard demons in the temple
-      }
-      else pM->align(opp);
-    }
+    auto monsters =
+      addMonsters(rooms, [](const monsterType *t) {return t->renderChar() != L'&';});
+    for (auto pM : monsters)
+      pM->align(opp);
     
     // corridors
     rect(17,5,20,5);

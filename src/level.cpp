@@ -1080,9 +1080,10 @@ monster &levelGen::addMonster(monsterBuilder &b, const coord &c) {
   return *mon;
 }
 
-std::vector<monster *> levelGen::addMonsters(std::vector<std::pair<coord,coord>> coords /*by value*/) {
+std::vector<monster *> levelGen::addMonsters(std::vector<std::pair<coord,coord>> coords /*by value*/,
+					     std::function<bool(const monsterType*)> f) {
   std::vector<std::pair<unsigned int, monsterType*>> types =
-    spawnMonsters(level_->depth(), coords.size());
+    spawnMonsters(level_->depth(), coords.size(), f);
   std::vector<monster *> rtn;
   
   for (auto i : types) {

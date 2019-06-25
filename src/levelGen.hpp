@@ -55,7 +55,8 @@ public:
   void addTraps(const std::pair<coord,coord> &coords);
 
   // possibly add some monsters to the room:
-  std::vector<monster *> addMonsters(std::vector<std::pair<coord,coord>>);
+  std::vector<monster *> addMonsters(std::vector<std::pair<coord,coord>>,
+				     std::function<bool(const monsterType*)> f = [](const monsterType*){return true;});
 
   // possibly add some items to the room:
   void addItems(const std::pair<coord,coord> &);

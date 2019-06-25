@@ -869,10 +869,11 @@ std::shared_ptr<monster> ofType(level & level, monsterBuilder &b) {
   return ptr;
 }
 
-std::vector<std::pair<unsigned int, monsterType*>> spawnMonsters(int depth, int rooms) {
+std::vector<std::pair<unsigned int, monsterType*>> spawnMonsters(int depth, int rooms,
+   std::function<bool(const monsterType*)> f) {
   auto from = monsterTypeRepo::instance().begin();
   auto to = monsterTypeRepo::instance().end();
-  auto filter = [depth](monsterType* mt) {
+  auto filter = [depth,f](monsterType* mt) {
     // Dungeoneers aren't found below level 3 (Ref: Knightmare, which had only 3 levels)
       return (depth <= 3 || mt->type() != monsterTypeKey::dungeoneer) &&
       // don't randomnly generate sirens; they must be on watery levels, on the rocks:
@@ -880,7 +881,8 @@ std::vector<std::pair<unsigned int, monsterType*>> spawnMonsters(int depth, int 
       // likewise, don't generate merfolk outside the water:
       mt->type() != monsterTypeKey::merfolk &&
       // likewise, don't generate mokumokuren; they come from cracked levels
-      mt->type() != monsterTypeKey::mokumokuren;
+      mt->type() != monsterTypeKey::mokumokuren &&
+      f(mt);
   };
   auto ffrom = make_filtered_iterator(filter, from, to);
   auto tto = make_filtered_iterator(filter, to, to);

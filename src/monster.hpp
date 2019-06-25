@@ -313,6 +313,9 @@ public:
 template<monsterTypeKey T>
 std::shared_ptr<monster> ofType(level & level, monsterBuilder &b = monsterBuilder(true));
 
-std::vector<std::pair<unsigned int, monsterType*>> spawnMonsters(int depth, int rooms);
+std::vector<std::pair<unsigned int, monsterType*>>
+spawnMonsters(int depth, int rooms,
+	      std::function<bool(const monsterType*)> = [](const monsterType *){
+		return true;});
 
 #endif // ndef MONSTER_HPP
