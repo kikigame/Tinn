@@ -1097,7 +1097,11 @@ std::vector<monster *> levelGen::addMonsters(std::vector<std::pair<coord,coord>>
       //auto m = ofType<mt>(pub_);
       std::shared_ptr<monster> m = mt.spawn(pub_);
       addMonster(m, midPoint, *room);
-      if (m) rtn.emplace_back(&*m);
+      // make sure the monster was added before returning it
+      // (pointer won't be wild so long as m is in scope)
+      auto added = pub_.monstersAt(midPoint);
+      if (std::find(added.begin(), added.end(), ref<monster>(*m)) != added.end())
+	rtn.emplace_back(&*m);
     }
     coords.erase(room); // don't use the same room twice; tend to avoid the packs of monsters starting together
   }
