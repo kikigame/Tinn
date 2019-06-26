@@ -18,7 +18,6 @@ enum class bonusType {
     hearing, // TODO
     seeing, // TODO
     flying,
-    swimming, // can mave on water terrain
     climbing, // fast at escaping pits
     fearless, // affected by petrify (or other fear) actions
     throws, //can the monster lob things at another
@@ -171,13 +170,6 @@ void monsterIntrinsics::see(const bool sight) {
 const bool monsterIntrinsics:: see() const {
   return pImpl_->bonuses_[bonusType::seeing] == bonus(true);
 }
-// moving in water
-void monsterIntrinsics::swim(const bool swim) {
-  pImpl_->bonuses_[bonusType::swimming] = bonus(swim);
-}
-const bool monsterIntrinsics:: swim() const {
-  return pImpl_->bonuses_[bonusType::swimming] == bonus(true);
-}
 // can you fly?
 void monsterIntrinsics::fly(const bool fly) {
   pImpl_->bonuses_[bonusType::flying] = bonus(fly);
@@ -316,13 +308,6 @@ void monsterAbilityMods::see(const bool sight) {
 }
 const bool monsterAbilityMods::see() const {
   return intrinsics_->see() || mod_->bonuses_[bonusType::seeing] == bonus(true);
-}
-  // can you move through water?
-void monsterAbilityMods::swim(const bool canSwim) {
-  mod_->bonuses_[bonusType::swimming] = canSwim;
-}
-const bool monsterAbilityMods::swim() const {
-  return intrinsics_->swim() || mod_->bonuses_[bonusType::swimming] == bonus(true);
 }
   // can you fly?
 void monsterAbilityMods::fly(const bool canFly) {

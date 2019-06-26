@@ -46,9 +46,6 @@ public:
   // can you see monsters?
   virtual void see(const bool sight) = 0;
   virtual const bool see() const = 0;
-  // can you move through water?
-  virtual void swim(const bool canSwim) = 0;
-  virtual const bool swim() const = 0;
   // can you fly?
   virtual void fly(const bool canFly) = 0;
   virtual const bool fly() const = 0;
@@ -119,11 +116,8 @@ public:
   // can you see monsters?
   virtual void see(const bool sight);
   virtual const bool see() const;
-  // can you move through water?
-  virtual void swim(const bool canSwim);
-  virtual const bool swim() const;
   // can you fly?
-  virtual void fly(const bool canSwim);
+  virtual void fly(const bool canFly);
   virtual const bool fly() const;
   // affected by petrify/fear actions? (false = double effect)
   virtual void fearless(const bonus &fearless);
@@ -193,11 +187,8 @@ public:
   // can you see monsters?
   virtual void see(const bool sight);
   virtual const bool see() const;
-  // can you move through water?
-  virtual void swim(const bool canSwim);
-  virtual const bool swim() const;
   // can you fly?
-  virtual void fly(const bool canSwim);
+  virtual void fly(const bool canFly);
   virtual const bool fly() const;
   // affected by petrify/fear actions? (false = double effect)
   virtual void fearless(const bonus &fearless);

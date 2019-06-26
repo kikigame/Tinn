@@ -979,14 +979,32 @@ public:
   virtual ~tesseractAction() {}
   virtual bool operator ()(const bcu &bcu, item &source, monster &target) {
     target.abilities()->move(tFactory.get(terrainType::ALTAR), true);
-    target.abilities()->move(tFactory.get(terrainType::GROUND), true);
+    target.abilities()->move(tFactory.get(terrainType::ROCK), true);
     target.abilities()->move(tFactory.get(terrainType::BULKHEAD), true);
     return true;
   }
   bool undo(const bcu &bcu, item &source, monster &target) {
     target.abilities()->move(tFactory.get(terrainType::ALTAR), false);
-    target.abilities()->move(tFactory.get(terrainType::GROUND), false);
+    target.abilities()->move(tFactory.get(terrainType::ROCK), false);
     target.abilities()->move(tFactory.get(terrainType::BULKHEAD), false);
+    return true;
+  }
+  virtual bool aggressive() const { return false; }
+  virtual bool heals() const { return false; }
+  virtual bool buffs() const { return false; }
+};
+
+class swimAction : public renderedAction<item, monster> {
+public:
+  swimAction(const wchar_t * const name, const wchar_t * const description) :
+    renderedAction(name, description) {}
+  virtual ~swimAction() {}
+  virtual bool operator ()(const bcu &bcu, item &source, monster &target) {
+    target.abilities()->move(tFactory.get(terrainType::WATER), true);
+    return true;
+  }
+  bool undo(const bcu &bcu, item &source, monster &target) {
+    target.abilities()->move(tFactory.get(terrainType::WATER), false);
     return true;
   }
   virtual bool aggressive() const { return false; }
@@ -1245,8 +1263,7 @@ L"Bestows the ability to detect airborne vibrations, often conveying\n"
 L"Bestows the ability to detect waves or particles of electromagnetic\n"
 "radiation, often conveying information"));
     rtn[action::key::swim] = std::unique_ptr<action>
-      (new intrinsicsBoolAction(&monsterAbilities::swim, true,
-			   L"Swimming",
+      (new swimAction(L"Swimming",
 L"Bestows the ability to move through water."));
     rtn[action::key::flight] = std::unique_ptr<action>
       (new intrinsicsBoolAction(&monsterAbilities::fly, true,

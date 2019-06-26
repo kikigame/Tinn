@@ -123,7 +123,7 @@ public:
   monsterTypeBuilder& hear() { intrinsics_.hear(true); return *this; }
   monsterTypeBuilder& speedy() { intrinsics_.speedy(true); return *this; }
   monsterTypeBuilder& dblAttack() { intrinsics_.dblAttack(true); return *this; }
-  monsterTypeBuilder& swim() { intrinsics_.swim(true); return *this; }
+  monsterTypeBuilder& swim() { intrinsics_.move(tFactory.get(terrainType::WATER), true); return *this; }
   monsterTypeBuilder& fly() { intrinsics_.fly(true); return *this; }
   monsterTypeBuilder& climb() { intrinsics_.climb(true); return *this; }
 };

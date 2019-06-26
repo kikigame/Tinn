@@ -58,8 +58,6 @@ class delegatingAbilities : public monsterAbilities {
   virtual const bool hear() const { return d_->hear(); }
   virtual void see(const bool sight) { d_->see(sight); }
   virtual const bool see() const {return d_->see(); }
-  virtual void swim(const bool canSwim) { d_->swim(canSwim); }
-  virtual const bool swim() const { return d_->swim(); }
   virtual void fly(const bool canFly) { d_->fly(canFly); }
   virtual const bool fly() const { return d_->fly(); }
   virtual void fearless(const bonus &fearless) { d_->fearless(fearless); }

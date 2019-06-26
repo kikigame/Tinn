@@ -713,12 +713,12 @@ public:
       transport &tr = dynamic_cast<transport&>(v.value());
       tr.isOnLevel(dungeon_[depth_]);
       tr.onMonsterMove(oldPos, holder(pos), pos, t);
+      vehicleLeaving(oldPos, pos, t);
       return true;
     }
-    if (!t.movable(m)) return false;
+    if (!m.abilities()->move(t)) return false;
     if (avoidTraps && t.entraps(m, false)) return false;
     if (avoidHiddenTraps && t.entraps(m, true)) return false;
-    vehicleLeaving(oldPos, pos, t);
     return true;
   }
 private:
@@ -728,7 +728,7 @@ private:
     return h.firstItem([&m, &t, this](item &i) { // returns true if finds any item
 	auto pV = dynamic_cast<transport *>(&i);
 	if (pV) pV->isOnLevel(dungeon_[depth_]);
-	return pV && pV->terrainFor(t).movable(m); // returns item if movable
+	return pV && m.abilities()->move(pV->terrainFor(t)); // returns item if movable
       });
   }
   // determine any vehicles that are moving us
@@ -737,7 +737,7 @@ private:
     return h.firstItem([&m, &t, this](item &i) { // returns true if finds any item
 	auto pV = dynamic_cast<transport *>(&i);
 	if (pV) pV->isOnLevel(dungeon_[depth_]);
-	return pV && pV->moveOnto(t) && pV->terrainFor(t).movable(m);
+	return pV && pV->moveOnto(t) && m.abilities()->move(pV->terrainFor(t));
       });
   }
   // determine any vehicles that we're stepping off of
@@ -1056,7 +1056,7 @@ void levelGen::addMonster(std::shared_ptr<monster> m, const coord &c) {
     bool found = false;
     auto ms = level_->monstersAt(c);
     for (auto m : ms)
-      if (!water.movable(m.value())) {
+      if (!m.value().abilities()->move(water)) {
 	found = true; 
 	break;
       }

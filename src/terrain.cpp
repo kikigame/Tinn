@@ -57,37 +57,6 @@ terrainType terrain::type() const {
   return type_;
 }
 
-bool terrain::movable(const monster &m) const {
-  switch (type_) {
-  case terrainType::ALTAR:
-  case terrainType::ROCK:
-    return false;
-  case terrainType::GROUND:
-  case terrainType::UP:
-  case terrainType::DOWN:
-  case terrainType::PIT:
-  case terrainType::PIT_HIDDEN:
-  case terrainType::PIANO_HIDDEN:
-    return true;
-  case terrainType::FIRE:
-    return false;
-  case terrainType::WATER:
-    return m.abilities()->swim();
-  case terrainType::SPACE:
-    return true; // although it may not be a good idea...
-  case terrainType::BULKHEAD:
-    return false;
-  case terrainType::DECK:
-    return true;
-  case terrainType::KNOTWEED:
-    return true;
-  case terrainType::CRACK:
-    return false;
-  default:
-    throw type_; // missing type from enum
-  }
-}
-
 bool terrain::entraps(const monster &m, bool includeHidden) const {
   switch (type_) {
   case terrainType::ALTAR:

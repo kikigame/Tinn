@@ -9,6 +9,7 @@
 #include "items.hpp"
 #include "religion.hpp"
 #include "role.hpp"
+#include "terrain.hpp"
 
 #include <sstream>
 #include <set>
@@ -54,7 +55,7 @@ player::player(playerBuilder &b) :
     nullResist-=2;
     break;
   case Element::water:
-    intrinsics()->swim(true);
+    intrinsics()->move(tFactory.get(terrainType::WATER), true);
     intrinsics()->speedy(false);
     break;
   case Element::plant:
@@ -81,7 +82,7 @@ player::player(playerBuilder &b) :
   // on their class and race.
   job().setupPlayer(*this);
 
-  // proper cheat mode: if you have the player name of "Taqris" (deity of trees), you get one of each stick:
+  // proper cheat modes: if you have the player name of "Taqris" (deity of trees), you get one of each stick:
   if (name() == L"Taqris")
     for (sharedAction<monster,monster>::key action = static_cast<sharedAction<monster,monster>::key>(0);
 	 action != sharedAction<monster,monster>::key::END;
@@ -90,6 +91,15 @@ player::player(playerBuilder &b) :
       wand.enchant(10);
       addItem(wand);
     }
+  // and if your name is Kithus, you do need help:
+  if (name() == L"Kithus")
+    for (sharedAction<item,monster>::key action = static_cast<sharedAction<item,monster>::key>(0);
+	 action != sharedAction<item,monster>::key::END;
+	 action = static_cast<sharedAction<item,monster>::key>(static_cast<int>(action)+1)) {
+      auto &ring = createEquippable(itemTypeKey::wooden_ring, action);
+      addItem(ring);
+    }
+
 
 }
 

@@ -128,6 +128,7 @@ class sharedAction<monster, monster>{
   };
 };
 
+/*
 // effects by a monster on an item
 template<>
 class sharedAction<monster, item>{
@@ -145,7 +146,7 @@ class sharedAction<monster, item>{
     distill,
     END
   };
-};
+  };*/
 
 // effects by an equippable item on a monster:
 template<>
