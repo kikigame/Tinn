@@ -12,7 +12,7 @@ extern const wchar_t * const shopAdjectives[] {
     L"Dangerous",
     L"Enchanting", // bestows enchantments
     L"Friendly", // offers a complimentary beverage
-    L"Generous",
+    L"Generous", // isn't
     L"Hearty",
     L"Indispensible",
     L"Juxtoposing",

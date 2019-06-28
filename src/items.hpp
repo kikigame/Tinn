@@ -137,7 +137,12 @@ public:
 
   // callback to identify when an item has been added to a holder.
   virtual void onAdd(itemHolder &holder) const {}
+
 };
+
+// utility to get the level the item is on, navigating containers
+level &curLevel(itemHolder &);
+
 
 // class for items with no especial behaviour:
 class basicItem : public item {
@@ -237,6 +242,10 @@ item & createEquippable(const itemTypeKey &, sharedAction<item,monster>::key of)
 
 // create an IOU card
 item & createIou(const double amount, const std::wstring &whom, const std::wstring &service);
+
+// try to add a power to an item
+// returns false if item can't have powers, or already has this power
+bool enhance(item &, sharedAction<item,monster>::key of);
 
 // replace an item with another of a different type
 // "from" must be a fully created object in a container.

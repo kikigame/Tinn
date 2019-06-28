@@ -248,10 +248,11 @@ private:
 public:
   itemHolderLevel(levelImpl & level, const coord & c) :
     level_(level), coord_(c) {}
+  virtual ~itemHolderLevel() {}
   virtual bool addItem(item &item); // overridden to handle movement callbacks
   virtual bool removeItemForMove(item &item, itemHolder &next); // overridden to handle movement callbacks
-  virtual ~itemHolderLevel() {}
 };
+
 
 std::wstring nth(const int i) {
   std::wstringstream rtn;

@@ -120,7 +120,7 @@ public:
 
   // retrieve the current level; needed by moveMobile() function as monsters can switch levels.
   level & curLevel(); 
-  const level & curLevel() const; 
+  virtual const level & curLevel() const; 
 
   // Spiritual alignment
   virtual const deity& align() const;

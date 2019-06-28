@@ -30,8 +30,10 @@ class onEquipMixin : virtual public shared_item {
 private:
   std::vector<sharedAction<item, monster> *> onEquip_;
 public:
-  void equipAction(sharedAction<item, monster> &act) {
+  bool equipAction(sharedAction<item, monster> &act) {
+    if (hasAction(act)) return false;
     onEquip_.push_back(&act);
+    return true;
   }
   bool hasAction(sharedAction<item, monster> &act) const {
     return std::find(onEquip_.begin(), onEquip_.end(), &act) != onEquip_.end();
@@ -556,6 +558,7 @@ public:
       /* lightning */
     case damageType::electric:
       next = itemTypeKey::electro_pop; break;
+    default: throw t;
     }
     transmutate(*this, createItem(next));
     return true;
@@ -770,7 +773,7 @@ public:
   // put into or take out of bag:
   virtual item::useResult use(item &other) {
     if (!contains(other)) // not in this container, so put in
-      itemHolder::addItem(other);
+      addItem(other);
     else // in this container, so take out (add to *our* holder)
       holder().addItem(other);
     return item::useResult::SUCCESS;
@@ -799,6 +802,139 @@ protected:
   
 };
 
+/*
+ * blessed: items don't enter the bag, but effect still occurs.
+ * cursed: items stick in the back and won't come out (50% ish)
+ *
+ * Effects on insert:
+ *    - item gets random effect (if applicable)
+ *    - item is proofed against random damage type
+ *    - item is unproofed against random damage type (if proofed)
+ *    - item becomes unidentified
+ *    - item becomes sexy
+ *    - item becomes unsexy
+ *    - item is transported to a random ground square
+ *    - item is transported to the inventory of a random character on the level (if any)
+ *    - item is blessed (only if blessed)
+ *    - item is cursed (only if cursed)
+ * Effects on remove:
+ *    - normal removal
+ *    - duplicate item inserted into bag
+ *    - item is damaged by random damage type
+ *    - item is undamaged by random damage type
+ */
+class chaosContainer : public basicContainer {
+public:
+  chaosContainer(const itemType& type) :
+    basicContainer(type) {}
+  virtual ~chaosContainer() {}
+  // put into bag; interface itemHolder
+  virtual bool addItem(item & other) {
+    if (contains(other)) return false;
+    if (!bcu().blessed())
+      itemHolder::addItem(other);
+    auto &ios = ioFactory::instance();
+    switch (dPc() / 10) {
+    case 0:
+      if (bcu().blessed()) {
+	other.bless(true);
+	ios.message(L"The " + other.name() + L" glows with a holy glow");
+	break;
+      }
+    case 1:
+      // random effect
+      {
+	int end = static_cast<int>(sharedAction<item,monster>::key::END);
+	bool rtn = enhance(other, static_cast<sharedAction<item,monster>::key>(rndPickI(0, end)));
+	if (rtn) ios.message(L"The " + other.name() + L" becomes more useful...");
+	return rtn;
+      }
+    case 2:
+    case 3:
+      // random proof
+      {
+	auto type = static_cast<damageType>(rndPickI(0, static_cast<int>(damageType::END)));
+	bool rtn = other.proof(type);
+	if (rtn) ios.message(L"The " + other.name() + L" seems tougher");
+	return rtn;
+      }
+    case 4:
+      // unidentify
+      {
+	bool rtn = !other.isUnidentified();
+	other.unidentify(true);
+	rtn = rtn && other.isUnidentified();
+	if (rtn) ios.message(L"The " + other.name() + L" seems vaguer");
+	return rtn;
+      }
+    case 5:
+      // sexup
+      {
+	bool rtn = !other.isSexy();
+	other.sexUp(true);
+	rtn = rtn && other.isSexy();
+	if (rtn) ios.message(L"The " + other.name() + L" seems more attractive");
+	return rtn;	
+      }
+    case 6:
+      // sexdown
+      {
+	bool rtn = other.isSexy();
+	other.sexUp(false);
+	rtn = rtn && !other.isSexy();
+	if (rtn) ios.message(L"The " + other.name() + L" seems less attractive");
+	return rtn;	
+      }
+    case 7:
+      // transport to square
+      {
+	auto &level = curLevel(other.holder());
+	auto coords = level.findAllTerrain(terrainType::GROUND);
+	auto ocoords = level.findAllTerrain(terrainType::DECK);
+	std::copy(ocoords.begin(), ocoords.end(), std::back_inserter(coords));
+	auto target = rndPick(coords.begin(), coords.end());
+	bool rtn = level.holder(*target).addItem(other);
+	if (rtn)
+	  ios.message(L"What " + other.name() + L"?");
+	return rtn;
+      }
+    case 8:
+      // transport to random monster inventory
+      {
+	std::vector<monster*> monsters;
+	auto &level = curLevel(other.holder());
+	level.forEachMonster([&monsters](monster &m) {
+	    monsters.push_back(&m);
+	  });
+	auto target = rndPick(monsters.begin(), monsters.end());
+	bool rtn = (*target)->addItem(other);
+	// NB: random target might be the holder:
+	if (rtn && dynamic_cast<itemHolder*>(*target) != &holder())
+	  ios.message(L"What " + other.name() + L"?");
+	return rtn;
+      }
+    case 9:
+    case 10:
+    default:
+      if (bcu().cursed()) {
+	other.curse(true);
+	ios.message(L"The " + other.name() + L" radiates an unholy gloom");
+	break;
+      }
+    }
+    return true;
+  }
+  // remove an item from this container with the intention of putting it somewhere else
+  // If overridden to return false, the move is aborted.
+  virtual bool removeItemForMove(item &other, itemHolder &next) {
+    if (bcu().cursed() && dPc() < 50) {
+      auto &ios = ioFactory::instance();
+      ios.message(other.name() + L" is stuck!");
+      return false;
+    }
+    return itemHolder::removeItemForMove(other, next);
+  }
+};
 
 
 
@@ -1273,7 +1409,6 @@ public:
 void transmutate(item &from, item &to) {
   std::array<const slot *,2> slots = {nullptr, nullptr};
   monster *m = dynamic_cast<monster *>(&from);
-  auto h = from.holder();
   if (m) {
     auto slots = m->slotsOf(from); // may be nullptr, nullptr
     if (slots[0] != nullptr) m->unequip(from);
@@ -1558,6 +1693,15 @@ public:
 };
 
 
+level &curLevel(itemHolder &h) {
+  auto m = dynamic_cast<monster*>(&h);
+  if (m) return m->curLevel();
+  auto i = dynamic_cast<item*>(&h);
+  if (i) return curLevel(i->holder());
+  throw "Not on any level!";
+}
+
+
 // traits class holds:
 // - type: default class type to use
 // - make(): static template function, typed on concrete class type, taking itemtype parameter, producing new object on the heap and returning.
@@ -1827,6 +1971,11 @@ template <> struct itemTypeTraits<itemTypeKey::napsack_of_consumption> {
   typedef napsackOfConsumption type;
   template<typename type>
   static item *make(const itemType &t) { return new type(); }
+};
+template <> struct itemTypeTraits<itemTypeKey::chaos_container> {
+  typedef chaosContainer type;
+  template <typename type>
+  static item *make(const itemType &t) { return new type(t); }
 };
 template <> struct itemTypeTraits<itemTypeKey::water> {
   typedef basicItem type;
@@ -2104,6 +2253,13 @@ item & createEquippable(const itemTypeKey &t, sharedAction<item,monster>::key of
   auto &item = createItem(t);
   dynamic_cast<onEquipMixin&>(item).equipAction(action);
   return item;
+}
+
+bool enhance(item &it, sharedAction<item,monster>::key of) {
+  onEquipMixin* mixin = dynamic_cast<onEquipMixin*>(&it);
+  if (!mixin) return false;
+  auto &action = actionFactory<item, monster>::get(of);
+  return mixin->equipAction(action);
 }
 
 
@@ -2417,6 +2573,7 @@ item &createItem(const itemTypeKey &key) {
     //  case itemTypeKey::iou: return createItem<itemTypeKey::iou>();
   case itemTypeKey::poke: return createItem<itemTypeKey::poke>();
   case itemTypeKey::napsack_of_consumption: return createItem<itemTypeKey::napsack_of_consumption>();
+  case itemTypeKey::chaos_container: return createItem<itemTypeKey::chaos_container>();
   case itemTypeKey::water: return createItem<itemTypeKey::water>();
   case itemTypeKey::tears: return createItem<itemTypeKey::tears>();
   case itemTypeKey::heavy_water: return createItem<itemTypeKey::heavy_water>();

@@ -27,7 +27,8 @@ enum class damageType {
   /* flora */
     starvation,
   /* lightning */
-    electric
+    electric,
+  END
 };
 
 class damageRepo;

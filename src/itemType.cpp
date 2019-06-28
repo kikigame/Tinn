@@ -529,6 +529,13 @@ L"A knapsack must be worn to be useful. The rule is that it may only contain\n"
 "food, which will restore your life-force to condition green.",
 L"A leathery thing with buckles, like a harness."
 			     ));
+    emplace(itemTypeKey::chaos_container,
+	    new itemTypeImpl(static_cast<int>(10 * dPc() + (dPc()/10.)),
+			     static_cast<materialType>(rndPickI(0, static_cast<int>(materialType::END))),
+	    L'=',L"chaos container",
+L"This object has a magical effect on items placed inside it.",
+L"A boxy looking bag with spots on the side" // ref: die(eg D6 with spots)
+			     ));
     emplace(itemTypeKey::water,
 	    new itemTypeImpl(2.31585538520766, materialType::liquid, L'~', L"water",  // half a pint
 L"Above the ignition point, hydrogen explodes in the presence of oxygen; four\n"

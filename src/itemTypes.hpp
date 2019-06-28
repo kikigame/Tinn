@@ -132,6 +132,7 @@ enum class itemTypeKey {
   ////
     poke, // old word for large pocket, especially not sewn in. Also, a bag.
     napsack_of_consumption, // ref:Knightmare (TV show)
+  chaos_container, // does things to stuff put in it
   //prism_box, // any enchantemnt/flag changes on the box propagate to the contents; splitting the waveform of magic
 
   ////
