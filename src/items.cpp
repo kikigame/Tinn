@@ -1188,8 +1188,13 @@ public:
     }
     auto ter = level.terrainAt(c).type();
     switch (ter) {
-    case terrainType::ALTAR: // TODO: alter the hole to a poke?
-      io.message(L"That's just not polite.");
+    case terrainType::ALTAR:
+      if (isCursed()) {
+	transmutate(*this, createItem(itemTypeKey::poke));
+	io.message(L"The hole is altared.");
+      } else {
+	io.message(L"That's just not polite.");
+      }
       return useResult::FAIL;
     case terrainType::UP:
     case terrainType::DOWN:
@@ -1454,7 +1459,7 @@ public:
   virtual ~wand() {};
   virtual std::wstring simpleName() const {
     return hasCharge() ?
-      (isBlessed() ? L"rod" : L"wand") : basicItem::simpleName();
+      (isBlessed() ? L"holy rod" : L"wand") : basicItem::simpleName();
   }
   virtual std::wstring name() const {
     basicItem::name(); // sets buffer_
