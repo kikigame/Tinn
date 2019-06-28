@@ -318,7 +318,7 @@ L"Dragons are large serpentine creatures; highly intelligent and amongst the\n"
 	    .eats(materialType::waxy)
 	    .eats(materialType::woody) // doesn't eat stone. So there.
 	    .carryWeight(0)
-	    .movement(stationary) // TODO: grows instead of moving
+	    .movement(stationary)
 	    .movesThrough(terrainType::ALTAR)
 	    .movesThrough(terrainType::ROCK)
 	    .movesThrough(terrainType::GROUND)

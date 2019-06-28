@@ -41,7 +41,7 @@ speed adjustSpeed(const bonus &s, const speed &fastness) {
 
 class monsterIntrinsicsImpl {
 private:
-  std::bitset<9> damageProof_; // TODO: Magic constant is number of damageType enum values
+  std::bitset<static_cast<const int>(damageType::END)> damageProof_;
 public:
   int turnsToEscape_;
   mutable std::map<bonusType, bonus> bonuses_; // mutable allows [] to auto-fill default
