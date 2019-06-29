@@ -2235,8 +2235,7 @@ template <> struct itemTypeTraits<itemTypeKey::sunflower> {
 template <itemTypeKey t, class T>
 item &createItem();
 
-// create an item of the given type. io may be used later by that item, eg for prompts when using.
-// TODO: Randomness for flavour: enchantment, flags, etc.
+// create an item of the given type.
 template <itemTypeKey t>
 item &createItem() {
   return createItem<t, itemTypeTraits<t> >();
