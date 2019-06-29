@@ -158,6 +158,6 @@ public:
 };
 
 // return a random coord for which the functor returns true
-coord rnd(coordRectIterator &, std::function<bool(const coord&)>);
+coord rnd(coordRectIterator, std::function<bool(const coord&)>);
 
 #endif // ndef COORD

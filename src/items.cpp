@@ -889,11 +889,11 @@ public:
       // transport to square
       {
 	auto &level = curLevel(other.holder());
-	auto coords = level.findAllTerrain(terrainType::GROUND);
-	auto ocoords = level.findAllTerrain(terrainType::DECK);
-	std::copy(ocoords.begin(), ocoords.end(), std::back_inserter(coords));
-	auto target = rndPick(coords.begin(), coords.end());
-	bool rtn = level.holder(*target).addItem(other);
+	coord target = rnd(level.allCoords(), [&level](const coord &c) {
+	    auto t = level.terrainAt(c).type();
+	    return t == terrainType::GROUND || t == terrainType::DECK;
+	  });
+	bool rtn = level.holder(target).addItem(other);
 	if (rtn)
 	  ios.message(L"What " + other.name() + L"?");
 	return rtn;

@@ -255,8 +255,7 @@ namespace gamble {
       auto able = monster->abilities();
       // pick a random location at least 4 from player
       coord playerPos = level.posOf(player_);
-      coordRectIterator allCoords(0,0,level::MAX_WIDTH-1, level::MAX_HEIGHT-1);
-      coord dest = rnd(allCoords, [&able,&level,&playerPos](const coord &c) {
+      coord dest = rnd(level.allCoords(), [&able,&level,&playerPos](const coord &c) {
 	  return able->move(level.terrainAt(c)) &&
 	  (c.linearDistance(playerPos) > 4);
 	});

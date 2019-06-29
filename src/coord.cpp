@@ -23,7 +23,7 @@ static std::default_random_engine generator; // random.cpp
  * Algorithm is to iterate over it, setting rtn to the Nth value with a probability of 1:N.
  * This gives a uniform distribution to all values.
  */
-coord rnd(coordRectIterator &it, std::function<bool(const coord&)> f) {
+coord rnd(coordRectIterator it, std::function<bool(const coord&)> f) {
   coord rtn(-1,-1);
   int counter=0;
   for (coord c : it) {

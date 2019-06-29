@@ -1399,6 +1399,10 @@ void level::crack() {
   return pImpl_->crack(*this);
 }
 
+coordRectIterator level::allCoords() {
+  return coordRectIterator(0,0,level::MAX_WIDTH-1, level::MAX_HEIGHT-1);
+}
+
 
 class levelFactoryImpl {
 private:

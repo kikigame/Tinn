@@ -172,6 +172,9 @@ public:
 
   // crack the level, eg for an earthquake
   void crack();
+
+  // access all coords, eg for rnd() (coord.hpp)
+  coordRectIterator allCoords();
 };
 
 # endif // ndef  LEVEL_HPP__
