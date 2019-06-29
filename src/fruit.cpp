@@ -252,7 +252,15 @@ namespace gamble {
       level &level = player_.curLevel();
       const monsterType &type = monsterTypeRepo::instance()[mtk];
       auto monster = type.spawn(level);
-      level.addMonster(monster, level.posOf(player_)); // TODO: random location?
+      auto able = monster->abilities();
+      // pick a random location at least 4 from player
+      coord playerPos = level.posOf(player_);
+      coordRectIterator allCoords(0,0,level::MAX_WIDTH-1, level::MAX_HEIGHT-1);
+      coord dest = rnd(allCoords, [&able,&level,&playerPos](const coord &c) {
+	  return able->move(level.terrainAt(c)) &&
+	  (c.linearDistance(playerPos) > 4);
+	});
+      level.addMonster(monster, dest);
       clear(x);
       x = optionalRef<renderable>(*monster);
       if (cursed_)

@@ -7,6 +7,7 @@
 
 #include <utility> // for pair
 #include <ostream> // for ostream
+#include <functional> // for function
 
 
 class dir : public std::pair<signed char, signed char> {
@@ -156,5 +157,7 @@ public:
   bool operator != (const coordRectIterator &o) { return o.cur_ != cur_ || o.tl_ != tl_ || o.br_ != br_; }
 };
 
+// return a random coord for which the functor returns true
+coord rnd(coordRectIterator &, std::function<bool(const coord&)>);
 
 #endif // ndef COORD
