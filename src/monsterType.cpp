@@ -643,6 +643,8 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 " of smell. They lack in intelligece, cunning, learning, strength, power and\n"
 "speed - but are very adept at using tools and being unpredictable."));
 
+    
+    
     // unique feature: seduction/dream-rape
     emplace(monsterTypeBuilder(monsterTypeKey::incubus)
 	    .category(monsterCategory::biped)
@@ -665,7 +667,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .gen(genderAssignType::m)
 	    .material(materialType::liquid) // prevent player from taking corpse easily
 	    .align(dr.begin(), dr.end())
-	    .movement({speed::turn3, goTo::unaligned, goBy::smart, 10})
+	    .movement({speed::turn3, goTo::player, goBy::smart, 10})
 	    .movesOnGround()
 	    .corpseWeight(-10) // magical creature
 	    .eats(materialType::clothy) // ripping clothes off with its teeth...
