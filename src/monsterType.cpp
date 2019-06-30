@@ -112,6 +112,15 @@ public:
   monsterTypeBuilder& carryWeight(unsigned int carryWeightN) { intrinsics_.carryWeightN(carryWeightN); return *this; }
   monsterTypeBuilder& movement(movementType type) { movementType_ = type; return *this; }
   monsterTypeBuilder& movesThrough(terrainType type) { intrinsics_.move(tFactory.get(type), true); return *this; }
+  monsterTypeBuilder& movesOnGround() {
+    movesThrough(terrainType::GROUND);
+    movesThrough(terrainType::UP);
+    movesThrough(terrainType::DOWN);
+    movesThrough(terrainType::PIT);
+    movesThrough(terrainType::PIT_HIDDEN);
+    movesThrough(terrainType::PIANO_HIDDEN);
+    return *this;
+  }
   monsterTypeBuilder& fearless() { fearless_ = bonus(true); return *this; }
   monsterTypeBuilder& scardy() { fearless_ = bonus(false); return *this; }
   monsterTypeBuilder& throws() { intrinsics_.throws(true); return *this; }
@@ -258,6 +267,7 @@ public:
 	    .see()
 	    .hear()
 	    .fearless()
+	    .movesOnGround()
 	    .encyclopedium(
 L"Dragons are large serpentine creatures; highly intelligent and amongst the\n"
 "strongest of all. Even dragonets - the newly hatched young - should only be\n"
@@ -367,6 +377,7 @@ L"Blobs grow rapidly, consuming most things in their path. On the other hand,\n"
 	    .saying(L"Mooo!")
 	    .eats(materialType::veggy)
 	    .carryWeight(60000) // 2 humans' worth
+	    .movesOnGround()
 	    .movement({speed::slow2, goTo::player, goBy::avoid, 10})
 	    .fearless()
 	    .sleeps()
@@ -406,6 +417,7 @@ L"Bovines are farmed for their meat and milk. One of the largest are the\n"
 	    .corpseWeight(1334.46648459) // 300lb
 	     // no eats(); uses a napsack
 	    .movement({speed::perturn, goTo::down, goBy::smart, 100})
+	    .movesOnGround()
 	    .throws()
 	    .zap()
 	    .sleeps()
@@ -443,6 +455,7 @@ L"Sometimes a human ventures into a Dungeon upon a quest. This is usually ill-\n
 	    .eats(materialType::fleshy) // obligate carnivores
 	    .eats(materialType::liquid)
 	    .movement({speed::turn2, goTo::player, goBy::smart, 75})
+	    .movesOnGround()
 	    .zap() // they lack the strength to throw stuff, but are curious enough to use a wand.
 	    .carryWeight(20)
 	    .encyclopedium(
@@ -485,6 +498,7 @@ L"Meaning \"Little Thief\", ferrets are small, hyperflexible elongated mammels\n
 	    .eats(materialType::fleshy) // obligate carnivores
 	    .eats(materialType::liquid)
 	    .movement({speed::perturn, goTo::player, goBy::avoid, 25})
+	    .movesOnGround()
 	    .alluring()
 	    .carryWeight(2000) // less than a human
 	    .encyclopedium(
@@ -532,6 +546,7 @@ L"Vulpine animals get a mixed reaction; these charming, beautiful creatures\n"
 	    .eats(materialType::leathery)
 	    .eats(materialType::liquid)
 	    .movement({speed::turn2, goTo::player, goBy::smart, 75})
+	    .movesOnGround()
 	    .throws()
 	    .zap()
 	    .sleeps()
@@ -579,6 +594,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .eats(materialType::liquid)
 	    .saying(L"(howl)") // todo: woof for puppies & dogs
 	    .movement({speed::turn2, goTo::unaligned, goBy::smart, 50})
+	    .movesOnGround()
 	    .sleeps()
 	    .carryWeight(1000)
 	    .see()
@@ -612,6 +628,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .saying(L"Have you seen my 'phone?") // something people say. They're obsessed with 'phones, but none in this game.
 	    .saying(L"Cor; it's like Picadilly Circus 'round 'ere.") // ref: I cannot source this quote, but it's a common saying for "it's busy/crowded/lots of people"
 	    .corpseWeight(2713.415185333) // 610lb; average weight of Earth gravity human
+	    .movesOnGround()
 	    .eats(materialType::veggy)
 	    .eats(materialType::fleshy)
 	    .eats(materialType::liquid)
@@ -646,6 +663,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .material(materialType::liquid) // prevent player from taking corpse easily
 	    .align(dr.begin(), dr.end())
 	    .movement({speed::turn3, goTo::unaligned, goBy::smart, 10})
+	    .movesOnGround()
 	    .corpseWeight(-10) // magical creature
 	    .eats(materialType::clothy) // ripping clothes off with its teeth...
     //ref: http://www.chesterfieldparanormalresearch.com/incubus---sucubbus-demon.html; wikipedia; http://mythicalcreatureslist.com/mythical-creature/Succubus; others
@@ -698,6 +716,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .hear()
 	    .swim()
 	    .movesThrough(terrainType::WATER)
+	    .movesOnGround()
 	    .encyclopedium(
 L"Kelpies live in rivers and streams, while the stronger Each-uisge prefers\n"
 "the sea - although there is some overlap. When in human form, either can be\n"
@@ -735,7 +754,7 @@ L"Kelpies live in rivers and streams, while the stronger Each-uisge prefers\n"
 	    .carryWeight(2)
 	    .movement({speed::slow3, goTo::crack, goBy::teleport})
 	    .movesThrough(terrainType::CRACK)
-	    .movesThrough(terrainType::GROUND)
+	    .movesOnGround()
 	    .movesThrough(terrainType::DECK)
 	    .scardy()
 	    .see()
@@ -773,6 +792,7 @@ L"An infestation of mokumokuren may often be attributed to poor maintenance of\n
 	    .material(materialType::fleshy)
 	    .align(dr.getExact(Element::water, Domination::concentration, Outlook::kind))
 	    .movement({speed::turn3, goTo::none, goBy::smart, 10})
+	    .movesThrough(terrainType::WATER)
 	    .corpseWeight(2713.415185333) // 610lb; average weight of Earth gravity human
 	    .eats(materialType::fleshy)
 	    .eats(materialType::liquid)
@@ -815,6 +835,7 @@ L"Merfolk do not like to stray outside the sea, and mermen less so. Having the\n
 	    .align(dr.getExact(Element::air, Domination::concentration, Outlook::cruel))
 	    .align(dr.getExact(Element::water, Domination::concentration, Outlook::cruel))
 	    .movement({speed::perturn, goTo::none, goBy::smart, 10}) // slow for a bird, but works better as we are likely to be charmed.
+	    .movesThrough(terrainType::WATER)
 	    .eats(materialType::fleshy)
 	    .eats(materialType::liquid)
 	    .carryWeight(0) // does not carry
@@ -867,7 +888,9 @@ L"Of all the birds of the sea, the sirens are the most beautiful and the most\n"
 	    .saying(L"SssssSSSssSsSSssss")
 	    .eats(materialType::fleshy)
 	    .align(dr.begin(), dr.end())
-	    .movement({speed::slow3, goTo::wander, goBy::smart})
+            .movement({speed::slow3, goTo::wander, goBy::smart, 0})
+	    .movesThrough(terrainType::WATER)
+	    .movesOnGround()
 	    .sleeps() // with their eyes open
 	    .carryWeight(0) // does not carry
 	    .see()
@@ -904,6 +927,7 @@ L"Be they creatures of immortality, creation, temptation, or hairstyle, snakes\n
 	    .material(materialType::liquid) // prevent player from taking corpse easily
 	    .align(dr.begin(), dr.end())
 	    .movement({speed::turn3, goTo::player, goBy::smart, 10})
+	    .movesOnGround()
 	    .corpseWeight(2713.415185333) // 610lb; average weight of Earth gravity human
 	    .eats(materialType::clothy) // ripping clothes off with its teeth...
 	    .eats(materialType::liquid)
@@ -951,6 +975,7 @@ L"Be they creatures of immortality, creation, temptation, or hairstyle, snakes\n
 	    .material(materialType::stony)
 	    .align(dr.getExact(Element::earth, Domination::none, Outlook::cruel))
 	    .movement({speed::slow3, goTo::unaligned, goBy::beeline, 25})
+	    .movesOnGround()
 	    .corpseWeight(27134.15185333) // 10 * 610lb; average weight of Earth gravity human
 	    .eats(materialType::stony)
 	    .eats(materialType::liquid) // I'm sure I've read about them sucking the water of lichenss
@@ -992,6 +1017,7 @@ L"Be they creatures of immortality, creation, temptation, or hairstyle, snakes\n
 	    .eats(materialType::fleshy) // obligate carnivores
 	    // they may drink water, but they can't open a bottle of it
 	    .movement({speed::stop, goTo::none, goBy::avoid, 0})
+	    .movesOnGround()
 	    .carryWeight(0)
 	    .encyclopedium(
 L"There are a great number of creatures in the world, and not all sit neatly\n"
@@ -1028,6 +1054,7 @@ L"There are a great number of creatures in the world, and not all sit neatly\n"
 	    .material(materialType::fleshy)
 	    .align(dr.getExact(Element::time, Domination::aggression, Outlook::none))
 	    .movement({speed::slow3, goTo::player, goBy::zombeeline, 0})
+	    .movesOnGround()
 	    .carryWeight(0)
 	    .undead()
 	    // do not eat
@@ -1072,6 +1099,7 @@ L"There are a great number of creatures in the world, and not all sit neatly\n"
 	    .align(dr.getExact(Element::air, Domination::concentration, Outlook::cruel))
 	    .corpseWeight(49.0333) // this should vary wildly, but set it at 5kg for a roughly typical weight
 	    .movement({speed::turn2, goTo::wander, goBy::avoid, 0})
+	    .movesOnGround()
 	    .eats(materialType::fleshy)
 	    .eats(materialType::liquid)
 	    .carryWeight(40) // a little heavier than a big rabbit
