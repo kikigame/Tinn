@@ -1246,7 +1246,10 @@ L"When something with this property is equipped, you will deal very significant\
 
     rtn[action::key::move_through_solid] = std::unique_ptr<action>
       (new tesseractAction(L"tesseraction",
-L"Bestows the ability to move effortlessly through solid objects.\n"
+L"A tesseract is a 4-dimensional polytype bound by eight cubes, also known as\n"
+"a hypercube. Tesseraction is the effect of bending normal 3D space into\n"
+"hyperspace in the same way a cube is bent into a hypercube. This bestows the\n"
+"ability to move effortlessly through solid objects.\n"
 "Be careful where you lose this ability, or you could become stuck."));
     rtn[action::key::move_through_fire] = std::unique_ptr<action>
       (new fireWalkerAction(L"fire-walking",
