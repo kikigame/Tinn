@@ -39,7 +39,7 @@ public:
   virtual bool onExit(item &, itemHolder &next);
 
 private:
-  bool moveInSpace(monster &, const coord &dest);
+  bool moveInSpace(monster &, const coord &dest, bool bouncing = false);
   bool bounce(monster &, const coord &dest);
   bool moveInSpace(item &, const coord &dest);
   bool bounce(item &, const coord &dest);

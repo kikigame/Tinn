@@ -68,7 +68,7 @@ coord wraparound(coord p) {
   return p;
 }
 
-bool spaceZone::moveInSpace(monster &mon, const coord &dest) {
+bool spaceZone::moveInSpace(monster &mon, const coord &dest, bool bouncing) {
   if (!mon.isPlayer() && mon.name().find(L"space ") == 0)
     return true; // space monsters can move freely in space.
   std::map<monster*, dir>::const_iterator it = mdir_.find(&mon);
@@ -86,7 +86,7 @@ bool spaceZone::moveInSpace(monster &mon, const coord &dest) {
   auto &t = lvl_.terrainAt(pos);
   switch (t.type()) {
   case terrainType::BULKHEAD:
-    bounce(mon, pos);
+    if (!bouncing) bounce(mon, pos);
     return false;
   default: // impassible terrain already handled in level::moveTo()
     if (!contains(pos)) onExit(mon, lvl_.holder(pos));
@@ -104,7 +104,7 @@ bool spaceZone::bounce(monster &mon, const coord &dest) {
   auto pos = lvl_.posOf(mon);
   auto dir =  pos.dirFrom(dest);
   mdir_[&mon] = dir;
-  moveInSpace(mon, pos.inDir(dir)); // NB: This will break if there are 2 bulkheads close together with space in between.
+  moveInSpace(mon, pos.inDir(dir), true); // NB: This will break if there are 2 bulkheads close together with space in between.
   return false;
 }
 
