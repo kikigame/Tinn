@@ -61,7 +61,6 @@ enum class genderAssignType {
 };
 
 /*TODO: (chars in Nethack not in TINN:)
- * (c) cocks
  * (e) eyes/spheres
  * (g) gremlins/gargoyles
  * (h) non-human humanoids (we use for kelpie in horse form)
@@ -120,7 +119,8 @@ enum class monsterTypeKey {
   fox,
   goblin,
   hound,
-  human, 
+  human,
+  hippalectryon, // greek horse/cock (Nethack already has cockatrice)
   incubus, // male form of succubus
   kelpie, // water spirit. Can shape-shift between horse and human forms (possibly with hooves)
   mokumokuren,

@@ -795,6 +795,17 @@ public:
   virtual ~bird() {}
 };
 
+class hippalectryon : public trivialMonster {
+public:
+  hippalectryon(monsterBuilder &b) :
+    trivialMonster(b) {
+  }
+  virtual ~hippalectryon() {}
+  virtual optionalRef<sharedAction<monster, monster>> attackAction() {
+    return actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::comedy);
+  }
+};
+
 template <monsterTypeKey T>
 struct monsterTypeTraits {
   typedef bird type; // default
@@ -806,6 +817,7 @@ template<> struct monsterTypeTraits<monsterTypeKey::ferret> { typedef ferret typ
 template<> struct monsterTypeTraits<monsterTypeKey::fox> { typedef fox type; };
 template<> struct monsterTypeTraits<monsterTypeKey::goblin> { typedef goblin type; };
 template<> struct monsterTypeTraits<monsterTypeKey::hound> { typedef hound type; };
+template<> struct monsterTypeTraits<monsterTypeKey::hippalectryon> { typedef hippalectryon type; };
 template<> struct monsterTypeTraits<monsterTypeKey::incubus> { typedef incubus type; };
 template<> struct monsterTypeTraits<monsterTypeKey::kelpie> { typedef kelpie type; };
 template<> struct monsterTypeTraits<monsterTypeKey::mokumokuren> { typedef mokumokuren type; };
@@ -851,6 +863,7 @@ std::shared_ptr<monster> monsterType::spawn(level & level, monsterBuilder &b) co
   case monsterTypeKey::fox: return ofTypeImpl<monsterTypeKey::fox>(level,b);
   case monsterTypeKey::goblin: return ofTypeImpl<monsterTypeKey::goblin>(level,b);
   case monsterTypeKey::hound: return ofTypeImpl<monsterTypeKey::hound>(level,b);
+  case monsterTypeKey::hippalectryon: return ofTypeImpl<monsterTypeKey::hippalectryon>(level,b);
   case monsterTypeKey::human: return ofTypeImpl<monsterTypeKey::human>(level,b); 
   case monsterTypeKey::incubus: return ofTypeImpl<monsterTypeKey::incubus>(level,b); 
   case monsterTypeKey::kelpie: return ofTypeImpl<monsterTypeKey::kelpie>(level,b); 

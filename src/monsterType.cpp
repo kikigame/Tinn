@@ -303,7 +303,7 @@ L"Dragons are large serpentine creatures; highly intelligent and amongst the\n"
 	    .name(L"blob")
 	    .name({L"big"}, L"blob")
 	    .name({L"huge"}, L"blob")
-	    .className(L"blobs")
+	    .className(L"blob")
 	    .levelFactor(10)
 	    .levelOffset(50)
 	    .minSpawn(1)
@@ -361,7 +361,7 @@ L"Blobs grow rapidly, consuming most things in their path. On the other hand,\n"
 	    .name(L"bull")
 	    .name(L"bull")
 	    .name(L"bonnacon")
-	    .className(L"large herbivorous mammals")
+	    .className(L"large herbivorous mammal")
 	    .levelFactor(5)
 	    .levelOffset(30)
 	    .minSpawn(1)
@@ -436,7 +436,7 @@ L"Sometimes a human ventures into a Dungeon upon a quest. This is usually ill-\n
 	    .name(L"ferret kit")
 	    .name(L"ferret")
 	    .name(L"hunting ferret")
-	    .className(L"small hunting mammels")
+	    .className(L"small hunting mammal")
 	    .levelFactor(1)
 	    .levelOffset(-1)
 	    .minSpawn(1)
@@ -462,7 +462,7 @@ L"Sometimes a human ventures into a Dungeon upon a quest. This is usually ill-\n
 	    .zap() // they lack the strength to throw stuff, but are curious enough to use a wand.
 	    .carryWeight(20)
 	    .encyclopedium(
-L"Meaning \"Little Thief\", ferrets are small, hyperflexible elongated mammels\n"
+L"Meaning \"Little Thief\", ferrets are small, hyperflexible elongated mammal\n"
 "of the Mustela family. They are domesticated hunting working animals bread for\n"
 "hunting rabbit. While they don't burrow, they love running through tunnels,\n"
 "playing with whatever comes to hand, and biting - which, with poor eyesight\n"
@@ -479,7 +479,7 @@ L"Meaning \"Little Thief\", ferrets are small, hyperflexible elongated mammels\n
 	    .name(L"fox") // no shapsifting
 	    .name(L"kitsuni")
 	    .name(L"huli jing")
-	    .className(L"small hunting mammels")
+	    .className(L"small hunting mammal")
 	    .levelFactor(1)
 	    .levelOffset(-1)
 	    .minSpawn(1)
@@ -522,7 +522,7 @@ L"Vulpine animals get a mixed reaction; these charming, beautiful creatures\n"
 	    .category(monsterCategory::biped)
 	    .name(L"goblin")
 	    .name(L"red-cap goblin")
-	    .className(L"Elfins")
+	    .className(L"Elfin")
 	    .levelFactor(1)
 	    .levelOffset(5)
 	    .minSpawn(1)
@@ -643,7 +643,54 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 " of smell. They lack in intelligece, cunning, learning, strength, power and\n"
 "speed - but are very adept at using tools and being unpredictable."));
 
-    
+    // unique feature: comedy attack (thought to be used against evil, but I
+    // didn't think Ancient Greeks had that Christian concept)
+    emplace(monsterTypeBuilder(monsterTypeKey::hippalectryon)
+	    .category(monsterCategory::dragon) // TODO: winged horse category?
+	    .name(L"Hippalectryon")
+	    .name(L"Hippalektryon")
+	    .className(L"large hebivorous mammal")
+	    .levelFactor(1)
+	    .levelOffset(50)
+	    .minSpawn(1)
+	    .maxSpawn(1)
+	    .xpFactor(5)
+	    .xpOffset(0)
+	    .renderChar(L'c')
+	    .strength(30)
+	    .appearance(50)
+	    .fighting(50)
+	    .dodge(10) // not very mobile, but can move on land and air
+	    .maxDamage(30)
+	    .gen(genderAssignType::indirect)
+	    .material(materialType::fleshy)
+	    .corpseWeight(6672.33244237635) // half that of a bull?
+	    .align(dr.getExact(Element::air,Domination::none,Outlook::kind))
+	    .align(dr.getExact(Element::water,Domination::none,Outlook::kind))
+	    .saying(L"Neigh!")
+	    .saying(L"Cock-a-doodle-doo!")
+	    .eats(materialType::veggy)
+	    .carryWeight(4448.2216282509) // 1000lb; they can presumably carry people comfortably
+	    .movement({speed::perturn, goTo::coaligned, goBy::smart, 25})
+	    .movesThrough(terrainType::WATER) // ship associtaions
+	    .movesOnGround()
+	    .scardy()
+	    .sleeps()
+	    .see()
+	    .hear()
+	    .swim()
+	    .fly()
+	    .encyclopedium(
+			   // NB: most of this is guesswork based on second-hand sources; by about 5AD they were unheard of, even in Athens.
+L"The hippecetryon (or hippecktryon) is a rare beast seen mostly emblazoned\n"
+"on battlefield shields or the hulls of ships they protect. This prophetic\n"
+"creature is easily identified as having the forequarters of a horse and the\n"
+"legs, tail and wings of a chicken.\n"
+"Its appearance is so comical that its enemies are often forced to laugh\n"
+"uncontrollably, to the point where they are forced to run away.\n"
+"They draw power from the sun, never fall ill and can become fiercely\n"
+"protective if cornered."
+			   ));
     
     // unique feature: seduction/dream-rape
     emplace(monsterTypeBuilder(monsterTypeKey::incubus)
@@ -693,7 +740,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .category(monsterCategory::biped)
 	    .name(L"Kelpie")
 	    .name(L"Each-uisge")
-	    .className(L"Water Spirits")
+	    .className(L"Water Spirit")
 	    .levelFactor(1)
 	    .levelOffset(20)
 	    .minSpawn(1)
@@ -736,7 +783,7 @@ L"Kelpies live in rivers and streams, while the stronger Each-uisge prefers\n"
     emplace(monsterTypeBuilder(monsterTypeKey::mokumokuren)
 	    .category(monsterCategory::biped)
 	    .name(L"Mokumokuren")
-	    .className(L"Elfins")
+	    .className(L"Elfin")
 	    .levelFactor(2)
 	    .levelOffset(50)
 	    .minSpawn(1)
@@ -780,7 +827,7 @@ L"An infestation of mokumokuren may often be attributed to poor maintenance of\n
     emplace(monsterTypeBuilder(monsterTypeKey::merfolk)
 	    .category(monsterCategory::merfolk)
 	    .name(L"Merfolk")
-	    .className(L"Water Spirits")
+	    .className(L"Water Spirit")
 	    .levelFactor(1)
 	    .levelOffset(30)
 	    .minSpawn(1)
@@ -872,7 +919,7 @@ L"Of all the birds of the sea, the sirens are the most beautiful and the most\n"
 	    .name(L"pit viper")
 	    .name(L"cobra")
 	    .name(L"king cobra") // TODO: something with lyres and lyre snakes?
-	    .className(L"serpant")
+	    .className(L"serpent")
 	    .levelFactor(1)
 	    .levelOffset(5)
 	    .minSpawn(1)
@@ -957,7 +1004,7 @@ L"Be they creatures of immortality, creation, temptation, or hairstyle, snakes\n
   emplace(monsterTypeBuilder(monsterTypeKey::swarm_butterfly)
 	  .category(monsterCategory::blob)
 	  .name(L"Swarm of butterflies")
-	  .className(L"swarm") // TODO: all classNames should be singular
+	  .className(L"swarm")
 	  .levelFactor(10)
 	  .levelOffset(10)
 	  .minSpawn(1) // 1 swarm
@@ -1158,7 +1205,7 @@ L"A swarm of locusts devistates everything in its path. Although herbivores,\n"
 	    .name(L"venus cockroach trap")
 	    .name(L"venus human trap")
 	    .name(L"venus troll trap")
-	    .className(L"plants")
+	    .className(L"flora")
 	    .levelFactor(1)
 	    .levelOffset(-1)
 	    .minSpawn(1)
@@ -1269,7 +1316,7 @@ L"There are a great number of creatures in the world, and not all sit neatly\n"
      L"Most flying creatures will leave you alone unless disturbed, but\n"
       "beware that they also effortlessly evade most traps."
 			   ));
-
+  
   }
   const monsterType& get(const monsterTypeKey & key) const {
     return r_.at(key);
