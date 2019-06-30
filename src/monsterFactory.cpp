@@ -721,6 +721,61 @@ private:
   }
 };
 
+// swarms grow and shrink around the target square
+template<int maxDist, bool charms>
+class swarm : public trivialMonster, public bigMonster {
+private:
+  static constexpr int max = maxDist*2+1;
+  optionalRef<sharedAction<monster, monster>> attackAction_;
+  coord mainPos_;
+public:
+  swarm(monsterBuilder &b) :
+    trivialMonster(b), attackAction_(), mainPos_(0,0) {
+    if (charms) {
+      attackAction_ = actionFactory<monster,monster>::get(sharedAction<monster, monster>::key::charm);
+    }
+  }
+  virtual ~swarm() {};
+  // called from level class.
+  virtual void setPos(const coord &c) {
+    mainPos_ = c;
+    if (mainPos_.first < maxDist) mainPos_.first = maxDist;
+    if (mainPos_.second < maxDist) mainPos_.second = maxDist;
+    if (mainPos_.first > level::MAX_WIDTH - maxDist - 1) mainPos_.first = level::MAX_WIDTH - maxDist - 1;
+    if (mainPos_.second > level::MAX_HEIGHT - maxDist - 1) mainPos_.second = level::MAX_HEIGHT - maxDist - 1;
+    // update the rest of the swarm on move
+    std::array<std::bitset<max>,max> locs;
+    for (int x=0; x < maxDist; ++x)
+      for (int y=0; y < maxDist; ++y)
+	locs[x][y] = dPc() < 75;
+    std::vector<coord> pos;
+    if (pos.empty()) {
+      for (int x=mainPos_.first-maxDist; x<=mainPos_.first+maxDist; ++x)
+	for (int y=mainPos_.second-maxDist; y<=mainPos_.second+maxDist; ++y) {
+	  coord next(x,y);
+	  if (abilities()->move(curLevel().terrainAt(next)))
+	    pos.emplace_back(x,y);
+	}
+    }
+    if (pos.size() > 1) {
+      std::vector<coord> pos2(pos);
+      pos.clear();
+      do {
+	auto it = rndPick(pos2.begin(), pos2.end());
+	pos.push_back(*it);
+	pos2.erase(it);
+      } while (pos.size() < pos2.size());
+    }
+    if (!pos.empty()) // otherwise don't move
+      curLevel().bigMonster(*this, pos);
+  }
+  virtual coord mainPos() const {
+    return mainPos_;
+  }
+  virtual optionalRef<sharedAction<monster, monster>> attackAction() {
+    return attackAction_;
+  }
+};
 
 class succubus : public targetActionRefMonster {
 public:
@@ -762,6 +817,10 @@ template<> struct monsterTypeTraits<monsterTypeKey::zombie> { typedef zombie typ
 template<> struct monsterTypeTraits<monsterTypeKey::dragon> { typedef dragon type; };
 //template<> struct monsterTypeTraits<monsterTypeKey::bird> { typedef bird type; };
 template<> struct monsterTypeTraits<monsterTypeKey::raptor> { typedef bird type; };
+template<> struct monsterTypeTraits<monsterTypeKey::swarm_butterfly> { typedef swarm<3,true> type; };
+template<> struct monsterTypeTraits<monsterTypeKey::swarm_bees> { typedef swarm<2,false> type; };
+template<> struct monsterTypeTraits<monsterTypeKey::swarm_wasps> { typedef swarm<3,false> type; };
+template<> struct monsterTypeTraits<monsterTypeKey::swarm_locusts> { typedef swarm<4,false> type; };
 
 template<monsterTypeKey T>
 std::shared_ptr<monster> ofTypeImpl(level & level, monsterBuilder &b) {
@@ -800,6 +859,10 @@ std::shared_ptr<monster> monsterType::spawn(level & level, monsterBuilder &b) co
   case monsterTypeKey::siren: return ofTypeImpl<monsterTypeKey::siren>(level,b); 
   case monsterTypeKey::snake: return ofTypeImpl<monsterTypeKey::snake>(level,b); 
   case monsterTypeKey::succubus: return ofTypeImpl<monsterTypeKey::succubus>(level,b); 
+  case monsterTypeKey::swarm_butterfly: return ofTypeImpl<monsterTypeKey::swarm_butterfly>(level,b); 
+  case monsterTypeKey::swarm_bees: return ofTypeImpl<monsterTypeKey::swarm_bees>(level,b); 
+  case monsterTypeKey::swarm_wasps: return ofTypeImpl<monsterTypeKey::swarm_wasps>(level,b); 
+  case monsterTypeKey::swarm_locusts: return ofTypeImpl<monsterTypeKey::swarm_locusts>(level,b); 
   case monsterTypeKey::troll: return ofTypeImpl<monsterTypeKey::troll>(level,b); 
   case monsterTypeKey::venusTrap: return ofTypeImpl<monsterTypeKey::venusTrap>(level,b);
   case monsterTypeKey::zombie: return ofTypeImpl<monsterTypeKey::zombie>(level,b);

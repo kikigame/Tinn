@@ -60,6 +60,55 @@ enum class genderAssignType {
     indirect
 };
 
+/*TODO: (chars in Nethack not in TINN:)
+ * (c) cocks
+ * (e) eyes/spheres
+ * (g) gremlins/gargoyles
+ * (h) non-human humanoids (we use for kelpie in horse form)
+ * (i) minor demons
+ * (j) jellies
+ * (k) kobolds
+ * (l) leprichorns
+ * (m) mimics
+ * (n) nymphs
+ * (p) piercers
+ * (q) quadrupeds
+ * (r) rodents
+ * (t) trappers
+ * (u) horses/unicorns (we use h for kelpie in horse form)
+ * (v) vorticies
+ * (w) worms
+ * (x) fantastic insects
+ * (y) light
+ * (z) zruties
+ * (A) angels
+ * (C) centaur
+ * (E) elemental/stalker
+ * (F) fungii / mould
+ * (G) gnomes
+ * (H) large humanoids (giant/ettin/titan/minotaur)
+ * (I) (unused)
+ * (J) Jabberwock
+ * (K) Kops
+ * (L) Lich
+ * (M) Mummies
+ * (N) Naga
+ * (O) Ogre
+ * (Q) Quantum mechanics
+ * (R) rust monster/disenchanter
+ * (S) snake
+ * (U) umber hulk
+ * (V) Vampyre
+ * (W) Wraith
+ * (X) Xorn
+ * (Y) Apelikes
+ * (Z) Zowbies
+ * (') Golums
+ * ( ) Ghost
+ * (;) Sea monster
+ * (:) lizards
+ */
+
 enum class monsterTypeKey {
   //bird,
   blob,
@@ -79,6 +128,10 @@ enum class monsterTypeKey {
   siren, // manevolent half-bird that sits on rocks at sea and lures travellers to their death with its song.
   snake,
   succubus, // female form of incubus
+  swarm_butterfly,
+  swarm_bees,
+  swarm_wasps, // / wasps/ hornets
+  swarm_locusts,
   troll, 
   venusTrap,
   zombie,
@@ -252,7 +305,7 @@ public:
   static void close();
 };
 
-/* pick a "solid" monster (not liquid or a zombie) */
+/* pick a "solid" monster (not liquid, blob or a zombie) */
 const monsterType &rndSolidMonster();
 
 #endif // ndef MONSTERTYPE_HPP

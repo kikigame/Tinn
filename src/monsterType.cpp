@@ -76,7 +76,9 @@ public:
     foodMaterials_(), sayings_(),
     movementType_ ({ speed::turn2, goTo::player, goBy::smart, 0 }),
     fearless_(), intrinsics_(), alluring_(false), undead_(false),
-    key_(key) {}
+    key_(key) {
+    movesThrough(terrainType::SPACE); // by default, all monsters can be spaced.
+  }
   monsterTypeBuilder& category(monsterCategory category) { category_ = category; return *this; }
   monsterTypeBuilder& name(const wchar_t * name) { monsterNames_.push_back(name); return *this; }
   monsterTypeBuilder& name(std::initializer_list<const wchar_t *> adjectives, const wchar_t * name) { monsterNames_.emplace_back(adjectives, name); return *this; }
@@ -115,6 +117,7 @@ public:
   monsterTypeBuilder& movesOnGround() {
     movesThrough(terrainType::GROUND);
     movesThrough(terrainType::UP);
+    movesThrough(terrainType::DECK);
     movesThrough(terrainType::DOWN);
     movesThrough(terrainType::PIT);
     movesThrough(terrainType::PIT_HIDDEN);
@@ -948,6 +951,161 @@ L"Be they creatures of immortality, creation, temptation, or hairstyle, snakes\n
       "indiscriminate and want only male seed and life-force for their own\n"
     "ends."));
 
+  // unique feature: moves as swarm (split for type)
+  emplace(monsterTypeBuilder(monsterTypeKey::swarm_butterfly)
+	  .category(monsterCategory::blob)
+	  .name(L"Swarm of butterflies")
+	  .className(L"swarm") // TODO: all classNames should be singular
+	  .levelFactor(10)
+	  .levelOffset(10)
+	  .minSpawn(1) // 1 swarm
+	  .maxSpawn(1) // 1 swarm
+	  .xpFactor(2)
+	  .xpOffset(5)
+	  .renderChar(L'a') // as per Nethack
+	  .strength(1)
+	  .appearance(100)
+	  .fighting(1)
+	  .dodge(100)
+	  .maxDamage(5)
+	  .gen(genderAssignType::neuter)
+	  .material(materialType::fleshy)
+	  .corpseWeight(0.049) // ~5g; 50 butterflies in a swarm, 0.04-0.3g depending on species (other collective nouns exist but I can't find any listed in dictionaries); 3lb for 10,000 bees
+	  .align(dr.getExact(Element::earth, Domination::none, Outlook::kind))
+	  .align(dr.getExact(Element::air, Domination::none, Outlook::kind))
+	  .align(dr.getExact(Element::plant, Domination::none, Outlook::kind))
+	  .saying(L"(flutter)")
+	  .eats(materialType::liquid)
+	  .carryWeight(0)
+	  .movement({speed::perturn, goTo::wander, goBy::beeline, 90})
+	  .movesOnGround()
+	  .movesThrough(terrainType::WATER)
+	  .movesThrough(terrainType::CRACK)
+	  .scardy()
+	  .alluring()
+	  .fly()
+	  .encyclopedium(
+L"Beautifully-patterend insects of the rhopalocera suborder of the\n"
+"lepidoptera order. They are light, graceful, beautiful and usually harmless.\n"
+"The symbol of the butterfly, like all animals which change form in their\n"
+"adult state, represents rebirth and transformation.\n"
+"There are 12,000-15,000 species of butterfly, each with a distinct pattern."
+	  ));
+
+  // unique feature: moves as swarm (split for type)
+emplace(monsterTypeBuilder(monsterTypeKey::swarm_bees)
+	  .category(monsterCategory::blob)
+	  .name(L"Swarm of bees")
+	  .levelFactor(10)
+	  .levelOffset(20)
+	  .minSpawn(1) // 1 swarm
+	  .maxSpawn(1) // 1 swarm
+	  .xpFactor(2)
+	  .xpOffset(10)
+	  .renderChar(L'a') // as per Nethack
+	  .strength(1)
+	  .appearance(0)
+	  .fighting(40)
+	  .dodge(100)
+	  .maxDamage(15)
+	  .gen(genderAssignType::neuter)
+	  .material(materialType::fleshy)
+	  .corpseWeight(13.3446648847527) // 3lb for 10,000 bees (typical parcel)
+	  .align(dr.getExact(Element::air, Domination::concentration, Outlook::kind))
+	  .align(dr.getExact(Element::plant, Domination::concentration, Outlook::kind))
+	  .saying(L"bzzz")
+	  .eats(materialType::liquid)
+	  .carryWeight(0)
+	  .movement({speed::perturn, goTo::wander, goBy::beeline, 90})
+	  .movesOnGround()
+	  .movesThrough(terrainType::WATER)
+	  .movesThrough(terrainType::CRACK)
+	  .fly()
+	  .encyclopedium(
+L"Some species of bees produce wax and honey, the latter being the primary\n"
+"ingredient in mead. Some species will sting, but they are not naturally\n"
+"aggressive. unless proveked. Bees are invaluable to cultivation of many\n"
+"flora."
+	  ));
+
+// unique feature: moves as swarm (split for type)
+  emplace(monsterTypeBuilder(monsterTypeKey::swarm_wasps)
+	  .category(monsterCategory::blob)
+	  .name(L"Swarm of wasps")
+	  .name(L"Swarm of hornets")
+	  .levelFactor(10)
+	  .levelOffset(30)
+	  .minSpawn(1) // 1 swarm
+	  .maxSpawn(1) // 1 swarm
+	  .xpFactor(2)
+	  .xpOffset(15)
+	  .renderChar(L'a') // as per Nethack
+	  .strength(1)
+	  .appearance(0)
+	  .fighting(60)
+	  .dodge(100)
+	  .maxDamage(30)
+	  .gen(genderAssignType::neuter)
+	  .material(materialType::fleshy)
+	  .corpseWeight(13.3446648847527) // 3lb for 10,000 bees (typical parcel)
+	  .align(dr.getExact(Element::air, Domination::aggression, Outlook::cruel))
+	  .align(dr.getExact(Element::plant, Domination::aggression, Outlook::cruel))
+	  .saying(L"bzzz")
+	  .eats(materialType::liquid)
+	  .carryWeight(0)
+	  .movement({speed::perturn, goTo::wander, goBy::beeline, 90})
+	  .movesOnGround()
+	  .movesThrough(terrainType::WATER)
+	  .movesThrough(terrainType::CRACK)
+	  .fly()
+	  .fearless()
+	  .dblAttack()
+	  .encyclopedium(
+L"Wasps are paraphyletic to bees, but a different suborder. Very few species\n"
+"of wasp play any role in pollination, as they are smooth skinned and pollen\n"
+"does not stick to them well."
+	  ));
+
+  // unique feature: moves as swarm (split for type)
+emplace(monsterTypeBuilder(monsterTypeKey::swarm_locusts)
+	  .category(monsterCategory::blob)
+	  .name(L"Swarm of locusts")
+	  .levelFactor(10)
+	  .levelOffset(40)
+	  .minSpawn(1) // 1 swarm
+	  .maxSpawn(1) // 1 swarm
+	  .xpFactor(2)
+	  .xpOffset(20)
+	  .renderChar(L'a') // as per Nethack
+	  .strength(1)
+	  .appearance(100)
+	  .fighting(80)
+	  .dodge(100)
+	  .maxDamage(40)
+	  .gen(genderAssignType::neuter)
+	  .material(materialType::fleshy)
+	  .corpseWeight(444.82216282509) // a swarm of half a square mile of desert locusts can hold 40-80 million locusts; swarms can grow to 460 square miles. A typical swarm is 80 million. 0.07oz each. I'm unsure how big the level is, so let's say 1 yard per square => 8x8 = ~ 0.00002 square miles => 1600oz = 100lb
+	  .align(dr.getExact(Element::earth, Domination::aggression, Outlook::cruel))
+	  .saying(L"BZZZZZ!")
+	  .eats(materialType::liquid)
+	  .eats(materialType::veggy) // with prejudice
+	  .carryWeight(0)
+	  .movement({speed::turn3, goTo::wander, goBy::beeline, 90})
+	  .movesOnGround()
+	  .movesThrough(terrainType::WATER)
+	  .movesThrough(terrainType::KNOTWEED)
+	  .movesThrough(terrainType::CRACK)
+	  .fearless()
+	  .dblAttack()
+	  .encyclopedium(
+L"A swarm of locusts devistates everything in its path. Although herbivores,\n"
+"they can demolish entire crops and bring about famine. A swam holds about 80\n"
+"million locusts per square mile, and the largest recorded plague (large\n"
+"swarm) was 460 square miles in size. Locusts can eat their bodyweight every\n"
+"day, and their hatching is triggered by heavy rain, to give the best chance\n"
+"of a food supply to the swarm."
+	  ));
+  
     // unique feature: eats rocks; stony corpses
     emplace(monsterTypeBuilder (monsterTypeKey::troll)
 	    .category(monsterCategory::biped)
@@ -1159,6 +1317,6 @@ const monsterType &rndSolidMonster() {
     // do not return zombie, because no-one wants a zombie steak.
     auto key = static_cast<monsterTypeKey>(rndPickI(0, static_cast<int>(monsterTypeKey::zombie)));
     rtn = &(repo[key]);
-  } while (rtn->material() == materialType::liquid);
+  } while (rtn->material() == materialType::liquid || rtn->category() == monsterCategory::blob);
   return *rtn;
 }
