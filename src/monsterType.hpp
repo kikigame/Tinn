@@ -224,15 +224,7 @@ private:
   const std::bitset<2> flags_;
 public:
   monsterType(const monsterTypeBuilder &);
-  monsterType(const monsterType &) 
-    : key_(monsterTypeKey::human), category_(monsterCategory::biped),
-      levelFactor_(0), levelOffset_(0), minSpawn_(0), maxSpawn_(0), xpFactor_(0),
-      xpOffset_(0), renderChar_('\0'), strength_(0), appearance_(0), fighting_(0),
-      dodge_(0), maxDamage_(0), gen_(genderAssignType::f), corpseWeight_(0),
-      material_(materialType::fleshy),  movementType_(stationary),
-      flags_(0) { 
-    throw "needed for containers but shouldn't copy monster types!";};
-
+  monsterType(const monsterType &)  = delete;
   const monsterTypeKey type() const;
   const materialType material() const;
   const monsterCategory category() const;
@@ -289,7 +281,7 @@ public:
 // interface for things that provide a monster type
 class monsterTypeProvider {
 public:
-  virtual monsterType getMonsterType() const = 0;
+  virtual const monsterType &getMonsterType() const = 0;
 };
 
 /* singleton repository for monster types */

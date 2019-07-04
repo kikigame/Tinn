@@ -1320,7 +1320,7 @@ public:
     ios.message(L"Please don't; it's not that kind of game.");
     return item::useResult::FAIL;
   }
-  virtual monsterType getMonsterType() const {
+  virtual const monsterType &getMonsterType() const {
     return type_;
   }
 };
