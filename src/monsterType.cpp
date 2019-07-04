@@ -672,7 +672,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .zap()
 	    .carryWeight(3000) // generous, but encumberance rules always suck anyway
 	    .encyclopedium(L"Amongst the smelliest of monsters, these strange creatures have a poor sense\n"
-" of smell. They lack in intelligece, cunning, learning, strength, power and\n"
+"of smell. They lack in intelligece, cunning, learning, strength, power and\n"
 "speed - but are very adept at using tools and being unpredictable."));
 
     // unique feature: comedy attack (thought to be used against evil, but I

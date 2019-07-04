@@ -168,7 +168,7 @@ namespace alien {
 		});
 	case L'r': // religious path
 	  return align().name();
-	case L'g': // game (competative activity)
+	case L'g': // game (competitive activity)
 	  { return expand<13>(x, {
 		L"karate", // Ref: from Elite
 		  L"polo", // Ref: from Elite
@@ -229,7 +229,7 @@ namespace alien {
 	      L"", L"%!", L"%)", L"%!%)", L"%!%}%)", L"%}%!%)",
 	      L"%l", L"%!%l", L"%l%)", L"%l%!%)", L"%!%}%l%)", L"%}%l%!%)", L"%!%}%l%)"
 		});
-	case L'b': // aboard (yes, I know the difference between on board and aboard, but noone else seems to)
+	case L'b': // aboard (yes, I know the difference between on board and aboard, but no-one else seems to)
 	  return expand<5>(x, {
 	      L"aboard",
 		L"on board",
@@ -247,7 +247,7 @@ namespace alien {
 		  L"poop deck",
 		  L"star deck", // like a sun deck, but on a spaceship
 		  L"observation lounge", // ref: Star Trek briefing room
-		  L"on-baord cinema"
+		  L"on-board cinema"
 	      }) :
 	    expand<16>(x, {
 		L"northern hemisphere",
@@ -278,7 +278,7 @@ namespace alien {
 		  L".\nThe engines of %N could power %c entire cities, if they weren't on a ship in space",
 		  L".\nThe lido deck of %N contains %c whole lidos.", // lido = swimming pool
 		  L".\nThe bridge of %N has no river.",
-		  L".\nPassenger access to cecreational facilitees %b %N are %flimited.",
+		  L".\nPassenger access to the recreational facilities %b %N are %flimited.",
 		  L".\nThe crew of %N is made up entirely of aliens from the planet %R.",
 		  L".\nThe quartermaster of %N keeps ordering too much %t pie",
 		  L".\nPassengers %b %N report strange dreams of %<%g",
@@ -294,7 +294,7 @@ namespace alien {
 		  L".\nThe %w of %N %{",
 		  L".\nThe %w of %N is dedicated just to %<%g",
 		  });
-	    // fix the upcase of the letter. Expand first to remove the possible %b.
+	    // fix the up-case of the letter. Expand first to remove the possible %b.
 	    std::wstring enext = expand(next);
 	    enext[2] = std::toupper(enext[2]);
 	    return enext;
@@ -307,7 +307,7 @@ namespace alien {
 		L".\nThe people worship %r",
 		L".\nThe locals worship %r",
 		L".\nThere are many temples to %r",
-		L".\n%r's spiritual teachings are reveared",
+		L".\n%r's spiritual teachings are revered",
 		L".\nNatives pay homage to %r",
 		L".\nIts %h is known as the High Priest of %r",
 		L".\nCollections to repair the roof of the church of %r broke all records this year"
@@ -319,9 +319,9 @@ namespace alien {
 		L".\nThe locals are very %j - even on a Monday",
 		L".\nYou'd better enjoy their %p",
 		L".\nDid you know about their %p? You do now",
-		L".\nSo, overall:\n\tMostly Harmless", // ref: Hich-hiker's guideto the galaxy again (entry on Earth)
-		L".\nAliens from %N have been seen on %R, %R, and the Areas of Advanture",
-		L".\nAliens from %N have been seen on %R, the Areas of Advanture, and %R",
+		L".\nSo, overall:\n\tMostly Harmless", // ref: Hitch-hiker's guide to the galaxy again (entry on Earth)
+		L".\nAliens from %N have been seen on %R, %R, and the Areas of Adventure",
+		L".\nAliens from %N have been seen on %R, the Areas of Adventure, and %R",
 		L".\nAliens from %N like %<%g, %t, and serial commas"
 		});
 	case L'}': // holiday coda
@@ -380,9 +380,9 @@ namespace alien {
 		});
 	case 'h': // head honcho
 	  if (isShip_) return expand<6>(x, {
-	      L"captain", L"commander", L"commadore", L"rear-admiral", L"admiral", L"boss"});
+	      L"captain", L"commander", L"commodore", L"rear-admiral", L"admiral", L"boss"});
 	  else return expand<7>(x, {
-	      L"leader", L"president", L"prime mininster", L"king", L"queen", L"great and glorious leader", L"senior cultural curator"});
+	      L"leader", L"president", L"prime minister", L"king", L"queen", L"great and glorious leader", L"senior cultural curator"});
 	case 'C': // counting (singular)
 	  return expand<6>(x, {
 	      L"a", L"1", L"one", L"a single", L"only one", L"just one"
@@ -399,7 +399,6 @@ namespace alien {
     }
     
     std::wstring expand(const std::wstring &from) {
-      //      std::wcerr << L"EXPAND: [" << from << L']' << std::endl;
       auto posEsc = std::find(from.begin(), from.end(), L'%');
       if (posEsc == from.end()) return from;
       std::wstring rtn(from.begin(), posEsc);
