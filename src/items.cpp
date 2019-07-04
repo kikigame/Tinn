@@ -403,7 +403,7 @@ private:
 public:
   pie(const itemType &typ) : 
     basicItem(typ),
-    type_(static_cast<type>(rndPickI(0, static_cast<int>(type::END)))) {}
+    type_(rndPick<type>()) {}
   virtual ~pie() {}
   const wchar_t *filling() const {
     switch (type_) {
@@ -844,8 +844,7 @@ public:
     case 1:
       // random effect
       {
-	int end = static_cast<int>(sharedAction<item,monster>::key::END);
-	bool rtn = enhance(other, static_cast<sharedAction<item,monster>::key>(rndPickI(0, end)));
+	bool rtn = enhance(other, rndPick<sharedAction<item,monster>::key>());
 	if (rtn) ios.message(L"The " + other.name() + L" becomes more useful...");
 	return rtn;
       }
@@ -853,7 +852,7 @@ public:
     case 3:
       // random proof
       {
-	auto type = static_cast<damageType>(rndPickI(0, static_cast<int>(damageType::END)));
+	auto type = rndPick<damageType>();
 	bool rtn = other.proof(type);
 	if (rtn) ios.message(L"The " + other.name() + L" seems tougher");
 	return rtn;
@@ -1389,7 +1388,7 @@ private:
 public:
   steak(const itemType &it, const monsterType &of) :
     meatItem(it, of),
-    prep_(static_cast<prep>(rndPickI(0,static_cast<int>(prep::END)))) {}
+    prep_(rndPick<prep>()) {}
   virtual ~steak() {}
   const wchar_t * const prepName() const {
     switch (prep_) { // TODO: should this be based on fire damage? (best to do butchery first)
@@ -1941,7 +1940,7 @@ template <> struct itemTypeTraits<itemTypeKey::stick> {
   typedef wand type;
   template<typename type>
   static item *make(const itemType &t) { 
-    auto &action = actionFactory<monster, monster>::get(static_cast<sharedAction<monster,monster>::key>(rndPickI(0, static_cast<int>(sharedAction<monster,monster>::key::END))));
+    auto &action = actionFactory<monster, monster>::get(rndPick<sharedAction<monster,monster>::key>());
     // random wands are initially created as sticks, must be enchanted to use:
     return new type(0,  action); }
 };
@@ -2479,8 +2478,7 @@ double forIou(const item &i, double d, std::wstring &buf) {// used in shop.cpp
 }
 
 item &createRndEquippable(const itemTypeKey &type) {
-  typedef sharedAction<item,monster>::key key;
-  key of = static_cast<key>(rndPickI(0, static_cast<int>(key::END)));
+  auto of = rndPick<sharedAction<item,monster>::key>();
   return createEquippable(type, of);
 }
 

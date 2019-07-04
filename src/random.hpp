@@ -56,6 +56,32 @@ I rndPickI(/*by value*/I start, const I end) {
   return start;
 }
 
+// as rndPick, but specialized for enum types:
+template <typename E>
+E rndPickEnum(const E start, const E end) {
+  size_t begin = static_cast<size_t>(start),
+    stop = static_cast<size_t>(end);
+  size_t max = stop - begin;
+  if (max > 1) {
+    std::uniform_int_distribution<int> dis(0, max - 1);
+    begin += dis(generator);
+  }
+  return start;
+}
+
+// random value from type E
+template <typename E>
+E rndPick() {
+  size_t begin = 0,
+    stop = static_cast<size_t>(E::END);
+  size_t max = stop - begin;
+  if (max > 1) {
+    std::uniform_int_distribution<int> dis(0, max - 1);
+    begin += dis(generator);
+  }
+  return static_cast<E>(0);
+}
+
 /*
  * "Roll the dice" method (normal curve)
  *

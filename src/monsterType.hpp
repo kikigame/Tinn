@@ -38,7 +38,8 @@ enum class monsterCategory {
   // snake: basically just a tail.
     snake,
   // blobs have nothing. They are just blobs.
-    blob
+  blob,
+  END
 };
 
 enum class genderAssignType {
