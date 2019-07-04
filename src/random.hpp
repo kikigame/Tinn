@@ -126,7 +126,7 @@ rndGen(const I &from, const I & to,
   std::vector<T> buffer;
  
   for (auto i = from; i < to; ++i) {
-    auto o = (*i)->getLevelOffset();
+    auto o = (*i)->getLevelOffset(); // TODO: unsure if this is being used consistently
     if (l >= o)
       buffer.push_back(*i);
   }
