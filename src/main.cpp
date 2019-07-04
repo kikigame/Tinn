@@ -316,7 +316,7 @@ int handleActiveError() {
   }    
 }
 
-int main (int argc, char **argv) {
+int main(int argc, char **argv) {
   renderable::all(); // ensure that the static variables are initialised before use...
 
   auto opt =

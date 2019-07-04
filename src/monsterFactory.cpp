@@ -13,9 +13,11 @@
 #include "items.hpp"
 #include "role.hpp"
 #include "mobile.hpp"
+#include "alien.hpp"
 
 #include <cmath> // for std::ceil
 #include <ctime> // for dates
+#include <bitset>
 
 monsterBuilder::monsterBuilder(bool allowRandom) : 
   level_(NULL),
@@ -806,10 +808,105 @@ public:
   }
 };
 
+class alienMonster : public trivialMonster {
+private:
+  alien::world whence_;
+  damageType damageType_;
+public:
+  alienMonster(monsterBuilder &b) :
+    trivialMonster(b),
+    whence_(alien::world::spawn()),
+    damageType_(rndPick<damageType>()) {
+    initIntrinsics();
+  }
+  alienMonster(monsterBuilder &b, const alien::world &w) :
+    trivialMonster(b), whence_(w) {
+    initIntrinsics();
+  };
+  virtual ~alienMonster() {}
+  virtual std::wstring name() const {
+    return trivialMonster::name() + whence_.name();
+  }
+  virtual std::wstring description() const {
+    return trivialMonster::description() + L"\n\n" + whence_.description();
+  }
+  virtual const deity& align() const {
+    return whence_.align();
+  }
+  virtual damageType unarmedDamageType() const {
+    return damageType_;
+  }
+private:
+  // pointlessly rolling my own pseudorandomnumber generator:
+  void rotate(std::bitset<sizeof(wchar_t)> &b,
+	      const std::bitset<sizeof(wchar_t)> &c) const {
+    b = b << 1 | b >> (sizeof(wchar_t)-1);
+    b ^= c;
+  }
+  bool is(std::bitset<sizeof(wchar_t)> &b,
+	  const std::bitset<sizeof(wchar_t)> &c) const {
+    bool rtn = b.count() % 2 == 0;
+    rotate(b,c);
+    return rtn;
+  }
+  bonus bon(std::bitset<sizeof(wchar_t)> &a,
+	    std::bitset<sizeof(wchar_t)> &b) const {
+    bool isA = a.count() % 2 == 0;
+    bool isB = b.count() % 2 == 0;
+    rotate(a,b);
+    return isA && isB ? bonus(true) :
+      !isA && !isB ? bonus(false) : bonus();
+  }
+  void initIntrinsics() {
+    auto &able = *abilities();
+    auto a = std::bitset<sizeof(wchar_t)>(whence_.name()[0]);
+    auto b = std::bitset<sizeof(wchar_t)>(whence_.name()[1]);
+    auto c = std::bitset<sizeof(wchar_t)>(whence_.name()[2]);
+    for (int i=0; i < static_cast<int>(damageType::END); ++i) {
+      damageType dt = static_cast<damageType>(i);
+      const damage &d = damageRepo::instance()[dt];
+      if (is(a,b) && is(b,c) && is(c,a))
+	able.proof(d);
+      else if (is(a,b))
+	able.resist(d);
+      else if (is(a,b) && is(b,c) && is(c,a))
+	able.extraDamage(d);
+    }
+    able.eatVeggie(bon(a,b));
+    able.dblAttack(bon(a,b));
+    able.hear(is(a,b));
+    able.see(is(a,b));
+    able.fly(is(a,b));
+    able.fearless(bon(a,b));
+    able.climb(bon(a,b));
+    able.speedy(bon(a,b));
+    able.throws(is(a,b));
+    able.zap(is(a,b));
+    able.sleeps(is(a,b));
+
+    if (is(a,b))
+      able.move(tFactory.get(terrainType::CRACK));
+    if (is(a,b))
+      able.move(tFactory.get(terrainType::KNOTWEED));
+    if (is(a,b) && is(b,c))
+      able.move(tFactory.get(terrainType::FIRE));
+    if (is(a,b))
+      able.move(tFactory.get(terrainType::SPACE));
+    
+    // carryWeight; humans are 3000 Newtons
+    uint16_t w=0;
+    for (int x=0; x < 13; ++x) // up to 8192
+      w = w << 1 | (is(a,b) ? 1 : 0);
+    able.carryWeightN(w);
+  }
+};
+
+
 template <monsterTypeKey T>
 struct monsterTypeTraits {
   typedef bird type; // default
 };
+template<> struct monsterTypeTraits<monsterTypeKey::alien> { typedef alienMonster type; };
 template<> struct monsterTypeTraits<monsterTypeKey::blob> { typedef blob type; };
 template<> struct monsterTypeTraits<monsterTypeKey::bull> { typedef bull type; };
 template<> struct monsterTypeTraits<monsterTypeKey::dungeoneer> { typedef dungeoneer type; };
@@ -854,6 +951,7 @@ std::shared_ptr<monster> monsterType::spawn(level & level) const {
 std::shared_ptr<monster> monsterType::spawn(level & level, monsterBuilder &b) const {
   switch (type()) {
     //  case monsterTypeKey::bird: return ofTypeImpl<monsterTypeKey::bird>(level,b);
+  case monsterTypeKey::alien: return ofTypeImpl<monsterTypeKey::alien>(level,b);
   case monsterTypeKey::blob: return ofTypeImpl<monsterTypeKey::blob>(level,b);
   case monsterTypeKey::bull: return ofTypeImpl<monsterTypeKey::bull>(level,b);
   case monsterTypeKey::raptor: return ofTypeImpl<monsterTypeKey::raptor>(level,b);

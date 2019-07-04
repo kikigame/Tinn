@@ -81,7 +81,6 @@ enum class genderAssignType {
  * (x) fantastic insects
  * (y) light
  * (z) zruties
- * (A) angels
  * (C) centaur
  * (E) elemental/stalker
  * (F) fungii / mould
@@ -111,6 +110,7 @@ enum class genderAssignType {
 
 enum class monsterTypeKey {
   //bird,
+  alien, // 'A'; Nethack uses for Angelic beings
   blob,
   bull,
   raptor,

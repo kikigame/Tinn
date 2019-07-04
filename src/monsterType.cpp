@@ -6,9 +6,8 @@
 
 #include "monster.hpp"
 #include "monsterType.hpp"
-#include "random.hpp"
 #include "level.hpp"
-#include "religion.hpp"
+#include "random.hpp"
 #include "role.hpp"
 #include "terrain.hpp"
 
@@ -296,6 +295,39 @@ L"Dragons are large serpentine creatures; highly intelligent and amongst the\n"
 	    .carryWeight(300000) // the strength of 100 humans, seems about right
             .fearless());
 
+    // unique feature: features depend on pseudorandom planet
+    emplace(monsterTypeBuilder(monsterTypeKey::alien)
+	    .category(rndPickEnum(monsterCategory::biped, monsterCategory::END))
+	    .name({L"tiny"}, L"alien from ")
+	    .name({L"small"}, L"alien from ")
+	    .name(L"alien from ")
+	    .name({L"big"}, L"alien from ")
+	    .name({L"huge"}, L"alien from ")
+	    .className(L"alien")
+	    .levelFactor(4)
+	    .levelOffset(50)
+	    .minSpawn(1)
+	    .maxSpawn(dPc())
+	    .xpFactor(4)
+	    .xpOffset(30)
+	    .renderChar(L'A')
+	    .strength(10)
+	    .appearance(10)
+	    .fighting(10)
+	    .dodge(10)
+	    .maxDamage(50)
+	    .gen(genderAssignType::indirect)
+	    .material(materialType::fleshy)
+	    .corpseWeight(100)
+	    .align(dr.nonaligned())
+	    .saying(L"Beep boop") // Ref: Internet tells me this first became popular with R2D2 from Star Wars
+	    .encyclopedium(L"Aliens from many different worlds and ships have different characteristics.")
+	    .eats(materialType::waxy)
+	    .carryWeight(100000)
+	    .movement({speed::perturn, goTo::wander, goBy::avoid, 25})
+	    .movesOnGround()
+	    );
+    
     // unique feature: grows continuously
     emplace(monsterTypeBuilder(monsterTypeKey::blob)
 	    .category(monsterCategory::blob)
@@ -1003,7 +1035,7 @@ L"Be they creatures of immortality, creation, temptation, or hairstyle, snakes\n
   // unique feature: moves as swarm (split for type)
   emplace(monsterTypeBuilder(monsterTypeKey::swarm_butterfly)
 	  .category(monsterCategory::blob)
-	  .name(L"Swarm of butterflies")
+	  .name(L"swarm of butterflies")
 	  .className(L"swarm")
 	  .levelFactor(10)
 	  .levelOffset(10)
@@ -1044,7 +1076,7 @@ L"Beautifully-patterend insects of the rhopalocera suborder of the\n"
   // unique feature: moves as swarm (split for type)
 emplace(monsterTypeBuilder(monsterTypeKey::swarm_bees)
 	  .category(monsterCategory::blob)
-	  .name(L"Swarm of bees")
+	  .name(L"swarm of bees")
 	  .levelFactor(10)
 	  .levelOffset(20)
 	  .minSpawn(1) // 1 swarm
@@ -1080,8 +1112,8 @@ L"Some species of bees produce wax and honey, the latter being the primary\n"
 // unique feature: moves as swarm (split for type)
   emplace(monsterTypeBuilder(monsterTypeKey::swarm_wasps)
 	  .category(monsterCategory::blob)
-	  .name(L"Swarm of wasps")
-	  .name(L"Swarm of hornets")
+	  .name(L"swarm of wasps")
+	  .name(L"swarm of hornets")
 	  .levelFactor(10)
 	  .levelOffset(30)
 	  .minSpawn(1) // 1 swarm
@@ -1118,7 +1150,7 @@ L"Wasps are paraphyletic to bees, but a different suborder. Very few species\n"
   // unique feature: moves as swarm (split for type)
 emplace(monsterTypeBuilder(monsterTypeKey::swarm_locusts)
 	  .category(monsterCategory::blob)
-	  .name(L"Swarm of locusts")
+	  .name(L"swarm of locusts")
 	  .levelFactor(10)
 	  .levelOffset(40)
 	  .minSpawn(1) // 1 swarm
