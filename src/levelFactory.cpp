@@ -152,7 +152,9 @@ public:
     place(coord(beta,10), terrainType::DOWN);
 
     auto &ft = monsterTypeRepo::instance()[monsterTypeKey::ferret];
-    std::shared_ptr<monster> pMon = ft.spawn(pub_, *ft.builder());
+    auto builder = ft.builder();
+    builder->startOn(pub_);
+    std::shared_ptr<monster> pMon = ft.spawn(*builder);
     pMon->mutate(mutationType::SPACE);
     levelGen::addMonster(pMon, findRndTerrain(terrainType::SPACE));
 

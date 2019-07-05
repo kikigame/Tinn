@@ -263,8 +263,8 @@ public:
   // actually defined in monsterFactory.cpp:
   std::unique_ptr<monsterBuilder> builder(bool allowRandom = true) const;
   // spawn the usual monster type:
-  std::shared_ptr<monster> spawn(level &, monsterBuilder &b) const;
-  std::shared_ptr<monster> spawn(level &) const;
+  std::shared_ptr<monster> spawn(monsterBuilder &b) const;
+  std::shared_ptr<monster> spawn(level &) const; // using defauls
 
   const std::shared_ptr<monsterIntrinsics> intrinsics() const;
 

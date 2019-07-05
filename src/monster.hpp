@@ -311,7 +311,7 @@ public:
 
 // create a roaming monster initially on the given level:
 template<monsterTypeKey T>
-std::shared_ptr<monster> ofType(level & level, monsterBuilder &b = monsterBuilder(true));
+std::shared_ptr<monster> ofType(monsterBuilder &b = monsterBuilder(true));
 
 std::vector<std::pair<unsigned int, monsterType*>>
 spawnMonsters(int depth, int rooms,

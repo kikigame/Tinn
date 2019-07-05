@@ -1076,7 +1076,8 @@ monster &levelGen::addMonster(monsterTypeKey m, const coord &c) {
 
 monster &levelGen::addMonster(monsterBuilder &b, const coord &c) {
   auto &mt = monsterTypeRepo::instance()[b.type().type()];
-  auto mon = mt.spawn(pub_, b);
+  b.startOn(pub_);
+  auto mon = mt.spawn(b);
   addMonster(mon, c);
   return *mon;
 }

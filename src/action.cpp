@@ -352,7 +352,8 @@ public:
     b.alignAgainst(target.align());
     auto &zombie = monsterTypeRepo::instance()[monsterTypeKey::zombie];
     b.type(zombie);
-    auto mon = zombie.spawn(l, b);
+    b.startOn(l);
+    auto mon = zombie.spawn(b);
     l.moveTo(*mon, pos); // it's a zombie; if it can attack the player, it'll chase them.
     io.longMsg(L"Yakety Sax! Hahaha!"); // Ref: Benny Hill (in turn referencing Keystone Cops)
     return true;

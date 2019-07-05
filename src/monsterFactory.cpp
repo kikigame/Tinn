@@ -932,8 +932,8 @@ template<> struct monsterTypeTraits<monsterTypeKey::swarm_wasps> { typedef swarm
 template<> struct monsterTypeTraits<monsterTypeKey::swarm_locusts> { typedef swarm<4,false> type; };
 
 template<monsterTypeKey T>
-std::shared_ptr<monster> ofTypeImpl(level & level, monsterBuilder &b) {
-  return ofType<T,typename monsterTypeTraits<T>::type>(level,b);
+std::shared_ptr<monster> ofTypeImpl(monsterBuilder &b) {
+  return ofType<T,typename monsterTypeTraits<T>::type>(b);
 }
 
 std::unique_ptr<monsterBuilder> monsterType::builder(bool allowRandom) const {
@@ -944,39 +944,40 @@ std::unique_ptr<monsterBuilder> monsterType::builder(bool allowRandom) const {
 
 std::shared_ptr<monster> monsterType::spawn(level & level) const {
   monsterBuilder b(true);
-  return spawn(level, b);
+  b.startOn(level);
+  return spawn(b);
 }
 // these lookup makes allocating dynamic monsters of randomly chosen type posible.
 // while also ensuring all implementations of ofType<> actually get compiled in.
-std::shared_ptr<monster> monsterType::spawn(level & level, monsterBuilder &b) const {
+std::shared_ptr<monster> monsterType::spawn(monsterBuilder &b) const {
   switch (type()) {
-    //  case monsterTypeKey::bird: return ofTypeImpl<monsterTypeKey::bird>(level,b);
-  case monsterTypeKey::alien: return ofTypeImpl<monsterTypeKey::alien>(level,b);
-  case monsterTypeKey::blob: return ofTypeImpl<monsterTypeKey::blob>(level,b);
-  case monsterTypeKey::bull: return ofTypeImpl<monsterTypeKey::bull>(level,b);
-  case monsterTypeKey::raptor: return ofTypeImpl<monsterTypeKey::raptor>(level,b);
-  case monsterTypeKey::dragon: return ofTypeImpl<monsterTypeKey::dragon>(level,b);
-  case monsterTypeKey::dungeoneer: return ofTypeImpl<monsterTypeKey::dungeoneer>(level,b); 
-  case monsterTypeKey::ferret: return ofTypeImpl<monsterTypeKey::ferret>(level,b);
-  case monsterTypeKey::fox: return ofTypeImpl<monsterTypeKey::fox>(level,b);
-  case monsterTypeKey::goblin: return ofTypeImpl<monsterTypeKey::goblin>(level,b);
-  case monsterTypeKey::hound: return ofTypeImpl<monsterTypeKey::hound>(level,b);
-  case monsterTypeKey::hippalectryon: return ofTypeImpl<monsterTypeKey::hippalectryon>(level,b);
-  case monsterTypeKey::human: return ofTypeImpl<monsterTypeKey::human>(level,b); 
-  case monsterTypeKey::incubus: return ofTypeImpl<monsterTypeKey::incubus>(level,b); 
-  case monsterTypeKey::kelpie: return ofTypeImpl<monsterTypeKey::kelpie>(level,b); 
-  case monsterTypeKey::mokumokuren: return ofTypeImpl<monsterTypeKey::mokumokuren>(level,b); 
-  case monsterTypeKey::merfolk: return ofTypeImpl<monsterTypeKey::merfolk>(level,b);
-  case monsterTypeKey::siren: return ofTypeImpl<monsterTypeKey::siren>(level,b); 
-  case monsterTypeKey::snake: return ofTypeImpl<monsterTypeKey::snake>(level,b); 
-  case monsterTypeKey::succubus: return ofTypeImpl<monsterTypeKey::succubus>(level,b); 
-  case monsterTypeKey::swarm_butterfly: return ofTypeImpl<monsterTypeKey::swarm_butterfly>(level,b); 
-  case monsterTypeKey::swarm_bees: return ofTypeImpl<monsterTypeKey::swarm_bees>(level,b); 
-  case monsterTypeKey::swarm_wasps: return ofTypeImpl<monsterTypeKey::swarm_wasps>(level,b); 
-  case monsterTypeKey::swarm_locusts: return ofTypeImpl<monsterTypeKey::swarm_locusts>(level,b); 
-  case monsterTypeKey::troll: return ofTypeImpl<monsterTypeKey::troll>(level,b); 
-  case monsterTypeKey::venusTrap: return ofTypeImpl<monsterTypeKey::venusTrap>(level,b);
-  case monsterTypeKey::zombie: return ofTypeImpl<monsterTypeKey::zombie>(level,b);
+    //  case monsterTypeKey::bird: return ofTypeImpl<monsterTypeKey::bird>(b);
+  case monsterTypeKey::alien: return ofTypeImpl<monsterTypeKey::alien>(b);
+  case monsterTypeKey::blob: return ofTypeImpl<monsterTypeKey::blob>(b);
+  case monsterTypeKey::bull: return ofTypeImpl<monsterTypeKey::bull>(b);
+  case monsterTypeKey::raptor: return ofTypeImpl<monsterTypeKey::raptor>(b);
+  case monsterTypeKey::dragon: return ofTypeImpl<monsterTypeKey::dragon>(b);
+  case monsterTypeKey::dungeoneer: return ofTypeImpl<monsterTypeKey::dungeoneer>(b); 
+  case monsterTypeKey::ferret: return ofTypeImpl<monsterTypeKey::ferret>(b);
+  case monsterTypeKey::fox: return ofTypeImpl<monsterTypeKey::fox>(b);
+  case monsterTypeKey::goblin: return ofTypeImpl<monsterTypeKey::goblin>(b);
+  case monsterTypeKey::hound: return ofTypeImpl<monsterTypeKey::hound>(b);
+  case monsterTypeKey::hippalectryon: return ofTypeImpl<monsterTypeKey::hippalectryon>(b);
+  case monsterTypeKey::human: return ofTypeImpl<monsterTypeKey::human>(b); 
+  case monsterTypeKey::incubus: return ofTypeImpl<monsterTypeKey::incubus>(b); 
+  case monsterTypeKey::kelpie: return ofTypeImpl<monsterTypeKey::kelpie>(b); 
+  case monsterTypeKey::mokumokuren: return ofTypeImpl<monsterTypeKey::mokumokuren>(b); 
+  case monsterTypeKey::merfolk: return ofTypeImpl<monsterTypeKey::merfolk>(b);
+  case monsterTypeKey::siren: return ofTypeImpl<monsterTypeKey::siren>(b); 
+  case monsterTypeKey::snake: return ofTypeImpl<monsterTypeKey::snake>(b); 
+  case monsterTypeKey::succubus: return ofTypeImpl<monsterTypeKey::succubus>(b); 
+  case monsterTypeKey::swarm_butterfly: return ofTypeImpl<monsterTypeKey::swarm_butterfly>(b); 
+  case monsterTypeKey::swarm_bees: return ofTypeImpl<monsterTypeKey::swarm_bees>(b); 
+  case monsterTypeKey::swarm_wasps: return ofTypeImpl<monsterTypeKey::swarm_wasps>(b); 
+  case monsterTypeKey::swarm_locusts: return ofTypeImpl<monsterTypeKey::swarm_locusts>(b); 
+  case monsterTypeKey::troll: return ofTypeImpl<monsterTypeKey::troll>(b); 
+  case monsterTypeKey::venusTrap: return ofTypeImpl<monsterTypeKey::venusTrap>(b);
+  case monsterTypeKey::zombie: return ofTypeImpl<monsterTypeKey::zombie>(b);
   default: throw type();
   }
 }
@@ -1005,13 +1006,18 @@ bool isItCyberMonday() {
 }
 
 template<monsterTypeKey T, class M>
-std::shared_ptr<monster> ofType(level & level, monsterBuilder &b) {
+std::shared_ptr<monster> ofType(monsterBuilder &b) {
   //  monsterBuilder b(true);
-  b.startOn(level);
   // stats, alignment etc are also set when type is set:
   auto &type = monsterTypeRepo::instance()[T];
   b.type(type);
 
+  auto iLevel = b.iLevel();
+  if (!iLevel) {// bit hacky, but allow non-level monsters for transient use.
+      std::shared_ptr<monster> ptr = std::make_shared<M>(b);
+      return ptr;
+  }
+  level &level = *iLevel;
   const int levelFactor = type.getLevelFactor();
   const int levelOffset = type.getLevelOffset();
   b.progress(std::max(1, level.depth() - levelOffset) * levelFactor);
