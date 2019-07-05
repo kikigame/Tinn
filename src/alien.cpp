@@ -15,11 +15,24 @@ extern const wchar_t * const shopAdjectives[]; // adjectives.cpp
 #include <algorithm>
 
 
+std::wstring wordWrap(const std::wstring &str) {
+  if (str.length() < 80) return str;
+  // write out partial lines, else we could break a truncated line
+  auto lastBreak = str.begin() + 80;
+  auto p = std::find(str.begin(), lastBreak, L'\n');
+  if (p != lastBreak)
+    return std::wstring(str.begin(), p+1) + wordWrap(std::wstring(p+1, str.end()));
+  for (int i=80; i > 0; --i)
+    if (str[i] == L' ' || str[i] == L'\n') return std::wstring(str.begin(), str.begin() + i) + L"\n" + wordWrap(std::wstring(str.begin() + (i+1), str.end()));
+  return std::wstring(str.begin(), str.begin() + 79) + L"-\n" + wordWrap(std::wstring(str.begin() + 79, str.end()));
+}
+    
+
 
 namespace alien {
   static std::uniform_int_distribution<int> dCharDist(0,0xff);
   static auto dChar = std::bind ( dCharDist, generator );
-
+  
   class worldFactory {
   private:
     uint8_t w;
@@ -30,18 +43,6 @@ namespace alien {
     bool isShip_;
     mutable optionalRef<deity> align_;
 
-    std::wstring wordWrap(const std::wstring &str) {
-      if (str.length() < 80) return str;
-      // write out partial lines, else we could break a truncated line
-      auto lastBreak = str.begin() + 80;
-      auto p = std::find(str.begin(), lastBreak, L'\n');
-      if (p != lastBreak)
-	return std::wstring(str.begin(), p+1) + wordWrap(std::wstring(p+1, str.end()));
-      for (int i=80; i > 0; --i)
-	if (str[i] == L' ' || str[i] == L'\n') return std::wstring(str.begin(), str.begin() + i) + L"\n" + wordWrap(std::wstring(str.begin() + (i+1), str.end()));
-      return std::wstring(str.begin(), str.begin() + 79) + L"-\n" + wordWrap(std::wstring(str.begin() + 79, str.end()));
-    }
-    
     std::wstring systemNameGen() {
       // Elite uses seeding to ensure that generated names are okay.
       // We don't, so let's take out a few options:

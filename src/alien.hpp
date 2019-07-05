@@ -49,5 +49,6 @@ namespace alien {
   
 } // namespace alien
 
+std::wstring wordWrap(const std::wstring &str); // TODO: find a better utility place
 
 #endif  //ndef ALIEN_HPP

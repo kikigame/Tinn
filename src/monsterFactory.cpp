@@ -828,7 +828,43 @@ public:
     return trivialMonster::name() + whence_.name();
   }
   virtual std::wstring description() const {
-    return trivialMonster::description() + L"\n\n" + whence_.description();
+    auto rtn = trivialMonster::description() + L"\n\n" + whence_.description();
+    std::set<const wchar_t *>proofs;
+    std::set<const wchar_t *>resists;
+    std::set<const wchar_t *>extraDamage;
+    auto &able = *abilities();
+    for (int i=0; i < static_cast<int>(damageType::END); ++i) {
+      damageType dt = static_cast<damageType>(i);
+      const damage &d = damageRepo::instance()[dt];
+      if (able.proof(d)) proofs.insert(d.name());
+      if (able.resist(d)) resists.insert(d.name());
+      if (able.extraDamage(d)) extraDamage.insert(d.name());
+    }
+    std::wstring name = type().name(0).name() + whence_.name();
+    if (!proofs.empty())
+      rtn += L"An " + name + L" seem impervious to " + join(proofs.begin(), proofs.end()) + L".\n";
+    if (!resists.empty())
+      rtn += L"An " + name + L" seem to resist" + join(resists.begin(), resists.end()) + L".\n";
+    if (!extraDamage.empty())
+      rtn += L"An " + name + L" like to fight with " + join(extraDamage.begin(), extraDamage.end()) + L".\n";
+
+    rtn += L"\n\nWe also know that the typical " + name + L" ";
+    if (able.hear()) rtn += L"has good hearing, "; else rtn += L"can't hear, ";
+    if (able.see()) rtn += L"has excellent vision "; else rtn += L"doesn't need light to see where it's going, ";
+    if (able.fly()) rtn += L"and flies.\n"; else rtn += L"and jumps a lot.\n";
+
+    std::set<const wchar_t *> f;
+    if (able.fearless() == bonus(true)) f.insert(L"knows no fear");
+    if (able.climb() == bonus(true)) f.insert(L"climbs effortlessly");
+    if (able.climb() == bonus(false)) f.insert(L"has trouble climbing");
+    if (able.speedy() == bonus(true)) f.insert(L"is fast");
+    if (able.speedy() == bonus(false)) f.insert(L"is slow");
+    if (able.throws()) f.insert(L"throws things when angly");
+    if (able.zap()) f.insert(L"has been seen using wands");
+    if (!able.sleeps()) f.insert(L"didn't sleep");
+    rtn += L"An observed " + name + L" " + join(f.begin(), f.end());
+    
+    return wordWrap(rtn + L".\n---\n\n");
   }
   virtual const deity& align() const {
     return whence_.align();
@@ -837,6 +873,19 @@ public:
     return damageType_;
   }
 private:
+  std::wstring join(std::set<const wchar_t *>::iterator begin,
+		    const std::set<const wchar_t *>::iterator &end) const {
+    std::wstring rtn = L"";
+    while (begin != end) {
+      std::wstring next = *begin;
+      ++begin;
+      if (begin == end && rtn.empty()) rtn = next;
+      else if (begin == end) rtn += L" and " + next;
+      else if (rtn.empty()) rtn = next;
+      else rtn += L", " + next;
+    }
+    return rtn;
+  }
   // pointlessly rolling my own pseudorandomnumber generator:
   void rotate(std::bitset<sizeof(wchar_t)> &b,
 	      const std::bitset<sizeof(wchar_t)> &c) const {
@@ -859,9 +908,9 @@ private:
   }
   void initIntrinsics() {
     auto &able = *abilities();
-    auto a = std::bitset<sizeof(wchar_t)>(whence_.name()[0]);
-    auto b = std::bitset<sizeof(wchar_t)>(whence_.name()[1]);
-    auto c = std::bitset<sizeof(wchar_t)>(whence_.name()[2]);
+    auto a = std::bitset<sizeof(wchar_t)>(whence_.name().back());
+    auto b = std::bitset<sizeof(wchar_t)>(*(whence_.name().rbegin()+1));
+    auto c = std::bitset<sizeof(wchar_t)>(*(whence_.name().rbegin()+2));
     for (int i=0; i < static_cast<int>(damageType::END); ++i) {
       damageType dt = static_cast<damageType>(i);
       const damage &d = damageRepo::instance()[dt];
