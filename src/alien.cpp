@@ -457,9 +457,9 @@ namespace alien {
   };
 
   world::world(worldFactory &f) :
+    desc_(f.systemDesc()),
     name_(f.name()),
-    align_(f.align()),
-    desc_(f.systemDesc()) {}
+    align_(f.align()) {}
 
   const wchar_t world::render() const {
     return L'*';

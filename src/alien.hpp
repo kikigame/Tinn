@@ -26,9 +26,9 @@ namespace alien {
   // an alien world, spaceship or other origin
   class world : public renderable, public hasAlign {
   private:
+    const std::wstring desc_;
     const std::wstring name_;
     const deity &align_;
-    const std::wstring desc_;
     world(worldFactory &); // use static factory methods
   public:
     virtual ~world() {};
