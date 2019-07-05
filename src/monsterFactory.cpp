@@ -906,11 +906,18 @@ private:
     return isA && isB ? bonus(true) :
       !isA && !isB ? bonus(false) : bonus();
   }
+  std::wstring::const_reverse_iterator next(const std::wstring::const_reverse_iterator &i, const std::wstring &s) {
+    if (i+1 == s.rend()) return s.rbegin();
+    return i+1;
+  }
   void initIntrinsics() {
     auto &able = *abilities();
-    auto a = std::bitset<sizeof(wchar_t)>(whence_.name().back());
-    auto b = std::bitset<sizeof(wchar_t)>(*(whence_.name().rbegin()+1));
-    auto c = std::bitset<sizeof(wchar_t)>(*(whence_.name().rbegin()+2));
+    std::wstring name = whence_.name();
+    std::wstring::const_reverse_iterator it = name.rbegin();
+    typedef std::bitset<sizeof(wchar_t)> bits;
+    bits a = bits(*it) << 1; it = next(it,name); a ^= bits(*it);
+    bits b = bits(*it) << 2; it = next(it,name); b ^= bits(*it);
+    bits c = bits(*it) << 3; it = next(it,name); c ^= bits(*it);
     for (int i=0; i < static_cast<int>(damageType::END); ++i) {
       damageType dt = static_cast<damageType>(i);
       const damage &d = damageRepo::instance()[dt];
@@ -923,9 +930,9 @@ private:
     }
     able.eatVeggie(bon(a,b));
     able.dblAttack(bon(a,b));
-    able.hear(is(a,b));
+    able.hear(is(a,b));//
     able.see(is(a,b));
-    able.fly(is(a,b));
+    able.fly(is(a,b)); //
     able.fearless(bon(a,b));
     able.climb(bon(a,b));
     able.speedy(bon(a,b));
