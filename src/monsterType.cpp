@@ -896,6 +896,56 @@ L"Merfolk do not like to stray outside the sea, and mermen less so. Having the\n
 "whether by negligence or intent."));
 	    
 
+    // unique feature: extisnguishes fires
+    emplace(monsterTypeBuilder(monsterTypeKey::salamander)
+	    .category(monsterCategory::quadruped)
+	    .name(L"salamander")
+	    .className(L"lizards")
+	    .levelFactor(1)
+	    .levelOffset(20)
+	    .minSpawn(1)
+	    .maxSpawn(1)
+	    .xpFactor(1)
+	    .xpOffset(20)
+	    .renderChar(L':')
+	    .strength(12)
+	    .appearance(75)
+	    .fighting(30)
+	    .dodge(60)
+	    .maxDamage(30)
+	    .gen(genderAssignType::herm)
+	    .material(materialType::fleshy)
+	    .corpseWeight(311.375513977563) // 70lbs; half the weight of a Japanese Giant Salamander
+	    .align(dr.getExact(Element::water, Domination::concentration, Outlook::kind))
+	    .align(dr.getExact(Element::water, Domination::concentration, Outlook::cruel))
+	    .align(dr.getExact(Element::water, Domination::concentration, Outlook::none))
+	    .align(dr.getExact(Element::fire, Domination::concentration, Outlook::kind))
+	    .align(dr.getExact(Element::fire, Domination::concentration, Outlook::cruel))
+	    .align(dr.getExact(Element::fire, Domination::concentration, Outlook::none))
+	    .saying(L"(*wobbles chin*)")
+	    .encyclopedium(
+L"Paracelsus first described the amphibious salamander as the elemental of\n"
+"fire, years after Pliny the Elder recorded the beast as having such cold\n"
+"skin that it could extinguish flames. Clothing woven from hair of salamander\n"
+"supposedly has asbestos-like fire-resistance properties - indeed, asbestos\n"
+"fibres are sometimes mis-sold as salamander hair.\n"
+"Salamanders excrete a natural poison that can contaminate water or even\n"
+"fruit trees. Salamanders can grow up to 6 feet long, but most species are\n"
+"no longer than 6 inches when fully grown."
+)
+	    .eats(materialType::fleshy)
+	    .carryWeight(0)
+	    .movement({speed::slow2, goTo::crack, goBy::smart, 30})
+	    .movesThrough(terrainType::FIRE)
+	    .movesOnGround()
+	    .sleeps()
+	    .see()
+	    .hear()
+	    .swim()
+	    .speedy()
+	    .climb());
+	    
+    
     // unique feature: sits on rocks and lures other monsters to their death with its song
     emplace(monsterTypeBuilder(monsterTypeKey::siren)
 	    .category(monsterCategory::bird) // birds with human heads, but we don't differentiate head slots

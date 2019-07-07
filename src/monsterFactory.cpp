@@ -263,6 +263,35 @@ public:
 };
 
 
+// salamanders extinguish fires
+class salamander : public monster {
+public:
+  salamander(monsterBuilder &b) :
+    monster(b) {}
+  virtual ~salamander() {}
+  virtual void postMove(const coord &pos, const terrain &terrain) {
+    if (terrain.type() == terrainType::FIRE) {
+      curLevel().changeTerrain(pos, terrainType::GROUND);
+      bool canMove=true;
+      for (auto m : curLevel().monstersAt(pos))
+	if (!curLevel().movable(pos, pos, m.value(), false, false)) {
+	  canMove = false;
+	  break;
+	}
+      // if none of the monsters can move onto ground, this won't work.
+      // this isn't a defence mechanism to trap monsters.
+      if (!canMove) curLevel().changeTerrain(pos, terrainType::FIRE);
+      else {
+	bool sound = curLevel().dung().pc()->abilities()->hear();
+	if (sound)
+	  ioFactory::instance().message(L"The fire hisses out...");
+	else
+	  ioFactory::instance().message(L"The fire goes out...");
+      }
+    }
+  }
+};
+
 // ferrets steal little things then run away
 class ferret : public targetActionMonster {
 private:
@@ -975,6 +1004,7 @@ template<> struct monsterTypeTraits<monsterTypeKey::incubus> { typedef incubus t
 template<> struct monsterTypeTraits<monsterTypeKey::kelpie> { typedef kelpie type; };
 template<> struct monsterTypeTraits<monsterTypeKey::mokumokuren> { typedef mokumokuren type; };
 template<> struct monsterTypeTraits<monsterTypeKey::merfolk> { typedef merfolk type; };
+template<> struct monsterTypeTraits<monsterTypeKey::salamander> { typedef salamander type; };
 template<> struct monsterTypeTraits<monsterTypeKey::siren> { typedef siren type; };
 template<> struct monsterTypeTraits<monsterTypeKey::snake> { typedef snake type; };
 template<> struct monsterTypeTraits<monsterTypeKey::succubus> { typedef succubus type; };
@@ -1024,6 +1054,7 @@ std::shared_ptr<monster> monsterType::spawn(monsterBuilder &b) const {
   case monsterTypeKey::kelpie: return ofTypeImpl<monsterTypeKey::kelpie>(b); 
   case monsterTypeKey::mokumokuren: return ofTypeImpl<monsterTypeKey::mokumokuren>(b); 
   case monsterTypeKey::merfolk: return ofTypeImpl<monsterTypeKey::merfolk>(b);
+  case monsterTypeKey::salamander: return ofTypeImpl<monsterTypeKey::salamander>(b); 
   case monsterTypeKey::siren: return ofTypeImpl<monsterTypeKey::siren>(b); 
   case monsterTypeKey::snake: return ofTypeImpl<monsterTypeKey::snake>(b); 
   case monsterTypeKey::succubus: return ofTypeImpl<monsterTypeKey::succubus>(b); 
