@@ -95,7 +95,7 @@ unsigned char progressStat(unsigned char from, int p) {
   int progress = std::min(100, p); // just in case
   progress = std::max(1, progress); // just in case
   // on level 101, all stats would be 100%
-  return from + static_cast<unsigned char>(std::min(100.,(100. - from) * (progress -1) / 100));
+  return from + static_cast<unsigned char>(std::min(100.,static_cast<double>(from) * (progress -1) / 100));
 }
 
 void monsterBuilder::calcFinalStats() {
