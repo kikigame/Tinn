@@ -254,7 +254,7 @@ public:
 	    .renderChar(L'D') // as per Nethack
 	    .strength(50)
 	    .appearance(90) // after all, they're used decoratively all over the place
-	    .fighting(50)
+	    .fighting(75)
 	    .dodge(5) // they're big
 	    .maxDamage(80) // not easy to kill even as a baby, although tougher creatures exist
 	    .gen(genderAssignType::indirect)
@@ -346,7 +346,7 @@ L"Dragons are large serpentine creatures; highly intelligent and amongst the\n"
 	    .strength(25)
 	    .appearance(0)
 	    .fighting(25)
-	    .dodge(25)
+	    .dodge(5)
 	    .maxDamage(50)
 	    .material(materialType::waxy)
 	    .corpseWeight(20000)
@@ -401,7 +401,7 @@ L"Blobs grow rapidly, consuming most things in their path. On the other hand,\n"
 	    .xpFactor(10)
 	    .xpOffset(30)
 	    .renderChar(L'q') // as slash'em
-	    .strength(15) // between snake and human
+	    .strength(40)
 	    .appearance(20)
 	    .fighting(75)
 	    .dodge(10)
@@ -439,7 +439,7 @@ L"Bovines are farmed for their meat and milk. One of the largest are the\n"
 	    .renderChar(L'@')
 	    .strength(15)
 	    .appearance(60)
-	    .fighting(10)
+	    .fighting(20)
 	    .dodge(5) // blind
 	    .maxDamage(10) // weak; often need to use brains to solve puzzles instead of fighting.
 	    .gen(genderAssignType::mf)
@@ -617,7 +617,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .renderChar(L'd') // as per Nethack
 	    .strength(10)
 	    .appearance(20)
-	    .fighting(40)
+	    .fighting(55)
 	    .dodge(20) // they're frisky, but we don't want a puppy to kill a starting player
 	    .maxDamage(10) // not easy to kill even as a baby, although tougher creatures exist
 	    .gen(genderAssignType::mf)
@@ -654,8 +654,8 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .renderChar(L'@')
 	    .strength(20)
 	    .appearance(50)
-	    .fighting(30)
-	    .dodge(10)
+	    .fighting(50)
+	    .dodge(40)
 	    .maxDamage(30)
 	    .gen(genderAssignType::indirect)
 	    .align(dr.begin(), dr.end())
@@ -739,7 +739,7 @@ L"The hippecetryon (or hippecktryon) is a rare beast seen mostly emblazoned\n"
 	    .strength(20)
 	    .appearance(100)
 	    .fighting(50)
-	    .dodge(5) // why would they dodge?
+	    .dodge(20) // why would they dodge?
 	    .maxDamage(30)
 	    .saying(L"How you doin'?") // ref:Friends (TV Series), Joey
 	    .saying(L"Eyy!") // ref: Arthur Herbert Fonzarelli, Happy Days
@@ -1003,7 +1003,7 @@ L"Be they creatures of immortality, creation, temptation, or hairstyle, snakes\n
 	    .strength(20)
 	    .appearance(100)
 	    .fighting(50)
-	    .dodge(5) // why would they dodge?
+	    .dodge(20) // why would they dodge?
 	    .maxDamage(30)
 	    .saying(L"Boop oop a doop!") // ref:Betty Boop
 	    .saying(L"Happy Birthday Mister Prisident") // ref:Marilyn Monroe
@@ -1084,7 +1084,7 @@ emplace(monsterTypeBuilder(monsterTypeKey::swarm_bees)
 	  .xpFactor(2)
 	  .xpOffset(10)
 	  .renderChar(L'a') // as per Nethack
-	  .strength(1)
+	  .strength(10)
 	  .appearance(0)
 	  .fighting(40)
 	  .dodge(100)
@@ -1121,7 +1121,7 @@ L"Some species of bees produce wax and honey, the latter being the primary\n"
 	  .xpFactor(2)
 	  .xpOffset(15)
 	  .renderChar(L'a') // as per Nethack
-	  .strength(1)
+	  .strength(35)
 	  .appearance(0)
 	  .fighting(60)
 	  .dodge(100)
@@ -1158,7 +1158,7 @@ emplace(monsterTypeBuilder(monsterTypeKey::swarm_locusts)
 	  .xpFactor(2)
 	  .xpOffset(20)
 	  .renderChar(L'a') // as per Nethack
-	  .strength(1)
+	  .strength(50)
 	  .appearance(100)
 	  .fighting(80)
 	  .dodge(100)
@@ -1206,7 +1206,7 @@ L"A swarm of locusts devistates everything in its path. Although herbivores,\n"
 	    .strength(40)
 	    .appearance(10)
 	    .fighting(60)
-	    .dodge(5)
+	    .dodge(10)
 	    .maxDamage(50)
 	    .saying(L"Troll smash!") // ref:Hulk smash (Marvel comics)
 	    .saying(L"Mmmm rocks...")
@@ -1247,7 +1247,7 @@ L"A swarm of locusts devistates everything in its path. Although herbivores,\n"
 	    .renderChar(L'#') // trees in Nethack are '#' or '±'
 	    .strength(10)
 	    .appearance(90) // beautiful but look dangerous
-	    .fighting(50)
+	    .fighting(30)
 	    .dodge(0)
 	    .maxDamage(10)
 	    .gen(genderAssignType::neuter)
@@ -1284,8 +1284,8 @@ L"There are a great number of creatures in the world, and not all sit neatly\n"
 	    .renderChar(L'Z')
 	    .strength(50)
 	    .appearance(1)
-	    .fighting(10)
-	    .dodge(1)
+	    .fighting(30)
+	    .dodge(0)
 	    .maxDamage(70)
 	    .saying(L"Brains...")
 	    .gen(genderAssignType::mfn)
@@ -1311,7 +1311,7 @@ L"There are a great number of creatures in the world, and not all sit neatly\n"
 			   )
       .fearless()); // brainless implies fearless
 
-    // unique features: flying
+    // unique features: flying (TODO:FIXME)
     emplace(monsterTypeBuilder(monsterTypeKey::raptor)
 	    .category(monsterCategory::raptor)
 	    .name(L"falcon")
@@ -1327,8 +1327,8 @@ L"There are a great number of creatures in the world, and not all sit neatly\n"
 	    .renderChar(L'B')
 	    .strength(20)
 	    .appearance(5)
-	    .fighting(10)
-	    .dodge(5)
+	    .fighting(55)
+	    .dodge(10)
 	    .maxDamage(70)
 	    .saying(L"Squawk!")
 	    .gen(genderAssignType::mf)
