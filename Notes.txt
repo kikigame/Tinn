@@ -666,6 +666,19 @@ mat (from cyber-mat): doormat, ?: sleeps, no carry, no damage but high health.
 bat (from vampieic-bat): cricket reference??
 - all cyber-creatures should move.
 
+* Enchanter/enchantress: Nethack has a disenchanter (from AD&D: a camel with a prehensile trunk; it's also the name for a minecraft mod), which removes enchatments from any weapon it's hit by (only artifacts resist 90%), and armour it hits (corpses remove an intrinsic). (Similarly, it also has a human-species Nurse, which deals negative damage to monsters not wearing/wielding anything). We could have a monster that automatically /enchants/ any non-missile weapon, but also has a charm attack, making it difficult to fight.
+
+* Some kind of demon could have a cursing attack, with the chance of success depending on the coalignemnt of the item (if aligned) or wielder otherwise.
+
+* Drude (pl Druden): this is a German spirit that causes nightmares. Nightmares would be implemented as dreamscapes with traps and monsters (especially demons), counter-aligned temples with punishments for entering, and cursed items only.
+* Mare: a german monster that rides on a person's chest as they sleep and cause nightmares. They ride horses (to exhaust them by the morning), and trees (to tangle their branches). Connected to the Polish demon Mara of winter; drains people of energy or blood at night. Scared by mirrors. Czech have "night butterfly" associated with the mare. Russian mares are always female, often invisible.
+
+* Fetch - irish kind of doppleganger, appears in dreams, often as an omen for impending death. Add to nightmarescape? How to show description?
+
+* Heucuvus - south african spirits causing plague, disease, etc. Motive is to annoy Togin, a great spirit. Random hideous appearance. Can be defended against by Pillan (god of thunder) - possibly vulnurably only to sound and electric attacks. Once we have implemented some sort of disease.
+
+
+
 
 Special Level ideas
 --------------------
