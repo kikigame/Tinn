@@ -188,6 +188,35 @@ public:
   }
 };
 
+class ghostAbilities : public delegatingAbilities {
+public:
+  ghostAbilities(std::shared_ptr<monsterAbilities> &delegate) : delegatingAbilities(delegate) {}
+  virtual ~ghostAbilities() {}
+  virtual const bool proof(const damage & type) const {
+    return true; // proof to all damage (except from blessed items, which happen separately)
+  }
+  virtual const bonus eatVeggie() const { return false; }
+  virtual const char resist(const damage & type) const { return 100; }
+  virtual const char extraDamage(const damage & type) const { return -100; }
+  virtual const bool move(const terrain & type) const { return true; }
+  virtual const bool hear() const { return false; }
+  virtual const bool see() const { return false; }
+  virtual const bool fly() const { return false; }
+  virtual const bonus fearless() const { return true; }
+  virtual const bool entrapped() const { return false; }
+  virtual const bonus climb() const { return true; } // not entrapped in pits
+  virtual const bonus speedy() const { return false; }
+  virtual const bool zap() const { return false; }
+  virtual const bool sleeps() const { return false; }
+  virtual const int carryWeightN() const { return 0; }
+  virtual speed adjust(const speed & fastness) {
+    return speed::slow3;
+  }
+  virtual bool appliesTo(const monsterType &t) const {
+    return !t.undead(); // unded can't come back as ghosts
+  }
+};
+
 class vampire : public mutationImpl {
 public:
   vampire() : mutationImpl(mutationType::VAMPIRE) {}
@@ -230,6 +259,16 @@ public:
   virtual std::shared_ptr<monsterAbilities> wrap(std::shared_ptr<monsterAbilities> &a) const {
     return std::make_shared<spaceAbilities>(a);
   };  
+};
+
+class ghost : public mutationImpl {
+public:
+  ghost() : mutationImpl(mutationType::GHOST) {}
+  virtual ~ghost() {};
+  virtual const wchar_t *prefix() const { return L"ghostly "; }
+  virtual std::shared_ptr<monsterAbilities> wrap(std::shared_ptr<monsterAbilities> &a) const {
+    return std::make_shared<ghostAbilities>(a);
+  };
 };
 
 mutation::mutation(mutationImpl *other) :
@@ -304,8 +343,9 @@ mutationFactory::mutationFactory() :
   map_.emplace(mutationType::CYBER, std::unique_ptr<mutation>(new mutation(new cyber())));
   map_.emplace(mutationType::WERE, std::unique_ptr<mutation>(new mutation(new were())));
   map_.emplace(mutationType::SPACE, std::unique_ptr<mutation>(new mutation(new space())));
+  map_.emplace(mutationType::GHOST, std::unique_ptr<mutation>(new mutation(new ghost())));
   static mutationEncyclopedium encyclopedia[] = {
-    {'V',L"Vampyre",L"Vampyres feed on blood, the vital force of the living.\n"
+    {L'V',L"Vampyre",L"Vampyres feed on blood, the vital force of the living.\n"
      "The term is a relatively modern nomenclanture given to supernatioral\n"
      "revanants - the animated remains of the dead - of suicide victims or\n"
      "other evildoers.\n"
@@ -317,14 +357,14 @@ mutationFactory::mutationFactory() :
      "To destroy a vampire, pierce the skin with a stake with ash, hawthorne,\n"
      "oak or aspen. Then bury it with the decapitated head between its feet.\n"
     },
-    {'C',L"Cyber",L"Mondas calls whence they hail; the twin planet of Earth,\n"
+    {L'C',L"Cyber",L"Mondas calls whence they hail; the twin planet of Earth,\n"
       "driven hence to travel the Universe. The cyber folk are unique for\n"
       "their method of reproduction, in which they take an otherwise\n"
       "unremarkable living human and augment it with various technological\n"
       "improvements until it becomes like them. Their lack of emotion seems\n"
       "not to soften their militant silvery nature. Gold is known to affect\n"
       "the respiratory system of older models.\n"},
-    {'W',L"Lycanthrope",L"The lycanthrope, or werewolf, is the ultimate form\n"
+    {L'W',L"Lycanthrope",L"The lycanthrope, or werewolf, is the ultimate form\n"
      "of the skills of wolf-charming and wolf-riding. The ability to change\n"
      "ones' form into that of a lupine can be exceptionally useful.\n"
      "In Turkey, for instance, shamen in wolf-form are reveared.\n"
@@ -333,10 +373,18 @@ mutationFactory::mutationFactory() :
      "meaning of werewolf.\n"
      "Other forms of werecreatures are seen, such as the Asian werecats.\n"
     },
-    {'S',L"Space",L"Space creatures are much like their gravity-bound\n"
+    {L'S',L"Space",L"Space creatures are much like their gravity-bound\n"
      "counterparts, except that they seem to have developed a knack for\n"
      "flying, and seem quite at home in the inhospitable wasteland of space.\n"
-    }
+    },
+    {L' ',L"Shade",L"When a death occurs for a person or beast whose life is\n"
+     "not in order, especially of a violent death or one in unfortunate\n"
+     "circumstances, the spirit cannot rest. It remains in the mortal plane,\n"
+     "until its work is complete, or it is otherwise exorcised to the next\n"
+     "world.\n"
+     "Shades can be vanquished temporarily with weapons blessed by at least\n"
+     "one spiritual path. While they have no physical form, they may excrete\n"
+     "a gooey ectoplasm that has many alchemical uses."}
   };
 }
 

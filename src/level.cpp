@@ -788,8 +788,16 @@ public:
     // corpse is added
     auto &corpse = createCorpse(m);
     holder(c).addItem(corpse);
+    const monsterType &t = m.type();
     // monster is removed
     removeMonster(m);
+    // spawn a ghost occasionally
+    const mutation &ghostType = mutationFactory::instance()[mutationType::GHOST];
+    if (ghostType.appliesTo(t) && depth() > 20 && dPc() < 105) {
+      auto mon = t.spawn(dungeon_[depth()]);
+      mon->mutate(mutationType::GHOST);
+      addMonster(mon, c);
+    }
   }
   // replace the positions of the monster with what matches its copy.
   void bigMonster(monster &m, std::vector<coord> &pos) {

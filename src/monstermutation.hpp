@@ -14,7 +14,8 @@ enum class mutationType {
   CYBER,
   WERE, // TODO: should swap to alternate form?
   SPACE,
-  END
+  END,
+  GHOST // NB: after end; not randomly selectable.
 };
 
 class mutationImpl;

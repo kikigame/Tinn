@@ -65,6 +65,7 @@ void monster::eachTick(const std::function<void()> &callback) {
 }
 
 const wchar_t monster::render() const { // delegate to type by default
+  if (isMutated(mutationType::GHOST)) return L' ';
   return type_.renderChar();
 }
 
@@ -150,6 +151,10 @@ const attackResult monster::attack(monster &target) {
     auto dt = damageRepo::instance()[type];
 
     // Now to see if the opponent dodged it...
+    if (!isMutated(mutationType::GHOST) &&
+	target.isMutated(mutationType::GHOST) &&
+	(!weapon || !weapon.value().isBlessed()))
+      return attackResult(injury(), L"unaffected");
     unsigned char d = target.dodge().cur();
     if (dHit < d/2) {
       target.damageArmour(dt); // always damage armour on unsuccessful attack, unless proofed.
