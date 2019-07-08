@@ -630,6 +630,20 @@ L"Popular music can be loosely described as modern music, usually with one\n"
 "pop in which the synthesisers are deliberately configured to produce an\n"
 "artificial electronic sound."
 			     ));
+    emplace(itemTypeKey::ectoplasm,
+	    new itemTypeImpl(9.26342154083064, materialType::liquid, L'~', L"ectoplasm", // half a pint, density 4
+L"In 1890, the eminent parapsychologist Charles Robert Richet coined the term\n"
+"\"ectoplasm\" to describe the ghostly white smoke and gelatinous gloop\n"
+"emitted by mediums during their séances. This nutaral plasma-like substance\n"
+"has been around much longer, being the physical manifestation of spirutal\n"
+"energy on the mortal plane.\n"
+"Weaker ectoplasm appears liquid and almost colourless, becoming darker and\n"
+"more viscous as the energies increase. In the most extreme cases it takes\n"
+"on the aroma of ozone. It may be destroyed by strong sunlight and is\n"
+"sometimes mistaken for muslin.\n"
+"Ideoplasty is the art of forming ectoplasm with the mind.",
+L"The outer layer of an amoeba's cytoplasm."
+				   ));
 
     emplace(itemTypeKey::wooden_ring,
 	    // gold ring  = 4-6 oz, so say 4oz. Density of gold=19.32g/m^3 (assuming 24-karat)

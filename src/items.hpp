@@ -43,6 +43,15 @@ public:
   virtual void consumeBy(monster &) = 0;
 };
 
+// superclass for *some* weapons.
+class weaponMixin {
+public:
+  // return true to prevent leaving a corpse
+  virtual bool onKill(monster &m) {
+    return false;
+  }
+};
+
 /*
  * Pure-virtual base class to define an in-game object
  */

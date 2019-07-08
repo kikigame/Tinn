@@ -147,6 +147,7 @@ enum class itemTypeKey {
     dehydrated_water, // (water + time)
     spring_water, // (water + flora damage)
     electro_pop, // (water + lightning damage) - TODO: synthesis
+    ectoplasm, // from ghosts
 
   ////
   // Jewellery ('*' ; nethack uses * for gems, " for amulets/webs and = for rings

@@ -290,7 +290,7 @@ public:
   }
 };
 
-class basicWeapon : public basicEquip<item::equipType::wielded> {
+class basicWeapon : public basicEquip<item::equipType::wielded>, public weaponMixin {
 private:
   damageType damageType_;
 public:
@@ -1157,6 +1157,25 @@ public:
     auto rtn = std::wstring(L"This kit includes ");
     rtn+= enchantment();
     return rtn + L"bottle caps. Use them wisely.";
+  }
+  // TODO: if not blessed, we should look for a bottle.
+  virtual bool onKill(monster &m) {
+    if (m.isMutated(mutationType::GHOST)) {
+      // bottle ectoplasm
+      if (holder().addItem(createBottledItem<itemTypeKey::ectoplasm>()))
+	ioFactory::instance().message(L"There's a faint smell of ozone.");
+      else
+	ioFactory::instance().message(L"The ectoplasm gloops onto the floor.");
+      return true;
+    } else if (m.type().material() == materialType::liquid) {
+      // TODO: bottle the liquid
+      /*
+	incubus (to prevent easy corpses)
+	succubus (to prevent easy corpses)
+	kelpie (black slush)
+       */
+    }
+    return false;
   }
 };
 
@@ -2026,6 +2045,11 @@ template <> struct itemTypeTraits<itemTypeKey::electro_pop> {
   template<typename type>
   static item *make(const itemType &t) { return new type(t,  damageType::electric); }
 };
+template <> struct itemTypeTraits<itemTypeKey::ectoplasm> {
+  typedef basicItem type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t); }
+};
 template <> struct itemTypeTraits<itemTypeKey::wooden_ring> {
   typedef basicEquip<item::equipType::worn> type;
   template<typename type>
@@ -2585,6 +2609,7 @@ item &createItem(const itemTypeKey &key) {
   case itemTypeKey::dehydrated_water: return createItem<itemTypeKey::dehydrated_water>();
   case itemTypeKey::spring_water: return createItem<itemTypeKey::spring_water>();
   case itemTypeKey::electro_pop: return createItem<itemTypeKey::electro_pop>();
+  case itemTypeKey::ectoplasm: return createItem<itemTypeKey::ectoplasm>();
   case itemTypeKey::wooden_ring: return createItem<itemTypeKey::wooden_ring>();
   case itemTypeKey::amulet: return createItem<itemTypeKey::amulet>();
   case itemTypeKey::necklace: return createItem<itemTypeKey::necklace>();

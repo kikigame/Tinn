@@ -38,7 +38,7 @@ public:
   role &job() { return role_; }
 
 protected:
-  virtual void death();
+  virtual void death(bool allowCorpse);
 private:
   // used internally to recurse inventory:
   void containerInventory(std::wstringstream &inv,

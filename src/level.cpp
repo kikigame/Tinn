@@ -396,7 +396,7 @@ public:
     else ioFactory::instance().message(rtn);
   }
 
-    optionalRef<item> thrownWeapon(monster &m) {
+  optionalRef<item> thrownWeapon(monster &m) {
     if (!m.abilities()->throws()) return optionalRef<item>();
     return m.firstItem([&m](item &i){
 	auto pUse = dynamic_cast<useInCombat*>(&i);
@@ -778,7 +778,7 @@ public:
       }
     }
   }
-  void removeDeadMonster(monster &m) {
+  void removeDeadMonster(monster &m, bool allowCorpse) {
     // monster's inventory is dropped
     const coord c = posOf(m);
     auto &h = holder(c);
@@ -786,8 +786,10 @@ public:
 	h.addItem(i);
       });
     // corpse is added
-    auto &corpse = createCorpse(m);
-    holder(c).addItem(corpse);
+    if (allowCorpse) {
+      auto &corpse = createCorpse(m);
+      holder(c).addItem(corpse);
+    }
     const monsterType &t = m.type();
     // monster is removed
     removeMonster(m);
@@ -1325,8 +1327,8 @@ void level::changeTerrain(const coord &c, terrainType t) {
 void level::addMonster(std::shared_ptr<monster> monster, const coord &targetPos) {
   pImpl_->addMonster(monster, targetPos);
 }
-void level::removeDeadMonster(monster &m) {
-  pImpl_->removeDeadMonster(m);
+void level::removeDeadMonster(monster &m, bool allowCorpse) {
+  pImpl_->removeDeadMonster(m, allowCorpse);
 }
 void level::bigMonster(monster &m, std::vector<coord> &pos) {
   pImpl_->bigMonster(m, pos);

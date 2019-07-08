@@ -192,7 +192,13 @@ int monster::wound(const monster &by, unsigned char reductionPc, const damage & 
 	  damage_ = static_cast<unsigned int>(0);
 	  return damage;
 	}
-    death();
+    auto w = by.findWeapon();
+    bool allowCorpse = true;
+    if (w) {
+      auto weapon = dynamic_cast<weaponMixin*>(&w.value());
+      if (weapon && weapon->onKill(*this)) allowCorpse = false;
+    }
+    death(allowCorpse);
   } else if (!isPlayer() && damage > 0)
     for (auto &mut : by.mutations_)
       if (mut.get().spreadsOnAttack(type_)) {
@@ -253,10 +259,10 @@ void clearMonsterCharms(monster *mon) {
 }
 
 // called upon death...
-void monster::death() {
+void monster::death(bool allowCorpse) {
   for (auto f : onDeath_) f();
   clearMonsterCharms(this);
-  level_->removeDeadMonster(*this);
+  level_->removeDeadMonster(*this, allowCorpse);
 }
 
 
@@ -394,7 +400,7 @@ bool monster::onMove(const coord &pos, const terrain &terrain) {
       }
     }
     curLevel().holder(pos).addItem(createItem(itemTypeKey::pianoforte));
-    if (damage_.cur() == damage_.max()) death();
+    if (damage_.cur() == damage_.max()) death(true);
     if (isPlayer())
       ioFactory::instance().message(L"Sudenly, a piano falls on you.");
     return true; // you can move into a hidden piano trap

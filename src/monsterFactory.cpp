@@ -351,7 +351,7 @@ public:
   virtual void postMove(const coord &pos, const terrain &terrain) {
     monster::postMove(pos, terrain);
     if (terrain.type() == terrainType::PIT)
-      death();
+      death(true);
   }
 };
 
@@ -701,7 +701,7 @@ public:
   virtual void death() {
     snakeToLength();
     curLevel().bigMonster(*this, segments_);
-    trivialMonster::death();
+    trivialMonster::death(true);
   }
   // called from level class.
   virtual void setPos(const coord &c) {

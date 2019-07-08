@@ -301,9 +301,9 @@ void player::use() {
   }
 }
 
-void player::death() {
+void player::death(bool allowCorpse) {
   curLevel().dung().playerDeath();
-  monster::death();
+  monster::death(allowCorpse);
 }
 
 playerBuilder::playerBuilder()

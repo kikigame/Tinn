@@ -238,7 +238,7 @@ protected:
   virtual long modDamage(long pc, const damage & type) const;
 
   // called when a monster dies
-  virtual void death();
+  virtual void death(bool allowCorpse);
 
   // overridden to recalculate stats
   virtual void onEquip(item &item, const slot *s1, const slot *s2);
