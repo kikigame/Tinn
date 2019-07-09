@@ -1128,16 +1128,13 @@ public:
       ios.message(L"You are out of bottle caps.");
       return item::useResult::FAIL;
     }
-    optionalRef<item> bot = holder().firstItem([](item &i) {
-	auto *bot = dynamic_cast<bottle*>(&i);
-	return bot != 0 && bot->content();
-      });
+    optionalRef<bottle> bot = nextBottle();
     if (!bot) {
       ios.message(L"You'll need a bottle in your inventory to do that.");
       return item::useResult::FAIL;
     }
     ios.message(L"You try the " + bot.value().name());
-    bottle &b = dynamic_cast<bottle&>(bot.value());
+    bottle &b = bot.value();
     auto found = holder().firstItem([&b, this, &ios](item &i) {
 	if (&i == this) return false; // can't bottle a bottling kit with itself
 	if (&i == &b) return false; // can't bottle a bottle into itself
@@ -1157,11 +1154,21 @@ public:
     rtn+= enchantment();
     return rtn + L"bottle caps. Use them wisely.";
   }
-  // TODO: if not blessed, we should look for a bottle.
   virtual bool onKill(monster &m) {
     if (m.isMutated(mutationType::GHOST)) {
       // bottle ectoplasm
-      if (holder().addItem(createBottledItem<itemTypeKey::ectoplasm>()))
+      bool done;
+      if(isBlessed()) {
+	item &bot = createBottledItem<itemTypeKey::ectoplasm>();
+	bot.bless(true);
+	auto h = dynamic_cast<itemHolder*>(&bot);
+	if (h) h->forEachItem([](item &i, std::wstring) { i.bless(true); });
+	done = holder().addItem(bot);
+      } else {
+	auto bot = nextBottle();
+	done = bot && bot.value().addItem(createItem(itemTypeKey::ectoplasm));
+      }
+      if (done)
 	ioFactory::instance().message(L"There's a faint smell of ozone.");
       else
 	ioFactory::instance().message(L"The ectoplasm gloops onto the floor.");
@@ -1175,6 +1182,15 @@ public:
        */
     }
     return false;
+  }
+private:
+  optionalRef<bottle> nextBottle() {
+    auto b = holder().firstItem([](item &i) {
+	auto *bot = dynamic_cast<bottle*>(&i);
+	return bot != 0 && bot->content();
+      });
+    if (b) return optionalRef<bottle>(dynamic_cast<bottle&>(b.value()));
+    return optionalRef<bottle>();
   }
 };
 
