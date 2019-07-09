@@ -1128,8 +1128,7 @@ public:
       ios.message(L"You are out of bottle caps.");
       return item::useResult::FAIL;
     }
-    auto &pc = dynamic_cast<monster&>(holder());
-    optionalRef<item> bot = pc.firstItem([](item &i) {
+    optionalRef<item> bot = holder().firstItem([](item &i) {
 	auto *bot = dynamic_cast<bottle*>(&i);
 	return bot != 0 && bot->content();
       });
@@ -1139,7 +1138,7 @@ public:
     }
     ios.message(L"You try the " + bot.value().name());
     bottle &b = dynamic_cast<bottle&>(bot.value());
-    auto found = pc.firstItem([&b, this, &ios](item &i) {
+    auto found = holder().firstItem([&b, this, &ios](item &i) {
 	if (&i == this) return false; // can't bottle a bottling kit with itself
 	if (&i == &b) return false; // can't bottle a bottle into itself
 	if (ios.ynPrompt(L"Bottle " + i.name() + L"?")) {
