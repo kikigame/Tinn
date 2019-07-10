@@ -59,7 +59,6 @@ int play(const args &opt) {
     io->message(L"Tell me about yourself?\n"); // not a referenece; I just wanted an easier way to get alien details in
     monsterBuilder b;
     auto alien = monsterTypeRepo::instance()[monsterTypeKey::alien].spawn(b);
-    //auto alien = alien::world::spawn();// TODO: make it a monster
     auto name = alien->name();
     io->longMsg(L"Thank you for asking. I'm not really a computer at all.\nI am " + std::wstring(name[0] == L'a' ? L"an " : L"a ") + name + L"\nLet me tell what the Guide says about me:\n\n---\n" + alien->description());
     io->clear();
