@@ -616,7 +616,7 @@ L"Natural sources of water, such as lakes and streams, provide a habitat for\n"
 "important dietary mineral.",
 L"Looks kind-of wet. It doesn't *smell* like gin..." // as water
 			     ));
-    emplace(itemTypeKey::electro_pop, // (water + lightning damage) - TODO: synthesis
+    emplace(itemTypeKey::electro_pop, // (water + lightning damage)
 	    new itemTypeImpl(2.31585538520766, materialType::liquid, L'~', L"electro pop",  // half a pint as water
 L"When exposed to large tension (voltage) of electricity, it degrades into\n"
 "hydrogen and oxygen molecules, in a process known as cracking.\n"

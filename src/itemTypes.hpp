@@ -146,7 +146,7 @@ enum class itemTypeKey {
     fizzy_pop, // (water + air)
     dehydrated_water, // (water + time)
     spring_water, // (water + flora damage)
-    electro_pop, // (water + lightning damage) - TODO: synthesis
+    electro_pop, // (water + lightning damage)
     ectoplasm, // from ghosts
     kelpie_juice, // ⁓ (similar to tilde to avoid autogen); dead kelpie slush.
     demon_essence,  // ⁓ (similar to tilde to avoid autogen); dead demon.
