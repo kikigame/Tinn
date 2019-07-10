@@ -678,7 +678,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
     // unique feature: comedy attack (thought to be used against evil, but I
     // didn't think Ancient Greeks had that Christian concept)
     emplace(monsterTypeBuilder(monsterTypeKey::hippalectryon)
-	    .category(monsterCategory::dragon) // TODO: winged horse category?
+	    .category(monsterCategory::quadruped) // should be winged, but wings are only weapon slots anyway
 	    .name(L"Hippalectryon")
 	    .name(L"Hippalektryon")
 	    .className(L"large hebivorous mammal")
