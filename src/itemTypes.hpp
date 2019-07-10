@@ -148,6 +148,8 @@ enum class itemTypeKey {
     spring_water, // (water + flora damage)
     electro_pop, // (water + lightning damage) - TODO: synthesis
     ectoplasm, // from ghosts
+    kelpie_juice, // ⁓ (similar to tilde to avoid autogen); dead kelpie slush.
+    demon_essence,  // ⁓ (similar to tilde to avoid autogen); dead demon.
 
   ////
   // Jewellery ('*' ; nethack uses * for gems, " for amulets/webs and = for rings

@@ -1113,7 +1113,7 @@ public:
 
 
 // bottling kits can be wielded as a bashing weapon (ref:tinopener in nethack)
-// TODO: this will bottle liquid monsters when killed, instead of losing their liquid
+// this will bottle liquid monsters when killed, instead of losing their liquid
 // you can use it with at item only when wielded, as bottling takes time
 class bottlingKit : public basicWeapon, public burnChargeMixin {
 public:
@@ -1157,33 +1157,43 @@ public:
   virtual bool onKill(monster &m) {
     if (m.isMutated(mutationType::GHOST)) {
       // bottle ectoplasm
-      bool done;
-      if(isBlessed()) {
-	item &bot = createBottledItem<itemTypeKey::ectoplasm>();
-	bot.bless(true);
-	auto h = dynamic_cast<itemHolder*>(&bot);
-	if (h) h->forEachItem([](item &i, std::wstring) { i.bless(true); });
-	done = holder().addItem(bot);
-      } else {
-	auto bot = nextBottle();
-	done = bot && bot.value().addItem(createItem(itemTypeKey::ectoplasm));
-      }
-      if (done)
-	ioFactory::instance().message(L"There's a faint smell of ozone.");
-      else
-	ioFactory::instance().message(L"The ectoplasm gloops onto the floor.");
+      bottleOnKill<itemTypeKey::ectoplasm>();
       return true;
     } else if (m.type().material() == materialType::liquid) {
-      // TODO: bottle the liquid
-      /*
-	incubus (to prevent easy corpses)
-	succubus (to prevent easy corpses)
-	kelpie (black slush)
-       */
+      // bottle the liquid
+      switch (m.type().type()) {
+      case monsterTypeKey::kelpie:
+	bottleOnKill<itemTypeKey::kelpie_juice>();
+	return true;;
+      case monsterTypeKey::incubus:
+      case monsterTypeKey::succubus:
+	bottleOnKill<itemTypeKey::demon_essence>();
+	return true;;
+      default:
+	throw m.type().type();
+      }
     }
     return false;
   }
 private:
+  template<itemTypeKey k>
+  void bottleOnKill() {
+    bool done;
+    if(isBlessed()) {
+      item &bot = createBottledItem<itemTypeKey::ectoplasm>();
+      bot.bless(true);
+      auto h = dynamic_cast<itemHolder*>(&bot);
+      if (h) h->forEachItem([](item &i, std::wstring) { i.bless(true); });
+      done = holder().addItem(bot);
+    } else {
+      auto bot = nextBottle();
+      done = bot && bot.value().addItem(createItem(itemTypeKey::ectoplasm));
+    }
+    if (done)
+      ioFactory::instance().message(L"There's a faint smell of ozone.");
+    else
+      ioFactory::instance().message(L"The ectoplasm gloops onto the floor.");
+  }
   optionalRef<bottle> nextBottle() {
     auto b = holder().firstItem([](item &i) {
 	auto *bot = dynamic_cast<bottle*>(&i);
@@ -2061,6 +2071,16 @@ template <> struct itemTypeTraits<itemTypeKey::electro_pop> {
   static item *make(const itemType &t) { return new type(t,  damageType::electric); }
 };
 template <> struct itemTypeTraits<itemTypeKey::ectoplasm> {
+  typedef basicItem type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t); }
+};
+template <> struct itemTypeTraits<itemTypeKey::kelpie_juice> {
+  typedef basicItem type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t); }
+};
+template <> struct itemTypeTraits<itemTypeKey::demon_essence> {
   typedef basicItem type;
   template<typename type>
   static item *make(const itemType &t) { return new type(t); }

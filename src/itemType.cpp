@@ -644,7 +644,23 @@ L"In 1890, the eminent parapsychologist Charles Robert Richet coined the term\n"
 "Ideoplasty is the art of forming ectoplasm with the mind.",
 L"The outer layer of an amoeba's cytoplasm."
 				   ));
-
+    emplace(itemTypeKey::kelpie_juice, // half a pint, density 2
+	    new itemTypeImpl(4.63171077042, materialType::liquid, L'⁓', L"sludge",
+L"A blacksmith's daughter from Raasay once fell vicmit to an eich-uisge.\n"
+L"To take revenge, the balcksmith made a set of huge iron hooks, heating them\n"
+"red-hot in a fire by the lochside and eventually using them to kil the beast.\n"
+"By dawn, all that was left was a thick sludge...",
+L"Messy treacle"
+			     ));
+    emplace(itemTypeKey::demon_essence,
+	    new itemTypeImpl(0.001, materialType::liquid,  L'⁓', L"essece",
+L"The essential property is that of a reduction: to take the essence of\n"
+"something.\n"
+"It's rumoured that you can trap a demon in a suitable container, but this\n"
+"is not necessarily a good idea. This light, misty substance holds a weight\n"
+"of pure evil",
+L"Looks safe to me! So swirly..."
+			     ));
     emplace(itemTypeKey::wooden_ring,
 	    // gold ring  = 4-6 oz, so say 4oz. Density of gold=19.32g/m^3 (assuming 24-karat)
 	    // Density of balsa = 16g/m^3 => 3.1326...oz
