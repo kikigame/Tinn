@@ -452,25 +452,13 @@ public:
 
 class bottlingKit;
 
-class transmutedWater : public basicItem {
+class fluidItem : public basicItem {
 private:
-  damageType toRepair_;
   const itemType &type_;
 public:
-  transmutedWater(const itemType &type,  const damageType &toRepair) :
-    basicItem(type), toRepair_(toRepair), type_(type) {}
-  virtual bool strike(const damageType &t) {
-    if (t != toRepair_)
-      return basicItem::strike(t);
-    return false;
-  }
-  virtual bool repair(const damageType &t) {
-    if (t == toRepair_)
-      transmutate(*this, createItem(itemTypeKey::water));
-    else
-      return basicItem::repair(t);
-    return true;
-  }
+  fluidItem(const itemType &type) :
+    basicItem(type), type_(type) {}
+  virtual ~fluidItem() {}
   const wchar_t * useMessage() const {
     auto &it = itemTypeRepo::instance();
     if (type_ == it[itemTypeKey::water])
@@ -490,7 +478,13 @@ public:
     else if (type_ == it[itemTypeKey:: spring_water])
       return L"Boing!"; // Ref: Same message is used in Nethack for a wand of strking or force bolt spell, if resisted.
     else if (type_ == it[itemTypeKey:: electro_pop])
-      return L"You feel musical";
+      return L"You feel musical.";
+    else if (type_ == it[itemTypeKey:: ectoplasm])
+      return L"You feel like death.";
+    else if (type_ == it[itemTypeKey:: kelpie_juice])
+      return L"This sludge tastes worse than it looks.";
+    else if (type_ == it[itemTypeKey:: demon_essence])
+      return L"You feel accursed.";
     else
       throw std::wstring(L"Unknown type ") + type_.name();
     }
@@ -521,8 +515,36 @@ public:
       return actionFactory<item, monster>::get(sharedAction<item, monster>::key::flight);
     else if (type_ == it[itemTypeKey:: electro_pop])
       return optionalRef<sharedAction<item, monster> >();
+    else if (type_ == it[itemTypeKey:: ectoplasm])
+      return  actionFactory<item, monster>::get(sharedAction<item, monster>::key::fearful); // ghosts make you fear
+    else if (type_ == it[itemTypeKey:: kelpie_juice])
+      return optionalRef<sharedAction<item, monster> >();
+    else if (type_ == it[itemTypeKey:: demon_essence])
+      return optionalRef<sharedAction<item, monster> >(); // TODO: curse action
     else
       throw std::wstring(L"Unknown type ") + type_.name();
+  }
+};
+
+class transmutedWater : public fluidItem {
+private:
+  damageType toRepair_;
+  const itemType &type_;
+public:
+  transmutedWater(const itemType &type,  const damageType &toRepair) :
+    fluidItem(type), toRepair_(toRepair), type_(type) {}
+  virtual ~transmutedWater() {}
+  virtual bool strike(const damageType &t) {
+    if (t != toRepair_)
+      return basicItem::strike(t);
+    return false;
+  }
+  virtual bool repair(const damageType &t) {
+    if (t == toRepair_)
+      transmutate(*this, createItem(itemTypeKey::water));
+    else
+      return basicItem::repair(t);
+    return true;
   }
 };
 
@@ -567,7 +589,7 @@ public:
 
 
 // NB: We must be an itemHolder, to meet the itemHolderMap contract.
-class bottle : public basicItem, public liquidContainer, private itemHolder {
+class bottle : public basicItem, public liquidContainer, public burnChargeMixin, private itemHolder {
   friend class bottlingKit;
 private:
   optionalRef<item> content() {
@@ -577,7 +599,8 @@ private:
       });
     return rtn;
   }
-  // TODO: bottles should use charges for potion sizes.
+  // NB: bottles should use charges for potion sizes.
+  // this is handled by burnChargeMixin / describeCharges().
   optionalRef<const item> content() const {
     optionalRef<const item> rtn;
     forEachItem([&rtn](const item &i, std::wstring) {
@@ -610,6 +633,18 @@ public:
       buffer_ = L"empty " + buffer_;
     }
     return buffer_.c_str();
+  }
+  virtual std::wstring describeCharges() const {
+    if (!containsLiquid()) return L"";
+    std::wstring buffer(L"Contains ");
+    int charges = enchantment();
+    buffer += std::to_wstring(charges/2);
+    if (charges % 2 == 1) buffer += L".5";
+    if (charges == 2)
+      buffer += L" pint";
+    else
+      buffer += L" pints";
+    return buffer;
   }
   virtual double weight() const {
     optionalRef<const item> c = content();
@@ -707,7 +742,10 @@ public:
   // simply create their own bottles:
   virtual bool addItem(item &i) {
     if (content()) return false; // already occupied
-    return itemHolder::addItem(i);
+    bool rtn = itemHolder::addItem(i);
+    if (rtn && i.material() == materialType::liquid)
+      enchant(1);
+    return rtn;
   }
   // interface liquidContainer:
   virtual bool containsLiquid() const {
@@ -721,15 +759,15 @@ public:
     optionalRef<sharedAction<item, monster> > action;
     if (dynamic_cast<water*>(&fluid)) {
       msg = L"Delicious and refreshing.";
-    } else if (dynamic_cast<transmutedWater*>(&fluid)) {
-      auto &tw = dynamic_cast<transmutedWater&>(fluid);
+    } else if (dynamic_cast<fluidItem*>(&fluid)) {
+      auto &tw = dynamic_cast<fluidItem&>(fluid);
       msg = tw.useMessage();
       action = tw.useAction();
     }
     if (isPc) ioFactory::instance().message(msg);
     if (action) action.value()(bcu(), *this, m);
-    if (enchantment() > 1) enchant(-1);
-    else itemHolder::destroyItem(fluid);
+    if (hasCharge()) useCharge();
+    if (!hasCharge()) itemHolder::destroyItem(fluid);
   }
 };
 
@@ -1197,7 +1235,7 @@ private:
   optionalRef<bottle> nextBottle() {
     auto b = holder().firstItem([](item &i) {
 	auto *bot = dynamic_cast<bottle*>(&i);
-	return bot != 0 && bot->content();
+	return bot != 0 && !bot->content();
       });
     if (b) return optionalRef<bottle>(dynamic_cast<bottle&>(b.value()));
     return optionalRef<bottle>();
@@ -2071,17 +2109,17 @@ template <> struct itemTypeTraits<itemTypeKey::electro_pop> {
   static item *make(const itemType &t) { return new type(t,  damageType::electric); }
 };
 template <> struct itemTypeTraits<itemTypeKey::ectoplasm> {
-  typedef basicItem type;
+  typedef fluidItem type;
   template<typename type>
   static item *make(const itemType &t) { return new type(t); }
 };
 template <> struct itemTypeTraits<itemTypeKey::kelpie_juice> {
-  typedef basicItem type;
+  typedef fluidItem type;
   template<typename type>
   static item *make(const itemType &t) { return new type(t); }
 };
 template <> struct itemTypeTraits<itemTypeKey::demon_essence> {
-  typedef basicItem type;
+  typedef fluidItem type;
   template<typename type>
   static item *make(const itemType &t) { return new type(t); }
 };
@@ -2645,6 +2683,8 @@ item &createItem(const itemTypeKey &key) {
   case itemTypeKey::spring_water: return createItem<itemTypeKey::spring_water>();
   case itemTypeKey::electro_pop: return createItem<itemTypeKey::electro_pop>();
   case itemTypeKey::ectoplasm: return createItem<itemTypeKey::ectoplasm>();
+  case itemTypeKey::kelpie_juice: return createItem<itemTypeKey::kelpie_juice>();
+  case itemTypeKey::demon_essence: return createItem<itemTypeKey::demon_essence>();
   case itemTypeKey::wooden_ring: return createItem<itemTypeKey::wooden_ring>();
   case itemTypeKey::amulet: return createItem<itemTypeKey::amulet>();
   case itemTypeKey::necklace: return createItem<itemTypeKey::necklace>();

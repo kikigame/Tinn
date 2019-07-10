@@ -476,7 +476,7 @@ L"With enough sticks and a little patience, you too can make a camp fire."
     emplace(itemTypeKey::bottle, // 2N based on a 20oz Coke bottle (old style)
 	    new itemTypeImpl(2, materialType::glassy, L'8', L"bottle",
 L"A humble glass bottle. This container can hold or mix a liquid charge, or\n"
-"contain almost anything along with a bottling kit. Their contents will be\n"
+"contain almost anything if used with a bottling kit. Their contents will be\n"
 "protected from many forms of damage, including spillage, so long as the\n"
 "bottle holds up.",
 L"Soft drinks rot your teeth. At least remember to recycle your glassware."
