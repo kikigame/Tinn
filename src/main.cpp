@@ -102,7 +102,7 @@ int play(const args &opt) {
   }
 } while (repeat);
 
-  io->longMsg(L"You do not get your possessions identified.\n\n" + endDetails); // pun on Nethack end quote.
+  io->message(L"You do not get your possessions identified.\n\n" + endDetails); // pun on Nethack end quote.
 
   return 0;
 }
