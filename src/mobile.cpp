@@ -155,6 +155,16 @@ void moveMobile(T &mon) {
       dir.second = myPos.second < targetPos.second ? 1 : myPos.second == targetPos.second ? 0 : -1;     
       }
       break; }
+    case goTo::web: {
+      auto vec = level.findAllTerrain(terrainType::WEB);
+      auto pTarget = rndPick(vec.begin(), vec.end());
+      if (pTarget == vec.end()) return;
+      targetPos = *pTarget;
+      {
+      dir.first = myPos.first < targetPos.first ? 1 : myPos.first == targetPos.first ? 0 : -1;
+      dir.second = myPos.second < targetPos.second ? 1 : myPos.second == targetPos.second ? 0 : -1;     
+      }
+      break; }
     default:
       throw type.goTo_;
     }
@@ -223,7 +233,6 @@ void ignored(monster &m) {
   moveMobile<monster>(m);
 }
 
-
 void monsterAttacks(monster &mon) {
   level & level = mon.curLevel();
 
@@ -233,7 +242,6 @@ void monsterAttacks(monster &mon) {
   // currently, all monsters will attack anything that
   // a) they are adjacent to, and
   // b) they are a different alignment to, on at least one axis OR both unaligned.
-  // This needs improving, with multiple monster attacks.
 
   auto myPos = level.posOf(mon);
   auto &dam = mon.injury();
@@ -246,6 +254,16 @@ void monsterAttacks(monster &mon) {
       auto m = level.monstersAt(pos);
       for (auto pM : m) monstersAt.emplace(pM, pos);
     }
+  if (!monstersAt.empty()) {
+    // TODO: this is very clunky. Rework move/combat.
+    for (auto ren : monstersAt) {
+      if (mon.capture(ren.second)) {
+	dir d = myPos.dirTo(ren.second);
+	mon.curLevel().moveOrFight(mon, d, true);
+	return; // don't attack if we can capture (instakill as in chess)
+      }
+    }
+  }
   
   for (auto ren : monstersAt) {
     ref<monster> ref = ren.first;

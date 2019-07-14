@@ -229,6 +229,15 @@ public:
   bool isMutated(const mutationType &m) const;
   void mutate(const mutationType &key);
   void deMutate(const mutationType &key);
+
+  // does this monster move into other monsters?
+  virtual bool capture(const coord &pos) const;
+  // called when capturing other monsters (monsters removed from "prey" will not be captured):
+  virtual void captured(std::vector<std::shared_ptr<monster>> &prey);
+
+  // called when a monster dies. May be called to instakill a monster.
+  virtual void death(bool allowCorpse);
+  
 protected:
 
   // given a damage figue of damage of a given type,
@@ -236,9 +245,6 @@ protected:
   // NB: Units are percentage points by which to affect the damage stat.
   // this considers intrinsics first then recurses over equipped items.
   virtual long modDamage(long pc, const damage & type) const;
-
-  // called when a monster dies
-  virtual void death(bool allowCorpse);
 
   // overridden to recalculate stats
   virtual void onEquip(item &item, const slot *s1, const slot *s2);

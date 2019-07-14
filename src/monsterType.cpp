@@ -119,6 +119,7 @@ public:
     movesThrough(terrainType::DECK);
     movesThrough(terrainType::DOWN);
     movesThrough(terrainType::PIT);
+    movesThrough(terrainType::WEB);
     movesThrough(terrainType::PIT_HIDDEN);
     movesThrough(terrainType::PIANO_HIDDEN);
     return *this;
@@ -372,6 +373,7 @@ L"Dragons are large serpentine creatures; highly intelligent and amongst the\n"
 	    //.movesThrough(terrainType::PIT_HIDDEN) // inately avoids all traps
 	    //.movesThrough(terrainType::PIT)
 	    //.movesThrough(terrainType::PIANO_HIDDEN)
+	    //.movesThrough(terrainType::WEB)
 	    .movesThrough(terrainType::FIRE)
 	    .movesThrough(terrainType::WATER)
 	    .movesThrough(terrainType::SPACE)
@@ -898,7 +900,7 @@ L"Merfolk do not like to stray outside the sea, and mermen less so. Having the\n
 
     // unique feature: extisnguishes fires
     emplace(monsterTypeBuilder(monsterTypeKey::salamander)
-	    .category(monsterCategory::quadruped)
+	    .category(monsterCategory::insectoid)
 	    .name(L"salamander")
 	    .className(L"lizards")
 	    .levelFactor(1)
@@ -944,6 +946,42 @@ L"Paracelsus first described the amphibious salamander as the elemental of\n"
 	    .swim()
 	    .speedy()
 	    .climb());
+
+    emplace(monsterTypeBuilder(monsterTypeKey::spider)
+	    .category(monsterCategory::insectoid)
+	    .name(L"spider")
+	    .className(L"arachnids")
+	    .levelFactor(1)
+	    .levelOffset(50)
+	    .minSpawn(1)
+	    .maxSpawn(1)
+	    .xpFactor(1)
+	    .xpOffset(40)
+	    .renderChar(L's')
+	    .strength(10)
+	    .appearance(30)
+	    .fighting(10)
+	    .dodge(60)
+	    .maxDamage(40)
+	    .gen(genderAssignType::mf)
+	    .material(materialType::fleshy)
+	    .corpseWeight(1472.36135895105) // 331lb, https://rpg.stackexchange.com/questions/56475/how-much-does-a-large-monstrous-spider-weigh
+	    .align(dr.getExact(Element::time, Domination::aggression, Outlook::cruel)) // often associated with tricksters
+	    .saying(L"Hiss") // only some spiders make noise and it's usually hissing
+	    .eats(materialType::fleshy)
+	    .carryWeight(0)
+	    .movement({speed::turn2, goTo::down, goBy::smart, 90})
+	    .movesOnGround()
+	    .fearless()
+	    .sleeps()
+	    .hear()
+	    .climb()
+	    .encyclopedium(
+L"There are many types of spider, and they fall into two main groups: those\n"
+"which hunt, and those which spin webs. A spider's web will ensnare its prey\n"
+"and the spider will return later to eat the entire web, prey and all.\n"
+"Some spiders have a venomous bite; some are poisonous to eat."
+));
 	    
     
     // unique feature: sits on rocks and lures other monsters to their death with its song

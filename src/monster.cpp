@@ -265,6 +265,13 @@ void monster::death(bool allowCorpse) {
   level_->removeDeadMonster(*this, allowCorpse);
 }
 
+// can this monster capture (move onto & instakill) all monsters on pos?
+bool monster::capture(const coord &pos) const {
+  return false;
+}
+// called when capturing other monsters (monsters removed from "prey" will not be captured):
+void monster::captured(std::vector<std::shared_ptr<monster>> &prey) {}
+
 
 bool monster::drop(item &ite, const coord &c) {
   if (ite.isCursed()) return false;
@@ -387,6 +394,11 @@ bool monster::onMove(const coord &pos, const terrain &terrain) {
     intrinsics_->entrap(count);
     return rtn;
   }
+  case terrainType::WEB: {
+    auto rtn = !intrinsics_->entrapped();
+    intrinsics_->entrap(10);
+    return rtn;
+  }
   case terrainType::PIANO_HIDDEN:
     // always take 5% damage exactly, plus bash headgear
     // NB: This is unlike nethack, where wearing metal headgear protects from falling rocks.
@@ -472,6 +484,10 @@ void monster::postMove(const coord &pos, const terrain &terrain) {
     }
   }
   switch (terrain.type()) {
+  case terrainType::WEB: {
+    if (isPlayer()) ioFactory::instance().message(L"You are entangled in a web.");
+    break;
+  }
   case terrainType::PIT: {
     bool flying(abilities()->fly());
     if (flying) {

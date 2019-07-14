@@ -23,6 +23,7 @@ const wchar_t * const to_string(const terrainType & t) {
   case terrainType::DECK: return L"DECK";
   case terrainType::KNOTWEED: return L"KNOTWEED";
   case terrainType::CRACK: return L"CRACK";
+  case terrainType::WEB: return L"WEB";
   default: throw t;
   }
 }
@@ -79,6 +80,8 @@ bool terrain::entraps(const monster &m, bool includeHidden) const {
   case terrainType::KNOTWEED:
   case terrainType::CRACK:
     return false;
+  case terrainType::WEB:
+    return m.type().type() != monsterTypeKey::spider;
   default:
     throw type_; // missing type from enum
   }
@@ -120,7 +123,10 @@ public:
 "decades below ground before been seen in significant quantity in a matter of\n"
 "woeks. It can grow through the smallest cracks in concrete and regrow from\n"
 "the tiniest remaining fragment.", terrainType::KNOTWEED));
-    store(new terrain(L'¨',L"Cracked wall", L"This wall is displaying signs of subsidance.\n", terrainType::CRACK));
+    store(new terrain(L'¨',L"Cracked wall", L"This wall is displaying signs of subsidance.", terrainType::CRACK));
+    store(new terrain(L'"',L"Web", L"Used by spiders to ensnare prey.\n"
+"Warning: spiders will come back to eat their webs. If you're entangled\n"
+"when they do, you're lunch.", terrainType::WEB));
   }
   const terrain &get(terrainType type) const {
     return *(store_.at(type).get());

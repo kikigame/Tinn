@@ -677,6 +677,7 @@ bat (from vampieic-bat): cricket reference??
 
 * Heucuvus - south african spirits causing plague, disease, etc. Motive is to annoy Togin, a great spirit. Random hideous appearance. Can be defended against by Pillan (god of thunder) - possibly vulnurably only to sound and electric attacks. Once we have implemented some sort of disease.
 
+* Spiders. Nethack has cave spiders (hide under items) and giant spiders (spin web traps, which ensnare for a time and disable most other traps). I think our spiders should be able to leave trails of silk, or perhaps entire webs, behind them (costing health), which ensnare non-liquid, non-tesseracted, non-spider creatures that (if non-big) can then be eaten (instakill with XP). Aconite was the poison used by Athena to turn Arachne into a spider.
 
 
 

@@ -97,7 +97,6 @@ enum class genderAssignType {
  * (O) Ogre
  * (Q) Quantum mechanics
  * (R) rust monster/disenchanter
- * (S) snake
  * (U) umber hulk
  * (V) Vampyre
  * (W) Wraith
@@ -128,6 +127,7 @@ enum class monsterTypeKey {
   mokumokuren,
   merfolk,// merman or mermaid; can't move off water. Attacks with charm
   salamander,
+  spider,
   siren, // manevolent half-bird that sits on rocks at sea and lures travellers to their death with its song.
   snake,
   succubus, // female form of incubus

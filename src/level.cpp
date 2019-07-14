@@ -380,7 +380,19 @@ public:
   void attack(monster &aggressor, monster &target) {
     for (auto z : zonesAt(posOf(aggressor), true))
       if (!z->onAttack(aggressor, target)) return;
+    coord tPos(target.curLevel().posOf(target));
     const auto tName = target.name();
+    if (aggressor.capture(tPos)) {
+      auto monsters = monsters_.equal_range(tPos);
+      std::wstring aName = aggressor.name();
+      auto num = std::distance(monsters.first, monsters.second);
+      capture(aggressor, tPos, monsters.first, monsters.second);
+      if (num == 1)
+	ioFactory::instance().longMsg(tName + L" is no more thanks to " + aName);
+      else
+	ioFactory::instance().longMsg(std::to_wstring(num) + L" beings are no more thanks to " + aName);
+      return;
+    }
     const auto result = aggressor.attack(target);
     std::wstring rtn(result.text_);
     bool longMsg = false;
@@ -750,6 +762,17 @@ private:
 	if(pV) pV->onMonsterMove(oldPos, holder(pos), pos, t);
       });
   }
+  void capture(monster &by, coord pos,
+	       std::multimap<coord, std::shared_ptr<monster> >::iterator &from,
+	       std::multimap<coord, std::shared_ptr<monster> >::iterator &to) {
+    std::vector<std::shared_ptr<monster>> prey;
+    for (auto p = from; p != to; ++p)
+      prey.emplace_back(p->second);
+    by.captured(prey);
+    for (auto m : prey) {
+      m->death(false);
+    }
+  }
 public:
 
   // move a monster by direction, with optional safety
@@ -759,13 +782,16 @@ public:
     
     sanitiseCoords(pos);
 
-    if (!movable(cc,pos, m, avoidTraps, false) || // monster can't pass this way
-	monsters_.find(pos) != monsters_.end()) { // monsters can't *generally* move into each other.
-      // can't move this way.
+    if (!movable(cc,pos, m, avoidTraps, false)) // monster can't pass this way
+      return;      // can't move this way.
+    auto toCapture = monsters_.equal_range(pos); // monsters can't *generally* move into each other. When they do, we call it "capturing" (as in chess)
+    if (toCapture.first != toCapture.second && !m.capture(pos))
       return;
-    }
-    if (!avoidTraps || !terrainAt(pos).entraps(m, false)) // avoid traps if we should & can see them
+    if (!avoidTraps || !terrainAt(pos).entraps(m, false)) {// avoid traps if we should & can see them
+      if (toCapture.first != toCapture.second)
+	capture(m, pos, toCapture.first, toCapture.second);
       moveTo(m, pos); // moveTo handles entrapped()
+    }
   }
   void removeMonster(const monster &m) {
     bool isBig = dynamic_cast<const ::bigMonster*>(&m);

@@ -29,6 +29,8 @@ enum class terrainType {
   BULKHEAD,// outer hull of a ship or space station
   KNOTWEED, // impassible undergrowth.
   CRACK, // cracks in the wall; home to mokumokuren & portable holes won't stick
+  // TRAP: as ground, but non-large monsters will be ensnared as pit, even if flying.
+  WEB,
   DECK
 };
 

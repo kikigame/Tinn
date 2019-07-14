@@ -23,6 +23,7 @@ enum class goTo {
   up, // find an up ramp and sit on it
   down, // find a down ramp and sit on it
   crack, // find any crack terran at random, not necessarily the one we're on
+  web, // find any web terran at random, not necessarily the one we're on
 };
 
 enum class goBy {

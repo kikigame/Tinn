@@ -686,6 +686,54 @@ public:
   }
 };
 
+// spiders spin webs, wait for prey to catch in them, then eat them
+class spider : public trivialMonster {
+private:
+  movementType hungry_;
+public:
+  spider(monsterBuilder &b) :
+    trivialMonster(b),
+    hungry_({speed::perturn, goTo::web, goBy::avoid, 10}) {}
+  virtual ~spider() {}
+  virtual bool onMove(const coord &pos, const terrain &terrain) {
+    if (injury().cur() < 10 && terrain.type() == terrainType::GROUND) {
+      auto monsters = curLevel().monstersAt(pos);
+      for (ref<monster> &m : monsters)
+	// trap m in web if not big or spider
+	m.value().postMove(pos, tFactory.get(terrainType::WEB));
+      curLevel().changeTerrain(pos, terrainType::WEB);
+      // weaving takes health:
+      injury() += 1;
+    }
+    return trivialMonster::onMove(pos, terrain);
+  }
+  
+  virtual const movementType & movement() const {
+    if (injury().cur() > 10)
+      return hungry_;
+    return trivialMonster::movement();
+  }
+  // TODO: when moving off a web while hungry, spider should remove the web from the map.
+
+
+  // we "capture" (Chess-style) all non-large, non-spider monsters on webs:
+  virtual bool capture(const coord &pos) const {
+    if (curLevel().terrainAt(pos).type() != terrainType::WEB)
+      return false; // we only capture on webs
+    for (auto mon : curLevel().monstersAt(pos)) {
+      auto &m = mon.value();
+      if (m.type().type() == monsterTypeKey::spider) return false;
+      if (dynamic_cast<bigMonster*>(&m) != nullptr) return false;
+    }
+    return true;
+  }
+  virtual void captured(std::vector<std::shared_ptr<monster>> &prey) {
+    if (prey.size() == 0) return;
+    curLevel().changeTerrain(curLevel().posOf(*prey[0]), terrainType::GROUND);
+    injury() -= static_cast<unsigned int>(prey.size()); // 1 point per monster
+    injury() -= 1; // get back point for eating the web
+  }
+};
 
 // snakes get longer based on their hit points.
 class snake : public trivialMonster, public bigMonster {
@@ -1007,6 +1055,7 @@ template<> struct monsterTypeTraits<monsterTypeKey::merfolk> { typedef merfolk t
 template<> struct monsterTypeTraits<monsterTypeKey::salamander> { typedef salamander type; };
 template<> struct monsterTypeTraits<monsterTypeKey::siren> { typedef siren type; };
 template<> struct monsterTypeTraits<monsterTypeKey::snake> { typedef snake type; };
+template<> struct monsterTypeTraits<monsterTypeKey::spider> { typedef spider type; };
 template<> struct monsterTypeTraits<monsterTypeKey::succubus> { typedef succubus type; };
 template<> struct monsterTypeTraits<monsterTypeKey::zombie> { typedef zombie type; };
 template<> struct monsterTypeTraits<monsterTypeKey::dragon> { typedef dragon type; };
@@ -1057,6 +1106,7 @@ std::shared_ptr<monster> monsterType::spawn(monsterBuilder &b) const {
   case monsterTypeKey::salamander: return ofTypeImpl<monsterTypeKey::salamander>(b); 
   case monsterTypeKey::siren: return ofTypeImpl<monsterTypeKey::siren>(b); 
   case monsterTypeKey::snake: return ofTypeImpl<monsterTypeKey::snake>(b); 
+  case monsterTypeKey::spider: return ofTypeImpl<monsterTypeKey::spider>(b); 
   case monsterTypeKey::succubus: return ofTypeImpl<monsterTypeKey::succubus>(b); 
   case monsterTypeKey::swarm_butterfly: return ofTypeImpl<monsterTypeKey::swarm_butterfly>(b); 
   case monsterTypeKey::swarm_bees: return ofTypeImpl<monsterTypeKey::swarm_bees>(b); 

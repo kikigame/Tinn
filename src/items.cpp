@@ -1312,6 +1312,9 @@ public:
       return useResult::DONE;
     case terrainType::CRACK:
       io.message(L"The hole won't stick to the crack.");
+      return useResult::FAIL;      
+    case terrainType::WEB:
+      io.message(L"The hole won't stick to the silken strands.");
     default:
       return useResult::FAIL;      
     }

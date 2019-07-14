@@ -104,6 +104,14 @@ void transport::selfMove() {
     targetPos = *pCrack;
     return;
   }
+  case goTo::web: {
+    // seek out a crack
+    auto cracks = lvl_->findAllTerrain(terrainType::WEB);
+    auto pCrack = rndPick(cracks.begin(), cracks.end());
+    if (pCrack == cracks.end()) return; // does not move
+    targetPos = *pCrack;
+    return;
+  }
   }
 
   dir d = pathfinder<12>([this](const coord &c){
