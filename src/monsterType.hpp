@@ -37,6 +37,8 @@ enum class monsterCategory {
     merfolk,
   // snake: basically just a tail.
     snake,
+  // insectoid: head, legs, thorax, abdomen, tail. Only 4 legs are modelled, but used for spiders too.
+    insectoid,
   // blobs have nothing. They are just blobs.
   blob,
   END
