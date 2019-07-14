@@ -6,12 +6,13 @@
 #include <random>
 #include <iterator>
 #include <functional>
-
+#include <bitset>
 
 // we're a game, not a crypto, so seeding with the time should be okay.
-//static std::default_random_engine generator;
 //static std::default_random_engine generator(1473628262);
-static std::default_random_engine generator(time(NULL));
+constexpr std::hash<std::bitset<sizeof(time_t)>> hasher;
+// NB: I'm hashing the time to make it more random; otherwise on Linux/g++, we always get the first few high bits in the first result, leading to the same options being picked.
+static std::default_random_engine generator(hasher(std::bitset<sizeof(time_t)>(time(nullptr))));
 static std::uniform_int_distribution<int> distributionRoom(3,5);
 static auto numRooms = std::bind ( distributionRoom, generator );
 static std::uniform_int_distribution<int> distributionWidth(5,10);
@@ -40,7 +41,8 @@ Iter rndPick(/*by value*/Iter start, const Iter &end) {
   const auto max = std::distance(start, end);
   if (max > 1) { // don't burn random numbers to pick from single lists; happens a lot.
     std::uniform_int_distribution<int> dis(0, max - 1);
-    std::advance(start, dis(generator));
+    auto distance = dis(generator);
+    std::advance(start, distance);
   }
   return start;
 }
