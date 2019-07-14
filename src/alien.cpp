@@ -130,7 +130,7 @@ namespace alien {
 	  }	  
 	  return L"";
 	case L'p': // positive trait (its)
-	  return expand<21>(x, {
+	  return expand<22>(x, {
 	      L"%around things" /*ref:TARDIS, Dr Who*/,
 		L"%atulips", // Ref: from Elite
 		L"%aburgers", // Ref: from Elite
@@ -150,11 +150,12 @@ namespace alien {
 		L"%amountain ranges",
 		L"%atourism",
 		L"%asecrets",
+		L"bouquet garni",
 		L"%a%w",
 		L"%w"
 		});
 	case L'n': // negative trait
-	  return expand<11>(x, {
+	  return expand<12>(x, {
 	      L"%acivil wars", // Ref: from Elite
 		L"%adiseases", // Ref: from Elite (disease)
 		L"%aearthquakes", // Ref: from Elite
@@ -165,12 +166,13 @@ namespace alien {
 		L"%j %abackground humming",
 		L"%j rules under a system of martial law",
 		L"extreme wealth inequality",
-		L"%j weather"
+		L"%j weather",
+		L"%j piracy"
 		});
 	case L'r': // religious path
 	  return align().name();
 	case L'g': // game (competitive activity)
-	  { return expand<13>(x, {
+	  { return expand<21>(x, {
 		L"karate", // Ref: from Elite
 		  L"polo", // Ref: from Elite
 		  L"hockey", // Ref: from Elite
@@ -179,15 +181,23 @@ namespace alien {
 		  L"karaoke",
 		  L"competitive waving",
 		  L"%mpainting",
+		  L"%mwrestling",
 		  L"tiddlywinks",
 		  L"quidditch", // ref: Potter. We had to have on somewhere
 		  L"foot-the-ball", // ref: Unseen Academicals (Pratchett, book)
 		  L"push-penny",
-		  L"cabinet assembly" // ref: Dr Who (sonic screwdriver jokes)
+		  L"cabinet assembly", // ref: Dr Who (sonic screwdriver jokes)
+		  L"dom-jot", // ref: Star Trek
+		  L"podracing", // ref: Star Wars
+		  L"poker",
+		  L"Thud", // ref: Pratchtt [Thud]
+		  L"Ski-surfing", // ref: Judge Dredd
+		  L"Poohsticks", // ref: Winnie the Pooh
+		  L"Mornington Crescent" // ref: I'm Sorry, I haven't A Clue (BBC Radio 4 series)
 		  });
 	  }
 	case L'j': // negative adjectives (eg solar activity)
-	  return expand<11>(x, {
+	  return expand<12>(x, {
 	      L"draconian",
 		L"bad",
 		L"unpredictable", // Ref: from Elite
@@ -198,10 +208,11 @@ namespace alien {
 		L"unfortunate",
 		L"boring", // Ref: from Elite (but not used here)
 		L"unexplained",
-		L"nausea-inducing"
+		L"nausea-inducing",
+		L"smelly"
 		});
-	case L'm': // media
-	  return expand<8>(x, {
+	case L'm': // media (prefixes for painting)
+	  return expand<9>(x, {
 	      L"egg-",
 		L"body-",
 		L"un",
@@ -209,10 +220,11 @@ namespace alien {
 		L"oil ",
 		L"digital ",
 		L"artistic ",
-		L"pseudorandom "
+		L"pseudorandom ",
+		L"abstract "
 		});
 	case L'<': // prefix
-	  return expand<11>(x, {
+	  return expand<12>(x, {
 	      L"",
 		L"mud-", // Ref: from Elite
 		L"Zero-G ", // Ref: from Elite
@@ -223,7 +235,8 @@ namespace alien {
 		L"extreme ",
 		L"ritual ",
 		L"spontaneous ",
-		L"sub-aquatic "
+		L"sub-aquatic ",
+		L"bungee "
 		});
 	case L'>': // codas: split by type or else we get duplications
 	  return expand<13>(x, {
@@ -238,9 +251,9 @@ namespace alien {
 		L"travelling on",
 		L"during the flight of"
 	    });
-	case L'w': // whereabouts (places)
+	case L'w': // whereabouts (place, singular)
 	  return isShip_ ?
-	    expand<8>(x, {
+	    expand<10>(x, {
 		L"third deck",
 		  L"lido deck",
 		  L"bridge",
@@ -248,19 +261,30 @@ namespace alien {
 		  L"poop deck",
 		  L"star deck", // like a sun deck, but on a spaceship
 		  L"observation lounge", // ref: Star Trek briefing room
-		  L"on-board cinema"
+		  L"on-board cinema",
+		  L"gift shop",
+		  L"brig"
 	      }) :
-	    expand<16>(x, {
+	    expand<8>(x, { 
 		L"northern hemisphere",
 		  L"southern hemisphere",
 		  L"eastern hemisphere",
 		  L"western hemisphere",
-		  L"equatorial regions",
-		  L"polar regions",
-		  L"oceans",
 		  L"largest continent",
 		  L"second largest continent",
 		  L"capital city",
+		  L"single ocean"
+	      });
+	case L'W': // whereabouts (places, plural)
+	  return isShip_ ?
+	    expand<2>(x, {
+		  L"aft quarters",
+		  L"heads" // nautical for the loo
+	      }) :
+	    expand<9>(x, {
+		  L"equatorial regions",
+		  L"polar regions",
+		  L"oceans",
 		  L"red-light districts",
 		  L"slums",
 		  L"%t fields",
@@ -271,29 +295,31 @@ namespace alien {
 	case L'l':
 	  { std::wstring next = 
 	  isShip_ ?
-	    expand<13>(x, {
+	    expand<14>(x, {
 		L".\n%b %N, rum rations are issued %c times per day",
 		  L".\n%b %N, the lighting is changed on %Aschedule",
 		  L".\nPassenger services %b %N are available during office hours",
 		  L".\nIn the canteen %b %N, ice-cream is served every sundae", // spelling joke.
 		  L".\nThe engines of %N could power %c entire cities, if they weren't on a ship in space",
-		  L".\nThe lido deck of %N contains %c whole lidos.", // lido = swimming pool
-		  L".\nThe bridge of %N has no river.",
-		  L".\nPassenger access to the recreational facilities %b %N are %flimited.",
-		  L".\nThe crew of %N is made up entirely of aliens from the planet %R.",
+		  L".\nThe lido deck of %N contains %c whole lidos", // lido = swimming pool area
+		  L".\nThe bridge of %N has no river",
+		  L".\nPassenger access to the recreational facilities %b %N are %flimited",
+		  L".\nThe crew of %N is made up entirely of aliens from the planet %R",
 		  L".\nThe quartermaster of %N keeps ordering too much %t pie",
 		  L".\nPassengers %b %N report strange dreams of %<%g",
 		  L".\nThe %w of %N %{",
-		  L".\nThe %w of %N is dedicated just to %<%g",
+		  L".\nMuch of %w of %N is dedicated just to %<%g",
+		  L".\nThe %W of %N are dedicated just to %<%g",
 	      }) :
-	    expand<7>(x, {
+	    expand<8>(x, {
 		L".\nA year on %N lasts up to %c years, %c weeks and an hour on %R",
 		  L".\n%N spins up to %c years in %C week",
 		  L".\n%N experiences up to %c years in %C week",
 		  L".\n%N spins up to %c years in %C week. May cause dizziness",
 		  L".\nOn %N, %C year incurs annual taxes",
 		  L".\nThe %w of %N %{",
-		  L".\nThe %w of %N is dedicated just to %<%g",
+		  L".\nThe entirety of the %w of %N is dedicated just to %<%g",
+		  L".\n%w of %N are dedicated just to %<%g",
 		  });
 	    // fix the up-case of the letter. Expand first to remove the possible %b.
 	    std::wstring enext = expand(next);
@@ -323,7 +349,7 @@ namespace alien {
 		L".\nSo, overall:\n\tMostly Harmless", // ref: Hitch-hiker's guide to the galaxy again (entry on Earth)
 		L".\nAliens from %N have been seen on %R, %R, and the Areas of Adventure",
 		L".\nAliens from %N have been seen on %R, the Areas of Adventure, and %R",
-		L".\nAliens from %N like %<%g, %t, and serial commas"
+		L".\nAliens from %N like %<%g, %t farming, and serial commas"
 		});
 	case L'}': // holiday coda
 	  return expand<6>(x, {

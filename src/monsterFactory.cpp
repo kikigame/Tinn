@@ -888,7 +888,7 @@ public:
     if (able.climb() == bonus(false)) f.insert(L"has trouble climbing");
     if (able.speedy() == bonus(true)) f.insert(L"is fast");
     if (able.speedy() == bonus(false)) f.insert(L"is slow");
-    if (able.throws()) f.insert(L"throws things when angly");
+    if (able.throws()) f.insert(L"throws things when angry");
     if (able.zap()) f.insert(L"has been seen using wands");
     if (!able.sleeps()) f.insert(L"didn't sleep");
     rtn += L"An observed " + name + L" " + join(f.begin(), f.end());
