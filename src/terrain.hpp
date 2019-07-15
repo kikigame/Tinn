@@ -31,6 +31,9 @@ enum class terrainType {
   CRACK, // cracks in the wall; home to mokumokuren & portable holes won't stick
   // TRAP: as ground, but non-large monsters will be ensnared as pit, even if flying.
   WEB,
+  // TRAP: monsters jumping onto a springboard will be flung forward by N squares
+  SPRINGBOARD,
+  SPRINGBOARD_HIDDEN,
   DECK
 };
 

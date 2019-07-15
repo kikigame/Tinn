@@ -368,7 +368,7 @@ bool monster::awaken() {
 }
 
 
-bool monster::onMove(const coord &pos, const terrain &terrain) {
+bool monster::onMove(const coord &pos, const terrain &terrain, const dir &d) {
   if (intrinsics_->entrapped()) {
     intrinsics_->entrap(-1);
     if (isPlayer()) {
@@ -393,6 +393,57 @@ bool monster::onMove(const coord &pos, const terrain &terrain) {
     auto rtn = !intrinsics_->entrapped();
     intrinsics_->entrap(count);
     return rtn;
+  }
+  case terrainType::SPRINGBOARD_HIDDEN:
+    if (abilities()->fly())
+     return true;
+    // else fall through to jump
+  case terrainType::SPRINGBOARD: {
+    if (abilities()->fly())
+      return true;
+    if (isPlayer())
+      ioFactory::instance().message(L"You are flung through the air!");
+    std::vector<coord> targetOpts;
+    int dist; // length we have momentum to move
+    if (d == dir(0,0)) {
+      dist=1;
+      for (coord c : coordRectIterator(pos.first-1,pos.second-1,
+				       pos.first+1,pos.second+1))
+	targetOpts.push_back(c);
+    } else {
+      // fling distance = 2+depth/12. level 0 goes 2 squares, 100 goes 10
+      dist = 2 + curLevel().depth()/12;
+      targetOpts.emplace_back(pos.first + dist * d.first,
+			      pos.second + dist * d.second);
+    }
+    const coord &target = *rndPick(targetOpts.begin(), targetOpts.end());
+    coord c = pos;
+    int len=0; // length actually moved
+    std::vector<ref<monster>> hit;
+    while (c != target) {
+      coord cc = c.towards(target);
+      hit = curLevel().monstersAt(cc);
+      // in case of big monsters, remove any *this
+      hit.erase(std::remove(hit.begin(), hit.end(), ref<monster>(*this)), hit.end());
+      if (!hit.empty()) break;
+      if (!abilities()->move(curLevel().terrainAt(cc))) break;
+      c = cc;
+      ++len;
+    }
+    if (c != pos) // avoid infinite loop
+      curLevel().moveTo(*this, c);
+    if (len < dist) {
+      if (isPlayer())
+	ioFactory::instance().message(L"Thump!");
+      auto bashing = damageRepo::instance()[damageType::bashing];
+      for (auto m : hit) {
+	if (m.value().isPlayer())
+	  ioFactory::instance().message(L"Thump!");
+	m.value().wound(*this, dist - len, bashing);
+      }
+      wound(*this, dist - len, bashing);
+    }
+    return len == 0;// we've handled the move
   }
   case terrainType::WEB: {
     auto rtn = !intrinsics_->entrapped();
@@ -504,7 +555,7 @@ void monster::postMove(const coord &pos, const terrain &terrain) {
 
 void monster::fall(unsigned char reductionPc) {
   // NB: Dealing extra bashing damage means you take extra damage from falling...
-  auto damage = wound(*this, dPc() / 10, damageRepo::instance()[damageType::bashing]);
+  auto damage = wound(*this, reductionPc, damageRepo::instance()[damageType::bashing]);
   if (isPlayer()) ioFactory::instance().message
 		    (damage == 0 ?
 		     L"You adjust to the sudden change in altitude." :

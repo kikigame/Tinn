@@ -122,6 +122,8 @@ public:
     movesThrough(terrainType::WEB);
     movesThrough(terrainType::PIT_HIDDEN);
     movesThrough(terrainType::PIANO_HIDDEN);
+    movesThrough(terrainType::SPRINGBOARD);
+    movesThrough(terrainType::SPRINGBOARD_HIDDEN);
     return *this;
   }
   monsterTypeBuilder& fearless() { fearless_ = bonus(true); return *this; }
@@ -374,6 +376,8 @@ L"Dragons are large serpentine creatures; highly intelligent and amongst the\n"
 	    //.movesThrough(terrainType::PIT)
 	    //.movesThrough(terrainType::PIANO_HIDDEN)
 	    //.movesThrough(terrainType::WEB)
+	    //.movesThrough(terrainType::SPRINGBOARD) // inately avoids all traps
+	    //.movesThrough(terrainType::SPRINGBOARD_HIDDEN) // inately avoids all traps
 	    .movesThrough(terrainType::FIRE)
 	    .movesThrough(terrainType::WATER)
 	    .movesThrough(terrainType::SPACE)

@@ -403,8 +403,8 @@ public:
       polymorphCategory(monsterCategory::biped);
     }
   }
-  virtual bool onMove(const coord &pos, const terrain &terrain) {
-    if (!monster::onMove(pos, terrain)) return false;
+  virtual bool onMove(const coord &pos, const terrain &terrain, const dir &d) {
+    if (!monster::onMove(pos, terrain, d)) return false;
     if (terrain.type() == terrainType::WATER && equineForm_ && (&curLevel() == &curLevel().dung().cur_level())
 	&& curLevel().dung().pc()->abilities()->hear())
       ioFactory::instance().message(L"You hear the sound of thunder as the " + name() + L"'s tail hits the water");
@@ -480,7 +480,7 @@ public:
       });
   }
   // can't move off water
-  virtual bool onMove(const coord &pos, const terrain &terrain) {
+  virtual bool onMove(const coord &pos, const terrain &terrain, const dir &d) {
     return (terrain.type() == terrainType::WATER);
   }
   // do water damage by default
@@ -695,7 +695,7 @@ public:
     trivialMonster(b),
     hungry_({speed::perturn, goTo::web, goBy::avoid, 10}) {}
   virtual ~spider() {}
-  virtual bool onMove(const coord &pos, const terrain &terrain) {
+  virtual bool onMove(const coord &pos, const terrain &terrain, const dir &d) {
     if (injury().cur() < 10 && terrain.type() == terrainType::GROUND) {
       auto monsters = curLevel().monstersAt(pos);
       for (ref<monster> &m : monsters)
@@ -705,7 +705,7 @@ public:
       // weaving takes health:
       injury() += 1;
     }
-    return trivialMonster::onMove(pos, terrain);
+    return trivialMonster::onMove(pos, terrain, d);
   }
   
   virtual const movementType & movement() const {

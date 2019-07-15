@@ -620,7 +620,7 @@ public:
   }
   // teleport a monster. NB: This will move the monster regardless of any traps, items or other things in the way
   // UNLESS zone effects do not allow it
-  void moveTo(monster &m, const coord &dest) {
+  void moveTo(monster &m, const coord &dest, dir d = dir(0,0)) {
     auto bm = dynamic_cast<::bigMonster*>(&m);
     if (bm) bm->setPos(dest);
     // NB: This repeats the loop each time in case any callback removes or moves the monster.
@@ -648,23 +648,23 @@ public:
     for (auto i = monsters_.begin(); i != monsters_.end(); ++i) {
       auto pM = i->second;
       if (*pM == m) {
-	teleportTo(i, dest);
+	teleportTo(i, dest, d);
 	return;
       }
     }
   }
-  void teleportTo(monster &m, const coord &dest) {
+  void teleportTo(monster &m, const coord &dest, dir d = dir(0,0)) {
     std::shared_ptr<monster> pM;
     auto i = monsters_.begin();
     while (i != monsters_.end())
       if (*(i->second) == m) {
-	teleportTo(i, dest); //invalidates i
+	teleportTo(i, dest, d); //invalidates i
 	return;
       } else ++i;
   }
-  void teleportTo(::std::multimap<coord, ::std::shared_ptr<monster> >::iterator i, const coord &dest) {
+  void teleportTo(::std::multimap<coord, ::std::shared_ptr<monster> >::iterator i, const coord &dest, dir d = dir(0,0)) {
     auto pM = i->second;
-    if(pM->onMove(dest, terrain_.at(dest).value())) {
+    if(pM->onMove(dest, terrain_.at(dest).value(), d)) {
       if (posOf(*pM).first >= 0) { // in case monster has died/left the level in onMove()
 	monsters_.erase(i);
 	monsters_.emplace(::std::pair<coord, std::shared_ptr<monster> >(dest, pM));
@@ -672,6 +672,8 @@ public:
       // reveal any pits:
       if (!pM->abilities()->fly() && terrain_.at(dest).type() == terrainType::PIT_HIDDEN)
 	terrain_[dest] = tFactory.get(terrainType::PIT);
+      if (!pM->abilities()->fly() && terrain_.at(dest).type() == terrainType::SPRINGBOARD_HIDDEN)
+	terrain_[dest] = tFactory.get(terrainType::SPRINGBOARD);      
       // any single-shot traps:
       if (terrain_.at(dest).type() == terrainType::PIANO_HIDDEN)
 	terrain_[dest] = tFactory.get(terrainType::GROUND);
@@ -790,7 +792,7 @@ public:
     if (!avoidTraps || !terrainAt(pos).entraps(m, false)) {// avoid traps if we should & can see them
       if (toCapture.first != toCapture.second)
 	capture(m, pos, toCapture.first, toCapture.second);
-      moveTo(m, pos); // moveTo handles entrapped()
+      moveTo(m, pos, dir); // moveTo handles entrapped()
     }
   }
   void removeMonster(const monster &m) {
@@ -1176,7 +1178,7 @@ void levelGen::addTraps(const std::pair<coord,coord> &coords) {
       std::uniform_int_distribution<int> dy(coords.first.second+1, coords.second.second - 2);
       const coord c(dx(generator), dy(generator)); // coords=(0,0)-(2,1) but c=gibberish
       if (level_->terrain_.at(c).type() == terrainType::GROUND) {
-	switch(dPc() % 10) {
+	switch(dPc() % 12) {
 	case 0: case 1:
 	case 2: case 3:
 	case 4: case 5:
@@ -1185,6 +1187,12 @@ void levelGen::addTraps(const std::pair<coord,coord> &coords) {
 	  break;
 	case 8: case 9:
 	  level_->terrain_.at(c) = tFactory.get(terrainType::PIANO_HIDDEN);
+	  break;
+	case 10:
+	  level_->terrain_.at(c) = tFactory.get(terrainType::SPRINGBOARD);
+	  break;
+	case 11:
+	  level_->terrain_.at(c) = tFactory.get(terrainType::SPRINGBOARD_HIDDEN);
 	}
       }
     }

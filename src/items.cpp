@@ -1315,6 +1315,10 @@ public:
       return useResult::FAIL;      
     case terrainType::WEB:
       io.message(L"The hole won't stick to the silken strands.");
+      return useResult::FAIL;      
+    case terrainType::SPRINGBOARD:
+    case terrainType::SPRINGBOARD_HIDDEN:
+      io.message(L"The hole flies up into the air!");
     default:
       return useResult::FAIL;      
     }

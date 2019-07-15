@@ -158,7 +158,7 @@ public:
   // called when the monster moves within a level
   // NB: At this stage, traps have already been revealed. Trap effects generally applied here.
   // May return false to prevent movement
-  virtual bool onMove(const coord &pos, const terrain &terrain);
+  virtual bool onMove(const coord &pos, const terrain &terrain, const dir &d);
   // called after moving. Fatal traps applied here to get the corpse in the right square.
   virtual void postMove(const coord &pos, const terrain &terrain);
 

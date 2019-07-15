@@ -24,6 +24,8 @@ const wchar_t * const to_string(const terrainType & t) {
   case terrainType::KNOTWEED: return L"KNOTWEED";
   case terrainType::CRACK: return L"CRACK";
   case terrainType::WEB: return L"WEB";
+  case terrainType::SPRINGBOARD: return L"SPRINGBOARD";
+  case terrainType::SPRINGBOARD_HIDDEN: return L"SPRINGBOARD_HIDDEN";
   default: throw t;
   }
 }
@@ -82,6 +84,10 @@ bool terrain::entraps(const monster &m, bool includeHidden) const {
     return false;
   case terrainType::WEB:
     return m.type().type() != monsterTypeKey::spider;
+  case terrainType::SPRINGBOARD:
+    return !(m.abilities()->fly());
+  case terrainType::SPRINGBOARD_HIDDEN:
+    return includeHidden && !(m.abilities()->fly());
   default:
     throw type_; // missing type from enum
   }
@@ -127,6 +133,10 @@ public:
     store(new terrain(L'"',L"Web", L"Used by spiders to ensnare prey.\n"
 "Warning: spiders will come back to eat their webs. If you're entangled\n"
 "when they do, you're lunch.", terrainType::WEB));
+    store(new terrain(L'^',L"Spring", L"Allows movement over increased distance.\n"
+"Don't blame me if you fling yourself into a wall.\n"
+"Balistic monsters may also be used as crude missile weapons.", terrainType::SPRINGBOARD));
+    store(new terrain(L'.', L"Ground", L"Subterrainian earth; looks like a solid floor, but be careful or it may give way.", terrainType::SPRINGBOARD_HIDDEN));
   }
   const terrain &get(terrainType type) const {
     return *(store_.at(type).get());

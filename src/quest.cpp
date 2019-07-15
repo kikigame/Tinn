@@ -409,10 +409,13 @@ std::vector<quest> questsForRole(const deity & pcAlign, roleType t) {
        99,
        [](questImpl &qI, levelImpl &li, level &l) { return new thiefQuestLevelGen(qI, li,l); },
        [](questImpl &qI, levelGen &lg, level &l, int depth) {
-	 // reveal all hidden pit traps
+	 // reveal all hidden traps
 	 std::vector<coord> cs = l.findAllTerrain(terrainType::PIT_HIDDEN);
 	 for (coord c : cs)
 	   l.changeTerrain(c, terrainType::PIT);
+	 cs = l.findAllTerrain(terrainType::SPRINGBOARD_HIDDEN);
+	 for (coord c : cs)
+	   l.changeTerrain(c, terrainType::SPRINGBOARD);
 	 for (int i = 0 ; i < depth; ++i) {
 	   coord c(xPosD(generator), yPosD(generator));
 	   if (l.terrainAt(c).type() == terrainType::GROUND)
