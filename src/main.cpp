@@ -167,7 +167,7 @@ void processInput(dungeon & d, const std::wstring &c, const std::shared_ptr<io> 
   case L'?': case 'H': case 'h':
     ios->longMsg(help());
     return; // skip loop; help should take no time
-  case L'q':
+  case L'q': case L'Q':
     d.quit();
     return; // don't count quit as a move
   case L'w': case L'W': // north
@@ -294,6 +294,10 @@ int handleActiveError() {
     std::wcerr << str << std::endl
 	       << L"https://github.com/kikigame/Tinn/issues" << std::endl;
     return -1;
+  } catch (std::string str) {
+    std::cerr << str << std::endl
+	      << "https://github.com/kikigame/Tinn/issues" << std::endl;
+    return -1;
   } catch (const wchar_t* str) {
     std::wcerr << str << std::endl
 	       << L"https://github.com/kikigame/Tinn/issues" << std::endl;
@@ -331,13 +335,15 @@ int main(int argc, char **argv) {
   auto opt =
     args(argc, argv)
     .flag('t').optWithArg("transcript")
+    .flag('f').optWithArg("fifos")
     .flag('h').flag('?');
 
   if (opt.isFlag('h') || opt.isFlag('?') || opt.option("help")) {
     std::wcout << L"Welcome to Tinn!" << std::endl
 	       << L"Options are:\n"
 	       << L"h/?/-help - this help text\n"
-	       << L"transcript=<file> - output transcript to file"
+	       << L"transcript=<file> - output transcript to file\n"
+	       << L"fifos=<filepath prefix> - for embedding"
 	       << std::endl;
     return 0;
   }

@@ -550,10 +550,14 @@ public:
 // logic to create the user's preferred I/O goes here:
 std::shared_ptr<io> ioFactory::create(const args &opts) {
   if (impl_.lock()) throw "Already implemented";
-  // we only have one implementation thus far:
+  // we have 2 implementations thus far:
   // Warning: putting the parens on "new ncurse()" causes the object
   // to be sliced and the destructor not called. I am unsure why exactly.
-  auto rtn = std::shared_ptr<io>(new ncurse());
+  auto rtn = std::shared_ptr<io>();
+  if (opts.option("fifos"))
+    rtn = connectFifos(opts);
+  else
+    rtn = std::shared_ptr<io>(new ncurse());
   auto transcript = opts.option("transcript");
   if (transcript) rtn = std::shared_ptr<io>(new transcriptWrapper(rtn, transcript));
   impl_ = rtn;

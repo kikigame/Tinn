@@ -112,6 +112,7 @@ private:
 public:
   // logic to create the user's preferred I/O goes here:
   std::shared_ptr<io> create(const args &opts);
+  std::shared_ptr<io> connectFifos(const args &opts);
   static const io &instance();
 };
 
