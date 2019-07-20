@@ -41,7 +41,7 @@ int play(const args &opt) {
   //  io->message(;
   bool repeat = false;
   do {
-    auto ch = io->keyPrompt
+    std::wstring ch = io->keyPrompt
       (
        L"TINN: Ambling Around the Areas of Adventure\n" // Reference to Nethack's Exploring the Mazes of Menace, of course.
        "\n"

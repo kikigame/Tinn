@@ -52,12 +52,12 @@ size_t choicePrompt(const io &ios, const std::wstring &prompt, const std::wstrin
       extraHelpMsg = L"\t([W] & [S] navigate help)\n\n" + extraHelpMsg;
     if (hasMoreChoices)
       list += L"  9 - --MORE--\n";
-    auto ch = ios.keyPrompt(msg, help + L"\n" + list + L"\n" + extraHelpMsg).c_str();
-    if ((*ch == L'W' || *ch == L'w') && highlight > 0) highlight--;
-    if ((*ch == L'S' || *ch == L's') && highlight < maxInput-1) highlight++;
-    if (*ch == L'\n') return offset + highlight + 1; // 1-based index in return
+    wchar_t ch = ios.keyPrompt(msg, help + L"\n" + list + L"\n" + extraHelpMsg)[0];
+    if ((ch == L'W' || ch == L'w') && highlight > 0) highlight--;
+    if ((ch == L'S' || ch == L's') && highlight < maxInput-1) highlight++;
+    if (ch == L'\n') return offset + highlight + 1; // 1-based index in return
     try {
-      res = std::stoi(ch);
+      res = std::stoi(std::wstring({ch, L'\0'}));
     } catch (std::invalid_argument) {
       goto LOOP; // retry after invalid key
     } catch (std::out_of_range) {
