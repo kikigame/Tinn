@@ -123,9 +123,15 @@ bool monster::align(const deity &d) {
  * For other monsters, we should also consider any applicable item attacks.
  */
 const attackResult monster::attack(monster &target) {
-  if (std::find_if(charmedBegin(), charmedEnd(), [&target](const std::pair<const monster*, const monster*> &m){return m.second == &target;}) != charmedEnd()
-      && dPc() < target.appearance().cur())
-    return attackResult(0, L"seems to be under a charm");
+  auto weCharm = charmedMonsters.equal_range(this);
+  for (auto p = weCharm.first; p != weCharm.second; ++p) {
+    const monster *m = p->second;
+    if (m == &target) {
+      if (dPc() < target.appearance().cur())
+	return attackResult(injury(), L"seems to be under a charm");
+      break; // we push past the charm to attack
+    }
+  }
 
   auto cur = target.injury().cur();
   auto max = target.injury().max();
@@ -133,9 +139,10 @@ const attackResult monster::attack(monster &target) {
 
   // non-player monsters may choose to use a monster ability instead
   auto attack = attackAction();
+  optionalRef<item> weapon;
   if (attack) {
     if (!attack.value()(bcu(), *this, target))
-      return attackResult(0, L"failed");
+      return attackResult(injury(), L"failed");
     damage = target.injury().cur() - cur;
   } else {
   
@@ -146,7 +153,7 @@ const attackResult monster::attack(monster &target) {
     if (dHit > f) return attackResult(injury(), L"miss");
 
     // find the weapon:
-    auto weapon = findWeapon();
+    weapon = findWeapon();
     damageType type = (weapon) ? weapon.value().weaponDamage(true) : unarmedDamageType();
     auto dt = damageRepo::instance()[type];
 
@@ -165,7 +172,10 @@ const attackResult monster::attack(monster &target) {
     damage = target.wound(*this, strength_.cur(), dt);
   }
   bool fatal = static_cast<unsigned char>(cur + damage) >= max;
-  if (!fatal) onHit(target, damage);
+  if (!fatal) {
+    onHit(target, damage);
+    target.onHitBy(*this, weapon, damage);
+  }
   if (damage == 0) return attackResult(injury(), L"ineffectual");
   if (fatal) return attackResult(injury(), L"fatal");
   if (static_cast<unsigned char>(damage) >= max/2) return attackResult(injury(), L"good hit");
@@ -710,7 +720,7 @@ bool monster::setCharmedBy(monster & mon) {
   auto m = &mon;
   if (m == this) return false;
   auto c = charmedMonsters.equal_range(&mon); // what mon charms
-  if (std::find_if(c.first, c.second, [&m](const std::pair<const monster*, const monster*> &p){return p.second == m;}) == c.second) return false; // mon charms us already
+  if (std::find_if(c.first, c.second, [&m](const std::pair<const monster*, const monster*> &p){return p.second == m;}) != c.second) return false; // mon charms us already
   charmedMonsters.insert(std::pair<const monster*, const monster*>(this, &mon));
   charmedMonstersReverse.emplace(&mon, this);
   // if mon monster dies, we must no longer be charmed by it, as the pointer becomes invalid.
