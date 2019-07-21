@@ -1056,6 +1056,7 @@ template<> struct monsterTypeTraits<monsterTypeKey::salamander> { typedef salama
 template<> struct monsterTypeTraits<monsterTypeKey::siren> { typedef siren type; };
 template<> struct monsterTypeTraits<monsterTypeKey::snake> { typedef snake type; };
 template<> struct monsterTypeTraits<monsterTypeKey::spider> { typedef spider type; };
+template<> struct monsterTypeTraits<monsterTypeKey::troll> { typedef trivialMonster type; };
 template<> struct monsterTypeTraits<monsterTypeKey::succubus> { typedef succubus type; };
 template<> struct monsterTypeTraits<monsterTypeKey::zombie> { typedef zombie type; };
 template<> struct monsterTypeTraits<monsterTypeKey::dragon> { typedef dragon type; };

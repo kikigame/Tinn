@@ -673,6 +673,8 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .eats(materialType::veggy)
 	    .eats(materialType::fleshy)
 	    .eats(materialType::liquid)
+	    .see()
+	    .hear()
 	    .throws()
 	    .sleeps()
 	    .zap()
@@ -687,7 +689,7 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .category(monsterCategory::quadruped) // should be winged, but wings are only weapon slots anyway
 	    .name(L"Hippalectryon")
 	    .name(L"Hippalektryon")
-	    .className(L"large hebivorous mammal")
+	    .className(L"large herbivorous mammal")
 	    .levelFactor(1)
 	    .levelOffset(50)
 	    .minSpawn(1)
@@ -978,6 +980,7 @@ L"Paracelsus first described the amphibious salamander as the elemental of\n"
 	    .movesOnGround()
 	    .fearless()
 	    .sleeps()
+	    .see()
 	    .hear()
 	    .climb()
 	    .encyclopedium(
@@ -1314,6 +1317,8 @@ L"A swarm of locusts devistates everything in its path. Although herbivores,\n"
 	    .throws()
 	    .sleeps() // by day, usually
 	    .carryWeight(6000) // notoriously strong
+	    .see()
+	    .hear()
 	    .encyclopedium(L"Dim-witted creatures of Norse and Scandinavian origin. Big and ugly, trolls\n"
 "are known for possessing magical objects and treasures - like gold, or\n"
 "princesses. They wander little and are fierecely territorial, but have been\n"
@@ -1435,6 +1440,8 @@ L"There are a great number of creatures in the world, and not all sit neatly\n"
 	    .eats(materialType::liquid)
 	    .carryWeight(40) // a little heavier than a big rabbit
 	    .sleeps()
+	    .see()
+	    .hear()
 	    // ref: https://skeptoid.com/episodes/4262
 	    .encyclopedium(
      L"Most flying creatures will leave you alone unless disturbed, but\n"
