@@ -168,6 +168,9 @@ public:
   // called whenever opponent is hit
   virtual void onHit(monster &opponent, int damage) {};
 
+  // called whenever we arre hit
+  virtual void onHitBy(monster &opponent, optionalRef<item> &weapon, int damage) {};
+
   // retrieve a saying
   virtual const wchar_t * say() const;
 

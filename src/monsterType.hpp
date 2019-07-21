@@ -84,7 +84,6 @@ enum class genderAssignType {
  * (y) light
  * (z) zruties
  * (C) centaur
- * (E) elemental/stalker
  * (F) fungii / mould
  * (G) gnomes
  * (H) large humanoids (giant/ettin/titan/minotaur)
@@ -116,6 +115,7 @@ enum class monsterTypeKey {
   raptor,
   dragon,
   dungeoneer, // low-level human, appears on levels 1-3. L3 has cloak. Always 2 random items (limited inventory), plus napsack of consumption & visorless helmet. Ref: Knightmare.
+  enchanter,
   ferret,
   fox,
   goblin,

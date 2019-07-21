@@ -450,10 +450,29 @@ public:
   }
 };
 
-class merfolk : public monster {
+class charmerMixin : public virtual monster {
+public:
+  virtual ~charmerMixin() {}
+protected:
+  charmerMixin(monsterBuilder &b) : monster(b) {}
+  void charm() {
+    auto &act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::charm);
+    auto &l = curLevel();
+    if (&(l.dung().cur_level()) != &l) return; // don't waste our voice if no player is around
+    if (l.dung().pc()->abilities()->see())
+      ioFactory::instance().message(L"The " + name() + L" seems very beguiling");
+    l.forEachMonster([this,&act](monster &t){
+	if (t.type().type() != type().type()) 
+	  act(bcu(), *this, t);
+      });
+  }
+};
+
+class merfolk : public virtual monster, protected charmerMixin {
 public:
   merfolk(monsterBuilder &b) :
-    monster(b) {
+    monster(b),
+    charmerMixin(b) {
     eachTick([this]{
 	if (dPc() <= 30) // ~ 1 every 5 moves
 	  charm();
@@ -467,18 +486,6 @@ public:
     if (isMale()) return L"Merman";
     return monster::name();
   }
-  void charm() {
-    auto &act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::charm);
-    auto &l = curLevel();
-    if (&(l.dung().cur_level()) != &l) return; // don't waste our voice if no Dungeoneer is around
-    if (l.dung().pc()->abilities()->see()) {
-      ioFactory::instance().message(L"The " + name() + L" seems very beguiling");
-    }
-    l.forEachMonster([this,&act](monster &t){
-	if (t.type().type() != monsterTypeKey::merfolk) 
-	  act(bcu(), *this, t);
-      });
-  }
   // can't move off water
   virtual bool onMove(const coord &pos, const terrain &terrain, const dir &d) {
     return (terrain.type() == terrainType::WATER);
@@ -486,6 +493,36 @@ public:
   // do water damage by default
   virtual damageType unarmedDamageType() const {
     return damageType::wet;
+  }
+};
+
+
+class enchanter : public virtual monster, protected charmerMixin {
+public:
+  enchanter(monsterBuilder &b) :
+    monster(b),
+    charmerMixin(b) {
+    eachTick([this]{
+	if (dPc() <= 15) // 1 every 20 moves
+	  charm();
+      });
+  }
+  virtual ~enchanter() {}
+  // do time damage by default; we are magical
+  virtual damageType unarmedDamageType() const {
+    return damageType::disintegration;
+  }
+  virtual void onHitBy(monster &opponent, optionalRef<item> &weapon, int damage) {
+    if (weapon) {
+      auto bcu = weapon.value().bcu();
+      char delta = (bcu.blessed()) ? 2 : 1;
+      if (bcu.cursed()) delta = -delta;
+      weapon.value().enchant(delta);
+    } else
+      if (dPc() <= 40) {// 1:3 chance
+	auto dt = damageRepo::instance()[damageType::bashing];
+	opponent.intrinsics()->extraDamage(&dt, true);
+      }
   }
 };
 
@@ -1043,6 +1080,7 @@ template<> struct monsterTypeTraits<monsterTypeKey::alien> { typedef alienMonste
 template<> struct monsterTypeTraits<monsterTypeKey::blob> { typedef blob type; };
 template<> struct monsterTypeTraits<monsterTypeKey::bull> { typedef bull type; };
 template<> struct monsterTypeTraits<monsterTypeKey::dungeoneer> { typedef dungeoneer type; };
+template<> struct monsterTypeTraits<monsterTypeKey::enchanter> { typedef enchanter type; };
 template<> struct monsterTypeTraits<monsterTypeKey::ferret> { typedef ferret type; };
 template<> struct monsterTypeTraits<monsterTypeKey::fox> { typedef fox type; };
 template<> struct monsterTypeTraits<monsterTypeKey::goblin> { typedef goblin type; };
@@ -1094,6 +1132,7 @@ std::shared_ptr<monster> monsterType::spawn(monsterBuilder &b) const {
   case monsterTypeKey::raptor: return ofTypeImpl<monsterTypeKey::raptor>(b);
   case monsterTypeKey::dragon: return ofTypeImpl<monsterTypeKey::dragon>(b);
   case monsterTypeKey::dungeoneer: return ofTypeImpl<monsterTypeKey::dungeoneer>(b); 
+  case monsterTypeKey::enchanter: return ofTypeImpl<monsterTypeKey::enchanter>(b); 
   case monsterTypeKey::ferret: return ofTypeImpl<monsterTypeKey::ferret>(b);
   case monsterTypeKey::fox: return ofTypeImpl<monsterTypeKey::fox>(b);
   case monsterTypeKey::goblin: return ofTypeImpl<monsterTypeKey::goblin>(b);

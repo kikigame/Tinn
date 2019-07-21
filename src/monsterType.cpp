@@ -468,8 +468,61 @@ L"Bovines are farmed for their meat and milk. One of the largest are the\n"
 L"Sometimes a human ventures into a Dungeon upon a quest. This is usually ill-\n"
 "advised."));
 
+    // unique feature: charms monsters, bestows enchatments
+    emplace(monsterTypeBuilder(monsterTypeKey::enchanter)
+	    .category(monsterCategory::hooved_quadruped) // similar to D&D disenchanter, which is a single-humped camel
+	    .name(L"enchanter")
+	    .name(L"dromedary enchanter")
+	    .name(L"bactrian enchanter")
+	    .className(L"large herbivorous mammal")
+	    .levelFactor(1)
+	    .levelOffset(15)
+	    .minSpawn(1)
+	    .maxSpawn(1)
+	    .xpOffset(20)
+	    .xpFactor(25)
+	    .renderChar(L'E')
+	    .strength(30)
+	    .appearance(90) // charm must roll below appearance to hit
+	    .fighting(5)
+	    .dodge(10)
+	    .maxDamage(65)
+	    .gen(genderAssignType::indirect)
+	    .material(materialType::fleshy)
+	    .corpseWeight(7117.15460520144) // 1600lb, average camel
+	    .align(dr.getExact(Element::earth, Domination::concentration, Outlook::kind))
+	    .align(dr.getExact(Element::air, Domination::concentration, Outlook::kind))
+	    .align(dr.getExact(Element::fire, Domination::concentration, Outlook::kind))
+	    .align(dr.getExact(Element::water, Domination::concentration, Outlook::kind))
+	    .align(dr.getExact(Element::plant, Domination::concentration, Outlook::kind))
+	    .align(dr.getExact(Element::time, Domination::concentration, Outlook::kind))
+	    .align(dr.getExact(Element::none, Domination::concentration, Outlook::kind))
+	    .alluring()
+	    .saying(L"Have you seen Krill?") // ref: Enchanter (Infocom game)
+	    .eats(materialType::fleshy)
+	    .carryWeight(0)
+	    .movement({speed::perturn, goTo::down, goBy::smart, 25})
+	    .movesOnGround()
+	    .fearless()
+	    .throws()
+	    .zap()
+	    .sleeps()
+	    .see()
+	    .hear()
+	    .encyclopedium(
+L"Originally created by a great sorcerer to use as a sacrificial beast to\n"
+"power a nefarious series of experiments, the enchanter appears curiously\n"
+"similar to a camel.\n"
+"It is highly endangered due to its unique ability to bestow enchantments on\n"
+"any weapons that happen to strike it. Nonetheless, most adventurers cannot\n"
+"bring themselves to do the deed.\n"
+"Weapons may gain further enchantment by the blessings of the gods, but an\n"
+"accursed striker will suffer from the opposite effect.\n"
+	    ));
+  
+  
     // unique feature: stealing something & running away
-    emplace(monsterTypeBuilder (monsterTypeKey::ferret)
+    emplace(monsterTypeBuilder(monsterTypeKey::ferret)
 	    .category(monsterCategory::quadruped)
 	    .name(L"ferret kit")
 	    .name(L"ferret")
