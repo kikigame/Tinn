@@ -34,7 +34,7 @@ $cgi->charset('UTF-8');
 
 # kill old sessions and clear any dead files
 {
-    for my $id (0..2) {
+    for my $id (0..3) {
 	if (-e "/tmp/tinn$id.pid") {
 	    my $pid = `cat /tmp/tinn$id.pid`;
 	    if ($pid) {
@@ -54,7 +54,6 @@ $cgi->charset('UTF-8');
 		if (0 == $count) {
 		    warn "Cleaning session $id (pid $pid dead)";
 		    system("/bin/rm","-f","/tmp/tinn$id.pid","/tmp/tinn$id"."Up.fifo","/tmp/tinn$id"."Down.fifo");
-		    exit(-1);
 		} else {
 		    warn "Session $id has $count processes running";
 		}
@@ -62,7 +61,6 @@ $cgi->charset('UTF-8');
 	    if (-z "/tmp/tinn$id.pid") {
 		warn "Cleaning session $id (pid absent)";
 		system("/bin/rm","-f","/tmp/tinn$id.pid","/tmp/tinn$id"."Up.fifo","/tmp/tinn$id"."Down.fifo");
-		exit(-1);
 	    }
 	}
     }
@@ -98,7 +96,9 @@ if ($cgi->param("ajax") && $cgi->param("session")) {
 
     if ($cgi->param("KEY")) { # usual keystroke
 	my $KEY = $cgi->param("KEY");
+	my $alt = $cgi->param("Alt");
 
+	if ($alt) { $KEY = chr(ord($KEY) + 320); }
 	print $out "$KEY\n<!END!>";
 #	print $out "<!OVER!>\n";
 
@@ -241,7 +241,7 @@ function begin() {
 postAjax({"BEGIN" : 1}, function(data) { processResponse(data); });
 }
 function doKey(key) {
-postAjax({"KEY" : key}, function(data) { processResponse(data); });
+postAjax({"KEY" : key, "Alt" : (document.altDown == true ? "T": "")}, function(data) { processResponse(data); });
 }
 function message(msg) {
 var m = document.getElementById('m');
@@ -392,6 +392,11 @@ function render(res) {
  b.appendChild(span);
  }
 }
+function toggleAlt() {
+document.altDown = (!document.altDown);
+document.getElementById('t').style = document.altDown ? "background: red;" : "";
+document.getElementById('i').focus();
+}
 </script>
 </head>
 <body style="height: 100vh;" onload="javascript:begin()"><div style="display: flex; flex-direction: column; height: calc( 100% - 2em ); overflow: hidden">
@@ -433,6 +438,7 @@ function render(res) {
     <button title="Leave (items)" onClick="doKey('L')">L</button>
     <button title="View Objectives" onClick="doKey('O')">O</button>
     <button title="Quit" onClick="doKey('Q')">Q</button>
+    <button id="t" title="Move into traps?" onclick="toggleAlt()">Force</button>
     <p>Tip: mouseover for detail</p>
 </div>
 <div style="flex-grow: 1;white-space: pre;overflow-y: scroll; display: none" id="q"></div>
