@@ -24,6 +24,10 @@ public:
   T & value() {return *value_; }
   const T & value() const { return *value_; }
   void reset() { has_value_ = false; value_ = 0; }
+  optionalRef<T> &orElse(optionalRef<T> &o) {
+    if (has_value_) return *this;
+    else return o;
+  }
 };
 
 #endif // ndef OPTIONAL_REF__

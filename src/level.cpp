@@ -393,8 +393,20 @@ public:
 	ioFactory::instance().longMsg(std::to_wstring(num) + L" beings are no more thanks to " + aName);
       return;
     }
-    const auto result = aggressor.attack(target);
+    const auto result = aggressor.attack(target); // may invalidate target
     std::wstring rtn(result.text_);
+    if (aggressor.isPlayer()) {
+      auto p=aggressor.inSlot(slotType::primary_weapon);
+      auto q=aggressor.inSlot(slotType::primary_weapon);
+      if (p && q)
+	rtn = L"You attack: " + tName + L" with your " +
+	  p.value().name() + L" and " + q.value().name() + L". " + rtn;
+      else if (p.orElse(q))
+	rtn = L"You attack: " + tName + L" with your " +
+	  p.orElse(q).value().name() + L". " + rtn;
+      else
+	rtn = L"You attack: " + tName + L". " + rtn;
+    }
     bool longMsg = false;
     if (static_cast<unsigned char>(aggressor.injury().cur()) == aggressor.injury().max()) {
       rtn = rtn + L"\n" + aggressor.name() + L" dies.";
