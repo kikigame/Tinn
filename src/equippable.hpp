@@ -17,6 +17,7 @@ class monsterType;
 class damage;
 
 #include <map>
+#include <functional>
 
 class equippable {
 private:
@@ -47,6 +48,9 @@ public:
   // forcably unequip an item, bypassing normal rules (eg for stealing a cursed item):
   // NB: An immediate call to equip(item, slots) should always work after this:
   virtual std::array<const slot *, 2> forceUnequip(item &);
+
+  // call on all wielded items
+  void forEachWeapon(std::function<void(const item &)> per) const;
 protected:
   equippable(std::vector<const slot *>slots);
   virtual ~equippable();

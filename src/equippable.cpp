@@ -105,6 +105,7 @@ const std::array<const slot *,2> equippable::slotsOf(const item &item) const {
   return rtn;
 }
 
+// TODO: should this not be finding the first wielded item?
 optionalRef<item> equippable::findWeapon() const {
   auto weap = equipment_.find(slotBy(slotType::primary_weapon));
   if (weap == equipment_.end()) weap = equipment_.find(slotBy(slotType::secondary_weapon));
@@ -130,6 +131,14 @@ optionalRef<item> equippable::findArmour() const {
     rtn = optionalRef<item>(*it);
   }
   return rtn;
+}
+
+void equippable::forEachWeapon(std::function<void(const item &)> per) const {
+  for (auto i : equipment_) {
+    if (i.second &&
+	i.second.value().equippable() == item::equipType::wielded)
+      per(i.second.value());
+  }
 }
 
 long equippable::modDamage(long pc, const damage &type) const {

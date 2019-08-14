@@ -396,16 +396,24 @@ public:
     const auto result = aggressor.attack(target); // may invalidate target
     std::wstring rtn(result.text_);
     if (aggressor.isPlayer()) {
-      auto p=aggressor.inSlot(slotType::primary_weapon);
-      auto q=aggressor.inSlot(slotType::primary_weapon);
-      if (p && q)
-	rtn = L"You attack: " + tName + L" with your " +
-	  p.value().name() + L" and " + q.value().name() + L". " + rtn;
-      else if (p.orElse(q))
-	rtn = L"You attack: " + tName + L" with your " +
-	  p.orElse(q).value().name() + L". " + rtn;
-      else
+      std::vector<std::wstring> msgs;
+      aggressor.forEachWeapon([&msgs](const item &w) {
+	  msgs.push_back(w.name());
+	});
+      if (msgs.size() == 0)
 	rtn = L"You attack: " + tName + L". " + rtn;
+      else if (msgs.size() == 1)
+	rtn = L"You attack: " + tName + L" with your " +
+	  msgs.at(0) + L". " + rtn;
+      else {
+	std::wstring atk;
+	atk = L"You attack: " + tName + L" with your ";
+	for (size_t i=0; i < msgs.size()-2; ++i) {
+	  atk += msgs.at(i) + L", ";
+	}
+	atk += msgs.at(msgs.size()-2) + L" and " + msgs.back() + L". ";
+	rtn = atk + rtn;
+      }
     }
     bool longMsg = false;
     if (static_cast<unsigned char>(aggressor.injury().cur()) == aggressor.injury().max()) {
