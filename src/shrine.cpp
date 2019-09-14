@@ -77,7 +77,7 @@ bool shrine::onEnter(monster  &monster, itemHolder &pev) {
   }
   if (p && alignment >= 6) {
     if (monster.abilities()->hear())
-      ios.message(L"A heavenly chorous you into the " + name());
+      ios.message(L"A heavenly chorous welcomes you into the " + name());
     else
       ios.message(L"You enter the " + name());
     if (align_ == monster.align()) ios.message(L"You are completely safe here.");
