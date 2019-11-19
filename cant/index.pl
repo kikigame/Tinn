@@ -447,7 +447,7 @@ Press any key to begin...
 </div>
 <form accept-charset="UTF-8" style="display: flex; flex-wrap: wrap-reverse; justify-content: flex-end;">
 <label for="i" style="transform: rotate(-25deg)">Input:</label><!-- cant -->
-<input type="text" name="input" value="" id="i" autofocus onkeyup="javascript:readin()" onsubmit="return false;"/>
+<input type="text" name="input" value="" id="i" autofocus="autofocus" onkeyup="javascript:readin()" onsubmit="return false;"/>
 <div id="nm" style="text-align: right; flex-grow: 1"/>
 <label for="ss" style="text-align: right; flex-grow: 1">Strength:</label><input type="text" disabled id="ss" size='5'></input>
 <label for="sf">Fight:</label><input type="text" disabled id="sf" size='5'></input>
@@ -475,7 +475,7 @@ print <<'EOF';
 <p>Please <strong>report</strong> bugs at <a href="https://www.github.com/kikigame/tinn/issues">Github</a>
 <form accept-charset="UTF-8">
 <input type="hidden" name="go" value="go"/>
-<input type="submit" value="Test out Tinn?" autofocus/>
+<input type="submit" value="Test out Tinn?" autofocus="autofocus"/>
 </form>
 </body>
 </html>
