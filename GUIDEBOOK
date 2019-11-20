@@ -1,0 +1,193 @@
+# Guidebook to Tinn
+Robert Lee, Friday 13th September, 2019. How lucky.
+
+## Starting the Game
+
+You can either:
+* email the author of the game for a direct link to the web version
+* download the Windows program tinn.exe (let me know if this works please!)
+* download the source code and compile.
+
+## Playing the game
+
+### Concept
+
+You play a bold and dangerous hero, questing for adventure.
+
+You start off looking like this: @
+
+You will move through dozens of areas of adventure, each presenting
+traps, monsters and rewards. Most levels are connected with up-ramps
+(<) and down-ramps (>).
+
+To win the game, complete your quest objectives and then escape the
+dungeon using the up-ramp on the first area of adventure.
+
+### Character Creation
+
+You start off by creating a character. You will be asked for your
+handle (not your name), and to make various choices about your
+character. Every choice will affect how your character starts.
+
+Some suggestions for new players:
+* Combat: The strongest fighter is Crusader of Y'k: aggression/cruelty/fire/troll/crusader
+* Learning: The shopkeeper (of any path) starts with the Hitch-Hiker's
+Guide, which is a great source of information about the game.
+* Trap avoidance: If you find traps too hard, switch to the Thief
+class, which pre-identifies most traps.
+
+Suggestions for advanced players:
+* Water-based characters can swim, which makes Sirens far more
+dangerous.
+* An unaligned character (choose "none of the above" repeatedly) will
+be attacked by all monsters and unable to enter temples.
+* The Unaligned Crusader quest is extremely difficult as you will need
+to find aligned Holy Books or Rods before you can enter the temple.
+
+### Objectives
+
+Your character will get objectives, which you can view using the O
+(letter-oh, not number-zero) option. Most objectives need you to go
+right through the game to complete them, so new players shouldn't
+worry about them.
+
+Instead, set yourself achievable goals: learn to run away from
+dangerous monsters, use equipment effectively, and equip your
+character as best as you can.
+
+### How well you are doing
+
+You have a number of statistics (stats) to tell you about your character;
+these are typically shown at the bottom of the screen.
+
+All have values starting from 0; the maximum limit is shown as '**'.
+Your stats can be reduced temporarily; if you drop an equipped weapon,
+for example, your fighting ability will be reduced. This is indicated
+by a prefix: "80/20" means that the maximum you have achieved is 20,
+and you are currently at 80% of that (ie 16).
+
+Most stats you want to get as high as possible, except for
+Damage. Damage is how injured you are, and if it reaches 100%, it's
+game over. So you want to increase your maximum damage, but avoid
+increasing your current damage (wounding).
+
+Damage heals gradually over time. You can speed this up by eating;
+trolls eat rocks while humans and most other creatures eat fruit and
+flesh. Note that trolls are made of rock, making trolls cannibalistic
+(should you manage to kill one).
+
+You can avoid damage by armour; equip it using (e): most armour is
+sacrificial, meaning that the armour takes the damage instead of
+you. Use (i) to view your inventory and check on the state of your
+armour frequently. This will also tell you if you're carrying too much
+to move quickly.
+
+You can boost your defence and fighting stats by using (e) to equip
+weapons and armour. Use (d) to drop items you don't want to keep
+equipped.
+
+### Moving and Fighting
+
+Pressing the W, A, S and D keys moves your North, West, South and
+East. If you try to move somewhere you can't (like a wall), or into a
+trap, then you waste a move instead.
+
+If you really want to move into a trap - perhaps there's something
+useful in that pit - then you can hold down the Alt key (or toggle the
+"force" button on the web interface) to insist on moving, but the trap
+will still hurt you.
+
+If you move into a monster, you will attack that monster. Many
+monsters will attack you, steal your things, or otherwise annoy you,
+even if you don't attack them first, but some are peaceful (this
+depends on species and deity alignment). All monsters can be attacked,
+and killing a monster gives a small chance of improving your stats.
+
+Some monsters are tougher than others; as you get deeper into the game
+and more experienced, harder monsters appear, in general. Don't be
+afraid to run away.
+
+## Notable things
+
+### Alignment
+
+Alignment plays a subtle part in this game, but it's useful to
+understand it eventually. It's introduced here not because it is
+particularly important, but because an explanation may help you
+understand some subsequent entries in this guidebook.
+
+All deities have an alignment. Many are elemental, many are kind or
+aggressive, and so one. There are a great number of deities and
+alignments in the game.
+
+Shrines, Holy Rods, Holy Books, and all monsters are aligned each to
+a religious path. Each path has exactly one deity, with the notable
+exception of the path of Atheism, which has only a teapot.
+
+The closer the deities are in the heavens, the greater the alignment
+between their religious paths. This is called co-alignment: a path is
+fully co-aligned only with itself, but two paths will be more or less
+co-aligned with each other.
+
+
+### Shrines
+
+You can enter a shire of your own deity easily, and will be protected
+from all attack.  Shrines of other deities will provide protection and
+entry proportional to how much that deity likes you.
+
+A deity will like you if you are partially co-aligned (all Earth
+deities stick together, for instance), or (to a lesser extent) if a
+deity who is partially co-aligned likes you. Carrying a holy item
+(book or rod) of a deity will also allow you access to their shrine.
+
+Attacking anything in a shrine is a bad idea.
+
+Leaving food in a shrine, as an offering for the starving, is a good
+idea, and you may be rewarded with blessings.
+
+Taking food from a shrine is a bad idea, unless you are in fact starving.
+
+TODO: blessings and cursings
+
+
+### Hitch-Hiker's Guide
+
+All shopkeepers start with a Guide. Consult it often; it may give more
+information than inspecting the may with tooltips or the (/) key.
+
+A blessed guide may be searched freely.
+
+
+### Shopping Card
+
+A shopping card provides access to shops.
+Shops are dangerous to the poor, but greatly rewarding to the rich.
+Shops use a bartering system.
+
+Tip: shopkeepers always ask for more than their goods are worth, but
+are willing to haggle. You cannot trade corpses.
+
+All shops have an adjective, which may provide a clue as to the
+services they provide. Services range from a complementary cup of tea,
+to enchanting or damage-proofing your weapons and armour.
+
+Tip: you can pick up things that are far too big to carry; bridges and
+ships are especially valuable. (u)se your shopping card while carrying
+something heavy, and you will always be able to pay your way.
+
+Once you enter a shop, you can't leave without at least trying to buy
+something. If you buy a service you can't pay for, you'll get an IOU
+that must be paid off before you can go shopping again.
+
+Tip: Shop-keepers start with a Guide (which is reasonably valuable) and
+a shopping card. Consult the guide about shops before you go shopping.
+
+### Rods, Sticks and Wands
+
+Stylii are sticks for spelling with. All sticks have a magic power,
+but must be enchanted (perhaps at a shop) before they can be used;
+they then become wands. The same stick will always have the same
+power.
+
+Blessing a wand (or stick) turns it into a Holy Rod.
