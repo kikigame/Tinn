@@ -310,7 +310,8 @@ function dialog(msg, opts, help) {
  for (key in opts) {
   key = key.toUpperCase();
   var btn = document.createElement("button");
-  btn.onclick='javascript:dialogResult(' + key.trim() + ")";
+// #1 Workaround for onclick not working with generated script
+  btn.setAttribute('onclick','javascript:dialogResult("' + key.trim() + '")');
   btn.textContent = key + ':' + opts[key];
   btn.title = help[key];
   p.appendChild(btn);
@@ -323,6 +324,7 @@ function dialogResult(res) {
  m.textContent += res + "\\n";
  document.getElementById("q").style.display = 'none';
  postAjax({"KEY" : res}, function(data) { processResponse(data); });
+ document.getElementById('i').focus();
 }
 function genderPrompt(msg) {
  var m = document.getElementById("m");
