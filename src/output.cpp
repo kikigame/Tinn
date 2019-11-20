@@ -130,8 +130,10 @@ wchar_t io::choice<wchar_t>(const std::wstring &prompt, const std::wstring &help
     while (i >= L'1' && i <= L'8' && keys.count(i)) i++;
     if (keys.count(i)) i = L'A';
     while (i >= L'A' && i <= L'Y' && keys.count(i)) i++;
-    // shouldn't happen as I write this because there's always a compile-time limit on the selection.
-    // but going forward I may need to have a bigger string to iterate through:
+    if (keys.count(i)) {
+      std::wstring k(L"!\"£$%^&*(){}[]?+/=_~-#|:\\;@'");
+      for (auto pi = k.begin(); pi != k.end() && keys.count(i); ++pi) i=*pi;
+    }
     if (keys.count(i)) throw L"Not enough known keys for this menu!";
     keys[i]=k;
     keystroke[k]=i;
