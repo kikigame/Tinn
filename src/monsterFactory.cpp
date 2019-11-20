@@ -939,7 +939,7 @@ public:
   };
   virtual ~alienMonster() {}
   virtual std::wstring name() const {
-    return trivialMonster::name() + whence_.name();
+    return trivialMonster::name() + L" from " + whence_.name();
   }
   virtual std::wstring description() const {
     auto rtn = trivialMonster::description() + L"\n\n" + whence_.description();
