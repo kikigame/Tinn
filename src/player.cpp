@@ -174,27 +174,30 @@ void player::takeInventory() {
 
 void player::equip() {
   auto &ios = ioFactory::instance();
-  auto result = firstItem([this, &ios](item &i) {
-      if (slotsOf(i)[0] != nullptr) return false; // already equipped
-      auto type = i.equippable();
-      if (type == item::equipType::none) return false; // unequippable
-      std::wstring msg = L"Do you ";
-      bool weap = type == item::equipType::wielded;
-      if (weap) msg += L"wield ";
-      else msg += L"wear ";
-      msg += i.name();
-      msg += L"?";
-      if (ios.ynPrompt(msg)) {
-	auto rtn = i.equip(*this);
-	if (rtn) return true;
-	else if (weap)
-	  ios.message(L"This " + i.name() + L" won't be your weapon");
-	else ios.message(L"This " + i.name() + L" doesn't fit anywhere");
-      }
-      return false;
-    });
-  if (!result)
+
+  std::vector<std::pair<const item *, std::wstring>> choices;
+
+  item *sel =
+    pickItem(L"What would you like to equip?", // prompt
+	     L"Pick an item to wield or wear.", // help
+	     L"",
+	     [this](const item &i) {
+	       if (slotsOf(i)[0] != nullptr) return false; // already equipped
+	       auto type = i.equippable();
+	       if (type == item::equipType::none) return false; // unequippable
+	       return true;
+	     }, true);
+
+  
+  if (sel) {
+    auto rtn = sel->equip(*this);
+    if (rtn) return;
+    else if (sel->type == item::equipType::wielded)
+      ios.message(L"This " + sel->name() + L" won't be your weapon");
+    else ios.message(L"This " + sel->name() + L" doesn't fit anywhere");
+  } else
     ios.message(L"Nothing to equip");
+
 }
 
 /*
