@@ -15,6 +15,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <memory>
 
 unsigned char dPc(); // avoid including all of random.hpp
 
@@ -107,8 +108,10 @@ int play(const args &opt) {
   return 0;
 }
 
-const wchar_t * help() {
-  return L"Help on game keys:\n"
+class fifo_io;
+
+const std::wstring help(const std::shared_ptr<io> ios) {
+  std::wstring rtn = L"Help on game keys:\n"
     "q) Quit the game\n"
     "wasd) Cardinally move around the map, or attack a monster in that direction\n"
     "       (use Alt/meta to deliberately move into traps)\n"
@@ -123,6 +126,11 @@ const wchar_t * help() {
     "o) View objectives\n"
     "\n"
     "Have fun!";
+
+  if (std::dynamic_pointer_cast<std::shared_ptr<fifo_io>>(ios))
+    rtn.replace(rtn.find(L"Alt/meta"),8,L"Force");
+
+  return rtn;
 }
 
 void doTick(dungeon &d){
@@ -165,7 +173,7 @@ void processInput(dungeon & d, const std::wstring &c, const std::shared_ptr<io> 
 
   switch (c[0]) {
   case L'?': case 'H': case 'h':
-    ios->longMsg(help());
+    ios->longMsg(help(ios));
     return; // skip loop; help should take no time
   case L'q': case L'Q':
     d.quit();
