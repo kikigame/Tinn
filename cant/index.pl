@@ -194,6 +194,8 @@ Sorry, all games are currently in use. Please try back later.
 EOF
     exit(0);
     }
+
+    my $protocol = CGI::https() ? "https" : "http";
     
 print <<"EOF";
 <!doctype html>
@@ -210,7 +212,7 @@ var params = typeof data == 'string' ? data : Object.keys(data).map(
 params += '&ajax=1&session=$session&move=' + (++document.move)
 
 var xhr = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
-xhr.open('POST', "http://rjlee.homelinux.org/tinn/");
+xhr.open('POST', "$protocol://rjlee.homelinux.org/tinn/");
 xhr.onreadystatechange = function() {
   if (xhr.readyState>3 && xhr.status==200) { success(xhr.responseText); }
 };
