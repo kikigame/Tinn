@@ -204,8 +204,11 @@ print <<"EOF";
 <meta charset="UTF-8"/>
 <script language="javascript">
 document.move = 0; // each AJAX call a unique URL
+document.ajaxlock = 0;
 // based on https://plainjs.com/javascript/ajax/send-ajax-get-and-post-requests-47/
 function postAjax(data, success) {
+if (document.ajaxlock == 1) return;
+document.ajaxlock = 1;
 var params = typeof data == 'string' ? data : Object.keys(data).map(
             function(k){ return encodeURIComponent(k) + '=' + encodeURIComponent(data[k]) }
     ).join('&');
@@ -222,6 +225,7 @@ xhr.send(params);
 return xhr;
 }
 function processResponse(dataStr) {
+ document.ajaxlock = 0;
  var data = dataStr.split("<!END!>");
  for (var i =0; i < data.length; ++i) {
   var ins = data[i].trim();
