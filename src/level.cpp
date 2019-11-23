@@ -752,7 +752,12 @@ public:
       return true;
     }
     if (!m.abilities()->move(t)) return false;
-    if (avoidTraps && t.entraps(m, false)) return false;
+    if (avoidTraps && t.entraps(m, false)) {
+      // camtarn's suggestion: produce feedback when moving into a trap
+      if (!v && m.isPlayer()) // not for vehicles, as this is called for routefinding
+	ioFactory::instance().message(t.name() + L": avoiding (unforced)");
+      return false;
+    }
     if (avoidHiddenTraps && t.entraps(m, true)) return false;
     return true;
   }
