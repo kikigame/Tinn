@@ -192,7 +192,7 @@ void player::equip() {
   if (sel) {
     auto rtn = sel->equip(*this);
     if (rtn) return;
-    else if (sel->type == item::equipType::wielded)
+    else if (sel->equippable() == item::equipType::wielded)
       ios.message(L"This " + sel->name() + L" won't be your weapon");
     else ios.message(L"This " + sel->name() + L" doesn't fit anywhere");
   } else
