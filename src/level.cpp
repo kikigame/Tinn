@@ -719,7 +719,14 @@ public:
     case 0:
       return; // no message
     case 1:
-      message += L"There's a " + msg[0] + L" here";
+      switch (msg[0][0]) {
+      case 'a': case 'e': case 'i': case 'o': case 'u':
+      case 'A': case 'E': case 'I': case 'O': case 'U':
+	message += L"There's an " + msg[0] + L" here";
+	break;
+      default:
+	message += L"There's a " + msg[0] + L" here";
+      }
       ioFactory::instance().message(message);
       break;
     default:
