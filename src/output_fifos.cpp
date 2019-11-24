@@ -60,6 +60,8 @@ public:
     read(); //CGI always sends data then gets a response, but we need to send first, so discard initial input.
   };
   virtual ~fifo_io() {
+    doSend(L"L:Thank you for playing!", "\n<!FIN!>\n");
+    read(); // get the closing handshake back
   }
   virtual void clear() const {
     send(L"C:");
@@ -156,13 +158,14 @@ private:
     buf_ << str << "<!END!>\n";
   }
   // out will block if the other end isn't connected, so we open it on demand
-  void doSend(const std::wstring &str) const {
+  void doSend(const std::wstring &str,
+	      const char *const handshake = "\n<!OVER!>\n") const {
     std::ofstream out(prefix_ + "Down.fifo"); // closed automatically (we lose error data, but we're a game...)
     if (!out) throw "Failed to open " + prefix_ + "Down.fifo"  + std::strerror(errno);
     std::wstring_convert<std::codecvt_utf8<wchar_t>> utf8_conv;
     std::string bytes = utf8_conv.to_bytes(str);
     out << bytes
-	<< "\n<!OVER!>\n" << std::flush; // tell CGI we want input
+	<< handshake << std::flush; // tell CGI we want input
   }
   // in also blocks, but fifo(7) doesn't indicate why:
   std::wstring read() const {
@@ -176,7 +179,10 @@ private:
 	int ch = in_.get();
 	if (ch != EOF) rtn += static_cast<char>(ch);
       } while (rtn.back() != '>');
-    } while (rtn.size() < 7 || rtn.compare(rtn.size() - 7, 7, "<!END!>") != 0);
+    } while (rtn.size() < 7 ||
+	     (rtn.compare(rtn.size() - 7, 7, "<!END!>") != 0 &&
+	      rtn.compare(rtn.size() - 7, 7, "<!FIN!>") != 0)
+	     );
     rtn.erase(rtn.size() - 7);
     std::wstring_convert<std::codecvt_utf8<wchar_t>> utf8_conv;
     return utf8_conv.from_bytes(trim(rtn));

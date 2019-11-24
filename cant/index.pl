@@ -26,7 +26,8 @@ sub trim { # Perl supplies only chomp
 # tinn sends any number of commands, each ending <!END!>
 # tinn sends <!OVER!> to indicate that it is listening
 # we send exactly one instruction, followed by <!END!>
-# repeat until we receive instruction to stop.
+# repeat until we receive <!FIN!>, an instruction to stop.
+# we then send <!FIN!> to tinn, indicating we finished reading the fifos.
 
 my $cgi = CGI->new;
 $cgi->charset('UTF-8');
@@ -93,6 +94,7 @@ if ($cgi->param("ajax") && $cgi->param("session")) {
     warn "Connecting to $outpipe for writing";
     open ($out, "+<$outpipe") or die "Lost connection (output)"; # +< is r/w; doesn't block if server isn't reading
     binmode $out, ":encoding(utf8)";
+#    flock $out, Fcntl::LOCK_EX;
 
     if ($cgi->param("KEY")) { # usual keystroke
 	my $KEY = $cgi->param("KEY");
@@ -147,6 +149,10 @@ if ($cgi->param("ajax") && $cgi->param("session")) {
     my $line = "";
     while ($line = <$in>) {
 	trim($line);
+	if ($line eq "<!FIN!>") {
+	    print $out "<!FIN!>";
+	    last;
+	}
 	last if $line eq "<!OVER!>";
 	print "$line\n";
     }
