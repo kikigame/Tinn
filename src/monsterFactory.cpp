@@ -954,7 +954,7 @@ public:
       if (able.resist(d)) resists.insert(d.name());
       if (able.extraDamage(d)) extraDamage.insert(d.name());
     }
-    std::wstring name = type().name(0).name() + L" from " + whence_.name();
+    std::wstring name = type().name(0).name() + std::wstring(L" from ") + whence_.name();
     if (!proofs.empty())
       rtn += L"An " + name + L" seem impervious to " + join(proofs.begin(), proofs.end()) + L".\n";
     if (!resists.empty())
