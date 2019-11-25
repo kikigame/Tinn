@@ -60,7 +60,7 @@ public:
     read(); //CGI always sends data then gets a response, but we need to send first, so discard initial input.
   };
   virtual ~fifo_io() {
-    doSend(L"L:Thank you for playing!", "\n<!FIN!>\n");
+    doSend(buf_.str() + L"\nL:That's All Folks!", "\n<!FIN!>\n"); // ref:Looney Tunes
     read(); // get the closing handshake back
   }
   virtual void clear() const {

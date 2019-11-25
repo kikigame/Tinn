@@ -112,7 +112,7 @@ public:
       } else break;
     }
     // then work backwards by the next-lowest cost to find the route.
-    int prevCursorX, prevCursorY;
+    int prevCursorX = 0, prevCursorY = 0;
     while (c > 0) {
       prevCursorX = cursorX, prevCursorY = cursorY;
       moveCursor(cursorX, cursorY, c--);

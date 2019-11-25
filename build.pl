@@ -81,6 +81,6 @@ for my $cfile (@cfiles) {
     print join(" ", "$ofile",":", $cfile, @deps, "\n");
 #    print "\t\$(CXX) -O2 $cfile -c $CXXFLAGS -o $ofile\n\n"
     print "\t\$(CXX) $cfile -c $CXXFLAGS -o $ofile -finput-charset=utf8 -fexec-charset=utf8\n\n"
-#    print "\t\$(CXX) $cfile -c $CXXFLAGS -o $ofile -DDEBUG=1\n\n"
+#    print "\t\$(CXX) $cfile -c $CXXFLAGS -o $ofile -DDEBUG=1 -finput-charset=utf8 -fexec-charset=utf8 -g\n\n"
 }
 
