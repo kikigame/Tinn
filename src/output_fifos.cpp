@@ -199,6 +199,6 @@ std::shared_ptr<io> ioFactory::connectFifos(const args &opts) {
   ::close(2);
   
   const char* const prefix = opts.option("fifos");
-  return std::shared_ptr<io>(new fifo_io(prefix));
+  return std::make_shared<fifo_io>(prefix);
   
 }
