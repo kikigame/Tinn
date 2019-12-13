@@ -1,0 +1,46 @@
+Catholicism conveniently has 9 choirs of angels, arranged into three triads:
+
+[http://angelreadingsbyzara.com/choirs-of-angels/]
+
+First triad
+; Seraphim: fire & redemptive healing; reflect the pure love of God.
+; Cherubim: maintain the records of Heaven, pull the Lord's Chariot, guard the fixed stars.
+; Thrones: carry out devine justice. Intensely humble and thus impartial.
+
+Second Triad
+; Dominions: maintain the order of the cosmos and delegate to lower orders
+; Virtues: preside over elements; keep heavonly bodies in their appropriate routes and mark the weather. Carry out miracles, so connected to prayers. Bestow grace and valour and help to endure hardship.
+; Powers: harmonizers; maintain cosmic order and equilibrium, tasked to defeat demons. Guard the paths between heaven and earth. Help to overcome temptation.
+
+Third triad
+; Principalities: caretakers over everything from person to nation. Inexplicable miracles.
+; Archangels: Carry out the will of God as related directly to humanity. Blessings. Compassion, love comfort, solice and fortitude at the darkest moments.
+; Angels: Messangers of God and guardians of the soul. Pure spirituality.
+
+
+In Tinn, we might have one type for angel, name depending on Domination and level (choir):
+
+<type> of the <n>th Choir of <deity>, <foo> of the path of <path>
+
+Principalitiy -> Dominion -> Seraphim
+: caretakers & healers
+: effect: reduce injury to 0, or increase max if already at 0.
+: Outlook::aggression
+: foo=caretaker
+: attack: attack_ray_small / attack_ray_med / death_ray per alignment
+Arcangel -> Virtue -> Cherubim
+: record-keepers with elemental alignment.
+: effect: restore lost strength/fight, or increase max if already at 0. Fall through to next if **
+: Outlook::none
+: foo=pathfinder
+: cherubs have chariot?
+: attack: repulsion, petrify
+Angel -> Power -> Throne
+: messangers and harmonisers; dispense justice
+: effect: restore lost dodge/appearance, or increase max if already at 0. Fall through to next if **
+: Outlook::concentration
+: foo=Messenger
+: attack: disarm, charm
+
+The effect of an angel will take effect if the Angel is not hostile towards the player but standing on an adjacent square. If any stat changes occur, the angel invokes bless_item and enchant_item and disappears.
+"You grok the teaching: <teaching>"
