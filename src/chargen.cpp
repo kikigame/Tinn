@@ -142,6 +142,7 @@ playerBuilder chargen() {
        L"   Options are:",
       {
 	  { monsterTypeKey::troll, L"Troll: rock-eating stony beings, big and ugly" },
+	  { monsterTypeKey::angel, L"Angel: divine messanger of pure light" },
 	    // most generic option is always last
 	  { monsterTypeKey::human, L"Human: curious earthly bipeds" }
       },

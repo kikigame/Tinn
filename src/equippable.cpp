@@ -208,8 +208,8 @@ int equippable::dodBonus() const {
       case materialType::woody: defence = 0.5; break; // basically untoughened leather
       case materialType::fleshy: defence = (2/3.); break; // basically untoughened leather
       case materialType::leathery: defence = 1; break; // standard armour
-      case materialType::stony: defence = 1.5; break; // very strong if very heavy...
-      case materialType::metallic: defence = 3; break; // best armour is metal, but also the heaviest
+      case materialType::stony: defence = 1.25; break; // very strong if very heavy...
+      case materialType::metallic: defence = 1.5; break; // best armour is metal, but also the heaviest
       default: defence = 0;
       }
       defence *= item.weight() / 10;
