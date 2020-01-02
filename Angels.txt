@@ -25,22 +25,33 @@ In Tinn, we might have one type for angel, name depending on Domination and leve
 Principalitiy -> Dominion -> Seraphim
 : caretakers & healers
 : effect: reduce injury to 0, or increase max if already at 0.
-: Outlook::aggression
+: Domination::aggression
 : foo=caretaker
 : attack: attack_ray_small / attack_ray_med / death_ray per alignment
 Arcangel -> Virtue -> Cherubim
 : record-keepers with elemental alignment.
 : effect: restore lost strength/fight, or increase max if already at 0. Fall through to next if **
-: Outlook::none
+: Domination::none
 : foo=pathfinder
 : cherubs have chariot?
 : attack: repulsion, petrify
 Angel -> Power -> Throne
 : messangers and harmonisers; dispense justice
 : effect: restore lost dodge/appearance, or increase max if already at 0. Fall through to next if **
-: Outlook::concentration
+: Domination::concentration
 : foo=Messenger
 : attack: disarm, charm
 
 The effect of an angel will take effect if the Angel is not hostile towards the player but standing on an adjacent square. If any stat changes occur, the angel invokes bless_item and enchant_item and disappears.
 "You grok the teaching: <teaching>"
+
+
+Symbol: Å (A with overring; may be written as Aa).
+
+Possible sayingss:
+"Have you seen Jo?" (male Archangel only; ref: Gabriel's message to Joseph son of Jesus).
+"🎶הושענה" (Hoshana, Hebrew for Hosanna, an excultation to God)
+"🎶Gloooooooooooooooooooria!" (ref: Ding Dong Merrily on High [Hymn])
+"Do I contemplate your fate?" (ref: Angel, by Robbie Williams [Song])
+
+

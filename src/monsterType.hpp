@@ -25,8 +25,8 @@ enum class monsterCategory {
   // centaurs have two arms, four legs, flank, rump, head and tail.
   // NB: We don't model the forelegs.
     centaur,
-  // dragons are flightless quadrupeds with wings. flank is callad thorax and rump is called abdomen. Toes are called claws. NB: feet are called paws according to the OED (usage rare usage).
-  // NB: We don't model the wings, as they are vestigial and cannot hold thigns.
+  // dragons are flightless quadrupeds with wings. flank is callad thorax and rump is called abdomen. Toes are called claws. NB: feet are called paws according to the OED (rare usage).
+  // NB: We don't model the wings, as they are vestigial and cannot hold things.
   // TODO: Is this system breaking down? If you polymorph from a dragon into a bird, your foreleg-equipped weapons will jump to your wings. On the one hand, this makes sense (dragons wouldn't hold things in their wings while birds need to), but on the other hand, how does a cursed item move?
     dragon,
   // birds have wings, head and torso. "digits" are claws. (There's some debate online about whether all birds have talons, or whether claws are something separate. But I think colloquially we would talk about a song-bird's claws or a falcon's talons).
@@ -110,6 +110,7 @@ enum class genderAssignType {
 enum class monsterTypeKey {
   //bird,
   alien, // 'A'; Nethack uses for Angelic beings
+  angel, // 'Å'; Nethack uses 'A'
   blob,
   bull,
   raptor,

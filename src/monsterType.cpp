@@ -330,7 +330,66 @@ L"Dragons are large serpentine creatures; highly intelligent and amongst the\n"
 	    .movement({speed::perturn, goTo::wander, goBy::avoid, 25})
 	    .movesOnGround()
 	    );
-    
+	    
+    // unique features: helps non-hostile players
+    emplace(monsterTypeBuilder(monsterTypeKey::angel)
+	    .category(monsterCategory::biped) // we don't model the wings
+	    .name(L"seraph")
+	    .name(L"dominion")
+	    .name(L"principality")
+	    .className(L"angelic")
+	    .levelFactor(1)
+	    .levelOffset(25)
+	    .minSpawn(1)
+	    .maxSpawn(1)
+	    .xpFactor(50)
+	    .xpOffset(0)
+	    .renderChar(L'Å')
+	    .strength(20)
+	    .appearance(99) // not 100 as they are not an idol
+	    .fighting(50)
+	    .dodge(30)
+	    .maxDamage(40)
+	    .gen(genderAssignType::mf) // Biblical
+	    .material(materialType::metallic) // they are made of light, but we don't have that type.
+	    .corpseWeight(0)
+	    .align(++dr.begin(), dr.end()) // no neurtral angels!
+	    // All sayings are singing because a group of angels is a choir.
+	    .saying(L"🎶 הושענה") // (Hoshana, Hebrew for Hosanna, an excultation to God)	     
+	    .saying(L"🎶 Gloooooooooooooooooooria!")// (ref: Ding Dong Merrily on High [Hymn])
+	    .saying(L"🎶 Do I contemplate your fate?") //(ref: Angel, by Robbie Williams [Song])
+	    .saying(L"🎶 Let's help the helpless.")// (ref: Angel [TV Series])
+	    .encyclopedium(
+L"Winged creatures of light; angels have 3 triads, each with 3 choirs:\n"
+"Seraphim reflect pure love; they align to fire and offer redemptive healing.\n"
+"Cherubim pull the Chariot, guard fixed stars and maintain Heavenly records.\n"
+"Thrones carry out divine justice; they are intensely humble and impartial.\n"
+"\n"
+"Dominions maintain the order of the cosmos and delegate to lower choirs.\n"
+"Virtues move heavenly bodies, mark weather; bestow grace and valour.\n"
+"Powers maintain cosmic harmony, and defeat demons and temptation.\n"
+"\n"
+"Principalities: caretakers over everything from people to nations.\n"
+"Archangels provide blessings, compassion, love, comfort, solace & fortitude.\n"
+"Angels are pure spiritual messengers of the highest power who guard the soul."
+			   )
+	    .eats(materialType::liquid)
+	    .eats(materialType::fleshy)
+	    .eats(materialType::veggy)
+	    .carryWeight(100000)
+	    .movement({speed::turn2, goTo::player, goBy::smart, 75})
+	    .movesOnGround()
+	    .fearless()
+	    .speedy()
+	    .fly()
+	    .climb()
+	    .swim()
+	    .zap()
+	    .alluring()
+	    .see()
+	    .hear()
+	    );
+
     // unique feature: grows continuously
     emplace(monsterTypeBuilder(monsterTypeKey::blob)
 	    .category(monsterCategory::blob)

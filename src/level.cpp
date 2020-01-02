@@ -382,6 +382,7 @@ public:
       if (!z->onAttack(aggressor, target)) return;
     coord tPos(target.curLevel().posOf(target));
     const auto tName = target.name();
+    const auto &tType = target.type();
     if (aggressor.capture(tPos)) {
       auto monsters = monsters_.equal_range(tPos);
       std::wstring aName = aggressor.name();
@@ -417,11 +418,14 @@ public:
     }
     bool longMsg = false;
     if (static_cast<unsigned char>(aggressor.injury().cur()) == aggressor.injury().max()) {
-      rtn = rtn + L"\n" + aggressor.name() + L" dies.";
+      rtn = rtn + L"\n" + aggressor.name() +
+	(aggressor.type().type() == monsterTypeKey::angel ?
+	 L" returns to the choir" : L" dies.");
       longMsg = true;
     }
     if (static_cast<unsigned char>(result.injury_.cur()) == result.injury_.max()) {
-      rtn = rtn + L"\n" + tName + L" dies.";
+      rtn = rtn + L"\n" + tName +
+	(tType.type() == monsterTypeKey::angel ? L" returns to the choir" : L" dies.");
       longMsg = true;
     }
     if (longMsg) ioFactory::instance().longMsg(rtn);

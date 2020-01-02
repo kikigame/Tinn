@@ -1072,6 +1072,134 @@ private:
 };
 
 
+class angel : public trivialMonster {
+public:
+  angel(monsterBuilder &b) :
+    trivialMonster(b) {}
+  unsigned char triad() const {
+    auto tName = trivialMonster::name();
+    return tName == L"seraph" ? 0 :
+      tName == L"dominion" ? 1 : 2;
+  }
+  virtual std::wstring name() const {
+    std::wstring name;
+    auto &a = align();
+    auto d = a.domination();
+    unsigned char t = triad();
+    std::wstring foo;
+    switch (d) {
+    case Domination::aggression:
+      name = trivialMonster::name();
+      foo = L"Caretaker";
+      break;
+    case Domination::none:
+      name = (t == 0 ? L"cherub" :
+	      t == 1 ? L"virtue" : L"archangel");
+      foo = L"Pathfinder";
+      break;
+    default:
+      name = (t == 0 ? L"throne" :
+	      t == 1 ? L"power" : L"angel");
+      foo = L"Messenger";
+    };
+    name += L" of the ";
+    name += (t == 0 ? L"first" : t == 1 ? L"second" : L"third");
+    name += L" triad of ";
+    return name + a.name() + foo + L" of the house of " + a.house();
+  }
+  
+  // overridden to disallow corpse
+  virtual void death(bool allowCorpse) {
+    trivialMonster::death(false);
+  }
+
+  optionalRef<sharedAction<monster, monster>> attackAction() {
+    sharedAction<monster, monster>::key act;
+    switch (align().domination()) {
+    case Domination::aggression:
+      switch (triad()) {
+      case 0: act = sharedAction<monster, monster>::key::attack_ray_small_edged;
+      break;
+      case 1: act = sharedAction<monster, monster>::key::attack_ray_med_edged;
+      break;
+      default: act = sharedAction<monster, monster>::key::death_ray_edged;
+      }
+      act = static_cast<sharedAction<monster, monster>::key>
+	(static_cast<int>(act) + static_cast<int>(align().element()));
+      break;
+    case Domination::none:
+      if (triad() == 2)
+	act = sharedAction<monster, monster>::key::petrify;
+      else
+	act = sharedAction<monster, monster>::key::repulsion;
+      break;
+    case Domination::concentration:
+      if (triad() == 2)
+	act = sharedAction<monster, monster>::key::charm;
+      else
+	act = sharedAction<monster, monster>::key::disarm;
+      break;
+    }
+    return actionFactory<monster, monster>::get(act);
+  }
+  virtual void postMove(const coord &pos, const terrain &terrain) {
+    //   optionalRef<monster> findMonster(monster &from, const wchar_t dir) const;
+    std::wstring dirs = L"WASD";
+    std::list<monster*> ms;
+    for (wchar_t dir : dirs) {
+      auto m = curLevel().findMonster(*this, dir);
+      if (m && m.value() != *this && m.value().align().coalignment(align()) > 2)
+	ms.push_back(&(m.value()));
+    }
+    if (!ms.empty()) {
+      auto &target = **rndPick(ms.begin(), ms.end());
+      // TODO: adjacent only?
+      assist(target);
+    }
+  }
+private:
+  // perform assist action on target:
+  void assist(monster &target) {
+    if (target.isPlayer())
+      ioFactory::instance().message(L"You grok the teachings of " + align().name());
+    switch (align().domination()) {
+    case Domination::none:
+      // restore lost strength/fight, or increase max if already at 0. Fall through to next if **
+      if (restore(target, target.strength()), 1) break;
+      if (restore(target, target.fighting()), 1) break;
+    case Domination::concentration:
+      // restore lost dodge/appearance, or increase max if already at 0. Fall through to next if **
+      if (restore(target, target.dodge()), 1) break;
+      if (restore(target, target.appearance()), 1) break;
+    default:
+      // reduce injury to 0, or increase max if already at 0.
+      restore(target, target.injury(), -1);
+    }
+  }
+  bool restore(monster & target, characteristic &c) {
+    return restore(target, c, c.max());
+  }
+  // set c to value targetValue, return true if any change.
+  bool restore(monster & target, characteristic &c, unsigned char targetValue) {
+    if (c.cur() == targetValue) return false;
+    c = targetValue;
+    if (c.cur() != targetValue) return false;
+    if (isPlayer()) {
+      ioFactory::instance().message(L"You perform a miracle on " + target.name());
+    } else {
+      std::wstring tName = (target.isPlayer() ? L"you" : target.name());
+      ioFactory::instance().message(name() + L" performs a miracle on " + tName);
+      // If any stat changes occur, the angel invokes bless_item and enchant_item and disappears.
+      bcu bc(true, false);
+      actionFactory<monster, monster>::get(sharedAction<monster, monster>::key::bless_item)(bc, *this, target);
+      actionFactory<monster, monster>::get(sharedAction<monster, monster>::key::enchant_item)(bc, *this, target);
+      if (target.isPlayer())
+	death(false); // return to the Choir
+    }
+    return true;
+  }
+};
+
 template <monsterTypeKey T>
 struct monsterTypeTraits {
   typedef bird type; // default
@@ -1127,6 +1255,7 @@ std::shared_ptr<monster> monsterType::spawn(monsterBuilder &b) const {
   switch (type()) {
     //  case monsterTypeKey::bird: return ofTypeImpl<monsterTypeKey::bird>(b);
   case monsterTypeKey::alien: return ofTypeImpl<monsterTypeKey::alien>(b);
+  case monsterTypeKey::angel: return ofTypeImpl<monsterTypeKey::angel>(b);
   case monsterTypeKey::blob: return ofTypeImpl<monsterTypeKey::blob>(b);
   case monsterTypeKey::bull: return ofTypeImpl<monsterTypeKey::bull>(b);
   case monsterTypeKey::raptor: return ofTypeImpl<monsterTypeKey::raptor>(b);
