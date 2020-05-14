@@ -672,7 +672,7 @@ L"Vulpine animals get a mixed reaction; these charming, beautiful creatures\n"
 	    .category(monsterCategory::biped)
 	    .name(L"goblin")
 	    .name(L"red-cap goblin")
-	    .className(L"Elfin")
+	    .className(L"Fae")
 	    .levelFactor(1)
 	    .levelOffset(5)
 	    .minSpawn(1)
@@ -935,7 +935,7 @@ L"Kelpies live in rivers and streams, while the stronger Each-uisge prefers\n"
     emplace(monsterTypeBuilder(monsterTypeKey::mokumokuren)
 	    .category(monsterCategory::biped)
 	    .name(L"Mokumokuren")
-	    .className(L"Elfin")
+	    .className(L"Fae")
 	    .levelFactor(2)
 	    .levelOffset(50)
 	    .minSpawn(1)
@@ -1475,7 +1475,7 @@ L"There are a great number of creatures in the world, and not all sit neatly\n"
 "The Dionaea muscipula is found mostly in sub-tropical wetlands.")
             .fearless()); // can't move anyway
 
-    // unique feature: beeline approach ignoring all traps. Instant death on pin traps
+    // unique feature: beeline approach ignoring all traps. Instant death on pit traps
     emplace(monsterTypeBuilder (monsterTypeKey::zombie)
 	    .category(monsterCategory::biped)
 	    .name({L"rotting"}, L"zombie")
