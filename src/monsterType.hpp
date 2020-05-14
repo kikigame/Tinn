@@ -127,6 +127,7 @@ enum class monsterTypeKey {
   kelpie, // water spirit. Can shape-shift between horse and human forms (possibly with hooves)
   mokumokuren,
   merfolk,// merman or mermaid; can't move off water. Attacks with charm
+  pixie,
   salamander,
   spider,
   siren, // manevolent half-bird that sits on rocks at sea and lures travellers to their death with its song.

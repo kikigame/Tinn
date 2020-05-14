@@ -1014,6 +1014,56 @@ L"Merfolk do not like to stray outside the sea, and mermen less so. Having the\n
 "traveller has fallen for their charms, even attempting to save them as if\n"
 "drowning, or falling in love with them, and met their end drowned at sea,\n"
 "whether by negligence or intent."));
+
+
+    // unique feature: jumps out and scares a player if female.
+    // TODO: also leads travellers astray (like will o' the wisps)
+    // raps on walls, blows out candles and plays in water
+    // Hmmm... Tinker Bell needs fairy dust to fly, but she is not a pixie...
+    // Ref: https://mythology.net/mythical-creatures/pixie/ pixies are woodland; sprites are water
+    // Ref: https://www.all-about-fairies.com/pixie.html suggests SosSi aos sí  (irish/scots) as related
+    emplace(monsterTypeBuilder(monsterTypeKey::pixie)
+	    .category(monsterCategory::biped) // pixies don't have wings; faeries only got them around Victorian times
+	    .name(L"Pixie") // todo: types based on level? Also spelled Piksie, pizkie, piskie and pigsie 
+	    .className(L"Fae")
+	    .levelFactor(1)
+	    .minSpawn(1)
+	    .maxSpawn(6) // collective name is "Troupe"
+	    .xpFactor(1)
+	    .xpOffset(2)
+	    .renderChar(L'p') // nethack uses for Piercers, which we don't have. 'P' is pudding or ameboid in NH; we don't have puddings
+	    .strength(5)
+	    .appearance(75) // not as pretty as a fae; tends to wear rags.
+	    .fighting(10)
+	    .dodge(20)
+	    .maxDamage(10)
+	    .gen(genderAssignType::indirect)
+	    .material(materialType::fleshy) // notably, Tilbury's Otia Imperialia (13thC) says that fae bodies were made of air: http://www.strangehistory.net/2012/10/12/how-big-are-fairies/
+	    .corpseWeight(0.1188399709) // 0.1188399709lb; if a 5'9" human weight 610lb, assuming 4" tall(https://www.all-about-fairies.com/pixiefairy.html)
+	    .align(dr.getExact(Element::plant, Domination::aggression, Outlook::kind))
+	    .saying(L"Where is my mind?") // "Pixies" song
+	    .encyclopedium(
+L"Ever the enemies of the fairies, pixies can still manage mischief of their\n"
+"own. Dancing amongst the trees, at around 4″ tall, they usually play tricks\n"
+"for their own amusement, but any who enter the ancesteral barrows they call\n"
+"home should beware.\nSometimes they even infest hollow trees.")
+	    .eats(materialType::fleshy)
+	    .eats(materialType::leathery)
+	    .eats(materialType::liquid)
+	    .eats(materialType::papery)
+	    .eats(materialType::veggy)
+	    .eats(materialType::waxy)
+	    .eats(materialType::woody)
+	    .carryWeight(9806.6500286389) // 1000kg; they steal horses
+	    .movement({speed::turn2, goTo::wander, goBy::smart, 25})
+	    .movesOnGround()
+	    .scardy()
+	    .sleeps()
+	    .see()
+	    .hear()
+	    .fly()
+	    .swim() // while they are woodland spirits, they've been known to play in water.
+	    .climb());
 	    
 
     // unique feature: extisnguishes fires

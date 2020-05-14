@@ -496,6 +496,34 @@ public:
   }
 };
 
+class pixie: public virtual monster {
+public:
+  pixie(monsterBuilder &b) :
+    monster(b) {
+    eachTick([this]{
+	if (dPc() <= 30) // ~ 1 every 5 moves
+	  doAction();
+      });
+  }
+  virtual ~pixie() {}
+private:
+  void doAction() {
+    auto &lvl = curLevel();
+    auto pc = lvl.dung().pc();
+    if (&lvl != &(pc->curLevel())) return;
+    if (pc->isFemale()) {
+      // if the player is on the same level and passes as female, we can petrify them
+      // (pixies have been known to scare maidens).
+      auto &a = actionFactory<monster,monster>::get(sharedAction<monster, monster>::key::petrify);
+      a(bcu(), *this, *pc);
+    } else if (pc->abilities()->hear() && dPc() < 50) {
+      // otherwise, we just knock on the walls
+      ioFactory::instance().message(L"A mysterious rapping noise can be heard.");
+    }
+  }
+  // TODO: if attacking a monster with an equipped candle, blow it out.
+};
+
 
 class enchanter : public virtual monster, protected charmerMixin {
 public:
@@ -1218,6 +1246,7 @@ template<> struct monsterTypeTraits<monsterTypeKey::incubus> { typedef incubus t
 template<> struct monsterTypeTraits<monsterTypeKey::kelpie> { typedef kelpie type; };
 template<> struct monsterTypeTraits<monsterTypeKey::mokumokuren> { typedef mokumokuren type; };
 template<> struct monsterTypeTraits<monsterTypeKey::merfolk> { typedef merfolk type; };
+template<> struct monsterTypeTraits<monsterTypeKey::pixie> { typedef pixie type; };
 template<> struct monsterTypeTraits<monsterTypeKey::salamander> { typedef salamander type; };
 template<> struct monsterTypeTraits<monsterTypeKey::siren> { typedef siren type; };
 template<> struct monsterTypeTraits<monsterTypeKey::snake> { typedef snake type; };
@@ -1272,6 +1301,7 @@ std::shared_ptr<monster> monsterType::spawn(monsterBuilder &b) const {
   case monsterTypeKey::kelpie: return ofTypeImpl<monsterTypeKey::kelpie>(b); 
   case monsterTypeKey::mokumokuren: return ofTypeImpl<monsterTypeKey::mokumokuren>(b); 
   case monsterTypeKey::merfolk: return ofTypeImpl<monsterTypeKey::merfolk>(b);
+  case monsterTypeKey::pixie: return ofTypeImpl<monsterTypeKey::pixie>(b);
   case monsterTypeKey::salamander: return ofTypeImpl<monsterTypeKey::salamander>(b); 
   case monsterTypeKey::siren: return ofTypeImpl<monsterTypeKey::siren>(b); 
   case monsterTypeKey::snake: return ofTypeImpl<monsterTypeKey::snake>(b); 
@@ -1284,8 +1314,9 @@ std::shared_ptr<monster> monsterType::spawn(monsterBuilder &b) const {
   case monsterTypeKey::troll: return ofTypeImpl<monsterTypeKey::troll>(b); 
   case monsterTypeKey::venusTrap: return ofTypeImpl<monsterTypeKey::venusTrap>(b);
   case monsterTypeKey::zombie: return ofTypeImpl<monsterTypeKey::zombie>(b);
-  default: throw type();
   }
+  // default case outside the loop so compiler warnings catch missed cases:
+  throw type();
 }
 const std::shared_ptr<monsterIntrinsics> monsterType::intrinsics() const {
   return intrinsics_;
