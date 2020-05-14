@@ -707,9 +707,9 @@ void monster::eat() {
     // keep eating until the 
     std::weak_ptr<item> pItem = it.value().shared_from_this();
     while (pItem.lock() && eat(it.value()));
-  } catch (notHungryException e) {
+  } catch (const notHungryException &e) {
     if (isPlayer()) ioFactory::instance().message(L"You don't feel hungry right now.");
-  } catch (inedibleException e) {
+  } catch (const inedibleException &e) {
     if (isPlayer()) ioFactory::instance().message(L"This doesn't look tasty.");
   }
 }

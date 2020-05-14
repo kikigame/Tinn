@@ -294,15 +294,15 @@ void cleanup() {
 int handleActiveError() {
   try {
     throw;
-  } catch (std::exception e) {
+  } catch (const std::exception &e) {
     std::cerr << e.what() << std::endl
 	      << "https://github.com/kikigame/Tinn/issues" << std::endl;
     return -1;     
-  } catch (std::wstring str) {
+  } catch (const std::wstring &str) {
     std::wcerr << str << std::endl
 	       << L"https://github.com/kikigame/Tinn/issues" << std::endl;
     return -1;
-  } catch (std::string str) {
+  } catch (const std::string &str) {
     std::cerr << str << std::endl
 	      << "https://github.com/kikigame/Tinn/issues" << std::endl;
     return -1;
@@ -314,19 +314,19 @@ int handleActiveError() {
     std::cerr << str << std::endl
 	      << "https://github.com/kikigame/Tinn/issues" << std::endl;
     return -1;
-  } catch (itemTypeKey key) {
+  } catch (const itemTypeKey &key) {
     std::cerr << "Unknown item type key: " << static_cast<int>(key) << std::endl
 	      << "https://github.com/kikigame/Tinn/issues" << std::endl;
     return -1;
-  } catch (slotType key) {
+  } catch (const slotType &key) {
     std::cerr << "Unknown item slot type key: " << static_cast<int>(key) << std::endl
 	      << "https://github.com/kikigame/Tinn/issues" << std::endl;
     return -1;
-  } catch (terrainType key) {
+  } catch (const terrainType &key) {
     std::cerr << "Unknown terrain type key: " << static_cast<int>(key) << std::endl
 	      << "https://github.com/kikigame/Tinn/issues" << std::endl;
     return -1;
-  } catch (coord c) {
+  } catch (const coord &c) {
     std::cerr << "Bad coords:" << c << std::endl
 	      << "https://github.com/kikigame/Tinn/issues" << std::endl;
     return -1;

@@ -1111,9 +1111,9 @@ public:
       rtn = m.eat(other, false);
       if (rtn && p) ioFactory::instance().message(L"The " + other.name() + L" is consumed.");
       if (!rtn && p) ioFactory::instance().message(L"The " + name() + L" partially consumes the " + other.name());
-    } catch (monster::inedibleException e) {
+    } catch (const monster::inedibleException &e) {
       if (!rtn && p) ioFactory::instance().message(L"The " + name() + L" can't consume the " + other.name());      
-    } catch (monster::notHungryException e) {
+    } catch (const monster::notHungryException &e) {
       rtn = other.holder().destroyItem(other);
       if (rtn && p) ioFactory::instance().message(L"The " + other.name() + L" is consumed.");
       if (!rtn && p) ioFactory::instance().message(L"The " + name() + L" can't consume the " + other.name());      

@@ -58,9 +58,9 @@ size_t choicePrompt(const io &ios, const std::wstring &prompt, const std::wstrin
     if (ch == L'\n') return offset + highlight + 1; // 1-based index in return
     try {
       res = std::stoi(std::wstring({ch, L'\0'}));
-    } catch (std::invalid_argument) {
+    } catch (const std::invalid_argument &) {
       goto LOOP; // retry after invalid key
-    } catch (std::out_of_range) {
+    } catch (const std::out_of_range &) {
       goto LOOP; // retry after invalid string typed
     }
   } while (res < 1 || res > maxInput);
