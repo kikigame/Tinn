@@ -12,6 +12,7 @@
 #include "action.hpp"
 #include "hasAdjectives.hpp"
 #include "beitude.hpp"
+#include "equippable.hpp"
 #include <algorithm>
 #include <memory>
 #include <bitset>
@@ -126,7 +127,7 @@ public:
 
   // try to equip an item. Precondition: item must be available for monster to equip.
   // returns true if successful, false otherwise (ie no suitable slots)
-  virtual bool equip(monster &owner);
+  virtual equipResult equip(monster &owner);
 
   // called automatically by monster::unequip when successfully unequipped:
   virtual void onUnequip(monster &monster);

@@ -19,6 +19,8 @@ class damage;
 #include <map>
 #include <functional>
 
+enum equipResult { SUCCESS, NO_SLOT, SLOT_FULL };
+
 class equippable {
 private:
   // carried items are inventory. Worn/wielded items are equipment.
@@ -30,12 +32,12 @@ private:
 public:
   // try and wield/wear etc. the given item in the specified slot. Returns true if successful, false
   // if the slot was full or n/a for this monster type. Precodition: slot must be available for type.
-  bool equip(item &item, const slot *slot);
-  bool equip(item &item, const slotType slot);
+  equipResult equip(item &item, const slot *slot);
+  equipResult equip(item &item, const slotType slot);
   // equip a 2-handed weapon, or a pair of something:
-  bool equip(item &item, const std::pair<slotType, slotType> &slots);
+  equipResult equip(item &item, const std::pair<slotType, slotType> &slots);
   // NB: The following method should always work if immediately after forceUnequip: (for recalculation of stats):
-  bool equip(item &item, const std::array<const slot *, 2> &slots);
+  equipResult equip(item &item, const std::array<const slot *, 2> &slots);
   // try to unequip an item. Returns true on success, false if not equipped or cursed
   virtual bool unequip(item &item);
   bool isEquipped(sharedAction<item, monster> &act) const;
@@ -82,6 +84,5 @@ protected:
 class coverSearch : public graphSearch<const slot*, optionalRef<item> > {
   virtual std::vector<const slot*> deeper(const slot* const & sl);
 };
-
 
 #endif //ndef EQUIPPABLE_HPP

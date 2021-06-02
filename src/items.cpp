@@ -268,13 +268,16 @@ public:
       sexUp(dPc() < (1 + minCoverDepth) * 20);
   }
   virtual ~basicEquip() {}
-  virtual bool equip(monster &owner) {
-    for (slotType s : supportedSlots_)
-      if (owner.equip(*this, s)) {
+  virtual equipResult equip(monster &owner) {
+    equipResult rtn = equipResult::NO_SLOT;
+    for (slotType s : supportedSlots_) {
+      rtn = owner.equip(*this, s);
+      if (rtn == equipResult::SUCCESS) {
 	onEquipMixin::onEquip(owner);
-	return true;
+	return rtn;
       }
-    return false;
+    }
+    return rtn;
   }
   virtual void onUnequip(monster &m) {
     onEquipMixin::onUnequipImpl(m);
@@ -348,13 +351,16 @@ public:
     supportedSlots_({slots...}) {
   }
   virtual ~twoEquip() {}
-  virtual bool equip(monster &owner) {
-    for (std::pair<slotType, slotType> s : supportedSlots_)
-      if (owner.equip(*this, s)) {
+  virtual equipResult equip(monster &owner) {
+    equipResult rtn = equipResult::NO_SLOT;
+    for (std::pair<slotType, slotType> s : supportedSlots_) {
+      rtn = owner.equip(*this, s);
+      if (rtn == equipResult::SUCCESS) {
 	onEquipMixin::onEquip(owner);
-	return true;
+	return rtn;
       }
-    return false;
+    }
+    return rtn;
   }
   virtual void onUnequip(monster &m) {
     onEquipMixin::onUnequipImpl(m);

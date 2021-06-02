@@ -23,36 +23,36 @@ equippable::equippable(std::vector<const slot *>slots) :
 equippable::~equippable() {}
 
 
-bool equippable::equip(item &item, const std::pair<slotType, slotType> &slots) {
+equipResult equippable::equip(item &item, const std::pair<slotType, slotType> &slots) {
   std::array<const slot *, 2> sl{ slotBy(slots.first), slotBy(slots.second) };
   return equip(item, sl);
 }
 
-bool equippable::equip(item &item, const std::array<const slot *,2> &slots) {
+equipResult equippable::equip(item &item, const std::array<const slot *,2> &slots) {
   if (slots[0] == slots[1]) return equip(item, slots[0]);
 
   for (auto s : slots) {
     if (s == nullptr) continue;
     auto i = equipment_.find(s);
-    if (i == equipment_.end()) return false; // monster doesn't have this slot
-    if (i->second) return false; // already occupied
+    if (i == equipment_.end()) return equipResult::NO_SLOT; // monster doesn't have this slot
+    if (i->second) return equipResult::SLOT_FULL; // already occupied
   }
 
   onEquip(item, slots[0], slots[1]);
-  return true;
+  return equipResult::SUCCESS;
 }
 
-bool equippable::equip(item &item, const slotType slot) {
+equipResult equippable::equip(item &item, const slotType slot) {
   auto s = slotBy(slot);
   return equip(item, s);
 }
 
-bool equippable::equip(item &item, const slot *s) {
+equipResult equippable::equip(item &item, const slot *s) {
   auto i = equipment_.find(s);
-  if (i == equipment_.end()) return false; // monster doesn't have this slot
-  if (i->second) return false; // already occupied
+  if (i == equipment_.end()) return equipResult::NO_SLOT; // monster doesn't have this slot
+  if (i->second) return equipResult::SLOT_FULL; // already occupied
   onEquip(item, s, s);
-  return true;
+  return equipResult::SUCCESS;
 }
 
 void equippable::onEquip(item &item, const slot *s1, const slot *s2) {

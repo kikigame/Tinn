@@ -191,10 +191,17 @@ void player::equip() {
   
   if (sel) {
     auto rtn = sel->equip(*this);
-    if (rtn) return;
-    else if (sel->equippable() == item::equipType::wielded)
-      ios.message(L"This " + sel->name() + L" won't be your weapon");
-    else ios.message(L"This " + sel->name() + L" doesn't fit anywhere");
+    std::wstring hint;
+    switch (rtn) {
+    case equipResult::NO_SLOT: hint = L"You need more body parts.";
+      break;
+    case equipResult::SLOT_FULL: hint = L"Something's in the way";
+      break;
+    case equipResult::SUCCESS: return; // success
+    }
+    if (sel->equippable() == item::equipType::wielded)
+      ios.message(L"This " + sel->name() + L" won't be your weapon. " + hint);
+    else ios.message(L"This " + sel->name() + L" doesn't fit anywhere. " + hint);
   } else
     ios.message(L"Nothing to equip");
 

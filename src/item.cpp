@@ -25,8 +25,8 @@ itemHolder& item::holder() const {
   return map.forItem(*this);
 }
 
-bool item::equip(monster &) {
-  return false; // can't equip this item type by default
+equipResult item::equip(monster &) {
+  return equipResult::NO_SLOT; // can't equip this item type by default
 }
 void item::onUnequip(monster &) {
   // do nothing by default
