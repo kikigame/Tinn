@@ -501,7 +501,7 @@ public:
   pixie(monsterBuilder &b) :
     monster(b) {
     eachTick([this]{
-	if (dPc() <= 30) // ~ 1 every 5 moves
+	if (dPc() <= 10) // ~ 1 every 40 moves
 	  doAction();
       });
   }
