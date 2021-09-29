@@ -145,22 +145,39 @@ const attackResult monster::attack(monster &target) {
       return attackResult(injury(), L"failed");
     damage = target.injury().cur() - cur;
   } else {
+    // find the weapon:
+    weapon = findWeapon();
   
     // We hit (unless dodged) the target if D% < fighting, or always on a roll of 0.
     auto dHit = dPc();
     unsigned char f = fighting().cur();
-  
+
+    // magnetic things hit better. Don't worry too much about the logic of it.
+    if (dHit > 5 && weapon && weapon.value().hasAdjective(L"magnetic"))
+	dHit -=5;
+    
     if (dHit > f) return attackResult(injury(), L"miss");
 
-    // find the weapon:
-    weapon = findWeapon();
     damageType type = (weapon) ? weapon.value().weaponDamage(true) : unarmedDamageType();
     auto dt = damageRepo::instance()[type];
 
+    unsigned char damageBonus=0;
+
+    if (weapon && weapon.value().hasAdjective(L"sharp") && dt.type() == damageType::edged)
+      damageBonus += 5; // sharp things cut better
+    
+    // attacking with a weapon can clear various adjectives:
+    if (weapon && !weapon.value().isBlessed()) {
+      auto wa = weapon.value().adjectives();
+      if (weapon.value().hasAdjective(L"sharp") && dPc() < 20) weapon.value().removeAdjective(L"sharp"); 
+      if (weapon.value().hasAdjective(L"slippery") && dPc() < 20) weapon.value().removeAdjective(L"slippery");
+      if (weapon.value().hasAdjective(L"tuned") && dPc() < 20) weapon.value().removeAdjective(L"tuned");
+    }
+    
     // Now to see if the opponent dodged it...
     if (!isMutated(mutationType::GHOST) &&
 	target.isMutated(mutationType::GHOST) &&
-	(!weapon || !weapon.value().isBlessed()))
+	(!weapon || !weapon.value().isBlessed())) // only blessed weapons work against ghosts
       return attackResult(injury(), L"unaffected");
     unsigned char d = target.dodge().cur();
     if (dHit < d/2) {
@@ -169,7 +186,7 @@ const attackResult monster::attack(monster &target) {
     }
 
     // Now to see how much damage we did...
-    damage = target.wound(*this, strength_.cur(), dt);
+    damage = target.wound(*this, strength_.cur() + damageBonus, dt);
   }
   bool fatal = static_cast<unsigned char>(cur + damage) >= max;
   if (!fatal) {
@@ -670,6 +687,8 @@ bool monster::eat(item &item, bool force) {
   }
   if (bonus == ::bonus(true)) { weight *= 2; }
   if (bonus == ::bonus(false)) { weight *= 0.5; }
+  if (item.hasAdjective(L"salted")) weight += 5;
+  if (item.hasAdjective(L"peppered")) weight += 5;
   auto rtn = item.holder().destroyItem(item);
   // subtract from damage; can't go below 0: 
   damage_ -= (weight > 254.5) ? 255 : static_cast<unsigned char>(weight);
@@ -748,10 +767,37 @@ void monster::onEquip(item &item, const slot *s1, const slot *s2) {
   strength_.adjustBy(equippable::strBonus() - strBonus);
   appearance_.adjustBy(equippable::appBonus() - appBonus);
   dodge_.adjustBy(equippable::dodBonus() - dodBonus);
+
+  if (item.hasAdjective(L"slippery") && dPc() < 50) {
+    // too slippery to handle!
+    forceUnequip(item);
+    drop(item); // tries to drop the item. This may fail if the place we're staning can't contain it, but it would be too cruel to destroy the item eg in dreamspace just because it's slippery.
+  }
 }
 
 bool monster::unequip(item &item) {
+  // can't drop cursed items.
   if (item.isCursed()) return false;
+  // can't drop magnetic items if they are covering metallic items
+  if (item.hasAdjective(L"magnetic")) {
+    // find all immediately covered slots
+    auto itemSlots = equippable::slotsOf(item);
+    std::vector<const slot*> coveredImmediate;
+    if (itemSlots[0] != nullptr) {
+      auto c = itemSlots[0]->covered();
+      std::copy(c.begin(), c.end(), std::back_inserter<>(coveredImmediate));
+    }
+    if (itemSlots[1] != nullptr) {
+      auto c = itemSlots[1]->covered();
+      std::copy(c.begin(), c.end(), std::back_inserter<>(coveredImmediate));
+    }
+    // if any immediately covered slot contains a metal item, this will stick.
+    for (auto coveredSlot = coveredImmediate.begin(); coveredSlot != coveredImmediate.end(); ++coveredSlot) {
+      auto coveredItem = equippable::inSlot(*coveredSlot);
+      if (coveredItem && coveredItem.value().material() == materialType::metallic)
+	return false;
+    }
+  }
   // Calculate any previous bonuses
   const int strBonus = equippable::strBonus();
   const int appBonus = equippable::appBonus();
@@ -818,7 +864,7 @@ std::vector<std::wstring> monster::adjectives() const {
 }
 
 void monster::addDescriptor(std::wstring desc) {
-  if (std::find(extraAdjectives_.begin(), extraAdjectives_.end(), desc) != extraAdjectives_.end())
+  if (!hasAdjective(desc)) // even as a base adjective
     extraAdjectives_.push_back(desc);
 }
 

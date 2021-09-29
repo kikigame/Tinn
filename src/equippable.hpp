@@ -44,7 +44,8 @@ public:
   // returns true if this monster has this equipment slot and it is empty
   // returns false if this monster does not have this slot, or it is occupied.
   bool slotAvail(const slot * slot) const;
-  optionalRef<item> inSlot(slotType slot);
+  optionalRef<item> inSlot(const slot *);
+  optionalRef<item> inSlot(slotType slot); // convenience wrapper
   // returns the slot if equipped, nullptr otherwise:
   const std::array<const slot *, 2> slotsOf(const item &item) const;
   // forcably unequip an item, bypassing normal rules (eg for stealing a cursed item):

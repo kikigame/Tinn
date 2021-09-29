@@ -66,6 +66,8 @@ enum class itemTypeKey {
     dart, // 5% edged damage
     bolt, // 5% edged damage; 20% if crossbow equipped
     percussion_grenade, // 50% sound damage; single-shot
+    slipstone, // as rock, but if charged used to add "sharp" adj
+    lodestone, // as rock, but if charged used to add "metallic" adj
   /*
     heat_seaking, // 20% hot damage; seeks hot target
     cold_seaking, // 20% cold damage; seeks cold target
@@ -115,7 +117,7 @@ enum class itemTypeKey {
     stick,
 
   ////
-  // Bottles ('8' looks bottle-like to me. Unused in nethack.
+  // Bottles ('8' looks bottle-like to me. Unused in nethack, except for warnings.
   ////
     bottle,
 
@@ -132,8 +134,11 @@ enum class itemTypeKey {
   ////
     poke, // old word for large pocket, especially not sewn in. Also, a bag.
     napsack_of_consumption, // ref:Knightmare (TV show)
-  chaos_container, // does things to stuff put in it
-  //prism_box, // any enchantemnt/flag changes on the box propagate to the contents; splitting the waveform of magic
+    chaos_container, // does things to stuff put in it
+    //prism_box, // any enchantemnt/flag changes on the box propagate to the contents; splitting the waveform of magic
+    oil_can, // if charged, adds "slippery" adjective
+    salt_cellar, // if charged, adds "salted" or "cured" adjective
+    pepper_cellar,  // if charged, adds "peppered" adjective
 
   ////
   // Liquids ('~', the tail of a long worm in Nethack; don't know when we'd render this)
@@ -180,6 +185,9 @@ enum class itemTypeKey {
     bottling_kit, // for putting things into bottles
     portable_hole, // for moving through walls/floors or carrying things
     fruit_machine, // for gambling. Summons monsters. Dangerous.
+    repair_kit, // if charged, adds "repaired" adjective, and removes some damage
+    rag, // adds "polished" adjective
+    tuning_fork, // add "tuned" adjective (usable only if you can hear)
 
   ////
   // Instruments ('♪'; Nethack uses '(' for all tools)

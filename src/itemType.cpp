@@ -254,6 +254,23 @@ L"When firing a crossbow, it is very important to ensure that the bolts are\n"
 "Throwing these at a target is less effective than firing with a crossbow.",
 L"This looks fast."
 			     ));
+    emplace(itemTypeKey::slipstone,
+	    new itemTypeImpl(8, materialType::stony, L'¬', L"slipstone",
+L"There are two main types of whetstone: the oilstone, and the waterstone.\n"
+"Both can be used quite effectively to maintain a sharp edge on weapons and\n"
+"tools. A sharper edge is safer, and cuts deeper for the same effort.",
+L"This stone is all slippery."
+			     ));
+    emplace(itemTypeKey::lodestone,
+	    new itemTypeImpl(16, materialType::stony, L'¬', L"lodestone", // twice as heavy as a rock; ref:nethack's debilitating autocursing useless loadstone.
+L"Magnetite is a naturally occurring mineral that gave the first clues about\n"
+"the electromagnetic field. If a piece of magnetite has a flux density in\n"
+"excess of 250 gauss, it may be categorised as a lodestone. This is caused\n"
+"by impurities, including maghemite, and they are usually magnetised by\n"
+"lightning. Magnetic weapons can be more accurate, but can also stick to\n"
+"metal gauntlets.",
+L"Woah - heavy, man."
+			     ));
     emplace(itemTypeKey::percussion_grenade, // 236g, based on M84 Stun grenade
 	    new itemTypeImpl(0.23143694067587804, materialType::metallic, L'¬', L"concussion grenade",
 L"This G60 Stun Grenade is an incremental development of the Thunderflash\n"
@@ -536,6 +553,28 @@ L"A leathery thing with buckles, like a harness."
 L"This object has a magical effect on items placed inside it.",
 L"A boxy looking bag with spots on the side" // ref: die(eg D6 with spots)
 			     ));
+    emplace(itemTypeKey::oil_can,
+	    new itemTypeImpl(1.18155887000414, materialType::metallic, L'=', L"can of oil",// 100ml can of 3-in-1 weights 4 1/4" ounces on my kitchen scales when full
+L"Protects, lubricates and prevents rust. Always wipe down after use; may\n"
+L" become slippery.",
+L"You've a very primal urging not to drink this; the container feels greasy."
+			     ));
+    emplace(itemTypeKey::salt_cellar,
+	    new itemTypeImpl(0.27801385176568, materialType::stony, L'=', L"cellar of salt",// 1oz
+L"Table salt is a compound of sodium and chlorine, each a deadly poison, and\n"
+L"is very effective as a preservative of food. This ionic chemical is easily\n"
+L"extracted from common sea water, either directly through evaporation or by\n"
+L"mining of ancient deposits, among other sources. It's even used as currency.",
+L"That's not peppery at all!"
+			     ));
+    emplace(itemTypeKey::pepper_cellar,
+	    new itemTypeImpl(0.27801385176568, materialType::stony, L'=', L"cellar of pepper",// 1oz
+L"The drupe of Piper nigrum are harvested while still green and unripe, then\n"
+L"cooked briefly in hot water before drying for several days to form black\n"
+L"peppercorns, best ground immediately before use to retain both the heat and\n"
+L"flavour. A valuable spice, used as a flavouring.",
+L"That's not salty at all!"
+			     ));
     emplace(itemTypeKey::water,
 	    new itemTypeImpl(2.31585538520766, materialType::liquid, L'~', L"water",  // half a pint
 L"Above the ignition point, hydrogen explodes in the presence of oxygen; four\n"
@@ -802,6 +841,28 @@ L"The original slot machine was invented by Charles Fey around the turn of\n"
 "Gambling may seriously damage your wealth, and the noise often attracts\n"
 "unwanted attention. Take my advice: just don't.",
 L"Some sort of dispenser; only a part of a properly balanced diet."
+			     ));
+    emplace(itemTypeKey::repair_kit,
+	    new itemTypeImpl(4.44822162825088, materialType::waxy, L'(', L"Repair kit", // 1 pound feels about right?
+L"Make do and mend with this handy toolset. Allows reperation of most forms\n"
+L"of damage. Be warned that mended items can still break, and repairs are not\n"
+L"always easy to redo.",
+L"This looks useful for bicycle punctures."
+			     ));
+    emplace(itemTypeKey::rag,
+	    new itemTypeImpl(0.25, materialType::clothy, L'(', L"Rag", // could vary, but 1/4 oz feels okay
+L"A piece of fabric torn out of a larger piece; nonetheless, the humble rag\n"
+L"has many uses, from a makeshift towel, to the best applicator for varnish\n"
+L"and polish, and the ideal tool for buffing a perfect shine.",
+L"This tee shirt has no arms! And no back! And no neck hole!"
+			     ));
+    emplace(itemTypeKey::tuning_fork, // 136.1hz Tuning Fork by Omnivos weight "under 4oz", so just under 1.12N
+	    new itemTypeImpl(1.1, materialType::metallic, L'(', L"Tuning fork",
+L"This fork is carefully tuned to a resonant frequency of 261.62 cycles per\n"
+L"second - also known as \"Middle C\" - long standardised as the base note\n"
+L"to which all instruments can be tuned, either directly or through harmonic\n"
+L"resonance.h",
+L"Sounds like I just need a knife, then I can eat dinner!"
 			     ));
     emplace(itemTypeKey::theremin,
 	    // http://www.thereminworld.com/Forums/T/27511/rca-cabinet-theremin-weight says 90lb

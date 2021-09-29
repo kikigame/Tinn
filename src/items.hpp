@@ -82,7 +82,8 @@ public:
   // if use == true, consume any weapon charges or any other on-hit actions (called on successful hit)
   virtual damageType weaponDamage(bool use) = 0;
   // how much damage has this item taken?
-  virtual int damageOfType(const damageType &type) const = 0; 
+  virtual int damageOfType(const damageType &type) const = 0;
+  bool hasDamageOfAnyType() const;
   // list of all adjectives applicable to type
   virtual std::vector<std::wstring> adjectives() const = 0;
   // damage the item in some way (return false only if no effect)
@@ -148,6 +149,9 @@ public:
   // callback to identify when an item has been added to a holder.
   virtual void onAdd(itemHolder &holder) const {}
 
+  // item adjectives are mutatable:
+  virtual void addAdjective(const wchar_t * const) = 0;
+  virtual void removeAdjective(const wchar_t * const) = 0;
 };
 
 // utility to get the level the item is on, navigating containers
@@ -167,6 +171,7 @@ private:
   std::set<damageType> proof_;
   std::bitset<NUM_FLAGS> flags_;
   int enchantment_;
+  std::set<const wchar_t*> adjectives_; // expected to be short and usually empty
 protected:
   mutable std::wstring buffer_; // for transient returns.
   const itemType& type_;
@@ -185,6 +190,8 @@ public:
   virtual damageType weaponDamage(bool use);
   virtual int damageOfType(const damageType &type) const;
   virtual std::vector<std::wstring> adjectives() const;
+  virtual void addAdjective(const wchar_t * const);
+  virtual void removeAdjective(const wchar_t * const);
   virtual bool strike(const damageType &type);
   virtual void forceDamageOnly(const damageType &type, unsigned char d);
   virtual bool repair(const damageType &type);

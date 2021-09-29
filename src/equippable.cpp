@@ -89,7 +89,10 @@ bool equippable::slotAvail(const slot *s) const {
   return equipment_.find(s) != equipment_.end();
 }
 optionalRef<item> equippable::inSlot(slotType slot) {
-  auto it = equipment_.find(slotBy(slot));
+  return inSlot(slotBy(slot));
+}
+optionalRef<item> equippable::inSlot(const slot* pSlot) {
+  auto it = equipment_.find(pSlot);
   if (it == equipment_.end()) return optionalRef<item>();
   return optionalRef<item>(it->second);
 }
@@ -234,7 +237,9 @@ int equippable::appBonus() const {
 	&& !cs.isCovered(equipment_, i.first)) {// is it covered?
       auto &item = i.second;
       rtn += item.value().enchantment();
-      if (item.value().isSexy()) ++rtn;
+      // the "Polished" keyword acts as sexy, but doesn't commute. Only blessed sexy items get an appearence bonus, not merely polished.
+      if (item.value().hasAdjective(L"polished")) ++rtn;
+      else if (item.value().isSexy()) ++rtn;
       if (item.value().isSexy() && item.value().isBlessed()) ++rtn;
       // NB: tshirts get sexy bonuses for being torn or wet (double if blessed).
       // the tshirt bonus is easy to get, but not that useful as it will generally be covered.

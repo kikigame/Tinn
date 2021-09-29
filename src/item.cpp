@@ -102,6 +102,7 @@ int basicItem::damageOfType(const damageType &type) const {
 // list of all adjectives applicable to type
 std::vector<std::wstring> basicItem::adjectives() const {
   std::vector<std::wstring> rtn;
+  std::copy(adjectives_.begin(), adjectives_.end(), std::back_inserter(rtn)); // must always return these as they have in-game effects
   if (isUnidentified())
     return rtn;
   if (type_ == itemTypeRepo::instance()[itemTypeKey::spring_water])
@@ -112,7 +113,8 @@ std::vector<std::wstring> basicItem::adjectives() const {
   auto &dr = damageRepo::instance();
   auto m = type_.material();
   for (auto dt : allDamageTypes) {
-    if (isProof(dt)) {
+    auto i = proof_.find(dt);
+    if (i != proof_.end()) {
       // adjective for being (this material) being proof to this damage type:
       auto ptr = dr[dt].proofAdj(m);
       if (ptr != nullptr)
@@ -128,6 +130,13 @@ std::vector<std::wstring> basicItem::adjectives() const {
     if (d >= 4) rtn.push_back(std::wstring(L"thoroughly ") + adj);
   }
   return rtn;
+}
+void basicItem::addAdjective(const wchar_t* const adj) {
+  adjectives_.erase(adj);
+  adjectives_.insert(adj);
+}
+void basicItem::removeAdjective(const wchar_t* const adj) {
+  adjectives_.erase(adj);
 }
 
 // damage the item in some way (return false only if no effect)
@@ -170,7 +179,12 @@ bool basicItem::proof(const damageType &type) {
 // are we fooproof?
 bool basicItem::isProof(const damageType &type) const {
   auto i = proof_.find(type);
-  return i != proof_.end();
+  if (i != proof_.end()) return true;
+  // special: leathery materials can be cured to prevent rotting damage
+  if (type == damageType::wet && material() == materialType::leathery) {
+    if (hasAdjective(L"cured")) return true; // in this game, cured things don't rot
+  }
+  return false;
 }
 
 // access flags:

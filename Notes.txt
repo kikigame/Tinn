@@ -751,6 +751,37 @@ Lightning: Electro pop (assuming this is difficult to generate, this could besto
   * Mystery box: uses charges; produces a random object for each charge. May be an IOU if cursed. Produced objects match BCU. (This seems similar to a horn of plenty or other Nethack producer ojebct).
   * Grab bag: quietly acquires other things from its container. Can't remove when cursed. Spawns with random contents.
 
+* Stimpacks and medikits (ref: Doom by ID Software). Stimpacks increase your speed by 1 unit for dPc()/10 turns, during which time you take 1% injury per turn. Medikits work the other way around (but for dPc() turns). Stimpacks represent a trap: unwary Doom players will think they are a lesser form of medikit, whereas stimulants do not increase your health. Meanwhile, Nethack players will see + as a book. NB: if this were implemented as a use-1-time-in-N zone, we could extend it easily to natural health spas etc.
+
+* Vase. To contain flowers or a bouquet, 1xliquid (water), or gems (Hansel & Gretel find a vase full of gems after slaying the witch).
+  - the vase makes a single-use bashing weapon (smashing) to do 10% bashing damage plus damage based on its liquid contents (flower contents left on target's square).
+  - vase doubles the value of its contents when selling
+  - Ming dynasty vase were decorated porcelain.
+  - Blessed vases worth significantly more and do double damage as a weapon.
+  - Cursed vases bounce as a weapon (doing 1% bashing damage only) and have a 50% chance of killing their flowers when cursed or flowers inserted.
+
+* seeking missiles. Act as transport, until they hit their target, then do damage and splash damage.
+  - each missile seeks out a particular monster type, and uses the transport algorithm to find that type (excluding player).
+  - cursed: seeks opposite type. Starts seeking player after N turns.
+  - blessed: seeks out category (heat-seaking, cold-seeking, etc).
+  - currently, transport works by alignment. Possibly ask the user for the alignment to use?
+
+* Nethack has a wand of probing, which provides some information about a monster, container, etc. Limited charges (and the cost of recharging) make it difficult to use. Nethack also has a stethascope, which provides some information about adjacent monsters if you can hear.
+  - we could use some way to study items/monsters etc. Takes time, but reveals alignment, sayings and other things.
+
+* Nethack has the can of grease, which effectively adds the "greased" keyword to an item that doesn't have it, consuming charges. This keyword has various in-game effects that tend to prevent damage to items. A potion of (un-)holy water acts to add the blessed (cursed) adjective, which also has effects. So far, all items in Tinn have a collection of adjectives that isn't much used. A new itemtype could add adjectives based on codewords, with various kinds of damage (or other effects) having a percentage chance to remove the codeword. Cursed removes instead; blessed&cursed works 50/50; blessed alone has 10% chance of conveying blessed adj. Possible items/adjectives/affected-types:
+ - flatstone/sharp/edged (+5 to damage, chance of loss each hit)
+ - loadstone/magnetic/metal (use item to disarm enemy's weapon from next square, use to move towards nearest space station)
+ - oil can/slippery/!liquid (chance of dropping when wielded/worn; only 50/50 if blessed)
+ - repair kit/repaired/any (removes 1 level of any damage when applied, but also reduces shop value; blessed has 50% chance of working if the adjective is already set)
+ - salt cellar/salted/fleshy or stony (+5% health when eaten, protects against rotting damage)
+ - pepper cellar/peppered/fleshy (+5% health when eaten; pepper should also be usable as a debilitating weapen by & against breathing creatures (TODO))
+ - salt cellar/tanned/leathery (fixed & protects against rotting damage; tanning technically has more steps, cost 10 salts)
+ - rag/polished/glassy,waxy,wood,metallic (increase shop value, acts as "sexy" when wielded outer layer, non-commutable with "sexy")
+ - tuning fork/tuned/instruments (increase effectiveness & shop value)
+ (maybe "salted" and "peppered" should became "seasoned" for meat/veg items?)
+
+
 Character Class ideas
 ---------------------
 * Something akin to wizards; you would never see "8" of them but only "7+1"

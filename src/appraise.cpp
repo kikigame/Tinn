@@ -83,6 +83,9 @@ double appraise(const monster &monster, const item &thing, transaction t) {
     // tools - utility value
   case L'(': value *= 2; break;
   }
+  if (thing.hasAdjective(L"repaired")) value *=0.3;
+  if (thing.hasAdjective(L"polished")) value *=1.5;
+  if (thing.hasAdjective(L"tuned")) value *=1.5; // instruments
   if (thing.isBlessed()) value *= 2;
   if (thing.isCursed()) value *= 0.5;
   if (thing.isUnidentified()) value *= 0.9;

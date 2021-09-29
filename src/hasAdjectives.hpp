@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <string>
+#include <algorithm>
 
 /*
  * pure base class for things that supply adjectives.
@@ -15,11 +16,14 @@
  * monsters have adjectives, due to magical effects or perhaps as a special ability in future.
  * corpses are items made from monsters; they keep their monstrous adjectives.
  *
- * This is all so a glittery vampire can become a glittery corpse; it has no other function. Yet.
  */
 class hasAdjectives {
 public:
   virtual std::vector<std::wstring> adjectives() const = 0;
+  bool hasAdjective(const std::wstring &adj) const {
+    auto a = adjectives();
+    return std::find(a.begin(), a.end(), adj) != a.end();
+  }
   virtual ~hasAdjectives() {}
 };
 

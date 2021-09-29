@@ -334,9 +334,8 @@ public:
       }
     }
     // - "there's glitter everywhere". Add glittery adjective to monster/corpse.
-    auto adj = target.adjectives();
     const auto gl = L"glittery";
-    if (std::find(adj.begin(), adj.end(), gl) == adj.end()) {
+    if (target.hasAdjective(gl)) {
       io.longMsg(L"there's glitter everywhere!");
       source.addDescriptor(gl);
       target.addDescriptor(gl);

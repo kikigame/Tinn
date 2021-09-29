@@ -24,6 +24,14 @@ item & createItem();
 
 void playSlots(monster &p, bool blessed, bool cursed); // fruit.cpp
 
+bool item::hasDamageOfAnyType() const {
+  auto e = damageRepo::instance().end();
+  for (auto d = damageRepo::instance().begin(); d != e; ++d)
+    if (damageOfType(d->first) > 0)
+      return true;
+  return false;
+}
+
 // mixin class for things that apply  an action when equipped / unequipped
 // everything where you can equip an item should extend this
 class onEquipMixin : virtual public shared_item {
@@ -180,29 +188,31 @@ std::wstring basicItem::typeDescription() const {
 
 /*
  * Mixin for items that can be used with other items
+ *
+ * Subclasses must override use(item&) to call use(str,str,str,holder,fn)
  */
 class useWithMixin : public virtual shared_item {
 public:
-  virtual bool use(const std::wstring &withName,
-		   const std::wstring &action,
+  virtual bool use(const std::wstring &action,
 		   const std::wstring &preposition,
-		   itemHolder &itemHolder) {
+		   itemHolder &itemHolder,
+		   const std::function<bool(const item &)> filter=[](const item &){return true;}) {
     std::function<void(item&, std::wstring)> f = 
-      [this,&withName,&action,&preposition](item &i, std::wstring name){
-      if (dynamic_cast<useWithMixin*>(&i) == this) return; // can't use an item with itself
-      auto &ios = ioFactory::instance();
-      if (ios.ynPrompt(action + name + L" "+ preposition +L" your " + withName + L"?"))
-	if (use(i) == item::useResult::FAIL)
-	  ios.message(L"That doesn't seem to work.");
+      [this,&action,&preposition,&filter](item &i, std::wstring name){
+	auto with = shared_from_this();
+	if (i.shared_from_this() == with) return; // can't use an item with itself
+	auto &ios = ioFactory::instance();
+	// TODO: itemholder.pickItem instead
+	if (filter(i) && ios.ynPrompt(action + name + L" "+ preposition +L" your " + with->name() + L"?"))
+	  if (use(i) == item::useResult::FAIL)
+	    ios.message(L"That doesn't seem to work.");
     };
     itemHolder.forEachItem(f);
     return true;
   }
 
   // try to use the object with another (eg put object into container; put candles on candlestick)
-  virtual item::useResult use(item &other) {
-    return item::useResult::FAIL; // no effect by default
-  }
+  virtual item::useResult use(item &other) = 0;
 };
 
 /*
@@ -233,6 +243,67 @@ public:
   }
 };
 
+
+// mixin class for things that add adjectives to other items
+// when used with them
+// prep is "with", "on" etc.
+template<int ChargeCost>
+class onUseAddAdjectiveMixin : public virtual shared_item, public useWithMixin {
+private:
+  const wchar_t* adj_; const wchar_t* verb_; const wchar_t* prep_;
+  const std::function<bool(const item &)> f_;
+public:
+  onUseAddAdjectiveMixin(const wchar_t* adj, const wchar_t* verb, const wchar_t* prep,
+			 const std::function<bool(const item &)> f=[](const item &){return true;}) :
+    useWithMixin(),
+    adj_(adj), verb_(verb), prep_(prep), f_([f,this](const item &i){ if (!f(i)) return false;
+	auto a = i.adjectives();
+	auto t = shared_from_this();
+	return t->enchantment() >= ChargeCost || t->enchantment() <= -ChargeCost;}) {
+  }
+  virtual ~onUseAddAdjectiveMixin() {}
+  virtual item::useResult use() {
+    auto t = shared_from_this();
+    return useWithMixin::use(verb_, prep_, t->holder(), f_) ?
+            item::useResult::SUCCESS : item::useResult::FAIL;
+  }
+  // try to apply the adjective
+  virtual item::useResult use(item &other) {
+    auto t = shared_from_this();
+    auto enchantment = t->enchantment();
+    if (ChargeCost>0 && enchantment==0) return item::useResult::FAIL;
+    t->enchant(-ChargeCost); // use a charge
+    auto bcu = t->bcu();
+    bool hasAdj = other.hasAdjective(adj_);
+    hasAdj &= denyIfAlreadySet();
+    // if the enchantment is negative, negate the bcu and treat as positive
+    if (enchantment < 0) {
+      bcu = !bcu;
+      enchantment = !enchantment;
+    }
+    if (!bcu.cursed() && !hasAdj) {
+      other.addAdjective(adj_);
+      onAddAdjective(other);
+      if (t->isBlessed() && dPc() < 20) other.bless(true);
+      
+      return item::useResult::SUCCESS;
+    }
+    if (bcu.cursed() && bcu.blessed() && dPc() < 51) {
+      other.addAdjective(adj_);
+      onAddAdjective(other);
+      return item::useResult::SUCCESS;
+    } else if (bcu.cursed()) {
+      other.removeAdjective(adj_);
+      onRemoveAdjective(other);
+      return item::useResult::SUCCESS;
+    }
+    return item::useResult::FAIL;
+  }
+  virtual bool denyIfAlreadySet() const { return true; }
+  virtual void onAddAdjective(item &other) const {};
+  virtual void onRemoveAdjective(item &other) const {};
+    
+};
 
 
 unsigned int coverDepth(const slot * sl) {
@@ -810,8 +881,8 @@ public:
   virtual item::useResult use() {
     const std::wstring name(basicItem::name());
     bool success = true;
-    success &=useWithMixin::use(name, L"Put ", L"into", holder()); // calls use(item) as needed
-    return success && useWithMixin::use(name, L"Take ", L"from", *this) ? // calls use(item) as needed
+    success &=useWithMixin::use(L"Put ", L"into", holder()); // calls use(item) as needed
+    return success && useWithMixin::use(L"Take ", L"from", *this) ? // calls use(item) as needed
       item::useResult::SUCCESS : item::useResult::FAIL;
   }
   // put into or take out of bag:
@@ -1102,7 +1173,7 @@ public:
   virtual item::useResult use() {
     if (!usable()) return item::useResult::FAIL;
     const std::wstring name(basicItem::name());
-    return useWithMixin::use(name, L"Put ", L"into", holder()) ? // calls use(item) as needed
+    return useWithMixin::use(L"Put ", L"into", holder()) ? // calls use(item) as needed
       item::useResult::SUCCESS : item::useResult::FAIL;
   }
   virtual item::useResult use(item & other) {
@@ -1792,6 +1863,74 @@ public:
 };
 
 
+template<int ChargeCost>
+class basicAdjectiveModItem : virtual public basicItem, virtual public onUseAddAdjectiveMixin<ChargeCost> {
+public:
+  basicAdjectiveModItem(const itemType& type, const wchar_t* adj, const wchar_t* verb, const wchar_t* prep, const materialType &mat)
+    : basicItem(type),
+      onUseAddAdjectiveMixin<ChargeCost>(adj,verb,prep,[&mat](const item &i){return i.material() == mat;}) {
+    basicItem::enchant(20); // we shouldn't start with 0, so plucked out of the air
+  }
+  basicAdjectiveModItem(const itemType& type, const wchar_t* adj, const wchar_t* verb, const wchar_t* prep,
+			const std::function<bool(const item &)> f)
+    : basicItem(type),
+      onUseAddAdjectiveMixin<ChargeCost>(adj,verb,prep,f) {
+    basicItem::enchant(20); // we shouldn't start with 0, so plucked out of the air
+  }
+  virtual ~basicAdjectiveModItem() {}
+};
+
+class tanner : public onUseAddAdjectiveMixin<10> {
+public:
+  tanner(const wchar_t* adj, const wchar_t* verb, const wchar_t* prep,
+	 const std::function<bool(const item &)> f) :
+    onUseAddAdjectiveMixin<10>(adj, verb, prep, f) {}
+  virtual ~tanner() {}
+  virtual void onAddAdjective(item &other) const {
+    for (auto i = 0; i < 10 && other.repair(damageType::wet); ++i);
+  }
+};
+
+// overrides so that salting leather costs 5
+class saltCellar : public basicItem, private onUseAddAdjectiveMixin<1>, private tanner {
+public:
+  saltCellar(const itemType &type) :
+    basicItem(type),
+    onUseAddAdjectiveMixin<1>(L"salted",L"Season ",L"from", [](const item &i) { return i.material() == materialType::veggy || i.material() == materialType::fleshy || i.material() == materialType::stony;}),
+    tanner(L"tanned",L"Cure ",L"using", [](const item &i) { return i.material() == materialType::leathery; }) {
+      basicItem::enchant(20); // we shouldn't start with 0, so plucked out of the air
+  }
+  virtual ~saltCellar() {}
+  virtual item::useResult use() {
+    return
+      onUseAddAdjectiveMixin<1>::use() == item::useResult::SUCCESS ? item::useResult::SUCCESS :
+      tanner::use();
+  }
+  virtual item::useResult use(item &other) {
+    if (other.material() == materialType::leathery)
+      return tanner::use(other);
+    else
+      return onUseAddAdjectiveMixin<1>::use(other);
+  }
+};
+
+class repairKit : public basicItem, public onUseAddAdjectiveMixin<5> {
+public:
+  repairKit(const itemType & type) :
+    basicItem(type),
+    onUseAddAdjectiveMixin<5>(L"repaired",L"Fix ",L"using",[](const item &i) { return i.hasDamageOfAnyType(); } ) {
+    basicItem::enchant(20); // we shouldn't start with 0, so plucked out of the air
+  }
+  virtual ~repairKit() {}
+  // blessed repair kits may set the adjective even if it's already set, resulting in further reparation of damage
+  virtual bool denyIfAlreadySet() {
+    auto t = shared_from_this();
+    if (t->isBlessed()) return dPc() < 50;
+    return true;
+  }
+};
+
+
 level &curLevel(itemHolder &h) {
   auto m = dynamic_cast<monster*>(&h);
   if (m) return m->curLevel();
@@ -1895,6 +2034,16 @@ template <> struct itemTypeTraits<itemTypeKey::percussion_grenade> {
   typedef thrownWeapon<true, true, 50> type;
   template<typename type>
   static item *make(const itemType &t) { return new type(t, damageType::sonic); } // TODO; grenade launcher?
+};
+template <> struct itemTypeTraits<itemTypeKey::slipstone> {
+  typedef basicAdjectiveModItem<1> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, L"sharp",L"whet ", L"with ", materialType::metallic); } // TODO: all edged weapons, if we can identify these?
+};
+template <> struct itemTypeTraits<itemTypeKey::lodestone> {
+  typedef basicAdjectiveModItem<1> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, L"magnetic",L"magnetise ", L"with ", materialType::metallic); }
 };
 template <> struct itemTypeTraits<itemTypeKey::bolt> {
   typedef thrownWeapon<false, true, 20> type;
@@ -2076,6 +2225,21 @@ template <> struct itemTypeTraits<itemTypeKey::chaos_container> {
   template <typename type>
   static item *make(const itemType &t) { return new type(t); }
 };
+template <> struct itemTypeTraits<itemTypeKey::oil_can> {
+  typedef basicAdjectiveModItem<1> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, L"slippery", L"Lubricate ",L"from ", [](const item &i) { return i.material() != materialType::liquid;});}
+};
+template <> struct itemTypeTraits<itemTypeKey::salt_cellar> {
+  typedef saltCellar type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t); }
+};
+template <> struct itemTypeTraits<itemTypeKey::pepper_cellar> {
+  typedef basicAdjectiveModItem<1> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, L"peppered",L"Season ",L"from ", [](const item &i) { return i.material() == materialType::veggy || i.material() == materialType::fleshy;});}
+};
 template <> struct itemTypeTraits<itemTypeKey::water> {
   typedef basicItem type;
   template<typename type>
@@ -2225,6 +2389,21 @@ template <> struct itemTypeTraits<itemTypeKey::fruit_machine> {
   typedef fruitMachine type;
   template <typename type>
   static item *make(const itemType &t) { return new type(t); }
+};
+template <> struct itemTypeTraits<itemTypeKey::repair_kit> {
+  typedef repairKit type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t); }
+};
+template <> struct itemTypeTraits<itemTypeKey::rag> {
+  typedef basicAdjectiveModItem<0> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, L"polished",L"Rub ",L"with ", [](const item &i) { return i.material() == materialType::glassy || i.material() == materialType::waxy || i.material() == materialType::woody || i.material() == materialType::metallic;});};
+};
+template <> struct itemTypeTraits<itemTypeKey::tuning_fork> {
+  typedef basicAdjectiveModItem<0> type;
+  template<typename type>
+  static item *make(const itemType &t) { return new type(t, L"tuned",L"Tune ",L"with ", [](const item &i) {return i.render() == L'♪';}); }
 };
 template <> struct itemTypeTraits<itemTypeKey::theremin> {
   typedef instrument type;
@@ -2383,8 +2562,9 @@ template<questItemType it>
 class basicQuestItem : public item, virtual public shared_item {
 private:
   typedef questItemTypeTraits<it> traits;
+  std::vector<std::wstring> adjectives_;
 public:
-  basicQuestItem() {}
+  basicQuestItem() : adjectives_(){}
   basicQuestItem(const basicQuestItem &) = delete;
   basicQuestItem(basicQuestItem &&) = delete;
   //quest items should be highlighted:
@@ -2408,7 +2588,15 @@ public:
     return traits::weaponDamage_;
   }
   virtual std::vector<std::wstring> adjectives() const {
-    return std::vector<std::wstring>(); // by default
+    return adjectives_;
+  }
+  virtual void addAdjective(const wchar_t * const adj) {
+    removeAdjective(adj);
+    adjectives_.push_back(adj);
+  }
+  virtual void removeAdjective(const wchar_t * const adj) {
+    auto e = adjectives_.end();
+    adjectives_.erase(std::remove(adjectives_.begin(), e, adj), e);
   }
   // indestructibility:
   virtual bool strike(const damageType &) { return false; }
@@ -2649,6 +2837,8 @@ item &createItem(const itemTypeKey &key) {
   case itemTypeKey::throwstick: return createItem<itemTypeKey::throwstick>();
   case itemTypeKey::dart: return createItem<itemTypeKey::dart>();
   case itemTypeKey::percussion_grenade: return createItem<itemTypeKey::percussion_grenade>();
+  case itemTypeKey::slipstone: return createItem<itemTypeKey::slipstone>();
+  case itemTypeKey::lodestone: return createItem<itemTypeKey::lodestone>();
   case itemTypeKey::bolt: return createItem<itemTypeKey::bolt>();
   case itemTypeKey::sling: return createItem<itemTypeKey::sling>();
   case itemTypeKey::crossbow: return createItem<itemTypeKey::crossbow>();    
@@ -2686,6 +2876,9 @@ item &createItem(const itemTypeKey &key) {
   case itemTypeKey::poke: return createItem<itemTypeKey::poke>();
   case itemTypeKey::napsack_of_consumption: return createItem<itemTypeKey::napsack_of_consumption>();
   case itemTypeKey::chaos_container: return createItem<itemTypeKey::chaos_container>();
+  case itemTypeKey::oil_can: return createItem<itemTypeKey::oil_can>();
+  case itemTypeKey::salt_cellar: return createItem<itemTypeKey::salt_cellar>();
+  case itemTypeKey::pepper_cellar: return createItem<itemTypeKey::pepper_cellar>();
   case itemTypeKey::water: return createItem<itemTypeKey::water>();
   case itemTypeKey::tears: return createItem<itemTypeKey::tears>();
   case itemTypeKey::heavy_water: return createItem<itemTypeKey::heavy_water>();
@@ -2716,6 +2909,9 @@ item &createItem(const itemTypeKey &key) {
   case itemTypeKey::bottling_kit: return createItem<itemTypeKey::bottling_kit>();
   case itemTypeKey::portable_hole: return createItem<itemTypeKey::portable_hole>();
   case itemTypeKey::fruit_machine: return createItem<itemTypeKey::fruit_machine>();
+  case itemTypeKey::repair_kit: return createItem<itemTypeKey::repair_kit>();
+  case itemTypeKey::rag: return createItem<itemTypeKey::rag>();
+  case itemTypeKey::tuning_fork: return createItem<itemTypeKey::tuning_fork>();
   case itemTypeKey::theremin: return createItem<itemTypeKey::theremin>();
   case itemTypeKey::visi_sonor: return createItem<itemTypeKey::visi_sonor>();
   case itemTypeKey::baliset: return createItem<itemTypeKey::baliset>();

@@ -17,6 +17,9 @@ public:
   bcu(const bcu &) = default;
   bool blessed() const { return blessed_; }
   bool cursed() const { return cursed_; }
+  bcu operator !() const {
+    return bcu(!blessed_, !cursed_);
+  }
 };
 
 #endif //ndef BEITUDE_HPP
