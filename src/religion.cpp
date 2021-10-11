@@ -188,6 +188,14 @@ public:
     if (set(alignByDomination_, d.domination(), advance) != advance) return;
     alignByOutlook_[static_cast<size_t>(d.outlook())] = advance;
   }
+  // player's divinity score: how much do the gods like them (from 0 to 100)
+  unsigned char divinity() const {
+    return static_cast<unsigned char>(alignByElement_.count() // 6 options 
+				      + alignByDomination_.count() // 2 options
+				      + alignByOutlook_.count() // 2 options
+				      ) * 10;
+  }
+
 };
 
 std::unique_ptr<deityRepo> deityRepo::instance_;
@@ -204,6 +212,10 @@ std::vector<deity>::iterator deityRepo::end() {
 
 void deityRepo::close() {
   instance_.reset(NULL);
+}
+
+unsigned char deityRepo::divinity() const {
+  return pImpl_->divinity();
 }
 
 //#include <iostream>

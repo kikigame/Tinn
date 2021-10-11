@@ -112,6 +112,9 @@ public:
 
   unsigned char alignCounter(const deity &) const;
   void countAlign(const deity&, bool advance);
+
+  // player's divinity score: how much do the gods like them (from 0 to 100)
+  unsigned char divinity() const;
 };
 
 // used for religious items
