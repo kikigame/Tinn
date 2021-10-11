@@ -945,26 +945,25 @@ public:
   virtual bool buffs() const { return true; }
 };
 
+template <bool set>
 class intrinsicsBoolAction : public renderedAction<item, monster> {
   typedef void (monsterAbilities::*methodType)(const bool);
 private:
   const methodType method_;
-  const bool set_;
 public:
   intrinsicsBoolAction(methodType method,
-			const bool &set,
 			const wchar_t * const name, const wchar_t * const description) :
     renderedAction(name, description),
-    method_(method), set_(set) {}
+    method_(method) {}
   virtual ~intrinsicsBoolAction() {}
   virtual bool operator ()(const bcu &bcu, item &source, monster &target) {
     auto able = target.abilities();
-    ((*able).*method_)(set_);
+    ((*able).*method_)(set);
     return true;
   }
   bool undo(const bcu &bcu, item &source, monster &target) {
     auto able = target.abilities();
-    ((*able).*method_)(!set_);
+    ((*able).*method_)(!set);
     return true;
   }
   virtual bool aggressive() const { return false; }
@@ -1256,12 +1255,12 @@ L"A tesseract is a 4-dimensional polytype bound by eight cubes, also known as\n"
 L"Bestows the ability to walk through fire.\n"
 "Passive fiery terrain will not hurt you."));
     rtn[action::key::hearing] = std::unique_ptr<action>
-      (new intrinsicsBoolAction(&monsterAbilities::hear, true,
+      (new intrinsicsBoolAction<true>(&monsterAbilities::hear,
 			   L"Hearing",
 L"Bestows the ability to detect airborne vibrations, often conveying\n"
 "information"));
     rtn[action::key::sight] = std::unique_ptr<action>
-      (new intrinsicsBoolAction(&monsterAbilities::see, true,
+      (new intrinsicsBoolAction<true>(&monsterAbilities::see,
 			   L"Sight",
 L"Bestows the ability to detect waves or particles of electromagnetic\n"
 "radiation, often conveying information"));
@@ -1269,7 +1268,7 @@ L"Bestows the ability to detect waves or particles of electromagnetic\n"
       (new swimAction(L"Swimming",
 L"Bestows the ability to move through water."));
     rtn[action::key::flight] = std::unique_ptr<action>
-      (new intrinsicsBoolAction(&monsterAbilities::fly, true,
+      (new intrinsicsBoolAction<true>(&monsterAbilities::fly,
 			   L"Flying",
 L"Bestows the ability to move through the air, ignoring unexpected changes in\n"
 "floor level."));
