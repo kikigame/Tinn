@@ -15,8 +15,14 @@ enum class bonusType {
   eatVeggie, // double benefit from eating veggies
     dblAttack, // TODO
     speedy, // 1 slot on speed
-    hearing, // TODO
-    seeing, // TODO
+    hearing, // hear messages even if deafened
+    seeing, // see things even if blinded
+    touch, // can feel things if not wearing gloves (for future use)
+    taste, // taste messages (for future use)
+    smell, // warn of foul odours; affected by gasses (for future use)
+    sixth, // inherently receive divine/divination messages (for future use)
+    tele, // telepathic; sense thoughts/brains of unseen monsters  (for future use)
+    mag, // magnetic: sense magnets & attacks with magnetic weapons (for future use)
     flying,
     climbing, // fast at escaping pits
     fearless, // affected by petrify (or other fear) actions
@@ -156,19 +162,14 @@ const bool monsterIntrinsics:: move(const terrain & type) const {
   return pImpl_->terrainMove_[type.type()];
 }
 
-// can you hear monsters?
-void monsterIntrinsics::hear(const bool hearing) {
-  pImpl_->bonuses_[bonusType::hearing] = bonus(hearing);
+const bool monsterIntrinsics::hasSense(const sense::sense &t) const {
+  if (t & sense::SIGHT) return pImpl_->bonuses_[bonusType::hearing] == bonus(true);
+  if (t & sense::SOUND) return pImpl_->bonuses_[bonusType::hearing] == bonus(true);
+  return false; // TODO
 }
-const bool monsterIntrinsics:: hear() const {
-  return pImpl_->bonuses_[bonusType::hearing] == bonus(true);
-}
-// can you see monsters?
-void monsterIntrinsics::see(const bool sight) {
-  pImpl_->bonuses_[bonusType::seeing] = bonus(sight);
-}
-const bool monsterIntrinsics:: see() const {
-  return pImpl_->bonuses_[bonusType::seeing] == bonus(true);
+void monsterIntrinsics::sense(const sense::sense &t, const bool value) {
+  if (t & sense::SIGHT) pImpl_->bonuses_[bonusType::hearing] = bonus(value);
+  if (t & sense::SOUND) pImpl_->bonuses_[bonusType::hearing] = bonus(value);
 }
 // can you fly?
 void monsterIntrinsics::fly(const bool fly) {
@@ -295,21 +296,42 @@ void monsterAbilityMods::move(const terrain & type, const bool isMove) {
 const bool monsterAbilityMods::move(const terrain & type) const {
   return intrinsics_->move(type) || mod_->terrainMove_[type.type()];
 }
-  // can you hear monsters?
-void monsterAbilityMods::hear(const bool hearing) {
-  mod_->bonuses_[bonusType::hearing] = hearing;
+// acts on the least significant bit that is set to 1
+const bool monsterAbilityMods::hasSense(const sense::sense &t) const {
+  if (t & sense::SIGHT) return mod_->bonuses_[bonusType::seeing].apply(intrinsics_->hasSense(sense::SIGHT));
+  if (t & sense::SOUND) return mod_->bonuses_[bonusType::hearing].apply(intrinsics_->hasSense(sense::SOUND));
+  if (t & sense::TOUCH) {
+    if (mod_->bonuses_[bonusType::touch] == bonus(true)) return true;
+    if (mod_->bonuses_[bonusType::touch] == bonus(false)) return false;
+    const monster* mon = dynamic_cast<const monster*>(&mon_);
+    if (!mon) return false;
+    // a monster can only touch if they have ring slots (ie fingers) and are not wearing gloves or gauntlets
+    // NB: A creature that keeps its ring slots via polymorphing while wearing a cursed item must therefore be able to touch UNLESS also wearing gloves!
+    auto ringSlot = slotBy(slotType::ring_right_index);
+    return
+      intrinsics_->hasSense(t) &&
+      (mon->slotAvail(ringSlot) || mon->inSlot(ringSlot)) &&
+      mon->slotAvail(slotBy(slotType::gloves)) &&
+      mon->slotAvail(slotBy(slotType::gauntlets));
+  }
+  if (t & sense::TASTE) return mod_->bonuses_[bonusType::taste].apply(intrinsics_->hasSense(sense::TASTE));
+  if (t & sense::SMELL) return mod_->bonuses_[bonusType::smell].apply(intrinsics_->hasSense(sense::SMELL));
+  if (t & sense::SIXTH) return mod_->bonuses_[bonusType::sixth].apply(intrinsics_->hasSense(sense::SIXTH));
+  if (t & sense::TELE) return mod_->bonuses_[bonusType::tele].apply(intrinsics_->hasSense(sense::TELE));
+  if (t & sense::MAG) return mod_->bonuses_[bonusType::mag].apply(intrinsics_->hasSense(sense::MAG));
+  return false;
 }
-const bool monsterAbilityMods::hear() const {
-  return intrinsics_->hear() || mod_->bonuses_[bonusType::hearing] == bonus(true);
+void monsterAbilityMods::sense(const sense::sense &t, const bonus value) {
+  if (t & sense::SIGHT) mod_->bonuses_[bonusType::seeing] = value;
+  if (t & sense::SOUND) mod_->bonuses_[bonusType::hearing] = value;
+  if (t & sense::TOUCH) mod_->bonuses_[bonusType::touch] = value;
+  if (t & sense::TASTE) mod_->bonuses_[bonusType::taste] = value;
+  if (t & sense::SMELL) mod_->bonuses_[bonusType::smell] = value;
+  if (t & sense::SIXTH) mod_->bonuses_[bonusType::sixth] = value;
+  if (t & sense::TELE) mod_->bonuses_[bonusType::tele] = value;
+  if (t & sense::MAG) mod_->bonuses_[bonusType::mag] = value;
 }
-  // can you see monsters?
-void monsterAbilityMods::see(const bool sight) {
-  mod_->bonuses_[bonusType::seeing] = sight;
-}
-const bool monsterAbilityMods::see() const {
-  return intrinsics_->see() || mod_->bonuses_[bonusType::seeing] == bonus(true);
-}
-  // can you fly?
+// can you fly?
 void monsterAbilityMods::fly(const bool canFly) {
   mod_->bonuses_[bonusType::flying] = canFly;
 }

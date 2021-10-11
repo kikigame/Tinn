@@ -44,7 +44,7 @@ player::player(playerBuilder &b) :
     break;
   case Element::air:
     intrinsics()->speedy(true);
-    intrinsics()->hear(true);
+    intrinsics()->sense(sense::SOUND, true);
     {auto dam = damageRepo::instance()[damageType::sonic];
     intrinsics()->extraDamage(&dam, +4);
     }

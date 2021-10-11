@@ -193,7 +193,11 @@ private:
 // create a fifo IO object
 std::shared_ptr<io> ioFactory::connectFifos(const args &opts) {
   // daemonize:
+#if defined(MINGW) || defined(__MINGW32__)
+  // setsid not defied; I'm unsure if FIFOs even make sense on MS systems
+#else
   ::setsid();
+#endif
   ::close(0);
   ::close(1);
   ::close(2);

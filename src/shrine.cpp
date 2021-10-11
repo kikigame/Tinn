@@ -76,10 +76,11 @@ bool shrine::onEnter(monster  &monster, itemHolder &pev) {
     if (align_ == monster.align()) ios.message(L"You feel very safe here.");
   }
   if (p && alignment >= 6) {
-    if (monster.abilities()->hear())
-      ios.message(L"A heavenly chorous welcomes you into the " + name());
-    else
-      ios.message(L"You enter the " + name());
+    monster.curLevel().msg()
+      << sense::SOUND << L"A heavenly chorous welcomes you into the %s"
+      << sense::SIXTH << L"You feel the whole pantheon welcome you into the %s"
+      << sense::ANY << L"You enter the %s"
+      << name() << stop();
     if (align_ == monster.align()) ios.message(L"You are completely safe here.");
     monster.injury() -= 25;
   }

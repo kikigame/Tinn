@@ -6,6 +6,7 @@
 #define OUTPUT_HPP__
 
 #include "coord.hpp"
+#include "sense.hpp"
 
 #include <functional>
 #include <string>
@@ -35,6 +36,10 @@ public:
   virtual void longMsg(const std::wstring &msg) const = 0;
   virtual void longMsg(const wchar_t *msg) const {if (msg != NULL) longMsg(std::wstring(msg));}
 
+  // print a directional message to the user.
+  // This implementation delegates to message(), prefixing with the coordinates, but other outputs may prefer to highlight the message on screen somehow.
+  virtual void message(const coord c, const std::wstring &msg) const;
+  
   // request an input key from the user:
   virtual std::wstring keyPrompt() const = 0;
   virtual std::wstring keyPrompt(const std::wstring & msg) const { message(msg); return keyPrompt(); }

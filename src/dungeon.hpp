@@ -5,6 +5,7 @@
 #include "level.hpp"
 #include "player.hpp"
 #include "time.hpp"
+#include "sense.hpp"
 
 #include <ostream>
 #include <vector>
@@ -36,6 +37,8 @@ public:
   // access the player
   std::shared_ptr<player> pc();
   const std::shared_ptr<player> pc() const;
+  // send formatted messages
+  formatter msg();
   int maxLevel() const;
 
   // look ahead

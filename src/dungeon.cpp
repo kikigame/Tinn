@@ -121,3 +121,7 @@ std::wstring dungeon::score() const {
   rtn << L"Total score of " << sumValue << L"; you finished with " << sumWeight << L"N of loot";
   return rtn.str();
 }
+
+formatter dungeon::msg() {
+  return formatter(*this);
+}

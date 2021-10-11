@@ -26,7 +26,7 @@
 // define a level in the dungeon
 
 class levelImpl;
-
+class formatter;
 
 
 // instantiate abstract methods. Note that these are still declarations,
@@ -449,7 +449,7 @@ public:
 
 
   optionalRef<monster> lineOfSightTarget(monster &m, const coord  &mPos) {
-    if (!m.abilities()->see()) return optionalRef<monster>(); // can't see targets
+    if (!m.abilities()->hasSense(sense::SIGHT)) return optionalRef<monster>(); // can't see targets
     for (auto it = monsters_.begin(); it != monsters_.end(); ++it) {
       const coord &tPos = it->first;
       std::shared_ptr<monster> t = it->second; // target monster
@@ -1423,6 +1423,9 @@ dungeon & level::dung() {
 }
 const dungeon & level::dung() const {
   return pImpl_->dung();
+}
+formatter level::msg() {
+  return dung().msg();
 }
 
 bool itemHolderLevel::addItem(item &item) {

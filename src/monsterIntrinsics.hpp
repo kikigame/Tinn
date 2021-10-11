@@ -7,6 +7,7 @@
 
 #include "bonus.hpp"
 #include "movement.hpp"
+#include "sense.hpp"
 #include <memory> // unique_ptr
 
 class damage;
@@ -40,12 +41,9 @@ public:
   // can you move through a given terrain?
   virtual void move(const terrain & type, const bool isMove) = 0;
   virtual const bool move(const terrain & type) const = 0;
-  // can you hear monsters?
-  virtual void hear(const bool hearing) = 0;
-  virtual const bool hear() const = 0;
-  // can you see monsters?
-  virtual void see(const bool sight) = 0;
-  virtual const bool see() const = 0;
+  // do you have a particular sense?
+  virtual void sense(const sense::sense &t, bool s) = 0;
+  virtual const bool hasSense(const sense::sense &t) const = 0;
   // can you fly?
   virtual void fly(const bool canFly) = 0;
   virtual const bool fly() const = 0;
@@ -110,12 +108,9 @@ public:
   // can you move through a given terrain?
   virtual void move(const terrain & type, const bool isMove);
   virtual const bool move(const terrain & type) const;
-  // can you hear monsters?
-  virtual void hear(const bool hearing);
-  virtual const bool hear() const;
-  // can you see monsters?
-  virtual void see(const bool sight);
-  virtual const bool see() const;
+  // do you have a particular sense? (NB: sixth sense always returns false here because it's not reliable)
+  virtual void sense(const sense::sense &t, bool s);
+  virtual const bool hasSense(const sense::sense &t) const;
   // can you fly?
   virtual void fly(const bool canFly);
   virtual const bool fly() const;
@@ -181,12 +176,11 @@ public:
   // can you move through a given terrain?
   virtual void move(const terrain & type, const bool isMove);
   virtual const bool move(const terrain & type) const;
-  // can you hear monsters?
-  virtual void hear(const bool hearing);
-  virtual const bool hear() const;
-  // can you see monsters?
-  virtual void see(const bool sight);
-  virtual const bool see() const;
+  // grant/revoke particular senses by magical means.
+  virtual void sense(const sense::sense &t, bonus s);
+  // do you have a particular sense? (NB: pc can still receive sixth sense messages if this returns false)
+  // acts on the least significant bit set to 1
+  virtual const bool hasSense(const sense::sense &t) const;
   // can you fly?
   virtual void fly(const bool canFly);
   virtual const bool fly() const;

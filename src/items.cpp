@@ -1692,7 +1692,7 @@ public:
     if (!dynamic_cast<monster*>(&holder()))
       return item::useResult::FAIL; // can only be used in main inventory
     if (!hasCharge()) {
-      if (dynamic_cast<monster&>(holder()).curLevel().dung().pc()->abilities()->hear()) {
+      if (dynamic_cast<monster&>(holder()).curLevel().dung().pc()->abilities()->hasSense(sense::SOUND)) {
 	if (type_ == itemTypeRepo::instance()[itemTypeKey::bagpipes])
 	  ioFactory::instance().message(L"The beautiful sound of " + name() + L" fills the air");
 	else

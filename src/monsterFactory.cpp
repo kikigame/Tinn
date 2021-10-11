@@ -282,11 +282,11 @@ public:
       // this isn't a defence mechanism to trap monsters.
       if (!canMove) curLevel().changeTerrain(pos, terrainType::FIRE);
       else {
-	bool sound = curLevel().dung().pc()->abilities()->hear();
-	if (sound)
-	  ioFactory::instance().message(L"The fire hisses out...");
-	else
-	  ioFactory::instance().message(L"The fire goes out...");
+	curLevel().msg()
+	  << curLevel().posOf(*this)
+	  << sense::SOUND << L"The fire hisses out..."
+	  << sense::ANY << L"The fire goes out..."
+	  << stop();
       }
     }
   }
@@ -405,9 +405,13 @@ public:
   }
   virtual bool onMove(const coord &pos, const terrain &terrain, const dir &d) {
     if (!monster::onMove(pos, terrain, d)) return false;
-    if (terrain.type() == terrainType::WATER && equineForm_ && (&curLevel() == &curLevel().dung().cur_level())
-	&& curLevel().dung().pc()->abilities()->hear())
-      ioFactory::instance().message(L"You hear the sound of thunder as the " + name() + L"'s tail hits the water");
+    if (terrain.type() == terrainType::WATER && equineForm_ && (&curLevel() == &curLevel().dung().cur_level()))
+      curLevel().msg()
+	<< curLevel().posOf(*this)
+	<< sense::SOUND << L"You hear the sound of thunder as the %s's tail hits the water"
+	<< sense::SIGHT << L"You see the %s's tail hits the water with a mighty smack"
+	<< name()
+	<< stop();
     if (dPc() <= 11) // ~3%
       shapeShift();
     return true;
@@ -439,12 +443,15 @@ public:
     auto &act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::attract);
     auto &l = curLevel();
     if (&(l.dung().cur_level()) != &l) return; // don't waste our voice if no Dungeoneer is around
-    if (l.dung().pc()->abilities()->hear()) {
-      ioFactory::instance().message(L"The " + name() + L" sings an attractive song");
-    }
+    l.msg()
+      << curLevel().posOf(*this)
+      << sense::SOUND << L"The %s sings an attractive song"
+      << sense::SIGHT << L"The %s looks to be singing"
+      << sense::ANY << L"The %s seems to sing"
+      << name() << stop();
     l.forEachMonster([this,&act](monster &t){
 	if (t.type().type() != monsterTypeKey::siren &&
-	    t.abilities()->hear()) 
+	    t.abilities()->hasSense(sense::SOUND)) 
 	  act(bcu(),*this, t);
       });
   }
@@ -459,8 +466,9 @@ protected:
     auto &act = actionFactory<monster,monster>::get(sharedAction<monster,monster>::key::charm);
     auto &l = curLevel();
     if (&(l.dung().cur_level()) != &l) return; // don't waste our voice if no player is around
-    if (l.dung().pc()->abilities()->see())
-      ioFactory::instance().message(L"The " + name() + L" seems very beguiling");
+    l.msg()
+      << curLevel().posOf(*this)
+      << sense::ANY << L"The %s seems very beguiling" << name() << stop();
     l.forEachMonster([this,&act](monster &t){
 	if (t.type().type() != type().type()) 
 	  act(bcu(), *this, t);
@@ -515,10 +523,14 @@ private:
       // if the player is on the same level and passes as female, we can petrify them
       // (pixies have been known to scare maidens).
       auto &a = actionFactory<monster,monster>::get(sharedAction<monster, monster>::key::petrify);
+      lvl.msg() << lvl.posOf(*this) << sense::ANY << L"The pixie seems very scary" << stop();
       a(bcu(), *this, *pc);
-    } else if (pc->abilities()->hear() && dPc() < 50) {
+    } else {
       // otherwise, we just knock on the walls
-      ioFactory::instance().message(L"A mysterious rapping noise can be heard.");
+      lvl.msg()
+		<< sense::SOUND << L"A mysterious rapping noise can be heard."
+		<< sense::SIXTH << L"You don't hear the mysterious rapping noise."
+		<< stop();
     }
   }
   // TODO: if attacking a monster with an equipped candle, blow it out.
@@ -991,8 +1003,14 @@ public:
       rtn += L"An " + name + L" like to fight with " + join(extraDamage.begin(), extraDamage.end()) + L".\n";
 
     rtn += L"\n\nWe also know that the typical " + name + L" ";
-    if (able.hear()) rtn += L"has good hearing, "; else rtn += L"can't hear, ";
-    if (able.see()) rtn += L"has excellent vision "; else rtn += L"doesn't need light to see where it's going, ";
+    if (able.hasSense(sense::SOUND)) rtn += L"has good hearing, "; else rtn += L"can't hear, ";
+    if (able.hasSense(sense::SIGHT)) rtn += L"has excellent vision, "; else rtn += L"doesn't need light to see where it's going, ";
+    if (able.hasSense(sense::TOUCH)) rtn += L"knows how to feel its way, "; else rtn += L"isn't very tactile, ";
+    if (able.hasSense(sense::TASTE)) rtn += L"is a picky eater, "; else rtn += L"will eat anything, ";
+    if (able.hasSense(sense::SMELL)) rtn += L"appreciates a bouquet, "; else rtn += L"is unphased by body odour, ";
+    if (able.hasSense(sense::SIXTH)) rtn += L"is very religious, ";
+    if (able.hasSense(sense::TELE)) rtn += L"sees with its mind, ";
+    if (able.hasSense(sense::MAG)) rtn += L"has an attractive personality ";
     if (able.fly()) rtn += L"and flies.\n"; else rtn += L"and jumps a lot.\n";
 
     std::set<const wchar_t *> f;
@@ -1072,8 +1090,10 @@ private:
     }
     able.eatVeggie(bon(a,b));
     able.dblAttack(bon(a,b));
-    able.hear(is(a,b));//
-    able.see(is(a,b));
+    for (uint8_t s = 0x1; ; s <<= 1) {
+      able.sense(static_cast<sense::sense>(s), is(a,b));//
+      if (s == 0x80) break;
+    }
     able.fly(is(a,b)); //
     able.fearless(bon(a,b));
     able.climb(bon(a,b));

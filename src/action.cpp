@@ -313,9 +313,9 @@ public:
       }
     }
     // - cream pie in face to blind them (ref:Nethack, keystone kops)
-    if (target.abilities()->see()) {
-      target.intrinsics()->see(false);
-      if (!target.intrinsics()->see()) {
+    if (target.abilities()->hasSense(sense::SIGHT)) {
+      target.intrinsics()->sense(sense::SIGHT, false);
+      if (!target.intrinsics()->hasSense(sense::SIGHT)) {
 	// TODO: equipped creampie of some sort? Too nethack to wipe off?
 	std::wstring msg = (target.isPlayer()) ? L"cream pie to the eyes! Hahaha!" :
 	  (target.name() + L": cream pie to the eyes! Hahaha!");
@@ -971,6 +971,29 @@ public:
   virtual bool buffs() const { return true; }
 };
 
+template <bool set>
+class intrinsicsSenseAction : public renderedAction<item, monster> {
+private:
+  const sense::sense sense_;
+public:
+  intrinsicsSenseAction(const sense::sense sense,
+		       const wchar_t * const name, const wchar_t * const description) :
+    renderedAction(name, description),
+    sense_(sense) {}
+  virtual ~intrinsicsSenseAction() {}
+  virtual bool operator ()(const bcu &bcu, item &source, monster &target) {
+    target.abilities()->sense(sense_, set);
+    return true;
+  }
+  bool undo(const bcu &bcu, item &source, monster &target) {
+    target.abilities()->sense(sense_, !set);
+    return true;
+  }
+  virtual bool aggressive() const { return false; }
+  virtual bool heals() const { return false; }
+  virtual bool buffs() const { return true; }
+};
+
 class tesseractAction : public renderedAction<item, monster> {
 public:
   tesseractAction(const wchar_t * const name, const wchar_t * const description) :
@@ -1255,12 +1278,12 @@ L"A tesseract is a 4-dimensional polytype bound by eight cubes, also known as\n"
 L"Bestows the ability to walk through fire.\n"
 "Passive fiery terrain will not hurt you."));
     rtn[action::key::hearing] = std::unique_ptr<action>
-      (new intrinsicsBoolAction<true>(&monsterAbilities::hear,
+      (new intrinsicsSenseAction<true>(sense::SOUND,
 			   L"Hearing",
 L"Bestows the ability to detect airborne vibrations, often conveying\n"
 "information"));
     rtn[action::key::sight] = std::unique_ptr<action>
-      (new intrinsicsBoolAction<true>(&monsterAbilities::see,
+      (new intrinsicsSenseAction<true>(sense::SIGHT,
 			   L"Sight",
 L"Bestows the ability to detect waves or particles of electromagnetic\n"
 "radiation, often conveying information"));

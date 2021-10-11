@@ -3,6 +3,7 @@
 // general output routine contract
 
 #include <cwctype> // locale-specific functions
+#include <sstream>
 
 #include "output.hpp"
 
@@ -11,6 +12,13 @@
 #include "player.hpp"
 
 io::~io(){}
+
+void io::message(const coord c, const std::wstring &msg) const {
+  std::wstringstream opt;
+  opt << c << L" " << msg;
+  message(opt.str());
+}
+
 
 template <typename T>
 bool fillExtraHelp(std::vector<std::wstring> &extraHelps,

@@ -43,7 +43,7 @@ monster *pickTarget(bool allowOnSelf, monster &mon, std::function<bool(const mon
     for (auto t : targets) {
       auto tPos = level.posOf(*t);
       std::wstringstream opt;
-      opt << t->render() << L" (" << tPos.first << L"," << tPos.second << L")";
+      opt << t->render() << L" " << tPos;
       choices.emplace_back(i++, opt.str());
     }
     return targets.at

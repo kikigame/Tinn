@@ -211,7 +211,7 @@ namespace morpheus {
       if (p_.addItem(item)) {
 	prefix = L"You hold: ";
       } else {
-	prefix = L"You see: ";
+	prefix = L"You see: "; // this is in a dream, so it doesn't matter if the pc can see or not
       }
       io.message(prefix + name);
       io.longMsg(desc);

@@ -54,10 +54,8 @@ class delegatingAbilities : public monsterAbilities {
   virtual const char extraDamage(const damage & type) const { return d_->extraDamage(type); }
   virtual void move(const terrain & type, const bool isMove) { d_->move(type, isMove); }
   virtual const bool move(const terrain & type) const { return d_->move(type); }
-  virtual void hear(const bool hearing) { d_->hear(hearing); }
-  virtual const bool hear() const { return d_->hear(); }
-  virtual void see(const bool sight) { d_->see(sight); }
-  virtual const bool see() const {return d_->see(); }
+  virtual void sense(const sense::sense &t, bool s) { d_->sense(t,s); }
+  virtual const bool hasSense(const sense::sense &t) const { return d_->hasSense(t); };
   virtual void fly(const bool canFly) { d_->fly(canFly); }
   virtual const bool fly() const { return d_->fly(); }
   virtual void fearless(const bonus &fearless) { d_->fearless(fearless); }

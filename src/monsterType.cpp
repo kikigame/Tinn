@@ -133,8 +133,7 @@ public:
   monsterTypeBuilder& alluring() { alluring_ = true; return *this; }
   monsterTypeBuilder& undead() { undead_ = true; return *this; }
   monsterTypeBuilder& sleeps() { intrinsics_.sleeps(); return *this; }
-  monsterTypeBuilder& see() { intrinsics_.see(true); return *this; }
-  monsterTypeBuilder& hear() { intrinsics_.hear(true); return *this; }
+  monsterTypeBuilder& sense(const sense::sense &s) { intrinsics_.sense(s, true); return *this; }
   monsterTypeBuilder& speedy() { intrinsics_.speedy(true); return *this; }
   monsterTypeBuilder& dblAttack() { intrinsics_.dblAttack(true); return *this; }
   monsterTypeBuilder& swim() { intrinsics_.move(tFactory.get(terrainType::WATER), true); return *this; }
@@ -269,8 +268,14 @@ public:
 	    // DRAGONS DON'T FLY! It's mythologically inaccurate...
 	    .speedy()
 	    .dblAttack()
-	    .see()
-	    .hear()
+	    .sense(sense::SIGHT)
+	    .sense(sense::SOUND)
+	    .sense(sense::TOUCH)
+	    .sense(sense::TASTE)
+	    .sense(sense::SMELL)
+	    .sense(sense::SIXTH) // In Eastern mythology, dragonsbreath is the substance of the world, so it stands to reason they're mystically connected
+	    .sense(sense::TELE) // Dragons have extreme brainpower, so should be telepathic.
+	    // can't think of a justification for dragons sensing magnetic fields
 	    .fearless()
 	    .movesOnGround()
 	    .encyclopedium(
@@ -298,7 +303,7 @@ L"Dragons are large serpentine creatures; highly intelligent and amongst the\n"
 	    .carryWeight(300000) // the strength of 100 humans, seems about right
             .fearless());
 
-    // unique feature: features depend on pseudorandom planet
+    // unique feature: features depend on pseudorandom planet. Many abiliites are rerolled per alien.
     emplace(monsterTypeBuilder(monsterTypeKey::alien)
 	    .category(rndPickEnum(monsterCategory::biped, monsterCategory::END))
 	    .name({L"tiny"}, L"alien")
@@ -386,8 +391,9 @@ L"Winged creatures of light; angels have 3 triads, each with 3 choirs:\n"
 	    .swim()
 	    .zap()
 	    .alluring()
-	    .see()
-	    .hear()
+	    .sense(sense::SIGHT) // lots of eyes
+	    .sense(sense::SOUND) // communicate verbally
+	    .sense(sense::SIXTH) // agents of the deities
 	    );
 
     // unique feature: grows continuously
@@ -445,6 +451,8 @@ L"Winged creatures of light; angels have 3 triads, each with 3 choirs:\n"
 	    .movesThrough(terrainType::CRACK)
 	    .fearless()
 	    .dblAttack() // can't move, and deep in the game, so let's give it a chance
+	    .sense(sense::SMELL) // let's give them some less common senses, just in case
+	    .sense(sense::MAG)
 	    .encyclopedium(
 L"Blobs grow rapidly, consuming most things in their path. On the other hand,\n"
 "at least they present a large target."
@@ -481,8 +489,9 @@ L"Blobs grow rapidly, consuming most things in their path. On the other hand,\n"
 	    .movement({speed::slow2, goTo::player, goBy::avoid, 10})
 	    .fearless()
 	    .sleeps()
-	    .see()
-	    .hear()
+	    .sense(sense::SIGHT)
+	    .sense(sense::SOUND)
+	    .sense(sense::SMELL)
 	    .encyclopedium(
 L"Bovines are farmed for their meat and milk. One of the largest are the\n"
 "bonnacon, a reddish-brown to black creature with ram-like horns, which curl\n"
@@ -521,7 +530,10 @@ L"Bovines are farmed for their meat and milk. One of the largest are the\n"
 	    .throws()
 	    .zap()
 	    .sleeps()
-	    .hear() // can't see
+	    .sense(sense::SOUND) // can't see
+	    .sense(sense::TOUCH)
+	    .sense(sense::TASTE)
+	    .sense(sense::SMELL)
 	    .carryWeight(1000) // typically children; 1/3 of human
 	    .encyclopedium(
 L"Sometimes a human ventures into a Dungeon upon a quest. This is usually ill-\n"
@@ -566,8 +578,9 @@ L"Sometimes a human ventures into a Dungeon upon a quest. This is usually ill-\n
 	    .throws()
 	    .zap()
 	    .sleeps()
-	    .see()
-	    .hear()
+	    .sense(sense::SIGHT)
+	    .sense(sense::SOUND)
+	    .sense(sense::SMELL)
 	    .encyclopedium(
 L"Originally created by a great sorcerer to use as a sacrificial beast to\n"
 "power a nefarious series of experiments, the enchanter appears curiously\n"
@@ -617,8 +630,10 @@ L"Meaning \"Little Thief\", ferrets are small, hyperflexible elongated mammal\n"
 "hunting rabbit. While they don't burrow, they love running through tunnels,\n"
 "playing with whatever comes to hand, and biting - which, with poor eyesight\n"
 "and smell, is how they mostly investigate the world.")
-	    .see()
-	    .hear()
+	    .sense(sense::SIGHT)
+	    .sense(sense::SOUND)
+	    .sense(sense::TASTE)
+	    .sense(sense::SMELL)
 	    .sleeps() // a lot
             .scardy());
 
@@ -662,8 +677,10 @@ L"Vulpine animals get a mixed reaction; these charming, beautiful creatures\n"
 "form at will.")
 	    .sleeps()
             .scardy()
-	    .see()
-	    .hear()
+	    .sense(sense::SIGHT)
+	    .sense(sense::SOUND)
+	    .sense(sense::TASTE)
+	    .sense(sense::SMELL)
 	    );
     
 
@@ -704,8 +721,9 @@ L"Vulpine animals get a mixed reaction; these charming, beautiful creatures\n"
 	    .zap()
 	    .sleeps()
 	    .carryWeight(4000)
-	    .see()
-	    .hear()
+	    .sense(sense::SIGHT)
+	    .sense(sense::SOUND)
+	    .sense(sense::TASTE)
 	    .encyclopedium(
 L"The difference between a goblin and an orc is that orcs don't exist.\n"
 "Not all goblins are malevolent; some are merely mischievous. All are obsessed\n"
@@ -750,8 +768,10 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .movesOnGround()
 	    .sleeps()
 	    .carryWeight(1000)
-	    .see()
-	    .hear()
+	    .sense(sense::SIGHT)
+	    .sense(sense::SOUND)
+	    .sense(sense::TASTE)
+	    .sense(sense::SMELL)
 	    .encyclopedium(L"Canines are furry, with four legs and a tail. They are easily excited, always\n"
 "hungry and pack hunters. They enjoy bones and some are known to bark or howl."));
 
@@ -785,8 +805,10 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .eats(materialType::veggy)
 	    .eats(materialType::fleshy)
 	    .eats(materialType::liquid)
-	    .see()
-	    .hear()
+	    .sense(sense::SIGHT)
+	    .sense(sense::SOUND)
+	    .sense(sense::TASTE)
+	    .sense(sense::SMELL)
 	    .throws()
 	    .sleeps()
 	    .zap()
@@ -828,8 +850,9 @@ L"The difference between a goblin and an orc is that orcs don't exist.\n"
 	    .movesOnGround()
 	    .scardy()
 	    .sleeps()
-	    .see()
-	    .hear()
+	    .sense(sense::SIGHT)
+	    .sense(sense::SOUND)
+	    .sense(sense::SMELL)
 	    .swim()
 	    .fly()
 	    .encyclopedium(
@@ -872,8 +895,12 @@ L"The hippecetryon (or hippecktryon) is a rare beast seen mostly emblazoned\n"
 	    .eats(materialType::clothy) // ripping clothes off with its teeth...
     //ref: http://www.chesterfieldparanormalresearch.com/incubus---sucubbus-demon.html; wikipedia; http://mythicalcreatureslist.com/mythical-creature/Succubus; others
 	    .alluring()
-	    .see()
-	    .hear()
+	    .sense(sense::SIGHT)
+	    .sense(sense::SOUND)
+	    .sense(sense::TOUCH)
+	    .sense(sense::TASTE)
+	    .sense(sense::SMELL)
+	    .sense(sense::TELE) // because they appear in dreams
 	    .swim()
 	    .carryWeight(0) // does not carry stuff
 	    .encyclopedium(L"The word incubus comes from the Latin /incubāre/ (to lay\n"
@@ -916,8 +943,9 @@ L"The hippecetryon (or hippecktryon) is a rare beast seen mostly emblazoned\n"
 	    .eats(materialType::liquid)
 	    .sleeps()
 	    .carryWeight(0) // does not carry stuff
-	    .see()
-	    .hear()
+	    .sense(sense::SIGHT)
+	    .sense(sense::SOUND)
+	    .sense(sense::SMELL)
 	    .swim()
 	    .movesThrough(terrainType::WATER)
 	    .movesOnGround()
@@ -928,8 +956,8 @@ L"Kelpies live in rivers and streams, while the stronger Each-uisge prefers\n"
 "They are often alone and, like most water creatures, are often charming.\n"
 "These equine beasts are never far from water, and seem easy to ride, but\n"
 "delight in running off with and drowning their - often human - prey.\n"
-"Kelpies are often known to enact retribution for bad behaviour conducted\n"
-"on a Sunday."));
+"Kelpies are known to enact retribution for bad behaviour conducted on a\n"
+"Sunday."));
 
     // unique feature: teleports between cracks
     emplace(monsterTypeBuilder(monsterTypeKey::mokumokuren)
@@ -961,8 +989,10 @@ L"Kelpies live in rivers and streams, while the stronger Each-uisge prefers\n"
 	    .movesOnGround()
 	    .movesThrough(terrainType::DECK)
 	    .scardy()
-	    .see()
-	    .hear()
+	    .sense(sense::SIGHT)
+	    .sense(sense::SOUND)
+	    .sense(sense::SMELL)
+	    .sense(sense::TELE) // feeds on dreams
 	    .speedy()
 	    .swim()
 	    .fly()
@@ -1004,8 +1034,8 @@ L"An infestation of mokumokuren may often be attributed to poor maintenance of\n
 	    .sleeps()
 	    .zap()
 	    .carryWeight(3500) // a little stronger than human
-	    .see()
-	    .hear()
+	    .sense(sense::SIGHT)
+	    .sense(sense::SOUND) // not adding taste/smell, as these don't behave the same in water
 	    .swim()
 	    .encyclopedium(
 L"Merfolk do not like to stray outside the sea, and mermen less so. Having the\n"
@@ -1059,8 +1089,9 @@ L"Ever the enemies of the fairies, pixies can still manage mischief of their\n"
 	    .movesOnGround()
 	    .scardy()
 	    .sleeps()
-	    .see()
-	    .hear()
+	    .sense(sense::SIGHT)
+	    .sense(sense::SOUND)
+	    .sense(sense::SMELL) // Pixel the Pixie (Kinghtmare) loved the smell of freshly cut flowers
 	    .fly()
 	    .swim() // while they are woodland spirits, they've been known to play in water.
 	    .climb());
@@ -1109,8 +1140,9 @@ L"Paracelsus first described the amphibious salamander as the elemental of\n"
 	    .movesThrough(terrainType::FIRE)
 	    .movesOnGround()
 	    .sleeps()
-	    .see()
-	    .hear()
+	    .sense(sense::SIGHT)
+	    .sense(sense::SOUND)
+	    .sense(sense::SMELL) // most lizards smell primararily
 	    .swim()
 	    .speedy()
 	    .climb());
@@ -1142,8 +1174,9 @@ L"Paracelsus first described the amphibious salamander as the elemental of\n"
 	    .movesOnGround()
 	    .fearless()
 	    .sleeps()
-	    .see()
-	    .hear()
+	    .sense(sense::SIGHT)
+	    .sense(sense::SOUND)
+	    .sense(sense::TOUCH) // primary sense is vibrations
 	    .climb()
 	    .encyclopedium(
 L"There are many types of spider, and they fall into two main groups: those\n"
@@ -1181,8 +1214,9 @@ L"There are many types of spider, and they fall into two main groups: those\n"
 	    .eats(materialType::liquid)
 	    .carryWeight(0) // does not carry
 	    .sleeps()
-	    .see()
-	    .hear()
+	    .sense(sense::SIGHT)
+	    .sense(sense::SOUND)
+	    .sense(sense::SMELL)
 	    .swim()
 	    .fly()
 	    .climb()
@@ -1234,8 +1268,11 @@ L"Of all the birds of the sea, the sirens are the most beautiful and the most\n"
 	    .movesOnGround()
 	    .sleeps() // with their eyes open
 	    .carryWeight(0) // does not carry
-	    .see()
-	    .hear() // no ears; they hear through their jaws
+	    .sense(sense::SIGHT)
+	    .sense(sense::SOUND) // no ears; they hear through their jaws
+	    .sense(sense::TOUCH)
+	    .sense(sense::SMELL) // smell by tasting
+	    .sense(sense::TASTE)
 	    .encyclopedium(
 L"Be they creatures of immortality, creation, temptation, or hairstyle, snakes\n"
 "and other serpants have often found themselves at the centre of mythology.\n"
@@ -1274,8 +1311,12 @@ L"Be they creatures of immortality, creation, temptation, or hairstyle, snakes\n
 	    .eats(materialType::liquid)
 	    .alluring()
 	    .carryWeight(0) // does not carry
-	    .see()
-	    .hear()
+	    .sense(sense::SIGHT)
+	    .sense(sense::SOUND)
+	    .sense(sense::TOUCH)
+	    .sense(sense::TASTE)
+	    .sense(sense::SMELL)
+	    .sense(sense::TELE) // because they appear in dreams
 	    .swim()
 	    .encyclopedium(
     //ref: http://www.chesterfieldparanormalresearch.com/incubus---sucubbus-demon.html; wikipedia; http://mythicalcreatureslist.com/mythical-creature/Succubus; others
@@ -1319,6 +1360,7 @@ L"Be they creatures of immortality, creation, temptation, or hairstyle, snakes\n
 	  .movesOnGround()
 	  .movesThrough(terrainType::WATER)
 	  .movesThrough(terrainType::CRACK)
+	  .sense(sense::MAG) // Monarch butterflies migrate
 	  .scardy()
 	  .alluring()
 	  .fly()
@@ -1358,6 +1400,7 @@ emplace(monsterTypeBuilder(monsterTypeKey::swarm_bees)
 	  .movesOnGround()
 	  .movesThrough(terrainType::WATER)
 	  .movesThrough(terrainType::CRACK)
+	  .sense(sense::MAG)
 	  .fly()
 	  .encyclopedium(
 L"Some species of bees produce wax and honey, the latter being the primary\n"
@@ -1395,6 +1438,7 @@ L"Some species of bees produce wax and honey, the latter being the primary\n"
 	  .movesOnGround()
 	  .movesThrough(terrainType::WATER)
 	  .movesThrough(terrainType::CRACK)
+	  .sense(sense::MAG)
 	  .fly()
 	  .fearless()
 	  .dblAttack()
@@ -1479,8 +1523,9 @@ L"A swarm of locusts devistates everything in its path. Although herbivores,\n"
 	    .throws()
 	    .sleeps() // by day, usually
 	    .carryWeight(6000) // notoriously strong
-	    .see()
-	    .hear()
+	    .sense(sense::SIGHT)
+	    .sense(sense::SOUND)
+	    .sense(sense::TOUCH)
 	    .encyclopedium(L"Dim-witted creatures of Norse and Scandinavian origin. Big and ugly, trolls\n"
 "are known for possessing magical objects and treasures - like gold, or\n"
 "princesses. They wander little and are fierecely territorial, but have been\n"
@@ -1517,6 +1562,7 @@ L"A swarm of locusts devistates everything in its path. Although herbivores,\n"
 	    .movement({speed::stop, goTo::none, goBy::avoid, 0})
 	    .movesOnGround()
 	    .carryWeight(0)
+	    .sense(sense::TOUCH)
 	    .encyclopedium(
 L"There are a great number of creatures in the world, and not all sit neatly\n"
 "in their categories. The Venus trap is a deadly flora which allures its\n"
@@ -1602,8 +1648,11 @@ L"There are a great number of creatures in the world, and not all sit neatly\n"
 	    .eats(materialType::liquid)
 	    .carryWeight(40) // a little heavier than a big rabbit
 	    .sleeps()
-	    .see()
-	    .hear()
+	    .sense(sense::SIGHT)
+	    .sense(sense::SOUND)
+	    .sense(sense::SMELL)
+	    .sense(sense::TASTE)
+	    .sense(sense::TOUCH)
 	    // ref: https://skeptoid.com/episodes/4262
 	    .encyclopedium(
      L"Most flying creatures will leave you alone unless disturbed, but\n"

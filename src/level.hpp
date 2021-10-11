@@ -24,6 +24,7 @@ enum class monsterTypeKey;
 
 class levelImpl;
 class dungeon;
+class formatter;
 class drawIter;
 class role;
 
@@ -149,6 +150,9 @@ public:
   dungeon & dung();
   const dungeon & dung() const;
 
+  // get a reference to I/O
+  formatter msg();
+  
   // determine if a given position is passible or not to the given monster
   // oldPos - needed in case a transport at the old pos can be used. Pass "pos" for teleporting or creating monsters.
   bool movable(const coord &oldPos, const coord &pos, const monster &m, bool avoidTraps, bool avoidHiddenTraps) const;
