@@ -24,6 +24,8 @@ public:
   bonus & operator += (const bonus & rhs);
   bonus & operator -= (const bonus & rhs);
   bonus & operator = (const bonus & rhs);
+  // override the given value with this bonus, unles this is neutral
+  bool apply(const bool &rhs) const;
 };
 
 

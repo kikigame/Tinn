@@ -17,11 +17,11 @@ bonus::bonus(const bonus & rhs) :
 /*
  * TRUTH TABLE:
  *
- * A     \B| Bonus  | Default | penalty_
+ * A     \B| Bonus  | Default | penalty
  * ------------------------------------
  * Bonus   | A == B | A > B   | A > B
  * Default | A < B  | A == B  | A > B
- * Penalty_ | A < B  | A < B   | A == B
+ * Penalty | A < B  | A < B   | A == B
  */
 
 bool bonus::operator == (const bonus & rhs) const {
@@ -77,3 +77,6 @@ bonus & bonus::operator = (const bonus & rhs) {
   return *this;
 }
 
+bool bonus::apply(const bool &rhs) const {
+  return bonus_ ? true : penalty_ ? false : rhs;
+}
