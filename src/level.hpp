@@ -60,6 +60,10 @@ public:
    */
   const terrain &terrainAt(const coord & c) const;
   /*
+   * Test if AT LEAST ONE of the coords ADJACENT to c are of type t.
+   */
+  bool isTerrainAdjacent(const terrainType &t, const coord &c) const;
+  /*
    * Find any coordinate (probably deterministicly)
    * with the given terrain type. not a "posOf" as it may not be unique.
    */

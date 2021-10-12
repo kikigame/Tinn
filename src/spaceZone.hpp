@@ -43,6 +43,7 @@ private:
   bool bounce(monster &, const coord &dest);
   bool moveInSpace(item &, const coord &dest);
   bool bounce(item &, const coord &dest);
+  bool wearingMagBoots(const monster &) const;
 };
 
 

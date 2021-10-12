@@ -20,6 +20,10 @@ bool spaceZone::contains(coord a) {
 }
 
 bool spaceZone::onMoveWithin(monster &mon, const coord &dest) {
+  // you can move freely wearing magnetic stuff if you stay next to a bulkhead.
+  if (wearingMagBoots(mon) && lvl_.isTerrainAdjacent(terrainType::BULKHEAD, dest))
+    return true;
+
   switch (lvl_.terrainAt(dest).type()) {
   case terrainType::SPACE:
     return moveInSpace(mon, dest);
@@ -145,5 +149,21 @@ bool spaceZone::bounce(item &item, const coord &dest) {
   auto dir =  pos.dirFrom(dest);
   idir_[&item] = dir;
   moveInSpace(item, pos.inDir(dir)); // NB: This will break if there are 2 bulkheads close together with space in between.
+  return false;
+}
+
+// test if a character is wearing magnetic boots/gloves etc, and so can move freely around the hull.
+bool spaceZone::wearingMagBoots(const monster &mon) const {
+  static const std::vector<slotType> slots(
+    {
+     slotType::gloves, slotType::gauntlets,
+     slotType::socks, slotType::shoes,
+     slotType::tail
+    });
+  for (auto s : slots) {
+    auto it = mon.inSlot(s);
+    if (it && it.value().hasAdjective(L"magnetic"))
+      return true;
+  }
   return false;
 }

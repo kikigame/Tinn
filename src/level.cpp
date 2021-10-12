@@ -336,6 +336,17 @@ public:
     return terrain_.at(c).value();
   }
 
+  bool isTerrainAdjacent(const terrainType &t, const coord &c) const {
+    coordRectIterator cri(c.first-1,c.second-1,c.first+1,c.second+1);
+    auto nf = terrain_.end(); // not-found reference, in case we're at the edge
+    for (auto cor : cri) { // NB: This will not loop, even in a space zone. This is not currently a problem.
+      if (cor == c) continue;
+      auto pt = terrain_.find(cor);
+      if (pt != nf && pt->second.value().type() == t) return true;
+    }
+    return false;
+  }
+
   coord findTerrain(const terrainType &type) const {
     using namespace std;
     for (coord c : coordRectIterator(0,0,level::MAX_WIDTH-1, level::MAX_HEIGHT - 1))
@@ -1365,6 +1376,10 @@ drawIter level::drawEnd() const {
 
 const terrain &level::terrainAt(const coord & c) const {
   return pImpl_->terrainAt(c);
+}
+
+bool level::isTerrainAdjacent(const terrainType &t, const coord &c) const {
+  return pImpl_->isTerrainAdjacent(t,c);
 }
 
 coord level::findTerrain(const terrainType &type) const {
