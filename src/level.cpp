@@ -917,6 +917,29 @@ public:
       if (ioFactory::instance().ynPrompt(L"Do you want to collect: " + name + L"?")) {
 	dungeon_.pc()->addItem(it);
 	//holder(pos).removeItem(pos, it);
+	std::wstring material;
+	switch (it.material()) {
+	case materialType::clothy: material = L"soft"; break;
+	case materialType::fleshy: material = L"smooth"; break;
+	case materialType::glassy: material = L"hard"; break;
+	case materialType::leathery: material = L"smooth"; break;
+	case materialType::liquid: material = L"slippery"; break;
+	case materialType::metallic: material = L"cord"; break;
+	case materialType::papery: material = L"smooth"; break;
+	case materialType::stony: material = L"hard"; break;
+	case materialType::veggy: material = L"fragile"; break;
+	case materialType::waxy: material = L"hard"; break;
+	case materialType::woody: material = L"rough"; break;
+	default: throw L"Unknown material ";
+	}
+	auto msg = dung().msg()
+	  << sense::TOUCH << L"It feels " + material + L"."
+	  << sense::SIXTH << L"This must be " + material + L".";
+	if (dungeon_.pc()->type().eats(it.material()))
+	  msg << sense::SMELL << L"It smells edible.";
+	if (it.hasAdjective(L"magnetic"))
+	  msg << sense::MAG << L"It has an attractive property.";
+	msg << material << stop();
       }});
   }
 

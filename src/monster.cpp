@@ -147,13 +147,20 @@ const attackResult monster::attack(monster &target) {
   } else {
     // find the weapon:
     weapon = findWeapon();
+
+    bool magneticWeapon = weapon && weapon.value().hasAdjective(L"magnetic");
+    if (magneticWeapon) {
+      curLevel().msg() << curLevel().posOf(*this)
+		       << sense::MAG << L"There is a ripple in the magnetic field."
+		       << stop();
+    }
   
     // We hit (unless dodged) the target if D% < fighting, or always on a roll of 0.
     auto dHit = dPc();
     unsigned char f = fighting().cur();
 
     // magnetic things hit better. Don't worry too much about the logic of it.
-    if (dHit > 5 && weapon && weapon.value().hasAdjective(L"magnetic"))
+    if (dHit > 5 && magneticWeapon)
 	dHit -=5;
     
     if (dHit > f) return attackResult(injury(), L"miss");
@@ -671,15 +678,20 @@ void monster::forEachItem(const std::function<void(const item&, std::wstring)> f
 class corpse;
 
 bool monster::eat(item &item, bool force) {
+  std::wstring taste = L"plain";
   double weight = std::ceil(item.weight()); // round up
   if (!type().eats(item.material())) {
+    taste = L"bad";
     if (force) weight *= -1;
     else throw inedibleException();
   }
   // some things can affect consumption:
   bonus bonus;
-  if (item.material() == materialType::veggy) 
+  if (item.material() == materialType::veggy) {
     bonus = abilities()->eatVeggie();
+    if (bonus == ::bonus(true)) taste = L"yummy";
+    if (bonus == ::bonus(false)) taste = L"too much like salad";
+  }
   // TODO: Penalties for eating corpses?
   if (damage_.cur() == 0) {
     if (force && weight > 0) weight *= -1;
@@ -687,11 +699,22 @@ bool monster::eat(item &item, bool force) {
   }
   if (bonus == ::bonus(true)) { weight *= 2; }
   if (bonus == ::bonus(false)) { weight *= 0.5; }
-  if (item.hasAdjective(L"salted")) weight += 5;
-  if (item.hasAdjective(L"peppered")) weight += 5;
+  if (item.hasAdjective(L"salted")) {
+    weight += 5;
+    taste = std::wstring(L"very") + taste;
+  }
+  if (item.hasAdjective(L"peppered")) {
+    weight += 5;
+    taste = L"piquant";
+  }
   auto rtn = item.holder().destroyItem(item);
   // subtract from damage; can't go below 0: 
   damage_ -= (weight > 254.5) ? 255 : static_cast<unsigned char>(weight);
+  if (isPlayer())
+    curLevel().msg()
+      << sense::SOUND << L"It tastes %s"
+      << taste
+      << stop();
   return rtn;
 }
 
