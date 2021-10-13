@@ -1057,6 +1057,7 @@ L"Merfolk do not like to stray outside the sea, and mermen less so. Having the\n
 	    .name(L"Pixie") // todo: types based on level? Also spelled Piksie, pizkie, piskie and pigsie 
 	    .className(L"Fae")
 	    .levelFactor(1)
+	    .levelOffset(10)
 	    .minSpawn(1)
 	    .maxSpawn(6) // collective name is "Troupe"
 	    .xpFactor(1)
