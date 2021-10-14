@@ -132,6 +132,12 @@ public:
   bool operator ==(const coord &other) const {
     return first == other.first && second == other.second;
   }
+  coord operator +(const coord &other) const {
+    return coord(first + other.first, second + other.second);
+  }
+  coord operator -(const coord &other) const {
+    return coord(first - other.first, second - other.second);
+  }
 };
 
 // output coordinates
