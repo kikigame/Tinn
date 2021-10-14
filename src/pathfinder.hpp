@@ -144,25 +144,12 @@ public:
     bool ylt = cursorY < +maxDistance;
     int x = cursorX, y = cursorY;
 
-    if (xgt && ygt)
-      if (cost(cursorX = x-1, cursorY = y-1) == c) return;
-    if (ygt)
-      if (cost(cursorX = x  , cursorY = y-1) == c) return;
-    if (xlt && ygt)
-      if (cost(cursorX = x+1, cursorY = y-1) == c) return;
-
-    if (xgt)
-      if (cost(cursorX = x-1, cursorY = y  ) == c) return;
-    if (xlt)
-      if (cost(cursorX = x+1, cursorY = y  ) == c) return;
-  
-    if (xgt && ylt)
-      if (cost(cursorX = x-1, cursorY = y+1) == c) return;
-    if (ylt)
-      if (cost(cursorX = x  , cursorY = y+1) == c) return;
-    /* guaranteed
-    if (xlt && ylt)
-    if (cost(cursorX = x+1, cursorY = y+1) == c) return;*/
+    if (xgt) cursorX--;
+    if (xlt) cursorX++;
+    if (ygt) cursorY--;
+    if (ylt) cursorY++;
+    if (cost(cursorX, cursorY) == c) return;
+    
     cursorX = x+1, cursorY = y+1;
   }
   
