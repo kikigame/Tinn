@@ -14,7 +14,7 @@
 
 class formatterImpl {
 private:
-  dungeon &dungeon_;
+  const dungeon &dungeon_;
   sense::sense nextSense_;
   bool waitingSenseMsg_;
   optionalRef<const coord> loc_;
@@ -23,7 +23,7 @@ private:
   std::vector<std::wstring> msg_;
   std::vector<std::wstring> args_;
 public:
-  formatterImpl(dungeon &d) :
+  formatterImpl(const dungeon &d) :
     dungeon_(d),
     nextSense_(sense::ANY),
     waitingSenseMsg_(false),
@@ -108,8 +108,8 @@ private:
   }
 };
 
-formatter::formatter(dungeon &d) : impl_(new formatterImpl(d)), end() {}
-formatter::~formatter() { delete impl_; }
+formatter::formatter(const dungeon &d) : impl_(new formatterImpl(d)), end() {}
+formatter::~formatter() { }
 
 formatter& formatter::operator << (const sense::sense &s) { // filter message type for next string
   impl_->nextSense(s); return *this;

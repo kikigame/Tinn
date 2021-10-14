@@ -6,6 +6,7 @@
 #ifndef SENSE_HPP__
 #define SENSE_HPP__
 
+#include <memory>
 #include <cstdint> // for uint8_t
 #include <string>
 #include "optionalRef.hpp"
@@ -56,10 +57,10 @@ class stop {};
 
 class formatter {
 private:
-  formatterImpl* impl_;
+  std::shared_ptr<formatterImpl> impl_;
 public:
   const stop end;
-  formatter(dungeon &);
+  formatter(const dungeon &);
   ~formatter();
   formatter& operator << (const coord &); // location the message relates to
   formatter& operator << (const sense::sense &); // filter message type for next string
