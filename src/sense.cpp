@@ -18,6 +18,7 @@ private:
   const dungeon &dungeon_;
   sense::sense nextSense_;
   bool waitingSenseMsg_;
+  bool isLong_;
   optionalRef<const coord> loc_;
   unsigned char dtv_; // divination test value (lazy-evaluated)
   std::vector<sense::sense> sense_;
@@ -28,6 +29,7 @@ public:
     dungeon_(d),
     nextSense_(sense::ANY),
     waitingSenseMsg_(false),
+    isLong_(false),
     loc_(),
     dtv_(101) {}
   
@@ -50,6 +52,10 @@ public:
     loc_ = optionalRef<const coord>(c);
   }
 
+  void longMsg() {
+    isLong_ = true;
+  }
+  
   void publish() {
     auto pc = dungeon_.pc();
     auto a = pc->abilities();
@@ -83,9 +89,13 @@ public:
 	buffer.replace(idx, 2, s);
 	idx += s.length();
       }
-      // TODO: flags for longMessage, location (filtered by directional on matched type)
-      if (hasDir)
+      // TODO: location (filtered by directional on matched type)
+      if (hasDir && isLong_)
+	ioFactory::instance().longMsg(loc_.value(), buffer);
+      else if (hasDir)
 	ioFactory::instance().message(loc_.value(), buffer);
+      else if (isLong_)
+	ioFactory::instance().longMsg(buffer);
       else
 	ioFactory::instance().message(buffer);
     }
@@ -94,6 +104,7 @@ public:
     msg_ = std::vector<std::wstring>();
     args_ = std::vector<std::wstring>();
     waitingSenseMsg_ = false;
+    isLong_ = false;
     dtv_ = 101;
     loc_ = optionalRef<const coord>();
   }
@@ -126,6 +137,9 @@ formatter& formatter::operator << (const std::wstring &s) { // format or argumen
 }
 formatter& formatter::operator << (const coord &c) { // coordinate of message
   impl_->loc(c); return *this;
+}
+formatter& formatter::operator << (const long &s) { // do long output
+  impl_->longMsg(); return *this;
 }
 formatter& formatter::operator << (const stop &s) { // do the output
   impl_->publish(); return *this;

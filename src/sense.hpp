@@ -53,6 +53,7 @@ namespace sense {
 
 class formatterImpl;
 class dungeon;
+class longMsg {};
 class stop {};
 
 class formatter {
@@ -65,6 +66,7 @@ public:
   formatter& operator << (const coord &); // location the message relates to
   formatter& operator << (const sense::sense &); // filter message type for next string
   formatter& operator << (const std::wstring &); // format or argument
+  formatter& operator << (const long &); // pause after output; use bigger dialog
   formatter& operator << (const stop &); // do the output
 };
 
