@@ -10,6 +10,7 @@
 #include "religion.hpp"
 #include "sense.hpp"
 
+#include <sstream>
 #include <vector>
 
 class formatterImpl {
@@ -72,7 +73,13 @@ public:
       size_t idx=0;
       for (auto s : args_) {
 	idx = buffer.find(L"%s", idx);
-	if (idx == std::string::npos) throw std::wstring(L"Not enough arguments to ") + buffer;
+	if (idx == std::string::npos) {
+	  std::wstringstream err;
+	  err << L"Not enough arguments to [" << buffer
+	      << "] with args ";
+	  for (auto ss : args_) err << "\"" << ss << "\"; ";
+	  throw err.str();
+	}
 	buffer.replace(idx, 2, s);
 	idx += s.length();
       }

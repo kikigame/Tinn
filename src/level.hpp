@@ -155,7 +155,7 @@ public:
   const dungeon & dung() const;
 
   // get a reference to I/O
-  formatter msg();
+  formatter msg() const;
   
   // determine if a given position is passible or not to the given monster
   // oldPos - needed in case a transport at the old pos can be used. Pass "pos" for teleporting or creating monsters.

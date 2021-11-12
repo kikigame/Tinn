@@ -163,13 +163,26 @@ const bool monsterIntrinsics:: move(const terrain & type) const {
 }
 
 const bool monsterIntrinsics::hasSense(const sense::sense &t) const {
-  if (t & sense::SIGHT) return pImpl_->bonuses_[bonusType::hearing] == bonus(true);
-  if (t & sense::SOUND) return pImpl_->bonuses_[bonusType::hearing] == bonus(true);
-  return false; // TODO
+  static auto nope = bonus(false);
+  if (t & sense::SIGHT) return pImpl_->bonuses_[bonusType::seeing] != nope;
+  if (t & sense::SOUND) return pImpl_->bonuses_[bonusType::hearing] != nope;
+  if (t & sense::TOUCH) return pImpl_->bonuses_[bonusType::touch] != nope;
+  if (t & sense::TASTE) return pImpl_->bonuses_[bonusType::taste] != nope;
+  if (t & sense::SMELL) return pImpl_->bonuses_[bonusType::smell] != nope;
+  if (t & sense::SIXTH) return pImpl_->bonuses_[bonusType::sixth] != nope;
+  if (t & sense::TELE) return pImpl_->bonuses_[bonusType::tele] != nope;
+  if (t & sense::MAG) return pImpl_->bonuses_[bonusType::mag] != nope;
+  return false;
 }
 void monsterIntrinsics::sense(const sense::sense &t, const bool value) {
-  if (t & sense::SIGHT) pImpl_->bonuses_[bonusType::hearing] = bonus(value);
+  if (t & sense::SIGHT) pImpl_->bonuses_[bonusType::seeing] = bonus(value);
   if (t & sense::SOUND) pImpl_->bonuses_[bonusType::hearing] = bonus(value);
+  if (t & sense::TOUCH) pImpl_->bonuses_[bonusType::touch] = bonus(value);
+  if (t & sense::TASTE) pImpl_->bonuses_[bonusType::taste] = bonus(value);
+  if (t & sense::SMELL) pImpl_->bonuses_[bonusType::smell] = bonus(value);
+  if (t & sense::SIXTH) pImpl_->bonuses_[bonusType::sixth] = bonus(value);
+  if (t & sense::TELE)  pImpl_->bonuses_[bonusType::tele]  = bonus(value);
+  if (t & sense::MAG)   pImpl_->bonuses_[bonusType::mag]   = bonus(value);
 }
 // can you fly?
 void monsterIntrinsics::fly(const bool fly) {

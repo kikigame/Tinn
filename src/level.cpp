@@ -935,7 +935,7 @@ public:
 	case materialType::glassy: material = L"hard"; break;
 	case materialType::leathery: material = L"smooth"; break;
 	case materialType::liquid: material = L"slippery"; break;
-	case materialType::metallic: material = L"cord"; break;
+	case materialType::metallic: material = L"cold"; break;
 	case materialType::papery: material = L"smooth"; break;
 	case materialType::stony: material = L"hard"; break;
 	case materialType::veggy: material = L"fragile"; break;
@@ -945,12 +945,12 @@ public:
 	}
 	auto msg = dung().msg()
 	  << sense::TOUCH << L"It feels " + material + L"."
-	  << sense::SIXTH << L"This must be " + material + L".";
+	  << sense::SIXTH << L"This must be" + material + L".";
 	if (dungeon_.pc()->type().eats(it.material()))
 	  msg << sense::SMELL << L"It smells edible.";
 	if (it.hasAdjective(L"magnetic"))
 	  msg << sense::MAG << L"It has an attractive property.";
-	msg << material << stop();
+	msg << stop();
       }});
   }
 
@@ -1462,7 +1462,7 @@ dungeon & level::dung() {
 const dungeon & level::dung() const {
   return pImpl_->dung();
 }
-formatter level::msg() {
+formatter level::msg() const {
   return dung().msg();
 }
 
