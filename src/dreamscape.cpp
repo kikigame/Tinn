@@ -485,7 +485,7 @@ namespace morpheus {
       if (!warned_) {
 	io.message(L"You enter an opulant bedchamber.");
 	io.message(m ? L"A bewitching image of masculine charm lies alluringly on the sheets." :
-		   L"A pulchritudinous image of feminine charm is draping herself desirably ower\nthe bed.");
+		   L"A pulchritudinous image of feminine charm is draping herself desirably over\nthe bed.");
 	io.longMsg(L"WARNING: A " + bus_->name() + L" can be incredibly dangerous, even in dreams.\n"
 		   "Proceed only with extreme caution.");
 	warned_ = true;

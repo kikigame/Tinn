@@ -1349,7 +1349,7 @@ public:
     case terrainType::ALTAR:
       if (isCursed()) {
 	transmutate(*this, createItem(itemTypeKey::poke));
-	io.message(L"The hole is altared."); // NB: Intentional typo (pun).
+	io.message(L"The hole is unaltared."); // NB: Intentional typo (pun).
       } else {
 	io.message(L"That's just not polite.");
       }
