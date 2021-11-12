@@ -99,8 +99,6 @@ player::player(playerBuilder &b) :
       auto &ring = createEquippable(itemTypeKey::wooden_ring, action);
       addItem(ring);
     }
-
-
 }
 
 player::~player() {}
@@ -274,7 +272,12 @@ void player::drop(level &lvl) {
       return i.name();
     };
 
-    item *sel = ios.choice(L"Leave", L"Emplace in this location:",
+    // if the current location is a well, then we should change the prompt:
+    auto t = lvl.terrainAt(pos).type();
+    auto prompt = t == terrainType::WELL || t == terrainType::WISHING_WELL ?
+      L"Drop into the well:" :
+      L"Emplace in this location:";
+    item *sel = ios.choice(L"Leave", prompt,
 			   itemSet, true, namer);
     if (sel != nullptr) {
 
@@ -310,6 +313,7 @@ void player::use() {
     if (result == item::useResult::DONE) break;
   }
 }
+
 
 void player::death(bool allowCorpse) {
   curLevel().dung().playerDeath();

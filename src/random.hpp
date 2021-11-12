@@ -58,6 +58,21 @@ I rndPickI(/*by value*/I start, const I end) {
   return start;
 }
 
+// as rndPick, but iterate the full list, and allow skipping
+template <typename I>
+I rndPick(const I &start, const I end, bool (*f)(const I&)) {
+  if (start == end) return start;
+  I rtn = start, cur = start;
+  for (size_t counter=1; cur != end; ++cur) {
+    if (f(cur)) {
+	std::uniform_int_distribution<int> dis(0, counter);
+	if (dis(generator) == 1) rtn = cur;
+	counter++;
+      }
+  }
+  return rtn;
+}
+
 // as rndPick, but specialized for enum types:
 template <typename E>
 E rndPickEnum(const E start, const E end) {

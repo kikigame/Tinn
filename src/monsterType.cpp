@@ -124,6 +124,8 @@ public:
     movesThrough(terrainType::PIANO_HIDDEN);
     movesThrough(terrainType::SPRINGBOARD);
     movesThrough(terrainType::SPRINGBOARD_HIDDEN);
+    movesThrough(terrainType::WELL);
+    movesThrough(terrainType::WISHING_WELL);
     return *this;
   }
   monsterTypeBuilder& fearless() { fearless_ = bonus(true); return *this; }
@@ -449,6 +451,8 @@ L"Winged creatures of light; angels have 3 triads, each with 3 choirs:\n"
 	    .movesThrough(terrainType::KNOTWEED)
 	    .movesThrough(terrainType::DECK)
 	    .movesThrough(terrainType::CRACK)
+	    .movesThrough(terrainType::WELL)
+	    .movesThrough(terrainType::WISHING_WELL)
 	    .fearless()
 	    .dblAttack() // can't move, and deep in the game, so let's give it a chance
 	    .sense(sense::SMELL) // let's give them some less common senses, just in case
@@ -987,7 +991,6 @@ L"Kelpies live in rivers and streams, while the stronger Each-uisge prefers\n"
 	    .movement({speed::slow3, goTo::crack, goBy::teleport})
 	    .movesThrough(terrainType::CRACK)
 	    .movesOnGround()
-	    .movesThrough(terrainType::DECK)
 	    .scardy()
 	    .sense(sense::SIGHT)
 	    .sense(sense::SOUND)

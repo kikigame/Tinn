@@ -26,9 +26,12 @@ const wchar_t * const to_string(const terrainType & t) {
   case terrainType::WEB: return L"WEB";
   case terrainType::SPRINGBOARD: return L"SPRINGBOARD";
   case terrainType::SPRINGBOARD_HIDDEN: return L"SPRINGBOARD_HIDDEN";
+  case terrainType::WELL: return L"WELL";
+  case terrainType::WISHING_WELL: return L"WISHING_WELL";
   default: throw t;
   }
 }
+
 
 terrain::terrain(const wchar_t render, const wchar_t* const name,const wchar_t * const description, 
 		 const terrainType type) :
@@ -60,6 +63,11 @@ terrainType terrain::type() const {
   return type_;
 }
 
+bool terrain::groundLike() const {
+  return type_ == terrainType::GROUND || type_ == terrainType::DECK ||
+    type_ == terrainType::WELL || type_ == terrainType::WISHING_WELL;
+}
+
 bool terrain::entraps(const monster &m, bool includeHidden) const {
   switch (type_) {
   case terrainType::ALTAR:
@@ -81,6 +89,8 @@ bool terrain::entraps(const monster &m, bool includeHidden) const {
   case terrainType::DECK:
   case terrainType::KNOTWEED:
   case terrainType::CRACK:
+  case terrainType::WELL:
+  case terrainType::WISHING_WELL:
     return false;
   case terrainType::WEB:
     return m.type().type() != monsterTypeKey::spider;
@@ -91,6 +101,10 @@ bool terrain::entraps(const monster &m, bool includeHidden) const {
   default:
     throw type_; // missing type from enum
   }
+}
+
+bool terrain::shouldSupportItems() const {
+  return type_ != terrainType::FIRE && type_ != terrainType::WATER && type_ != terrainType::WELL && type_ != terrainType::WISHING_WELL;
 }
 
 bool terrain::operator ==(const terrain &other) const {
@@ -127,7 +141,7 @@ public:
 "and destructive of all. It takes 2-3 years to kill a knotweed plant using\n"
 "conventional herbicide; growing up to 2-3m deep or more. It establishes for\n"
 "decades below ground before been seen in significant quantity in a matter of\n"
-"woeks. It can grow through the smallest cracks in concrete and regrow from\n"
+"weeks. It can grow through the smallest cracks in concrete and regrow from\n"
 "the tiniest remaining fragment.", terrainType::KNOTWEED));
     store(new terrain(L'¨',L"Cracked wall", L"This wall is displaying signs of subsidance.", terrainType::CRACK));
     store(new terrain(L'"',L"Web", L"Used by spiders to ensnare prey.\n"
@@ -137,6 +151,8 @@ public:
 "Don't blame me if you fling yourself into a wall.\n"
 "Balistic monsters may also be used as crude missile weapons.", terrainType::SPRINGBOARD));
     store(new terrain(L'.', L"Ground", L"Subterrainian earth; looks like a solid floor, but be careful or it may give way.", terrainType::SPRINGBOARD_HIDDEN));
+    store(new terrain(L'ᐁ', L"Well", L"Throw in a coin; if you like. Supplies fresh drinking water.", terrainType::WELL));
+    store(new terrain(L'⍌', L"Wishing Well", L"Throw in a coin; used to make a wish. Supplies fresh drinking water.", terrainType::WISHING_WELL));
   }
   const terrain &get(terrainType type) const {
     return *(store_.at(type).get());

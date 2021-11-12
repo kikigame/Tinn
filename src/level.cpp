@@ -1241,7 +1241,7 @@ void levelGen::addTraps(const std::pair<coord,coord> &coords) {
   {
   
     // IT'S A TRAP! // ref: Admiral Ackbar, Star Wars film Episode VI: Return of the Jedi.
-    // Pick one at random... we've only got one this release...
+    // Pick one at random...
     if (coords.second.first - 2 > coords.first.first+1 && 
 	coords.second.second - 2 > coords.first.second + 1) {
       std::uniform_int_distribution<int> dx(coords.first.first+1, coords.second.first - 2);
@@ -1249,7 +1249,14 @@ void levelGen::addTraps(const std::pair<coord,coord> &coords) {
       const coord c(dx(generator), dy(generator)); // coords=(0,0)-(2,1) but c=gibberish
       if (level_->terrain_.at(c).type() == terrainType::GROUND) {
 	switch(dPc() % 12) {
-	case 0: case 1:
+	case 0:
+	   // at deeper levels, wells become wishing wells. Small chance of a wishing well on level 1, because the first level is hardest.
+	  if (level_->depth_ > 75 || level_->depth_ < 2)
+	    level_->terrain_.at(c) = tFactory.get(terrainType::WISHING_WELL);
+	  else
+	    level_->terrain_.at(c) = tFactory.get(terrainType::WELL);
+	  break;
+	case 1:
 	case 2: case 3:
 	case 4: case 5:
 	case 6: case 7:

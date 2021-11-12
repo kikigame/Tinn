@@ -34,7 +34,9 @@ enum class terrainType {
   // TRAP: monsters jumping onto a springboard will be flung forward by N squares
   SPRINGBOARD,
   SPRINGBOARD_HIDDEN,
-  DECK
+  DECK,
+  WELL, // supplies water on using empty bottle, dilutes other liquids in bottles.
+  WISHING_WELL, // as well + dropped objects disappear (unless highlighted), use for wish.
 };
 
 const wchar_t * const to_string(const terrainType &);
@@ -61,6 +63,12 @@ public:
   // does the monster not want to move onte a square of this terrain type?
   bool entraps(const monster &m, bool includeHidden) const;
 
+  // does this behave like ordinary ground?
+  bool groundLike() const;
+
+  // can I put my thing here? (NB: all terrain support items, so quest items are never lost, but some shouldn't)
+  bool shouldSupportItems() const;
+  
   bool operator ==(const terrain &other) const;
   bool operator !=(const terrain &other) const;
 };

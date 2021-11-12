@@ -19,6 +19,12 @@ void io::message(const coord c, const std::wstring &msg) const {
   message(opt.str());
 }
 
+void io::longMsg(const coord c, const std::wstring &msg) const {
+  std::wstringstream opt;
+  opt << c << L" " << msg;
+  longMsg(opt.str());
+}
+
 
 template <typename T>
 bool fillExtraHelp(std::vector<std::wstring> &extraHelps,
@@ -205,6 +211,7 @@ void junk(const io &ios) { // this method is not used.
   ios.choice<int>(L"", L"", {}); // used in shop
   ios.choice<std::shared_ptr<item> >(L"", L"", {}); // used in shop
   ios.choice<wchar_t>(L"", L"", {}); // used in encyclopedia
+  ios.choice<std::wstring>(L"", L"", {}); // used in wish
   std::function<std::wstring (wchar_t const&)> fn = [](wchar_t){return L"";};
   std::vector<std::pair<wchar_t, std::wstring>> v;
   ios.choice<wchar_t>(L"", L"", v, fn);

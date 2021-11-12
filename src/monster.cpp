@@ -8,6 +8,7 @@
 #include "output.hpp"
 #include "terrain.hpp"
 #include "monstermutation.hpp"
+#include "wish.hpp"
 
 //Roll 2D52-2
 unsigned char dPc() {
@@ -314,9 +315,26 @@ bool monster::drop(item &ite, const coord &c) {
   if (sl[0] != nullptr && !unequip(ite)) return false;
   auto i = firstItem([&ite](item &it) { return &it == &ite; });
   if (!i) return false; // can't drop what we don't have
-  // drop
-  return level_->holder(c).addItem(ite);
+  // some types of terrain cause items to be destroyed, but NOT quest-related/important items:
+  auto &t = level_->terrainAt(c);
+  if (!ite.highlight() && t.shouldSupportItems())
+    return level_->holder(c).addItem(ite);
+  else {
+    // wishing wells should prompt for a wish.
+    if (t.type() == terrainType::WISHING_WELL && isPlayer()) {
+      auto &h = level_->holder(c);
+      // h.addItem() ensures that the portable hole effect works, and checks we are allowed to drop the item:
+      if (!ite.highlight() && h.addItem(ite)) {
+	level_->msg() << sense::ANY << L"You throw %s into the well..." << ite.name() << stop();
+	wish(*this, ite);
+	h.destroyItem(ite);
+	return true;
+      }
+    }
+    return false;
+  }
 }
+
 
 
 // for game reasons only; we need yes/no responses to choose how monsters react to each other

@@ -122,6 +122,6 @@ std::wstring dungeon::score() const {
   return rtn.str();
 }
 
-formatter dungeon::msg() {
+formatter dungeon::msg() const {
   return formatter(*this);
 }

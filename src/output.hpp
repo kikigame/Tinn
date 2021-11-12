@@ -39,7 +39,11 @@ public:
   // print a directional message to the user.
   // This implementation delegates to message(), prefixing with the coordinates, but other outputs may prefer to highlight the message on screen somehow.
   virtual void message(const coord c, const std::wstring &msg) const;
-  
+
+  // print a directional message to the user.
+  // This implementation delegates to message(), prefixing with the coordinates, but other outputs may prefer to highlight the message on screen somehow.
+  virtual void longMsg(const coord c, const std::wstring &msg) const;
+
   // request an input key from the user:
   virtual std::wstring keyPrompt() const = 0;
   virtual std::wstring keyPrompt(const std::wstring & msg) const { message(msg); return keyPrompt(); }

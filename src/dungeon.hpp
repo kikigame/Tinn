@@ -38,7 +38,7 @@ public:
   std::shared_ptr<player> pc();
   const std::shared_ptr<player> pc() const;
   // send formatted messages
-  formatter msg();
+  formatter msg() const;
   int maxLevel() const;
 
   // look ahead

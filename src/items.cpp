@@ -1004,8 +1004,7 @@ public:
       {
 	auto &level = curLevel(other.holder());
 	coord target = rnd(level.allCoords(), [&level](const coord &c) {
-	    auto t = level.terrainAt(c).type();
-	    return t == terrainType::GROUND || t == terrainType::DECK;
+	    return level.terrainAt(c).groundLike();
 	  });
 	bool rtn = level.holder(target).addItem(other);
 	if (rtn)
@@ -1372,8 +1371,8 @@ public:
     case terrainType::PIT:
       io.message(L"You make an escape.");
       level.changeTerrain(c, terrainType::DOWN);
-      return useResult::DONE;      
-    case terrainType::FIRE:
+      return useResult::DONE;
+      //    case terrainType::FIRE: was here, but it made no sense.
     case terrainType::WATER:
       io.message(L"You find a fish!");
       return useResult::DONE;      
@@ -1393,9 +1392,21 @@ public:
     case terrainType::WEB:
       io.message(L"The hole won't stick to the silken strands.");
       return useResult::FAIL;      
+    case terrainType::WISHING_WELL:
+      holeInWell(user, level, c, 5);
+      // throwing an ACME portable hole into a wishing well should drain out the coins.
+      // thus converting it into a regular well.
+      level.changeTerrain(c, terrainType::WELL);
+      return useResult::SUCCESS;
+    case terrainType::WELL:
+      holeInWell(user, level, c, 10);
+      return useResult::SUCCESS;
     case terrainType::SPRINGBOARD:
     case terrainType::SPRINGBOARD_HIDDEN:
-      io.message(L"The hole flies up into the air!");
+      level.msg() << c
+		  << sense::SIGHT << L"The hole flies up into the air!"
+		  << sense::SIXTH << L"The hole flies up into the air!"
+		  << stop();
     default:
       return useResult::FAIL;      
     }
@@ -1411,6 +1422,27 @@ public:
 	dest.addItem(*this);
       else 
 	holder().destroyItem(*this);
+    }
+    // called when throwing a hole into any type of well
+    void holeInWell(monster &user, level &level, const coord &c, const int denom) {
+      std::wstring target = user.isPlayer() ? L"You are" : user.name() + L" is";
+      auto msg = level.msg() << c
+			     << sense::TOUCH << L"%s struck by a deluge of coins!"
+			     << sense::SIXTH << L"%s struck by a deluge of coins!"
+			     << target << stop();
+      auto res = dPc() / 5;
+      for (int i=0; i < res; ++i) {
+	// we need more types of coin!
+	level.holder(c).addItem(createItem(itemTypeKey::kalganid));
+      }
+      auto &bashing = damageRepo::instance()[damageType::bashing];
+      if (!isBlessed()) {
+	user.damageArmour(bashing);
+      }
+      if (isCursed()) {
+	user.wound(user, 1, bashing);
+      }
+      ejectContents(level, c);
     }
 };
 
