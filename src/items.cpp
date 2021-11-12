@@ -1338,7 +1338,7 @@ public:
     auto &user = *pUser;
     auto &level = user.curLevel();
     auto pos = level.posOf(user);
-    const coord c = pos.inDir(dir(d));
+    const coord c = (d != L'<' && d != L'>') ? pos.inDir(dir(d)) : pos;
     if (c.first < 0 || c.second < 0 || c.first >= level::MAX_WIDTH ||
 	c.second >= level::MAX_HEIGHT) {
       io.message(L"The hole won't stick there.");
