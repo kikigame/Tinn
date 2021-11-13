@@ -944,7 +944,7 @@ public:
 	default: throw L"Unknown material ";
 	}
 	auto msg = dung().msg()
-	  << sense::TOUCH << L"It feels " + material + L"."
+	  << sense::TOUCH << L"This feels " + material + L"."
 	  << sense::SIXTH << L"This must be" + material + L".";
 	if (dungeon_.pc()->type().eats(it.material()))
 	  msg << sense::SMELL << L"It smells edible.";
