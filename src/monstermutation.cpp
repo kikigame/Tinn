@@ -317,8 +317,8 @@ class mutationEncyclopedium : public renderable {
   const std::wstring desc_;
  public:
   mutationEncyclopedium(const wchar_t render,
-			const std::wstring name,
-			const std::wstring desc) :
+			const std::wstring &name,
+			const std::wstring &desc) :
     render_(render),
     name_(name),
     desc_(desc) {}
