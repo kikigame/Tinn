@@ -83,7 +83,7 @@ E rndPickEnum(const E start, const E end) {
     std::uniform_int_distribution<int> dis(0, max - 1);
     begin += dis(generator);
   }
-  return start;
+  return static_cast<E>(begin);
 }
 
 // random value from type E
@@ -96,7 +96,7 @@ E rndPick() {
     std::uniform_int_distribution<int> dis(0, max - 1);
     begin += dis(generator);
   }
-  return static_cast<E>(0);
+  return static_cast<E>(begin);
 }
 
 /*
