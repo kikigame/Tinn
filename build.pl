@@ -47,7 +47,7 @@ for my $cfile (`ls src/*.cpp`) {
 
 # Output
 
-my $CXXFLAGS = "-Wall -g -std=c++11";
+my $CXXFLAGS = "-Wall -std=c++11"; #-g
 
 print "# This is an auto-generated file. Please make changes in build.pl\n\n";
 print "CXX ?= c++\n\n"; 
