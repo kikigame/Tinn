@@ -1,7 +1,6 @@
 /* License and copyright go here*/
 
 // Things and stuff
-
 #include "appraise.hpp"
 #include "action.hpp"
 #include "items.hpp"
@@ -10,6 +9,7 @@
 #include "random.hpp"
 #include "religion.hpp" // for holy books
 #include "terrain.hpp"
+#include "manual.hpp" // for manuals
 #include "encyclopedia.hpp" // for hitch-hiker's guide
 #include "shop.hpp"
 #include "dungeon.hpp"
@@ -1070,6 +1070,39 @@ public:
 	ios.message(L"This blank tome has plain pages.");
     }
     return useResult::SUCCESS;
+  }
+};
+
+class manualvolume : public readableItem {
+private:
+  const manual::chapter chapter_;
+  const wchar_t *const basicText_;
+  const wchar_t *const advancedText_;
+public:
+  manualvolume(const itemType &type,
+	 const manual::chapter &chapter) :
+    readableItem(type),
+    chapter_(chapter),
+    basicText_(manual::chap(chapter)),
+    advancedText_(manual::advanced(chapter)) {}
+  virtual ~manualvolume() {}
+  virtual std::wstring simpleName() const {
+    auto rtn = basicItem::simpleName();
+    auto of = manual::name(chapter_);
+    if (of != nullptr) return std::wstring(L"Manual of ") + of;
+    return rtn;
+  }
+  virtual item::useResult use() {
+    if (isCursed() || basicText_ == nullptr)
+      return readableItem::use();
+    auto &ios = ioFactory::instance();
+    std::wstring text(basicText_);
+    if (isBlessed() && advancedText_ != nullptr) {
+      text += L"\n";
+      text += advancedText_;
+    }
+    ios.longMsg(text);
+    return item::useResult::SUCCESS;
   }
 };
 
@@ -2226,9 +2259,13 @@ template <> struct itemTypeTraits<itemTypeKey::bottle> {
   static item *make(const itemType &t) { return new type(t); }
 };
 template <> struct itemTypeTraits<itemTypeKey::codex> {
-  typedef readableItem type;
+  typedef manualvolume type;
   template<typename type>
-  static item *make(const itemType &t) { return new type(t); }
+  static item *make(const itemType &t) {
+    using namespace manual;
+    chapter c = rndPickEnum(chapter::NONE, chapter::END);
+    return new type(t, c);
+  }
 };
 template <> struct itemTypeTraits<itemTypeKey::hitch_guide> {
   typedef hitchGuide type;
